@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore;
+
+#nullable disable
+
+namespace AccApi.Repository.Models
+{
+    [Table("tblOriginalBOQTemp")]
+    public partial class TblOriginalBoqtemp
+    {
+        public TblOriginalBoqtemp()
+        {
+            TblBoqtemps = new HashSet<TblBoqtemp>();
+        }
+
+        [Key]
+        [Column("Item-o")]
+        [StringLength(25)]
+        public string ItemO { get; set; }
+        [Column("Project-o")]
+        [StringLength(10)]
+        public string ProjectO { get; set; }
+        [Column("section-o")]
+        [StringLength(3)]
+        public string SectionO { get; set; }
+        [Column("Description-o")]
+        [StringLength(1000)]
+        public string DescriptionO { get; set; }
+        [Column("Unit-o")]
+        [StringLength(255)]
+        public string UnitO { get; set; }
+        [Column("Qty-o")]
+        public double? QtyO { get; set; }
+        public int? Area { get; set; }
+        public int? Scope { get; set; }
+        [StringLength(10)]
+        public string Sort { get; set; }
+        public bool? Subcontracting { get; set; }
+        public bool? Selected { get; set; }
+        public double? Submitted { get; set; }
+        [Column("obSheet")]
+        public byte? ObSheet { get; set; }
+        [Column("obInDirect")]
+        public bool? ObInDirect { get; set; }
+        [Column("obSeq")]
+        public int ObSeq { get; set; }
+        [Column("obSheetDesc")]
+        [StringLength(50)]
+        public string ObSheetDesc { get; set; }
+        public short? RowNumber { get; set; }
+        [StringLength(50)]
+        public string RefNumber { get; set; }
+        public double? UnitRate { get; set; }
+        [StringLength(12)]
+        public string Zone { get; set; }
+        public bool? CandyTemplate { get; set; }
+        [Column("obBOQSellRate")]
+        public double? ObBoqsellRate { get; set; }
+        [Column("obBOQSellTotPrice")]
+        public double? ObBoqsellTotPrice { get; set; }
+        [StringLength(5000)]
+        public string C1 { get; set; }
+        [StringLength(5000)]
+        public string C2 { get; set; }
+        [StringLength(5000)]
+        public string C3 { get; set; }
+        [StringLength(5000)]
+        public string C4 { get; set; }
+        [StringLength(5000)]
+        public string C5 { get; set; }
+        [StringLength(5000)]
+        public string C6 { get; set; }
+        [Column("obBillPage")]
+        [StringLength(50)]
+        public string ObBillPage { get; set; }
+        [Column("obPriceCode")]
+        [StringLength(50)]
+        public string ObPriceCode { get; set; }
+        [Column("obLevel")]
+        [StringLength(50)]
+        public string ObLevel { get; set; }
+        [Column("obBillQty")]
+        public double? ObBillQty { get; set; }
+        [StringLength(5000)]
+        public string L1 { get; set; }
+        [StringLength(5000)]
+        public string L2 { get; set; }
+        [StringLength(5000)]
+        public string L3 { get; set; }
+        [StringLength(5000)]
+        public string L4 { get; set; }
+        [StringLength(5000)]
+        public string L5 { get; set; }
+        [StringLength(5000)]
+        public string L6 { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? BillSubmitted { get; set; }
+
+        [InverseProperty(nameof(TblBoqtemp.BoqItemNavigation))]
+        public virtual ICollection<TblBoqtemp> TblBoqtemps { get; set; }
+    }
+}

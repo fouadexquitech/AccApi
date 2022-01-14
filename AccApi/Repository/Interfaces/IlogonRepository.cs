@@ -1,0 +1,15 @@
+﻿using AccApi.Repository.View_Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace AccApi.Repository.Interfaces
+{
+    public interface IlogonRepository
+    {
+        List<ProjectCountries> GetProjectCountries();
+        List<Project> GetProjects(int dbSeq);
+        User GetLogin(string user, string pass, int projSeq);
+    }
+}
