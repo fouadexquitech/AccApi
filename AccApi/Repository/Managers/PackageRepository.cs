@@ -106,7 +106,8 @@ namespace AccApi.Repository.Managers
                         where b.IdPkge == IdPkge
                         select new PackageDetailsModel
                         {
-                            PackageName = b.PkgeName
+                            PackageName = b.PkgeName,
+                            FilePath = b.FilePath
                         };
             return query.FirstOrDefault();
         }

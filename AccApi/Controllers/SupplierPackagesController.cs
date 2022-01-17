@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System;
 using Microsoft.AspNetCore.Http;
 using AccApi.Repository.View_Models.Request;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.StaticFiles;
+using System.IO;
 
 namespace AccApi.Controllers
 {
@@ -15,11 +18,13 @@ namespace AccApi.Controllers
     {
         private readonly ILogger<SupplierPackagesController> _logger;
         private ISupplierPackagesRepository _supplierPackagesRepository;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public SupplierPackagesController(ILogger<SupplierPackagesController> logger,ISupplierPackagesRepository supplierPackagesRepository)
+        public SupplierPackagesController(ILogger<SupplierPackagesController> logger,ISupplierPackagesRepository supplierPackagesRepository, IHostingEnvironment hostingEnvironment)
         {
             _logger = logger;
             _supplierPackagesRepository = supplierPackagesRepository;
+            this._hostingEnvironment = hostingEnvironment;
         }
 
         [HttpGet("GetSupplierPackagesList")]
@@ -37,11 +42,11 @@ namespace AccApi.Controllers
         }
 
        [HttpPost("ValidateExcelBeforeAssign")]
-       public string ValidateExcelBeforeAssign(int packId)
+       public JsonResult ValidateExcelBeforeAssign(int packId)
         {
             try
             {
-                return this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId);
+                return new JsonResult(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId));
             }
             catch (Exception ex)
             {
@@ -49,6 +54,46 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        private string GetMimeType(string fileName)
+        {
+            // Make Sure Microsoft.AspNetCore.StaticFiles Nuget Package is installed
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+            if (!provider.TryGetContentType(fileName, out contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            return contentType;
+        }
+
+        public FileResult GetFile(string filename)
+        {
+            var filepath = Path.Combine($"{this._hostingEnvironment.ContentRootPath}\\{filename}");
+
+            var mimeType = this.GetMimeType(filename);
+
+            byte[] fileBytes;
+
+            if (System.IO.File.Exists(filepath))
+            {
+                fileBytes = System.IO.File.ReadAllBytes(filepath);
+            }
+            else
+            {
+                return null;
+            }
+
+            return File(fileBytes, "application/octet-stream", filename);
+        }
+
+
+        [HttpGet("DownloadFile")]
+        public FileResult DownloadFile(string filename)
+        {
+            return GetFile(filename);
+        }
+
 
         [HttpPost("AssignPackageSuppliers")]
         public bool AssignPackageSuppliers(int packId,List<SupplierInput> supList, string FilePath)

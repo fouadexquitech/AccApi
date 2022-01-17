@@ -51,7 +51,7 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetLogin")]
+        [HttpPost("GetLogin")]
         public User GetLogin(string user,string pass,int projSeq)
         {
             try
