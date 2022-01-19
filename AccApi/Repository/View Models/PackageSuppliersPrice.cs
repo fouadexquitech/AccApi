@@ -24,5 +24,6 @@ namespace AccApi.Repository.View_Models
         public string resourceUnit { get; set; }
         public double? resourceQty { get; set; }
         public double? price { get; set; }
+        public double? perc { get; set; }
     }
 }

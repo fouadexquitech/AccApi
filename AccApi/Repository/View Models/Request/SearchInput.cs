@@ -4,10 +4,10 @@ namespace AccApi.Repository.View_Models.Request
 {
     public class SearchInput
     {
-        public string BOQDiv { get; set; }
-        public string RESDiv { get; set; }
+        public string[] BOQDiv { get; set; }
+        public string[] RESDiv { get; set; }
         public string BOQItem { get; set; }
-        public string RESType { get; set; }
+        public string[] RESType { get; set; }
         public string BOQDesc { get; set; }
         public string RESDesc { get; set; }
         public int Package { get; set; }

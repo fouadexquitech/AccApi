@@ -39,9 +39,13 @@ namespace AccApi.Repository.Managers
 
 
             IEnumerable<TblOriginalBoq> condQuery = from b in _context.TblOriginalBoqs select b;
-            if (!string.IsNullOrEmpty(input.BOQDiv)) condQuery = condQuery.Where(w => w.SectionO == input.BOQDiv);
+            if (input.BOQDiv.Length > 0) 
+            {
+                
+                condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            }
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO == input.BOQItem);
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO == input.BOQDesc);
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
@@ -89,8 +93,14 @@ namespace AccApi.Repository.Managers
                                                    ResDescription = r.ResDescription
                                                });
 
-            if (!string.IsNullOrEmpty(input.RESDiv)) condQuery = condQuery.Where(w => w.BoqDiv == input.RESDiv);
-            if (!string.IsNullOrEmpty(input.RESType)) condQuery = condQuery.Where(w => w.BoqCtg == input.RESType);
+            if (input.RESDiv.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            }
+            if (input.RESType.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            }
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
@@ -180,7 +190,8 @@ namespace AccApi.Repository.Managers
                                            resourceName = e.ResDescription,
                                            resourceUnit = d.BoqUnitMesure,
                                            resourceQty = c.RdQty,
-                                           price = c.RdPrice
+                                           price = c.RdPrice,
+                                           perc = c.RdAssignedPerc
                                        }).ToList();
 
 
