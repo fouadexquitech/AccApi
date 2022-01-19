@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -59,6 +60,8 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
+
+        [HttpPost("GetLogin")]
         public User GetLogin(string user, string pass, int projSeq)
         {
             User usr = new User();
