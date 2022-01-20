@@ -47,5 +47,19 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetCurrencies")]
+        public List<CurrencyList> GetCurrencies()
+        {
+            try
+            {
+                return this._supplierPackagesRevRepository.GetCurrencies();
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
     }
 }
