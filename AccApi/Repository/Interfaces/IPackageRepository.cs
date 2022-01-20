@@ -6,8 +6,9 @@ namespace AccApi.Repository.Interfaces
 {
     public interface IPackageRepository
     {
-        List<OriginalBoqModel> GetOriginalBoqList(SearchInput input);
+        List<BoqRessourcesList> GetOriginalBoqList(SearchInput input);
         List<BoqModel> GetBoqList(string ItemO, SearchInput input);
+        List<BoqModel> GetAllBoqList(SearchInput input);
         PackageDetailsModel GetPackageById(int IdPkge);
         bool AssignPackages(AssignPackages input);
         List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge);

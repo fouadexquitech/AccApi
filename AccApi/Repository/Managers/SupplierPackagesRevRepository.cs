@@ -11,10 +11,12 @@ namespace AccApi.Repository.Managers
     public class SupplierPackagesRevRepository: ISupplierPackagesRevRepository
     {
         private readonly AccDbContext _context;
+        private readonly MasterDbContext _masterDbContext;
 
-        public SupplierPackagesRevRepository(AccDbContext context)
+        public SupplierPackagesRevRepository(AccDbContext context, MasterDbContext masterDbContext)
         {
             _context = context;
+            _masterDbContext = masterDbContext;
         }
 
         public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
@@ -27,7 +29,9 @@ namespace AccApi.Repository.Managers
                               PrRevId= b.PrRevId,
                               PrRevNo = b.PrRevNo,
                               PrRevDate = b.PrRevDate,
-                              PrTotPrice = b.PrTotPrice
+                              PrTotPrice = b.PrTotPrice,
+                              PrCurrency=b.PrCurrency,
+                              PrExchRate=b.PrExchRate
                           }).ToList();
 
 
@@ -43,7 +47,6 @@ namespace AccApi.Repository.Managers
                     }
                 }
             }
-
             return results;
         }
 
@@ -71,6 +74,18 @@ namespace AccApi.Repository.Managers
             }
 
             return revision.PrTotPrice;
+        }
+
+        public List<CurrencyList> GetCurrencies()
+        {
+            var result = from b in _masterDbContext.TblCurrencies
+                         select new CurrencyList
+                         {
+                             curId = b.CurId,
+                             CurCode = b.CurCode
+                         };
+
+            return result.ToList();
         }
     }
 }

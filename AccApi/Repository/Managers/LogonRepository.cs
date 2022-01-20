@@ -1,5 +1,7 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +13,16 @@ namespace AccApi.Repository.Managers
     {
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
+        private readonly AccDbContext _dbcontext;
 
-        public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext)
+        public IConfiguration Configuration { get; }
+
+        public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration)
         {
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
+            _dbcontext = dbcontext;
+            Configuration = configuration;
         }
        
         public List<ProjectCountries> GetProjectCountries()
@@ -35,9 +42,14 @@ namespace AccApi.Repository.Managers
                         };
             return result.ToList();
         }
+
         public List<Project> GetProjects(int dbSeq)
         {
-            var result = from b in _pdbcontext.Tblprojects
+            var conn = _mdbcontext.TblDataBases.Where(x => x.DbSeq == dbSeq).FirstOrDefault();
+            string ConName = conn.DbConnection;
+            var db = _pdbcontext.CreateConnectionFromOut(ConName);
+
+            var result = from b in db.Tblprojects
                          where b.PrjCostDatabase != null
                          select new Project
                          {
@@ -46,6 +58,22 @@ namespace AccApi.Repository.Managers
                          };
             return result.ToList();
         }
+
+        public ProjectCurrency GetProjectCurrency()
+        {
+            var result = from a in _dbcontext.TblParameters
+                         join b in _dbcontext.TblCurrencies
+                         on a.EstimatedCur equals b.CurId
+                         select new ProjectCurrency
+                         {
+                             curId = (int)a.EstimatedCur,
+                             curCode = b.CudCode
+                         };
+
+            return result.FirstOrDefault();
+        }
+
+
         public User GetLogin(string user, string pass, int projSeq)
         {
             User usr = new User();
@@ -53,8 +81,42 @@ namespace AccApi.Repository.Managers
 
             if (!checkAccessProject(user, projSeq))
                 usr = null;
+            else if (!connectToProject(projSeq))
+                usr = null; 
             
             return usr;
+        }
+
+        private Boolean connectToProject(int projSeq)
+        {
+            var result = _pdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+            string costDb = result.PrjCostDatabase;
+
+            if ((costDb != "") && (costDb != null))
+            {
+                string connectionString = Configuration.GetConnectionString("DefaultConnection");
+                costDb = costDb + "_CostData";
+                var connection = new SqlConnectionStringBuilder(connectionString);
+                connection.InitialCatalog = costDb;
+              
+                string conName = connection.ConnectionString.ToString();
+                var db = _dbcontext.CreateConnectionFromOut(conName);
+
+                return true;
+            }
+            else
+                return false;
+        }
+
+        private static void ChangeSqlDatabase(string connectionString)
+        {
+            // Assumes connectionString represents a valid connection string
+            // to the AdventureWorks sample database.
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.ChangeDatabase("Northwind");
+                Console.WriteLine("Database: {0}", connection.Database);
+            }
         }
 
         private User checkCredentials(string username, string password)
@@ -72,7 +134,7 @@ namespace AccApi.Repository.Managers
 
             User user = new User();
             user = result.FirstOrDefault();
-
+   
             return user;
         }
 
@@ -87,5 +149,8 @@ namespace AccApi.Repository.Managers
 
             return query.FirstOrDefault() != null;
         }
+
+
+
     }
 }

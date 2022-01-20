@@ -53,7 +53,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._supplierPackagesRevRepository.GetCurrencies();
+                return this._supplierPackagesRevRepository.GetCurrencies( );
             }
             catch (Exception ex)
             {

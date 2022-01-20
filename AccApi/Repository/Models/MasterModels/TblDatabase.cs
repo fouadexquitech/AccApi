@@ -22,7 +22,7 @@ namespace AccApi.Repository.Models.MasterModels
         [StringLength(50)]
         public string DbDescription { get; set; }
         [Column("dbConnection")]
-        [StringLength(150)]
+        [StringLength(250)]
         public string DbConnection { get; set; }
         [Column("dbServer")]
         [StringLength(50)]

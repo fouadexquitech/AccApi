@@ -17,6 +17,8 @@ namespace AccApi.Repository.View_Models
         public double? assignQty { get; set; }
         public double? assignPrice { get; set; }
         public int revisionId { get; set; }
+        public double? priceOrigCurrency { get; set; }
+
     }
 
     public class SupplierPercent

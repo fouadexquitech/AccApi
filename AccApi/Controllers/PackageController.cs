@@ -23,7 +23,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetOriginalBoqList")]
-        public List<OriginalBoqModel> GetOriginalBoqList(SearchInput input)
+        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
         {
             try
             {
@@ -42,6 +42,20 @@ namespace AccApi.Controllers
             try
             {
                 return this._packageRepository.GetBoqList(ItemO ,input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("GetAllBoqList")]
+        public List<BoqModel> GetAllBoqList(string ItemO, SearchInput input)
+        {
+            try
+            {
+                return this._packageRepository.GetAllBoqList(input);
             }
             catch (Exception ex)
             {
