@@ -243,6 +243,8 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
+
+
         public void UpdateRevDtlAssignedQty(int revisionId, int resourceID, double assignpercent, double assignQty, double assignPrice)
         {
             var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);

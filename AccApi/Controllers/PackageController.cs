@@ -50,6 +50,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("GetAllBoqList")]
+        public List<BoqModel> GetAllBoqList(string ItemO, SearchInput input)
+        {
+            try
+            {
+                return this._packageRepository.GetAllBoqList(input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
 
         [HttpGet("GetPackageById")]
         public PackageDetailsModel GetPackageById(int IdPkge)

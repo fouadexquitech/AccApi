@@ -8,6 +8,7 @@ namespace AccApi.Repository.Interfaces
     {
         List<OriginalBoqModel> GetOriginalBoqList(SearchInput input);
         List<BoqModel> GetBoqList(string ItemO, SearchInput input);
+        List<BoqModel> GetAllBoqList(SearchInput input);
         PackageDetailsModel GetPackageById(int IdPkge);
         bool AssignPackages(AssignPackages input);
         List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge);

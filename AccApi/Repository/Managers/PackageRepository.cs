@@ -110,6 +110,40 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
+        public List<BoqModel> GetAllBoqList(SearchInput input)
+        {
+            IEnumerable<BoqModel> condQuery = (from b in _context.TblBoqs
+                                               join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                               select new BoqModel()
+                                               {
+                                                   BoqSeq = b.BoqSeq,
+                                                   BoqCtg = b.BoqCtg,
+                                                   BoqUnitMesure = b.BoqUnitMesure,
+                                                   BoqQty = b.BoqQty,
+                                                   BoqUprice = b.BoqUprice,
+                                                   BoqDiv = b.BoqDiv,
+                                                   BoqPackage = b.BoqPackage,
+                                                   BoqScope = b.BoqScope,
+                                                   ResDescription = r.ResDescription
+                                               });
+
+            if (input.RESDiv.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            }
+            if (input.RESType.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            }
+            if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+
+            var results = condQuery.ToList();
+
+            return results;
+        }
+
         public PackageDetailsModel GetPackageById(int IdPkge)
         {
             var query = from b in _context.PackagesNetworks
