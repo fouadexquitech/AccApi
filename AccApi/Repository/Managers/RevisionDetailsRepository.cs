@@ -224,11 +224,12 @@ namespace AccApi.Repository.Managers
                                            {
                                                resourceID = c.RdResourceSeq,
                                                resourceQty = c.RdQty,
-                                               price = c.RdPrice,
+                                               price = c.RdPrice * ( b.PrExchRate >0? b.PrExchRate : 1),
                                                assignpercent = supPerc.percent,
                                                assignQty = c.RdQty * (supPerc.percent / 100),
                                                assignPrice = c.RdPrice * c.RdQty * (supPerc.percent / 100),
-                                               revisionId = b.PrRevId
+                                               revisionId = b.PrRevId,
+                                               priceOrigCurrency=c.RdPriceOrigCurrency
                                            }).ToList();
 
                     if (revisionDetails.Count > 0)
@@ -242,9 +243,6 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
-
-
-
         public void UpdateRevDtlAssignedQty(int revisionId, int resourceID, double assignpercent, double assignQty, double assignPrice)
         {
             var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);
@@ -255,8 +253,6 @@ namespace AccApi.Repository.Managers
                 result.RdAssignedPrice = assignPrice;
                 _dbContext.SaveChanges();
             }
-
         }
-
     }
 }

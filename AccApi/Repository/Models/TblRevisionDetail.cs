@@ -29,5 +29,7 @@ namespace AccApi.Repository.Models
         public double? RdAssignedQty { get; set; }
         [Column("rdAssignedPrice")]
         public double? RdAssignedPrice { get; set; }
+        [Column("rdPriceOrigCurrency")]
+        public double? RdPriceOrigCurrency { get; set; }
     }
 }

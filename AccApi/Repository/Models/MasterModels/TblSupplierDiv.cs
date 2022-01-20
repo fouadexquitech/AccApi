@@ -8,16 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.MasterModels
 {
-    [Table("tblCurrency")]
-    [Index(nameof(CurCode), Name = "IX_tblCurrency", IsUnique = true)]
-    public partial class TblCurrency
+    [Table("tblSupplierDiv")]
+    public partial class TblSupplierDiv
     {
         [Key]
-        [Column("curID")]
-        public int CurId { get; set; }
-        [Required]
-        [Column("curCode")]
+        [Column("supCode")]
+        public int SupCode { get; set; }
+        [Key]
+        [Column("supDiv")]
         [StringLength(50)]
-        public string CurCode { get; set; }
+        public string SupDiv { get; set; }
     }
 }

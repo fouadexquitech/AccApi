@@ -22,5 +22,9 @@ namespace AccApi.Repository.Models
         public decimal? PrTotPrice { get; set; }
         [Column("prPackSuppId")]
         public int? PrPackSuppId { get; set; }
+        [Column("prCurrency")]
+        public int? PrCurrency { get; set; }
+        [Column("prExchRate")]
+        public double? PrExchRate { get; set; }
     }
 }

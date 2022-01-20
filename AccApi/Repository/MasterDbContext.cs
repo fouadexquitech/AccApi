@@ -36,6 +36,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblMasterProjectsOld> TblMasterProjectsOlds { get; set; }
         public virtual DbSet<TblNetSalary> TblNetSalaries { get; set; }
         public virtual DbSet<TblOffice> TblOffices { get; set; }
+        public virtual DbSet<TblPackage> TblPackages { get; set; }
         public virtual DbSet<TblPaycheck> TblPaychecks { get; set; }
         public virtual DbSet<TblPayrollDatabase> TblPayrollDataBases { get; set; }
         public virtual DbSet<TblProjWb> TblProjWbs { get; set; }
@@ -47,6 +48,8 @@ namespace AccApi.Repository
         public virtual DbSet<TblStaffCostElementUnit> TblStaffCostElementUnits { get; set; }
         public virtual DbSet<TblStaffCostExcludedJob> TblStaffCostExcludedJobs { get; set; }
         public virtual DbSet<TblStaffCostUnit> TblStaffCostUnits { get; set; }
+        public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
+        public virtual DbSet<TblSupplierDiv> TblSupplierDivs { get; set; }
         public virtual DbSet<TblTempCount> TblTempCounts { get; set; }
         public virtual DbSet<TblTempReportsAdmin> TblTempReportsAdmins { get; set; }
         public virtual DbSet<TblTempReportsDm> TblTempReportsDms { get; set; }
@@ -106,6 +109,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.CompanyPdefLen).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.CompanyPdefStart).IsFixedLength(true);
+            });
+
+            modelBuilder.Entity<TblCurrency>(entity =>
+            {
+                entity.Property(e => e.CurCode).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblDailyStat>(entity =>
@@ -324,6 +332,14 @@ namespace AccApi.Repository
                 entity.Property(e => e.Wepay).HasDefaultValueSql("(0)");
             });
 
+            modelBuilder.Entity<TblPackage>(entity =>
+            {
+                entity.HasKey(e => e.PkgeId)
+                    .HasName("PK_Packages-Network");
+
+                entity.Property(e => e.FilePath).IsUnicode(false);
+            });
+
             modelBuilder.Entity<TblPaycheck>(entity =>
             {
                 entity.HasKey(e => new { e.ScpYear, e.ScpMonth, e.ScpName });
@@ -430,6 +446,21 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblStaffCostUnit>(entity =>
             {
                 entity.Property(e => e.ScUnit).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblSupplier>(entity =>
+            {
+                entity.HasKey(e => e.SupCode)
+                    .HasName("PK__tblSuppl__8599381D70BBA62A");
+
+                entity.Property(e => e.SupCode).ValueGeneratedNever();
+            });
+
+            modelBuilder.Entity<TblSupplierDiv>(entity =>
+            {
+                entity.HasKey(e => new { e.SupCode, e.SupDiv });
+
+                entity.Property(e => e.SupDiv).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblTempCount>(entity =>

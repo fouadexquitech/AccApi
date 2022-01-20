@@ -7,5 +7,6 @@ namespace AccApi.Repository.Interfaces
     {
         List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId);
         decimal? AddField(int revId, string lbl, int val);
+        List<CurrencyList> GetCurrencies();
     }
 }
