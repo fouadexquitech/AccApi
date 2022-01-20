@@ -64,5 +64,19 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetProjectCurrency")]
+        public ProjectCurrency GetProjectCurrency()
+        {
+            try
+            {
+                return this._logonRepository.GetProjectCurrency();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
     }
 }

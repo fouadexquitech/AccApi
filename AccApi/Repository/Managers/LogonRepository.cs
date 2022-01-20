@@ -59,6 +59,21 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
+        public ProjectCurrency GetProjectCurrency()
+        {
+            var result = from a in _dbcontext.TblParameters
+                         join b in _dbcontext.TblCurrencies
+                         on a.EstimatedCur equals b.CurId
+                         select new ProjectCurrency
+                         {
+                             curId = (int)a.EstimatedCur,
+                             curCode = b.CudCode
+                         };
+
+            return result.FirstOrDefault();
+        }
+
+
         public User GetLogin(string user, string pass, int projSeq)
         {
             User usr = new User();
@@ -134,5 +149,8 @@ namespace AccApi.Repository.Managers
 
             return query.FirstOrDefault() != null;
         }
+
+
+
     }
 }

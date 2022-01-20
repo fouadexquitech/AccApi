@@ -11,5 +11,6 @@ namespace AccApi.Repository.Interfaces
         List<ProjectCountries> GetProjectCountries();
         List<Project> GetProjects(int dbSeq);
         User GetLogin(string user, string pass, int projSeq);
+        ProjectCurrency GetProjectCurrency();
     }
 }

@@ -33,7 +33,7 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile)
+        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile,int curId, double ExchRate)
         {
             int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
 
@@ -53,7 +53,7 @@ namespace AccApi.Repository.Managers
                 while (i >= 0);
             }
 
-            var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = PackSuppDate };
+            var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = PackSuppDate, PrCurrency = curId, PrExchRate = ExchRate };
             _dbContext.Add<TblSupplierPackageRevision>(result);
             _dbContext.SaveChanges();
 

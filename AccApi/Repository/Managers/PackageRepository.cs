@@ -37,7 +37,6 @@ namespace AccApi.Repository.Managers
             //              orderby b.RowNumber
             //              select b;
 
-
             IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
                                                         join b in _context.TblBoqs
                                                         on o.ItemO equals b.BoqItem
@@ -85,7 +84,24 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
 
-            return condQuery.OrderBy(w => w.RowNumber).ToList();
+
+            var resutl = condQuery
+                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new BoqRessourcesList
+                {
+                    RowNumber = p.RowNumber,
+                    SectionO = p.SectionO,
+                    ItemO = p.ItemO,
+                    DescriptionO = p.DescriptionO,
+                    UnitO = p.UnitO,
+                    QtyO = p.QtyO,
+                    UnitRate = p.UnitRate,
+                    Scope = p.Scope
+                })
+                .ToList();
+
+            return resutl.OrderBy(w => w.RowNumber).ToList();
 
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
         }
@@ -261,7 +277,6 @@ namespace AccApi.Repository.Managers
                                            perc = c.RdAssignedPerc
                                        }).ToList();
 
-
                     fieldLists = (from a in _context.TblSupplierPackages
                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                   join c in _context.TblRevisionFields on b.PrRevId equals c.RevisionId
@@ -281,7 +296,7 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var itemRevision in revisionDetails)
                         {
-                            packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) *  Convert.ToDecimal(itemRevision.price);
+                            packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
                         }
                     }
 
@@ -295,7 +310,6 @@ namespace AccApi.Repository.Managers
                     result.Add(packageSuppliersPrice);
                 }
             }
-
             return result;
         }
     }
