@@ -12,5 +12,7 @@ namespace AccApi.Repository.View_Models
         public DateTime? PrRevDate { get; set; }
         public decimal? PrTotPrice { get; set; }
         public int? PrPackSuppId { get; set; }
+        public int? PrCurrency { get; set; }
+        public double? PrExchRate { get; set; }
     }
 }

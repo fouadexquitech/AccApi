@@ -20,7 +20,7 @@ namespace AccApi.Repository.Managers
             _mapper = mapper;
         }
 
-        public List<OriginalBoqModel> GetOriginalBoqList(SearchInput input)
+        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
         {
             //var results = from b in _context.TblOriginalBoqs
             //              where (input.BOQDiv != null && b.SectionO == input.BOQDiv)
@@ -38,22 +38,56 @@ namespace AccApi.Repository.Managers
             //              select b;
 
 
-            IEnumerable<TblOriginalBoq> condQuery = from b in _context.TblOriginalBoqs select b;
-            if (input.BOQDiv.Length > 0) 
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
+                                                        join b in _context.TblBoqs
+                                                        on o.ItemO equals b.BoqItem
+                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        select new BoqRessourcesList
+                                                        {
+                                                            RowNumber = o.RowNumber,
+                                                            SectionO = o.SectionO,
+                                                            ItemO = o.ItemO,
+                                                            DescriptionO = o.DescriptionO,
+                                                            UnitO = o.UnitO,
+                                                            QtyO = o.QtyO,
+                                                            UnitRate = o.UnitRate,
+                                                            Scope = o.Scope,
+                                                            BoqSeq = b.BoqSeq,
+                                                            BoqCtg = b.BoqCtg,
+                                                            BoqUnitMesure = b.BoqUnitMesure,
+                                                            BoqQty = b.BoqQty,
+                                                            BoqUprice = b.BoqUprice,
+                                                            BoqDiv = b.BoqDiv,
+                                                            BoqPackage = b.BoqPackage,
+                                                            BoqScope = b.BoqScope,
+                                                            ResDescription = r.ResDescription
+                                                        });
+
+            if (input.BOQDiv.Length > 0)
             {
-                
                 condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             }
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO == input.BOQItem);
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO == input.BOQDesc);
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
 
-            var results = condQuery.OrderBy(w => w.RowNumber).ToList();
+            if (input.RESDiv.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            }
+            if (input.RESType.Length > 0)
+            {
+                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            }
+            if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
 
-            return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
+            return condQuery.OrderBy(w => w.RowNumber).ToList();
 
+            //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
         }
 
         public List<BoqModel> GetBoqList(string ItemO, SearchInput input)
@@ -109,7 +143,6 @@ namespace AccApi.Repository.Managers
 
             return results;
         }
-
         public List<BoqModel> GetAllBoqList(SearchInput input)
         {
             IEnumerable<BoqModel> condQuery = (from b in _context.TblBoqs

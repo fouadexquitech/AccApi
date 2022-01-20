@@ -12,7 +12,6 @@ namespace AccApi.Repository.Interfaces
     {
         List<RevisionDetailsList> GetRevisionDetails(int RevisionId);
         bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile);
-
         bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList);
         bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList);
     }

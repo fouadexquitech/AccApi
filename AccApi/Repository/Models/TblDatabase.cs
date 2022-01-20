@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 #nullable disable
 
-namespace AccApi.Repository.Models.MasterModels
+namespace AccApi.Repository.Models
 {
     [Table("tblDataBases")]
     public partial class TblDatabase

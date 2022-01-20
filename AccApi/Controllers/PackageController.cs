@@ -23,7 +23,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetOriginalBoqList")]
-        public List<OriginalBoqModel> GetOriginalBoqList(SearchInput input)
+        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
         {
             try
             {

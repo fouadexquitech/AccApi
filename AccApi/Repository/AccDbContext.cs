@@ -137,14 +137,14 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//        {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-//            }
-//        }
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+        //            }
+        //        }
 
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
@@ -1433,6 +1433,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdPrice).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdPriceOrigCurrency).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblRivision>(entity =>
@@ -1553,6 +1555,11 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => e.SpPackSuppId)
                     .HasName("PK_tbSupplierPackages");
+            });
+
+            modelBuilder.Entity<TblSupplierPackageRevision>(entity =>
+            {
+                entity.Property(e => e.PrExchRate).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblSystemRevLog>(entity =>
