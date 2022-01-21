@@ -68,7 +68,7 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var item in revisionFields)
                     {
-                        revision.PrTotPrice = revision.PrTotPrice - revision.PrTotPrice * (item.Value / 100m);
+                        revision.PrTotPrice = revision.PrTotPrice + revision.PrTotPrice * (item.Value / 100m);
                     }
                 }
             }
