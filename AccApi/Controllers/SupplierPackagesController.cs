@@ -67,7 +67,29 @@ namespace AccApi.Controllers
             return contentType;
         }
 
-        public FileResult GetFile(string filename)
+        //public FileResult GetFile(string filename)
+        //{
+        //    var filepath = Path.Combine($"{this._hostingEnvironment.ContentRootPath}\\{filename}");
+
+        //    var mimeType = this.GetMimeType(filename);
+
+        //    byte[] fileBytes;
+
+        //    if (System.IO.File.Exists(filepath))
+        //    {
+        //        fileBytes = System.IO.File.ReadAllBytes(filepath);
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+
+        //    return File(fileBytes, "application/octet-stream", filename);
+        //}
+
+
+        [HttpGet("DownloadFile")]
+        public FileResult DownloadFile(string filename)
         {
             var filepath = Path.Combine($"{this._hostingEnvironment.ContentRootPath}\\{filename}");
 
@@ -85,13 +107,6 @@ namespace AccApi.Controllers
             }
 
             return File(fileBytes, "application/octet-stream", filename);
-        }
-
-
-        [HttpGet("DownloadFile")]
-        public FileResult DownloadFile(string filename)
-        {
-            return GetFile(filename);
         }
 
 
