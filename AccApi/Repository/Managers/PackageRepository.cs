@@ -133,6 +133,7 @@ namespace AccApi.Repository.Managers
                                                select new BoqModel()
                                                {
                                                    BoqSeq = b.BoqSeq,
+                                                   BoqResSeq = b.BoqResSeq,
                                                    BoqCtg = b.BoqCtg,
                                                    BoqUnitMesure = b.BoqUnitMesure,
                                                    BoqQty = b.BoqQty,
@@ -140,7 +141,8 @@ namespace AccApi.Repository.Managers
                                                    BoqDiv = b.BoqDiv,
                                                    BoqPackage = b.BoqPackage,
                                                    BoqScope = b.BoqScope,
-                                                   ResDescription = r.ResDescription
+                                                   ResDescription = r.ResDescription,
+                                                   BoqItem = b.BoqItem
                                                });
 
             if (input.RESDiv.Length > 0)
