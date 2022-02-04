@@ -66,9 +66,9 @@ namespace AccApi.Repository.Managers
             {
                 condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             }
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO == input.BOQItem);
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO == input.BOQDesc);
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc==input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
 
@@ -81,7 +81,7 @@ namespace AccApi.Repository.Managers
                 condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             }
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
 
 
@@ -152,7 +152,7 @@ namespace AccApi.Repository.Managers
                 condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             }
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
 
             var results = condQuery.ToList();
@@ -185,7 +185,7 @@ namespace AccApi.Repository.Managers
                 condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             }
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription == input.RESDesc);
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
 
             var results = condQuery.ToList();

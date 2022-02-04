@@ -70,7 +70,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private void UpdateTotalPrice(int revId)
+        public void UpdateTotalPrice(int revId)
         {
             var result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
             if (result != null)
@@ -96,7 +96,7 @@ namespace AccApi.Repository.Managers
 
                 try
                 {
-                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial; 
 
                     using (var package = new ExcelPackage(stream))
                     {

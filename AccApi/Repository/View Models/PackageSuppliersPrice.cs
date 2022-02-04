@@ -9,6 +9,10 @@ namespace AccApi.Repository.View_Models
         public List<RevisionDetails> revisionDetails { get; set; }
         public List<FieldList> fieldLists { get; set; }
         public decimal totalprice { get; set; }
+
+        public decimal totalAdditionalPrice { get; set; }
+
+        public decimal totalNetPrice { get; set; }
     }
 
     public class FieldList

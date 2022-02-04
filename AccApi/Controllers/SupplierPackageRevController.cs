@@ -35,11 +35,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddField")]
-        public decimal? AddField(int revId, string lbl, int val)
+        public decimal? AddField(int revId, string lbl, int val, int type)
         {
             try
             {
-                return this._supplierPackagesRevRepository.AddField(revId, lbl, val);
+                return this._supplierPackagesRevRepository.AddField(revId, lbl, val,type);
             }
             catch (Exception ex)
             {
@@ -59,6 +59,20 @@ namespace AccApi.Controllers
             {
                 _ilogger.LogError(ex.Message);
                 return null;
+            }
+        }
+
+        [HttpPost("DeleteField")]
+        public bool DeleteField(int fieldId)
+        {
+            try
+            {
+                return this._supplierPackagesRevRepository.DeleteField(fieldId);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
             }
         }
     }
