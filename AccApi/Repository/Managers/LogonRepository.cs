@@ -73,7 +73,7 @@ namespace AccApi.Repository.Managers
             return result.FirstOrDefault();
         }
 
-
+        //fouad
         public User GetLogin(string user, string pass, int projSeq)
         {
             User usr = new User();
