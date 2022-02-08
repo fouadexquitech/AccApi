@@ -28,7 +28,8 @@ namespace AccApi.Repository.Managers
                           select new RevisionDetailsList
                           {
                               RdResourceSeq = b.RdResourceSeq,
-                              RdPrice = b.RdPrice
+                              RdPrice = b.RdPrice,
+                              RdMissedPrice=b.RdMissedPrice
                           };
             return results.ToList();
         }

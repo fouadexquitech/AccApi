@@ -72,7 +72,6 @@ namespace AccApi.Repository.Managers
                     }
                 }
             }
-
             return revision.PrTotPrice;
         }
 
@@ -96,7 +95,6 @@ namespace AccApi.Repository.Managers
                              curId = b.CurId,
                              CurCode = b.CurCode
                          };
-
             return result.ToList();
         }
 

@@ -251,7 +251,6 @@ namespace AccApi.Repository.Managers
                     packageSuppliersPrice.SupplierId = item.SupplierId;
                     packageSuppliersPrice.SupplierName = item.SupplierName;
 
-
                     IEnumerable<RevisionDetails> revDtlQry;
 
                     if (byboq==1)
@@ -319,10 +318,7 @@ namespace AccApi.Repository.Managers
                         if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
                         if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
                     }
-
                     
-
-
                     fieldLists = (from a in _context.TblSupplierPackages
                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                   join c in _context.TblRevisionFields on b.PrRevId equals c.RevisionId
@@ -335,7 +331,6 @@ namespace AccApi.Repository.Managers
                                   }).ToList();
 
                     packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
-
                     packageSuppliersPrice.fieldLists = fieldLists;
 
                     if (revisionDetails.Count > 0)
