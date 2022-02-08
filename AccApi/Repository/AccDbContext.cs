@@ -146,6 +146,7 @@ namespace AccApi.Repository
         //            }
         //        }
 
+
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -153,6 +154,7 @@ namespace AccApi.Repository
             var context = new AccDbContext(optionsBuilder.Options);
             return context;
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1256_CI_AS");
@@ -1554,6 +1556,8 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => e.SpPackSuppId)
                     .HasName("PK_tbSupplierPackages");
+
+                entity.Property(e => e.SpByBoq).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblSupplierPackageRevision>(entity =>

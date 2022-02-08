@@ -99,5 +99,21 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
+
+        public List<RevisionFieldsList> GetFields(int revisionid)
+        {
+            var result = (from b in _context.TblRevisionFields
+                          where b.RevisionId == revisionid
+                          select new RevisionFieldsList
+                          {
+                              Id = b.Id,
+                              RevisionId=b.RevisionId,
+                              Label=b.Label,
+                              Type= b.Type,
+                              Value=b.Value
+                          }); ;
+
+            return result.ToList();
+        }
     }
 }

@@ -38,8 +38,7 @@ namespace AccApi.Repository.Managers
             //              select b;
 
             IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
-                                                        join b in _context.TblBoqs
-                                                        on o.ItemO equals b.BoqItem
+                                                        join b in _context.TblBoqs on o.ItemO equals b.BoqItem
                                                         join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
                                                         select new BoqRessourcesList
                                                         {
@@ -62,24 +61,14 @@ namespace AccApi.Repository.Managers
                                                             ResDescription = r.ResDescription
                                                         });
 
-            if (input.BOQDiv.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            }
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc==input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
-
-            if (input.RESDiv.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            }
-            if (input.RESType.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            }
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));           
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
@@ -233,13 +222,13 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID)
+        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input)
         {
             List<PackageSuppliersPrice> result = new List<PackageSuppliersPrice>();
-
             List<RevisionDetails> revisionDetails = new List<RevisionDetails>();
-
             List<FieldList> fieldLists = new List<FieldList>();
+
+            byte byboq=0;
 
             var query = (from a in _context.TblSupplierPackages
                          join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
@@ -248,6 +237,7 @@ namespace AccApi.Repository.Managers
                          {
                              SupplierId = a.SpSupplierId,
                              SupplierName = sup.SupName,
+                             byboq=a.SpByBoq
                          }).ToList();
 
             if (query.Count > 0)
@@ -259,23 +249,77 @@ namespace AccApi.Repository.Managers
                     packageSuppliersPrice.SupplierId = item.SupplierId;
                     packageSuppliersPrice.SupplierName = item.SupplierName;
 
-                    revisionDetails = (from a in _context.TblSupplierPackages
-                                       join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                       join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                       join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
-                                       join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
-                                       join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                                       where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
-                                       select new RevisionDetails
-                                       {
-                                           resourceID = c.RdResourceSeq,
-                                           resourceName = e.ResDescription,
-                                           resourceUnit = d.BoqUnitMesure,
-                                           resourceQty = c.RdQty,
-                                           price = c.RdPrice,
-                                           perc = c.RdAssignedPerc
-                                       }).ToList();
+                    IEnumerable<RevisionDetails> revDtlQry;
+
+                    if (byboq==1)
+                    {
+                        revDtlQry = (from a in _context.TblSupplierPackages
+                                     join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                     join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                     join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
+                                     join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
+                                     join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
+                                     join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                     where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
+
+                                     select new RevisionDetails
+                                     {
+                                         ItemO = o.ItemO,
+                                         DescriptionO = o.DescriptionO,
+                                         UnitO = o.UnitO,
+                                         QtyO = o.QtyO,
+                                         price = c.RdPrice,
+                                         perc = c.RdAssignedPerc
+                                     });
+
+                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
+                        if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+                        if (!string.IsNullOrEmpty(input.BOQDesc)) revDtlQry = revDtlQry.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+                        if (!string.IsNullOrEmpty(input.SheetDesc)) revDtlQry = revDtlQry.Where(w => w.ObSheetDesc == input.SheetDesc);
+                        if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) revDtlQry = revDtlQry.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);
+                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
+                        if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
+                        if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
+                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
+                    }
+                    else
+                    {
+                        revDtlQry = (from a in _context.TblSupplierPackages
+                                     join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                     join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId                                                                         
+                                     join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq                                    
+                                     join e in _context.TblResources on d.BoqResSeq equals e.ResSeq                                 
+                                     join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                     where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
+
+                                     select new RevisionDetails
+                                     {
+                                         resourceID = c.RdResourceSeq,
+                                         ResDescription = e.ResDescription,
+                                         resourceUnit = d.BoqUnitMesure,
+                                         resourceQty = c.RdQty,
+                                         price = c.RdPrice,
+                                         perc = c.RdAssignedPerc
+                                     });
+
+                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
+                        if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+                        if (!string.IsNullOrEmpty(input.BOQDesc)) revDtlQry = revDtlQry.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+                        if (!string.IsNullOrEmpty(input.SheetDesc)) revDtlQry = revDtlQry.Where(w => w.ObSheetDesc == input.SheetDesc);
+                        if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) revDtlQry = revDtlQry.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);
+                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
+                        if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
+                        if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
+                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
+                    }
+
+                    
+
 
                     fieldLists = (from a in _context.TblSupplierPackages
                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
@@ -288,7 +332,7 @@ namespace AccApi.Repository.Managers
                                       Value = c.Value
                                   }).ToList();
 
-                    packageSuppliersPrice.revisionDetails = revisionDetails;
+                    packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
 
                     packageSuppliersPrice.fieldLists = fieldLists;
 
@@ -304,9 +348,17 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var itemFields in fieldLists)
                         {
-                            packageSuppliersPrice.totalprice = packageSuppliersPrice.totalprice - packageSuppliersPrice.totalprice * (itemFields.Value / 100m);
+                            if (itemFields.Type == 1)
+                                packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice + itemFields.Value;
+                            else
+                                packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice * (itemFields.Value / 100);
                         }
                     }
+                    else 
+                        packageSuppliersPrice.totalAdditionalPrice = 0;
+
+                    
+                    packageSuppliersPrice.totalNetPrice = packageSuppliersPrice.totalprice + packageSuppliersPrice.totalAdditionalPrice;
                     result.Add(packageSuppliersPrice);
                 }
             }

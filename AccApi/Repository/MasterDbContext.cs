@@ -26,6 +26,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblDailyStat> TblDailyStats { get; set; }
         public virtual DbSet<TblDatabase> TblDataBases { get; set; }
         public virtual DbSet<TblDistributionGrp> TblDistributionGrps { get; set; }
+        public virtual DbSet<TblEmailTemplate> TblEmailTemplates { get; set; }
         public virtual DbSet<TblEmployee> TblEmployees { get; set; }
         public virtual DbSet<TblExchange> TblExchanges { get; set; }
         public virtual DbSet<TblFindLabor> TblFindLabors { get; set; }

@@ -94,11 +94,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetPackageSuppliersPrice")]
-        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge)
+        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
         {
             try
             {
-                return this._packageRepository.GetPackageSuppliersPrice(IdPkge);
+                return this._packageRepository.GetPackageSuppliersPrice(IdPkge,input);
             }
             catch (Exception ex)
             {

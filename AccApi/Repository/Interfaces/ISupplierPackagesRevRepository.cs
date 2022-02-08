@@ -8,6 +8,7 @@ namespace AccApi.Repository.Interfaces
         List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId);
         decimal? AddField(int revId, string lbl, int val,int type);
         List<CurrencyList> GetCurrencies();
-        bool DeleteField(int fieldId)
+        bool DeleteField(int fieldId);
+        List<RevisionFieldsList> GetFields(int revisionid);
     }
 }

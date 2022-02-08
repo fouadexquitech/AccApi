@@ -37,41 +37,87 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
+        private List<boqPackageList> boqPackageList(int packId, byte byboq)
+        {
+            if (byboq == 1)
+            {
+                var pack = from o in _dbcontext.TblOriginalBoqs
+                           join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                           join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
+                           where o.Scope == packId
+                           orderby o.RowNumber
+                           select new boqPackageList
+                           {
+                               l1 = o.L1,
+                               l2 = o.L2,
+                               l3 = o.L3,
+                               l4 = o.L4,
+                               l5 = o.L5,
+                               l6 = o.L6,
+                               c1 = o.C1,
+                               c2 = o.C2,
+                               c3 = o.C3,
+                               c4 = o.C4,
+                               c5 = o.C5,
+                               c6 = o.C6,
+                               item = o.ItemO,
+                               boqDesc = o.DescriptionO,
+                               unit = o.UnitO,
+                               qty = (double)o.QtyO,
+                               resType = b.BoqCtg,
+                               resCode = b.BoqPackage,
+                               resDesc = r.ResDescription,
+                               ResUnit = b.BoqUnitMesure,
+                               boqQtyScope = (double)b.BoqQtyScope
+                           };
+                return pack.ToList();
+            }
+            else
+            {
+                var pack = from o in _dbcontext.TblOriginalBoqs
+                           join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                           join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
+                           where b.BoqScope == packId
+                           orderby o.RowNumber
+                           select new boqPackageList
+                           {
+                               l1 = o.L1,
+                               l2 = o.L2,
+                               l3 = o.L3,
+                               l4 = o.L4,
+                               l5 = o.L5,
+                               l6 = o.L6,
+                               c1 = o.C1,
+                               c2 = o.C2,
+                               c3 = o.C3,
+                               c4 = o.C4,
+                               c5 = o.C5,
+                               c6 = o.C6,
+                               item = o.ItemO,
+                               boqDesc = o.DescriptionO,
+                               unit = o.UnitO,
+                               qty = (double)o.QtyO,
+                               resType = b.BoqCtg,
+                               resCode = b.BoqPackage,
+                               resDesc = r.ResDescription,
+                               ResUnit = b.BoqUnitMesure,
+                               boqQtyScope = (double)b.BoqQtyScope
+                           };
+                return pack.ToList();
+            }
+        }
+
         public string ValidateExcelBeforeAssign(int packId)
         {
+            //AH0702
+            var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
+            byte byBoq = (byte)packageSupp.SpByBoq;
+            //AH0702
+
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var pack = from o in _dbcontext.TblOriginalBoqs
-                       join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
-                       join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
-                       where b.BoqScope == packId
-                       orderby o.RowNumber
-                       select new boqPackageList
-                       {
-                           l1 = o.L1,
-                           l2 = o.L2,
-                           l3 = o.L3,
-                           l4 = o.L4,
-                           l5 = o.L5,
-                           l6 = o.L6,
-                           c1 = o.C1,
-                           c2 = o.C2,
-                           c3 = o.C3,
-                           c4 = o.C4,
-                           c5 = o.C5,
-                           c6 = o.C6,
-                           item = o.ItemO,
-                           boqDesc = o.DescriptionO,
-                           unit = o.UnitO,
-                           qty = (double)o.QtyO,
-                           resType = b.BoqCtg,
-                           resCode = b.BoqPackage,
-                           resDesc = r.ResDescription,
-                           ResUnit = b.BoqUnitMesure,
-                           boqQtyScope = (double)b.BoqQtyScope
-                       };
-            var result = pack.ToList();
+            var result = boqPackageList(packId,byBoq);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -90,13 +136,22 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[i, 3].Value = "Bill Description";
                 worksheet.Cells[i, 4].Value = "Unit";
                 worksheet.Cells[i, 5].Value = "Qty";
-                worksheet.Cells[i, 6].Value = "Ressouce Type";
-                worksheet.Cells[i, 7].Value = "Ressouce Code";
-                worksheet.Cells[i, 8].Value = "Ressouce Description";
-                worksheet.Cells[i, 9].Value = "Ressouce Unit";
-                worksheet.Cells[i, 10].Value = "Ressouce Qty";
-                worksheet.Cells[i, 11].Value = "Unit Price";
-                worksheet.Cells[i, 12].Value = "Comments";
+
+                if (byBoq==1)
+                {
+                    worksheet.Cells[i, 6].Value = "Unit Price";
+                    worksheet.Cells[i, 7].Value = "Comments";
+                }
+                else
+                {
+                    worksheet.Cells[i, 6].Value = "Ressouce Type";
+                    worksheet.Cells[i, 7].Value = "Ressouce Code";
+                    worksheet.Cells[i, 8].Value = "Ressouce Description";
+                    worksheet.Cells[i, 9].Value = "Ressouce Unit";
+                    worksheet.Cells[i, 10].Value = "Ressouce Qty";
+                    worksheet.Cells[i, 11].Value = "Unit Price";
+                    worksheet.Cells[i, 12].Value = "Comments";
+                }
                 worksheet.Row(i).Style.Font.Bold = true;
 
                 i = 4;
@@ -217,14 +272,16 @@ namespace AccApi.Repository.Managers
                         OldBoq = Boq;
                     }
 
-                    worksheet.Cells[i, 6].Value = (x.resType == null) ? "" : x.resType;
+                    if (byBoq != 1)
+                    { 
+                        worksheet.Cells[i, 6].Value = (x.resType == null) ? "" : x.resType;
                     worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
                     worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                     worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                     worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
                     worksheet.Cells[i, 11].Style.Locked = false;
                     worksheet.Cells[i, 12].Style.Locked = false;
-
+                    }
                     i++;
                 }
 
@@ -240,35 +297,43 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInput> supList,string FilePath)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInput> supList, string FilePath, string EmailContent,byte ByBoq)
         {
             foreach (var supplier in supList)
             {
                 if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                 {
-                    var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID};
+                    var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID,SpByBoq= ByBoq };
                     _dbcontext.Add<TblSupplierPackage>(spack);
-                    _dbcontext.SaveChanges();                
+                    _dbcontext.SaveChanges();
 
-                 //send email
-                        string SupEmail = (from r in _dbcontext.TblSuppliers
-                                           where r.SupCode == supplier.supID
-                                           select r.SupEmail).First<string>();
+                    //send email
+                    string SupEmail = (from r in _dbcontext.TblSuppliers
+                                       where r.SupCode == supplier.supID
+                                       select r.SupEmail).First<string>();
 
-                        if (SupEmail != "") {
-                            List<General> mylistTo = new List<General>();
-                            General g = new General();
-                            g.mail = (string)SupEmail;
-                            mylistTo.Add(g);
+                    if (SupEmail != "")
+                    {
+                        List<General> mylistTo = new List<General>();
+                        General g = new General();
+                        g.mail = (string)SupEmail;
+                        mylistTo.Add(g);
 
-                            List<General> mylistCC = new List<General>();
-                            General cc = new General();
-                            cc.mail = (string)SupEmail;
-                            mylistTo.Add(cc);
+                        List<General> mylistCC = new List<General>();
+                        General cc = new General();
+                        cc.mail = (string)SupEmail;
+                        mylistTo.Add(cc);
 
-                            string Subject = "Procurement";
+                        string Subject = "Procurement";
 
-                            string MailBody;
+                        string MailBody;
+
+                        if (EmailContent != "")
+                        {
+                            MailBody = EmailContent;
+                        }
+                        else
+                        {
                             MailBody = "Dear Sir,";
                             MailBody += Environment.NewLine;
                             MailBody += Environment.NewLine;
@@ -278,12 +343,14 @@ namespace AccApi.Repository.Managers
                             MailBody += Environment.NewLine;
                             MailBody += Environment.NewLine;
                             MailBody += "Best regards";
+                        }
 
-                            string Attachment = FilePath;
+                        string Attachment = FilePath;
 
-                            Mail m = new Mail();
-                            m.SendMail(mylistTo, mylistCC, Subject, MailBody, Attachment, false);
-                        }                   
+                        Mail m = new Mail();
+
+                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, Attachment, false);
+                    }
                 }
             }
             return true;

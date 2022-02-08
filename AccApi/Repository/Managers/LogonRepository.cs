@@ -150,7 +150,34 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
+        public EmailTemplate GetSuppliersEmailTemplate(byte Lang)
+        {
+            var result = from b in _mdbcontext.TblEmailTemplates
+                         where b.EtLang == Lang
+                         select new EmailTemplate
+                         {
+                             EtSeq=b.EtSeq,
+                             EtContent=b.EtContent
+                         };
 
+            return result.FirstOrDefault();
+        }
 
+        public bool SaveEmailTemplate(int id, string emailbody)
+        {
+            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtSeq == id).FirstOrDefault();
+            result.EtContent = emailbody;
+
+            if (result != null)
+            {
+                _mdbcontext.TblEmailTemplates.Update(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+        
     }
 }

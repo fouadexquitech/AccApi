@@ -18,5 +18,7 @@ namespace AccApi.Repository.Models
         public int? SpPackageId { get; set; }
         [Column("spSupplierId")]
         public int? SpSupplierId { get; set; }
+        [Column("spByBoq")]
+        public byte? SpByBoq { get; set; }
     }
 }

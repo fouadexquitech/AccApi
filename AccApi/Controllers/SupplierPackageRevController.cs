@@ -75,5 +75,19 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+       [HttpGet("GetFields")]
+       public List<RevisionFieldsList> GetFields(int revisionid)
+        {
+            try
+            {
+                return this._supplierPackagesRevRepository.GetFields(revisionid);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
     }
 }
