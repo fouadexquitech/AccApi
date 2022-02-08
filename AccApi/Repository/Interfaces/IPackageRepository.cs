@@ -11,6 +11,6 @@ namespace AccApi.Repository.Interfaces
         List<BoqModel> GetAllBoqList(SearchInput input);
         PackageDetailsModel GetPackageById(int IdPkge);
         bool AssignPackages(AssignPackages input);
-        List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge);
+        List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input);
     }
 }

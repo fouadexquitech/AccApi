@@ -146,6 +146,7 @@ namespace AccApi.Repository
         //            }
         //        }
 
+
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -1555,6 +1556,8 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => e.SpPackSuppId)
                     .HasName("PK_tbSupplierPackages");
+
+                entity.Property(e => e.SpByBoq).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblSupplierPackageRevision>(entity =>

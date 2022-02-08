@@ -61,13 +61,16 @@ namespace AccApi.Repository.Managers
             result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
             int revId = result.PrRevId;
 
-            InsertRevisionDetail(revId, ExcelFile);
-            UpdateTotalPrice(revId);
-
-            return true;
+            if (!InsertRevisionDetail(revId, ExcelFile))
+                return false;
+            else
+            {
+                UpdateTotalPrice(revId);
+                return true;
+            }
         }
 
-        private void UpdateTotalPrice(int revId)
+        public void UpdateTotalPrice(int revId)
         {
             var result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
             if (result != null)
@@ -81,8 +84,10 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private void InsertRevisionDetail(int revId, IFormFile ExcelFile)
+        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile)
         {
+            Boolean ret=true;
+
             if (ExcelFile?.Length > 0)
             {
                 var stream = ExcelFile.OpenReadStream();
@@ -91,7 +96,7 @@ namespace AccApi.Repository.Managers
 
                 try
                 {
-                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial; 
 
                     using (var package = new ExcelPackage(stream))
                     {
@@ -159,9 +164,19 @@ namespace AccApi.Repository.Managers
                             }
                         }
                     }
-                    _dbContext.AddRange(LstRevDetails);
-                    _dbContext.AddRange(LstMissingPrice);
-                    _dbContext.SaveChanges();
+                  
+                    if (LstMissingPrice.Count()>0 )
+                    { 
+                        _dbContext.AddRange(LstMissingPrice);
+                        ret = false;
+                    }
+                    else
+                    { 
+                        _dbContext.AddRange(LstRevDetails);
+                        ret = true;
+                    }
+
+                    _dbContext.SaveChanges();               
                 }
 
                 catch (Exception ex)
@@ -169,6 +184,8 @@ namespace AccApi.Repository.Managers
                     Console.WriteLine(ex.Message);
                 }
             }
+
+            return ret;
         }
 
         public int GetMaxRevisionNumber(int PackageSupplierId)

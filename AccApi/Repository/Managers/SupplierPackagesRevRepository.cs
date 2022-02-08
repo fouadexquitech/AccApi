@@ -50,9 +50,9 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public decimal? AddField(int revId, string lbl, int val)
+        public decimal? AddField(int revId, string lbl, int val, int type)
         {
-            var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val };
+            var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val , Type=type };
             _context.Add(NewField);
             _context.SaveChanges();
 
@@ -76,6 +76,18 @@ namespace AccApi.Repository.Managers
             return revision.PrTotPrice;
         }
 
+        public bool DeleteField(int fieldId)
+        {
+            var field = _context.TblRevisionFields.Where(x => x.Id == fieldId).FirstOrDefault();
+            if (field != null)
+            {          
+                _context.TblRevisionFields.Remove(field);
+                return true;
+            }
+            else
+                return false;
+        }
+
         public List<CurrencyList> GetCurrencies()
         {
             var result = from b in _masterDbContext.TblCurrencies
@@ -84,6 +96,22 @@ namespace AccApi.Repository.Managers
                              curId = b.CurId,
                              CurCode = b.CurCode
                          };
+
+            return result.ToList();
+        }
+
+        public List<RevisionFieldsList> GetFields(int revisionid)
+        {
+            var result = (from b in _context.TblRevisionFields
+                          where b.RevisionId == revisionid
+                          select new RevisionFieldsList
+                          {
+                              Id = b.Id,
+                              RevisionId=b.RevisionId,
+                              Label=b.Label,
+                              Type= b.Type,
+                              Value=b.Value
+                          }); ;
 
             return result.ToList();
         }

@@ -27,5 +27,6 @@ namespace AccApi.Repository.View_Models
         public string BoqPackage { get; set; }
         public int? BoqScope { get; set; }
         public string ResDescription { get; set; }
+
     }
 }

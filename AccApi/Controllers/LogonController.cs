@@ -78,5 +78,33 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetSuppliersEmailTemplate")]
+        public EmailTemplate GetSuppliersEmailTemplate(byte Lang)
+        {
+            try
+            {
+                return this._logonRepository.GetSuppliersEmailTemplate(Lang);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("SaveEmailTemplate")]
+        public bool SaveEmailTemplate(int id, string emailbody)
+        {
+            try
+            {
+                return this._logonRepository.SaveEmailTemplate(id,  emailbody);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }

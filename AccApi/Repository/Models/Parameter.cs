@@ -39,5 +39,16 @@ namespace AccApi.Repository.Models
         public double? E3 { get; set; }
         public double? E4 { get; set; }
         public double? E5 { get; set; }
+        public double? B6 { get; set; }
+        public double? L6 { get; set; }
+        public double? M6 { get; set; }
+        public double? S6 { get; set; }
+        public double? E6 { get; set; }
+        public double? O6 { get; set; }
+        public double? O1 { get; set; }
+        public double? O2 { get; set; }
+        public double? O3 { get; set; }
+        public double? O4 { get; set; }
+        public double? O5 { get; set; }
     }
 }
