@@ -10,7 +10,7 @@ namespace AccApi.Repository.View_Models
         public int Id { get; set; }      
         public int RevisionId { get; set; }
         public string Label { get; set; }
-        public int Value { get; set; }
+        public double Value { get; set; }
         public int? Type { get; set; }
     }
 }

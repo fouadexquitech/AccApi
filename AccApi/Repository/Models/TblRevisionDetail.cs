@@ -17,6 +17,10 @@ namespace AccApi.Repository.Models
         [Key]
         [Column("rdResourceSeq")]
         public int RdResourceSeq { get; set; }
+        [Key]
+        [Column("rdBoqItem")]
+        [StringLength(25)]
+        public string RdBoqItem { get; set; }
         [Column("rdPrice")]
         public double? RdPrice { get; set; }
         [Column("rdQty")]

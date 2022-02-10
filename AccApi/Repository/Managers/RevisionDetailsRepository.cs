@@ -62,7 +62,10 @@ namespace AccApi.Repository.Managers
             result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
             int revId = result.PrRevId;
 
-            if (!InsertRevisionDetail(revId, ExcelFile))
+            var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
+            byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
+
+            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate))
                 return false;
             else
             {
@@ -85,7 +88,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile)
+        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile,byte byBoq,double ExchRate)
         {
             Boolean ret=true;
 
@@ -105,10 +108,10 @@ namespace AccApi.Repository.Managers
                         var rowCount = worksheet.Dimension.Rows;
 
                         //RemoveExistingMissing
-                        _dbContext.TblMissingPrices.RemoveRange(_dbContext.TblMissingPrices.Where(c => c.RevisionId == revId));
-                        _dbContext.SaveChanges();
-
-                        string oldBoqRef = "";
+                        //_dbContext.TblMissingPrices.RemoveRange(_dbContext.TblMissingPrices.Where(c => c.RevisionId == revId));
+                        //_dbContext.SaveChanges();
+                        string resComment, resCode="", oldBoqRef = "";
+                        double resQty, resPrice;
 
                         for (var row = 2; row <= rowCount; row++)
                         {
@@ -116,48 +119,89 @@ namespace AccApi.Repository.Managers
                             {
                                 string boqRef = worksheet.Cells[row, 1].Value == null ? "" : worksheet.Cells[row, 1].Value.ToString();
                                 string boqDesc = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
-                                string boqQty = worksheet.Cells[row, 5].Value == null ? "" : worksheet.Cells[row, 5].Value.ToString();
+                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
 
-                                if (((boqRef != "") && (boqDesc != "") && (boqQty != "")) || ((oldBoqRef != "") && ((worksheet.Cells[row, 6].Value == null ? "" : worksheet.Cells[row, 6].Value.ToString()) != "")))
+                                if (byBoq == 1)
+                                {
+                                    if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)))
+                                    {
+                                        resPrice = (worksheet.Cells[row, 6].Value == null) ? 0 : (double)worksheet.Cells[row, 6].Value;
+                                        resComment = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
+                                        resQty = boqQty;
+                               
+                                        byte missPrice = 0;                               
+                                        if (resPrice <= 0 && boqRef != "")
+                                        {
+                                            missPrice = 1;
+                                        }
+
+                                        if ((boqRef != "") && (resQty > 0) && (resPrice >= 0))
+                                        {
+                                            var revdtl = new TblRevisionDetail()
+                                            {
+                                                RdRevisionId = revId,
+                                                RdResourceSeq = 0,
+                                                RdBoqItem = boqRef,
+                                                RdPrice = resPrice * (ExchRate>0 ? ExchRate:1),
+                                                RdQty = resQty,
+                                                RdComment = resComment,
+                                                RdPriceOrigCurrency= resPrice,
+                                                RdMissedPrice = missPrice
+                                            };
+                                            LstRevDetails.Add(revdtl);
+                                        }
+                                        oldBoqRef = boqRef;
+                                    }
+                                }
+                                else
                                 {
 
-                                    string resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
-                                    double resQty = worksheet.Cells[row, 10].Value == null ? 0 : (double)worksheet.Cells[row, 10].Value;
-                                    double resPrice = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
-                                    string resComment = worksheet.Cells[row, 12].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
-                                    int resSeq = 0;
-
-                                    string boqItem = boqRef == "" ? oldBoqRef : boqRef;
-
-                                    var result = _dbContext.TblBoqs.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
-                                    if (result != null)
-                                        resSeq = result.BoqSeq;
-
-                                    //Insert missing prices
-                                    if (resPrice <= 0 && resSeq != 0)
+                                    if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)) || ((oldBoqRef != "") && ((worksheet.Cells[row, 6].Value == null ? "" : worksheet.Cells[row, 6].Value.ToString()) != "")))
                                     {
-                                        var missPrice = new TblMissingPrice()
+                                        resQty = worksheet.Cells[row, 10].Value == null ? 0 : (double)worksheet.Cells[row, 10].Value;
+                                        resPrice = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
+                                        resComment = worksheet.Cells[row, 12].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
+
+                                        int resSeq = 0;
+                                        string boqItem = boqRef == "" ? oldBoqRef : boqRef;
+
+                                        resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
+
+                                        var result = _dbContext.TblBoqs.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+                                        if (result != null)
+                                            resSeq = result.BoqSeq;
+
+                                        byte missPrice = 0;
+                                        //Insert missing prices
+                                        if (resPrice <= 0 && resSeq != 0)
                                         {
-                                            RevisionId = revId,
-                                            BoqResourceSeq = resSeq
-                                        };
-                                        LstMissingPrice.Add(missPrice);
+                                            //var missPrice = new TblMissingPrice()
+                                            //{
+                                            //    RevisionId = revId,
+                                            //    BoqResourceSeq = resSeq
+                                            //};
+                                            //LstMissingPrice.Add(missPrice);
+                                            missPrice = 1;
+                                        }
+
+                                        if ((resCode != "") && (resQty > 0) && (resPrice > 0))
+                                        {
+                                            var revdtl = new TblRevisionDetail()
+                                            {
+                                                RdRevisionId = revId,
+                                                RdResourceSeq = resSeq,
+                                                RdPrice = resPrice * (ExchRate > 0 ? ExchRate : 1),
+                                                RdQty = resQty,
+                                                RdComment = resComment,
+                                                RdPriceOrigCurrency = resPrice,
+                                                RdMissedPrice = missPrice
+                                            };
+                                            LstRevDetails.Add(revdtl);
+                                        }
+                                        oldBoqRef = boqRef != "" ? boqRef : oldBoqRef;
                                     }
 
-                                    if ((resCode != "") && (resQty > 0) && (resPrice > 0))
-                                    {
-                                        var revdtl = new TblRevisionDetail()
-                                        {
-                                            RdRevisionId = revId,
-                                            RdResourceSeq = resSeq,
-                                            RdPrice = resPrice,
-                                            RdQty = resQty,
-                                            RdComment = resComment
-                                        };
-                                        LstRevDetails.Add(revdtl);
-                                    }
-                                    oldBoqRef = boqRef != "" ? boqRef : oldBoqRef;
-                                }
+                                }                             
                             }
                             catch (Exception ex)
                             {
@@ -166,16 +210,16 @@ namespace AccApi.Repository.Managers
                         }
                     }
                   
-                    if (LstMissingPrice.Count()>0 )
-                    { 
-                        _dbContext.AddRange(LstMissingPrice);
-                        ret = false;
-                    }
-                    else
-                    { 
+                    //if (LstMissingPrice.Count()>0 )
+                    //{ 
+                    //    _dbContext.AddRange(LstMissingPrice);
+                    //    ret = false;
+                    //}
+                    //else
+                    //{ 
                         _dbContext.AddRange(LstRevDetails);
                         ret = true;
-                    }
+                    //}
 
                     _dbContext.SaveChanges();               
                 }

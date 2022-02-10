@@ -335,15 +335,14 @@ namespace AccApi.Repository.Managers
                         foreach (var itemFields in fieldLists)
                         {
                             if (itemFields.Type == 1)
-                                packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice + itemFields.Value;
+                                packageSuppliersPrice.totalAdditionalPrice += (decimal)itemFields.Value;
                             else
-                                packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice * (itemFields.Value / 100);
+                                packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice * ((decimal)itemFields.Value / 100m);
                         }
                     }
                     else 
                         packageSuppliersPrice.totalAdditionalPrice = 0;
-
-                    
+                   
                     packageSuppliersPrice.totalNetPrice = packageSuppliersPrice.totalprice + packageSuppliersPrice.totalAdditionalPrice;
                     result.Add(packageSuppliersPrice);
                 }

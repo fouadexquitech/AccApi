@@ -43,7 +43,7 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var itemFields in fields)
                     {
-                        item.PrTotPrice = item.PrTotPrice - item.PrTotPrice * (itemFields.Value / 100m);
+                        //item.PrTotPrice = item.PrTotPrice + item.PrTotPrice * (itemFields.Value / 100);
                     }
                 }
             }
@@ -68,7 +68,7 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var item in revisionFields)
                     {
-                        revision.PrTotPrice = revision.PrTotPrice + revision.PrTotPrice * (item.Value / 100m);
+                        //revision.PrTotPrice = revision.PrTotPrice + revision.PrTotPrice * (item.Value / 100m);
                     }
                 }
             }
@@ -108,7 +108,7 @@ namespace AccApi.Repository.Managers
                               RevisionId=b.RevisionId,
                               Label=b.Label,
                               Type= b.Type,
-                              Value=b.Value
+                              Value = b.Value
                           }); ;
 
             return result.ToList();

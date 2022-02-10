@@ -20,7 +20,7 @@ namespace AccApi.Repository.Models
         [StringLength(100)]
         public string Label { get; set; }
         [Column("value")]
-        public int Value { get; set; }
+        public double Value { get; set; }
         [Column("type")]
         public int? Type { get; set; }
     }

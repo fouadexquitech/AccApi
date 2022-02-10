@@ -18,7 +18,7 @@ namespace AccApi.Repository.View_Models
     public class FieldList
     {
         public string Label { get; set; }
-        public int Value { get; set; }
+        public double Value { get; set; }
         public int? Type { get; set; }
     }
 
