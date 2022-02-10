@@ -272,5 +272,19 @@ namespace AccApi.Repository.Managers
                 _dbContext.SaveChanges();
             }
         }
+
+        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
+        {
+            foreach (var item in revisionDetailsList)
+            {
+                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdResourceSeq == item.RdResourceSeq);
+                if (result != null)
+                {
+                    result.RdPrice = item.RdPrice;                            
+                }
+            }
+            _dbContext.SaveChanges();
+            return true;
+        }
     }
 }

@@ -134,14 +134,8 @@ namespace AccApi.Repository.Managers
                                                    BoqItem = b.BoqItem
                                                });
 
-            if (input.RESDiv.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            }
-            if (input.RESType.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            }
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
@@ -167,14 +161,8 @@ namespace AccApi.Repository.Managers
                                                    ResDescription = r.ResDescription
                                                });
 
-            if (input.RESDiv.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            }
-            if (input.RESType.Length > 0)
-            {
-                condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            }
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
@@ -239,7 +227,7 @@ namespace AccApi.Repository.Managers
                          {
                              SupplierId = a.SpSupplierId,
                              SupplierName = sup.SupName,
-                             byboq=a.SpByBoq
+                             byboq= (byte)((a.SpByBoq == null) ? 0 : a.SpByBoq)
                          }).ToList();
 
             if (query.Count > 0)
@@ -318,6 +306,7 @@ namespace AccApi.Repository.Managers
                         if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
                         if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
                     }
+
                     
                     fieldLists = (from a in _context.TblSupplierPackages
                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
