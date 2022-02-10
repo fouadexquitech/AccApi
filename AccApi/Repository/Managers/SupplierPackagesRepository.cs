@@ -42,8 +42,6 @@ namespace AccApi.Repository.Managers
             if (byboq == 1)
             {
                 var pack = from o in _dbcontext.TblOriginalBoqs
-                           join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
-                           join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                            where o.Scope == packId
                            orderby o.RowNumber
                            select new boqPackageList
@@ -63,12 +61,7 @@ namespace AccApi.Repository.Managers
                                item = o.ItemO,
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
-                               qty = (double)o.QtyO,
-                               resType = b.BoqCtg,
-                               resCode = b.BoqPackage,
-                               resDesc = r.ResDescription,
-                               ResUnit = b.BoqUnitMesure,
-                               boqQtyScope = (double)b.BoqQtyScope
+                               qty = (double)o.QtyO
                            };
                 return pack.ToList();
             }
@@ -280,6 +273,12 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
                         worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
+
+                        if (byBoq == 1)
+                        {
+                            worksheet.Cells[i, 6].Style.Locked = false;
+                            worksheet.Cells[i, 7].Style.Locked = false;
+                        }
                         i = i + 1;
                         OldBoq = Boq;
                     }
@@ -293,12 +292,8 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
                         worksheet.Cells[i, 11].Style.Locked = false;
                         worksheet.Cells[i, 12].Style.Locked = false;
-                    }
-                    else
-                    {
-                        worksheet.Cells[i, 6].Style.Locked = false;
-                        worksheet.Cells[i, 7].Style.Locked = false;
-                    }
+                    }             
+                    
                     i++;
                 }
 
