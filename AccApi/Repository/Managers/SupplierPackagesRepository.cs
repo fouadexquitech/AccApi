@@ -107,11 +107,11 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string ValidateExcelBeforeAssign(int packId)
+        public string ValidateExcelBeforeAssign(int packId,byte byBoq)
         {
             //AH0702
-            var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
-            byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
+            //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
+            //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
             //AH0702
 
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
