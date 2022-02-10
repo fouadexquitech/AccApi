@@ -28,7 +28,8 @@ namespace AccApi.Repository.Managers
                           select new RevisionDetailsList
                           {
                               RdResourceSeq = b.RdResourceSeq,
-                              RdPrice = b.RdPrice
+                              RdPrice = b.RdPrice,
+                              RdMissedPrice=b.RdMissedPrice
                           };
             return results.ToList();
         }
@@ -270,6 +271,20 @@ namespace AccApi.Repository.Managers
                 result.RdAssignedPrice = assignPrice;
                 _dbContext.SaveChanges();
             }
+        }
+
+        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
+        {
+            foreach (var item in revisionDetailsList)
+            {
+                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdResourceSeq == item.RdResourceSeq);
+                if (result != null)
+                {
+                    result.RdPrice = item.RdPrice;                            
+                }
+            }
+            _dbContext.SaveChanges();
+            return true;
         }
     }
 }

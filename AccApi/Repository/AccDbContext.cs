@@ -38,6 +38,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblActivitiesSubWb> TblActivitiesSubWbs { get; set; }
         public virtual DbSet<TblActivity> TblActivities { get; set; }
         public virtual DbSet<TblAssignWbsActivitySubWb> TblAssignWbsActivitySubWbs { get; set; }
+        public virtual DbSet<TblAuditLog> TblAuditLogs { get; set; }
         public virtual DbSet<TblAvgManhourCost> TblAvgManhourCosts { get; set; }
         public virtual DbSet<TblBcwpWbsProg> TblBcwpWbsProgs { get; set; }
         public virtual DbSet<TblBoq> TblBoqs { get; set; }
@@ -67,6 +68,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblIndirectCostHistogram> TblIndirectCostHistograms { get; set; }
         public virtual DbSet<TblLastLogon> TblLastLogons { get; set; }
         public virtual DbSet<TblLogInDateChange> TblLogInDateChanges { get; set; }
+        public virtual DbSet<TblLoginLog> TblLoginLogs { get; set; }
         public virtual DbSet<TblLookAheadQty> TblLookAheadQties { get; set; }
         public virtual DbSet<TblMailTocc> TblMailToccs { get; set; }
         public virtual DbSet<TblMissingCc> TblMissingCcs { get; set; }
@@ -137,15 +139,14 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        //                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-        //            }
-        //        }
-
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+            }
+        }
 
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
@@ -391,6 +392,17 @@ namespace AccApi.Repository
                 entity.HasKey(e => new { e.AsTrade, e.AsActSubWbs });
 
                 entity.Property(e => e.AsTrade).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblAuditLog>(entity =>
+            {
+                entity.Property(e => e.Action).IsUnicode(false);
+
+                entity.Property(e => e.Primarykeyvalue).IsUnicode(false);
+
+                entity.Property(e => e.Tablename).IsUnicode(false);
+
+                entity.Property(e => e.Userid).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblAvgManhourCost>(entity =>
@@ -861,6 +873,15 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => e.LdcSeq)
                     .HasName("PK__tblLogIn__9BB4F434836B7358");
+            });
+
+            modelBuilder.Entity<TblLoginLog>(entity =>
+            {
+                entity.Property(e => e.Ip).IsUnicode(false);
+
+                entity.Property(e => e.PcName).IsUnicode(false);
+
+                entity.Property(e => e.Userid).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblLookAheadQty>(entity =>
@@ -1432,6 +1453,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdAssignedPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdMissedPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdPrice).HasDefaultValueSql("((0))");
 

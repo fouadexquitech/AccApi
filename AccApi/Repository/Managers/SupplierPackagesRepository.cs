@@ -111,7 +111,7 @@ namespace AccApi.Repository.Managers
         {
             //AH0702
             var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
-            byte byBoq = (byte)packageSupp.SpByBoq;
+            byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
             //AH0702
 
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
@@ -125,6 +125,7 @@ namespace AccApi.Repository.Managers
             using (var xlPackage = new ExcelPackage(stream))
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
+                worksheet.Columns.AutoFit();
                 worksheet.Protection.IsProtected = true;
 
                 int i, j;
@@ -133,6 +134,9 @@ namespace AccApi.Repository.Managers
                 i = 1;
                 worksheet.Cells[i, 1].Value = "Item";
                 worksheet.Cells[i, 2].Value = "Level";
+                worksheet.Column(3).Width = 50;
+                worksheet.Columns[3].Style.WrapText = true;                
+                worksheet.Column(3).AutoFit();
                 worksheet.Cells[i, 3].Value = "Bill Description";
                 worksheet.Cells[i, 4].Value = "Unit";
                 worksheet.Cells[i, 5].Value = "Qty";
@@ -141,15 +145,24 @@ namespace AccApi.Repository.Managers
                 {
                     worksheet.Cells[i, 6].Value = "Unit Price";
                     worksheet.Cells[i, 7].Value = "Comments";
+                    worksheet.Column(7).Width = 50;              
+                    worksheet.Columns[7].Style.WrapText = true;
+                    worksheet.Column(7).AutoFit();
                 }
                 else
                 {
                     worksheet.Cells[i, 6].Value = "Ressouce Type";
                     worksheet.Cells[i, 7].Value = "Ressouce Code";
+                    worksheet.Column(8).Width = 50;
+                    worksheet.Columns[8].Style.WrapText = true;
+                    worksheet.Column(8).AutoFit();                  
                     worksheet.Cells[i, 8].Value = "Ressouce Description";
                     worksheet.Cells[i, 9].Value = "Ressouce Unit";
                     worksheet.Cells[i, 10].Value = "Ressouce Qty";
                     worksheet.Cells[i, 11].Value = "Unit Price";
+                    worksheet.Column(12).Width = 50;
+                    worksheet.Columns[12].Style.WrapText = true;
+                    worksheet.Column(12).AutoFit();
                     worksheet.Cells[i, 12].Value = "Comments";
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
@@ -263,7 +276,6 @@ namespace AccApi.Repository.Managers
                                 i = i + 2;
                             }
                         }
-
                         worksheet.Cells[i, 1].Value = (x.item == null) ? "" : x.item;
                         worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
@@ -273,14 +285,19 @@ namespace AccApi.Repository.Managers
                     }
 
                     if (byBoq != 1)
-                    { 
+                    {
                         worksheet.Cells[i, 6].Value = (x.resType == null) ? "" : x.resType;
-                    worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
-                    worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
-                    worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
-                    worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
-                    worksheet.Cells[i, 11].Style.Locked = false;
-                    worksheet.Cells[i, 12].Style.Locked = false;
+                        worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
+                        worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;                    
+                        worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
+                        worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
+                        worksheet.Cells[i, 11].Style.Locked = false;
+                        worksheet.Cells[i, 12].Style.Locked = false;
+                    }
+                    else
+                    {
+                        worksheet.Cells[i, 6].Style.Locked = false;
+                        worksheet.Cells[i, 7].Style.Locked = false;
                     }
                     i++;
                 }
