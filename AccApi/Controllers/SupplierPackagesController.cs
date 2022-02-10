@@ -42,11 +42,11 @@ namespace AccApi.Controllers
         }
 
        [HttpPost("ValidateExcelBeforeAssign")]
-       public JsonResult ValidateExcelBeforeAssign(int packId)
+       public JsonResult ValidateExcelBeforeAssign(int packId, byte byBoq)
         {
             try
             {
-                return new JsonResult(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId));
+                return new JsonResult(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId, byBoq));
             }
             catch (Exception ex)
             {
