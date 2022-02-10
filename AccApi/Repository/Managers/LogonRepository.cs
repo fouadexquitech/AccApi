@@ -150,7 +150,7 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
-        public EmailTemplate GetSuppliersEmailTemplate(byte Lang)
+        public EmailTemplate GetSuppliersEmailTemplate(string Lang)
         {
             var result = from b in _mdbcontext.TblEmailTemplates
                          where b.EtLang == Lang

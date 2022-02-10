@@ -9,6 +9,6 @@ namespace AccApi.Repository.View_Models
     {
         public int EtSeq { get; set; }   
         public string EtContent { get; set; }
-        public byte? EtLang { get; set; }
+        public string EtLang { get; set; }
     }
 }

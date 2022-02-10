@@ -80,7 +80,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSuppliersEmailTemplate")]
-        public EmailTemplate GetSuppliersEmailTemplate(byte Lang)
+        public EmailTemplate GetSuppliersEmailTemplate(string Lang)
         {
             try
             {

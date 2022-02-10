@@ -17,6 +17,6 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("etContent", TypeName = "text")]
         public string EtContent { get; set; }
         [Column("etLang")]
-        public byte? EtLang { get; set; }
+        public string EtLang { get; set; }
     }
 }
