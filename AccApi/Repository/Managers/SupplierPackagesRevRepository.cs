@@ -86,7 +86,8 @@ namespace AccApi.Repository.Managers
             var field = _context.TblRevisionFields.Where(x => x.Id == fieldId).FirstOrDefault();
             if (field != null)
             {          
-                _context.TblRevisionFields.Remove(field);
+                _context.Remove(field);
+                _context.SaveChanges();
                 return true;
             }
             else
