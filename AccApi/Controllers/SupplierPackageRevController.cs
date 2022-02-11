@@ -35,7 +35,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddField")]
-        public decimal? AddField(int revId, string lbl, int val, int type)
+        public decimal? AddField(int revId, string lbl, double val, int type)
         {
             try
             {

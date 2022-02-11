@@ -53,7 +53,7 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public decimal? AddField(int revId, string lbl, int val, int type)
+        public decimal? AddField(int revId, string lbl, double val, int type)
         {
             var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val , Type=type };
             _context.Add(NewField);

@@ -6,7 +6,7 @@ namespace AccApi.Repository.Interfaces
    public interface ISupplierPackagesRevRepository
     {
         List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId);
-        decimal? AddField(int revId, string lbl, int val,int type);
+        decimal? AddField(int revId, string lbl, double val,int type);
         List<CurrencyList> GetCurrencies();
         bool DeleteField(int fieldId);
         List<RevisionFieldsList> GetFields(int revisionid);
