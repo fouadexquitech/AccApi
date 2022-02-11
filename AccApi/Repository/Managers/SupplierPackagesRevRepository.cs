@@ -36,14 +36,17 @@ namespace AccApi.Repository.Managers
 
 
             // Check If Fields Exists
-            foreach (var item in results)
+            foreach (var SupplierPackageRev in results)
             {
-                var fields = _context.TblRevisionFields.Where(x => x.RevisionId == item.PrRevId).ToList();
+                var fields = _context.TblRevisionFields.Where(x => x.RevisionId == SupplierPackageRev.PrRevId).ToList();
                 if (fields.Count > 0)
                 {
                     foreach (var itemFields in fields)
                     {
-                        //item.PrTotPrice = item.PrTotPrice + item.PrTotPrice * (itemFields.Value / 100);
+                        if (itemFields.Type == 1)
+                            SupplierPackageRev.PrTotPrice += (decimal)itemFields.Value;
+                        else
+                            SupplierPackageRev.PrTotPrice += SupplierPackageRev.PrTotPrice * ((decimal)itemFields.Value / 100m);
                     }
                 }
             }
@@ -56,23 +59,26 @@ namespace AccApi.Repository.Managers
             _context.Add(NewField);
             _context.SaveChanges();
 
-            var revision = _context.TblSupplierPackageRevisions.Where(x => x.PrRevId == revId).FirstOrDefault();
+            var SupplierPackageRev = _context.TblSupplierPackageRevisions.Where(x => x.PrRevId == revId).FirstOrDefault();
 
             var revisionFields = (from b in _context.TblRevisionFields
                                   where b.RevisionId == revId
                                   select b).ToList();
 
-            if (revision != null)
+            if (SupplierPackageRev != null)
             {
                 if (revisionFields.Count > 0)
                 {
-                    foreach (var item in revisionFields)
+                    foreach (var itemFields in revisionFields)
                     {
-                        //revision.PrTotPrice = revision.PrTotPrice + revision.PrTotPrice * (item.Value / 100m);
+                        if (itemFields.Type == 1)
+                            SupplierPackageRev.PrTotPrice += (decimal)itemFields.Value;
+                        else
+                            SupplierPackageRev.PrTotPrice += SupplierPackageRev.PrTotPrice * ((decimal)itemFields.Value / 100m);
                     }
                 }
             }
-            return revision.PrTotPrice;
+            return SupplierPackageRev.PrTotPrice;
         }
 
         public bool DeleteField(int fieldId)
