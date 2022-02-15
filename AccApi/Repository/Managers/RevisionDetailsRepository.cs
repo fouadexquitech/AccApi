@@ -50,6 +50,7 @@ namespace AccApi.Repository.Managers
             {
                 revDtlQry = (from b in _dbContext.TblRevisionDetails
                              join c in _dbContext.TblBoqs on b.RdResourceSeq equals c.BoqSeq
+                             join i in _dbContext.TblOriginalBoqs on b.RdBoqItem equals i.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
                              where b.RdRevisionId == RevisionId
 
@@ -59,6 +60,7 @@ namespace AccApi.Repository.Managers
                                  RdPrice = b.RdPrice,
                                  RdMissedPrice = b.RdMissedPrice,
                                  RdBoqItem = b.RdBoqItem,
+                                 RdBoqItemDescription = i.DescriptionO,
                                  RdItemDescription = e.ResDescription
                              }).ToList();
             }

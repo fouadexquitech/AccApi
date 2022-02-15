@@ -13,6 +13,7 @@ namespace AccApi.Repository.View_Models
         public byte? RdMissedPrice { get; set; }
 
         public string RdBoqItem { get; set; }
+        public string RdBoqItemDescription { get; set; }
         public string RdItemDescription  { get; set; }
     }
 }

@@ -32,7 +32,8 @@ namespace AccApi.Repository.Managers
                               PsId = b.SpPackSuppId,
                               PsPackId = b.SpPackageId,
                               PsSuppId = b.SpSupplierId,
-                              PsSupName = c.SupName
+                              PsSupName = c.SupName,
+                              PsByBoq = b.SpByBoq
                           };
             return results.ToList();
         }

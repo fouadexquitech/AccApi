@@ -10,6 +10,7 @@ namespace AccApi.Repository.View_Models
         public int PsId { get; set; }
         public int? PsPackId { get; set; }
         public int? PsSuppId { get; set; }
+        public byte? PsByBoq { get; set; }
         public string? PsSupName { get; set; }
     }
 }
