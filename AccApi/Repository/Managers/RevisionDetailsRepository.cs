@@ -23,13 +23,12 @@ namespace AccApi.Repository.Managers
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId)
         {
             var supPackRev = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
-            int PackageSuppliersID = supPackRev.PrRevId;
+            int PackageSuppliersID =(int)supPackRev.PrPackSuppId;
 
             var supPack = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSuppliersID).FirstOrDefault();
             byte byBoq = (byte)((supPack.SpByBoq == null) ? 0 : supPack.SpByBoq);
 
             RevisionDetailsList revDtlList = new  RevisionDetailsList();
-
             IEnumerable<RevisionDetailsList> revDtlQry;
 
             if (byBoq == 1)
@@ -63,7 +62,6 @@ namespace AccApi.Repository.Managers
                                  RdItemDescription = e.ResDescription
                              }).ToList();
             }
-
             return revDtlQry.ToList();
         }
 
