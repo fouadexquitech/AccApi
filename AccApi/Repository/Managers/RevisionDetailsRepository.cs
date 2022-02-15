@@ -22,16 +22,49 @@ namespace AccApi.Repository.Managers
 
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId)
         {
-            var results = from b in _dbContext.TblRevisionDetails
-                          where b.RdRevisionId == RevisionId
+            var supPackRev = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
+            int PackageSuppliersID = supPackRev.PrRevId;
 
-                          select new RevisionDetailsList
-                          {
-                              RdResourceSeq = b.RdResourceSeq,
-                              RdPrice = b.RdPrice,
-                              RdMissedPrice=b.RdMissedPrice
-                          };
-            return results.ToList();
+            var supPack = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSuppliersID).FirstOrDefault();
+            byte byBoq = (byte)((supPack.SpByBoq == null) ? 0 : supPack.SpByBoq);
+
+            RevisionDetailsList revDtlList = new  RevisionDetailsList();
+
+            IEnumerable<RevisionDetailsList> revDtlQry;
+
+            if (byBoq == 1)
+            {
+                revDtlQry = (from b in _dbContext.TblRevisionDetails
+                             join c in _dbContext.TblOriginalBoqs on b.RdBoqItem equals c.ItemO
+                             where b.RdRevisionId == RevisionId
+
+                             select new RevisionDetailsList
+                             {
+                                 RdResourceSeq = b.RdResourceSeq,
+                                 RdPrice = b.RdPrice,
+                                 RdMissedPrice = b.RdMissedPrice,
+                                 RdBoqItem = b.RdBoqItem,
+                                 RdItemDescription = c.DescriptionO
+                             }).ToList();
+            }
+            else
+            {
+                revDtlQry = (from b in _dbContext.TblRevisionDetails
+                             join c in _dbContext.TblBoqs on b.RdResourceSeq equals c.BoqSeq
+                             join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
+                             where b.RdRevisionId == RevisionId
+
+                             select new RevisionDetailsList
+                             {
+                                 RdResourceSeq = b.RdResourceSeq,
+                                 RdPrice = b.RdPrice,
+                                 RdMissedPrice = b.RdMissedPrice,
+                                 RdBoqItem = b.RdBoqItem,
+                                 RdItemDescription = e.ResDescription
+                             }).ToList();
+            }
+
+            return revDtlQry.ToList();
         }
 
         public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile,int curId, double ExchRate)

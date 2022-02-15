@@ -11,5 +11,8 @@ namespace AccApi.Repository.View_Models
         public int RdResourceSeq { get; set; }
         public double? RdPrice { get; set; }
         public byte? RdMissedPrice { get; set; }
+
+        public string RdBoqItem { get; set; }
+        public string RdItemDescription  { get; set; }
     }
 }
