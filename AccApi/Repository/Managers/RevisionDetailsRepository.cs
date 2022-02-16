@@ -20,7 +20,7 @@ namespace AccApi.Repository.Managers
             _dbContext = dbContext;
         }
 
-        public List<RevisionDetailsList> GetRevisionDetails(int RevisionId)
+        public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
         {
             var supPackRev = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
             int PackageSuppliersID =(int)supPackRev.PrPackSuppId;
@@ -45,12 +45,14 @@ namespace AccApi.Repository.Managers
                                  RdBoqItem = b.RdBoqItem,
                                  RdItemDescription = c.DescriptionO
                              }).ToList();
+
+                if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
             }
             else
             {
                 revDtlQry = (from b in _dbContext.TblRevisionDetails
                              join c in _dbContext.TblBoqs on b.RdResourceSeq equals c.BoqSeq
-                             join i in _dbContext.TblOriginalBoqs on b.RdBoqItem equals i.ItemO
+                             join i in _dbContext.TblOriginalBoqs on c.BoqItem equals i.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
                              where b.RdRevisionId == RevisionId
 
@@ -59,10 +61,13 @@ namespace AccApi.Repository.Managers
                                  RdResourceSeq = b.RdResourceSeq,
                                  RdPrice = b.RdPrice,
                                  RdMissedPrice = b.RdMissedPrice,
-                                 RdBoqItem = b.RdBoqItem,
+                                 RdBoqItem = i.ItemO,
                                  RdBoqItemDescription = i.DescriptionO,
                                  RdItemDescription = e.ResDescription
                              }).ToList();
+
+                if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdBoqItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
+                if (resource != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(resource.ToUpper()));
             }
             return revDtlQry.ToList();
         }
@@ -217,7 +222,7 @@ namespace AccApi.Repository.Managers
                                             missPrice = 1;
                                         }
 
-                                        if ((resCode != "") && (resQty > 0) && (resPrice > 0))
+                                        if ((resCode != "") && (resQty > 0) && (resPrice >= 0))
                                         {
                                             var revdtl = new TblRevisionDetail()
                                             {

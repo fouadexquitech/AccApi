@@ -34,6 +34,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpGet("GetSupplierPackagesSingleRevision")]
+        public SupplierPackagesRevList GetSupplierPackagesSingleRevision(int revisionId)
+        {
+            try
+            {
+                return this._supplierPackagesRevRepository.GetSupplierPackagesRevision(revisionId);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("AddField")]
         public decimal? AddField(int revId, string lbl, double val, int type)
         {
