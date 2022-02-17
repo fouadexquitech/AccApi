@@ -238,7 +238,7 @@ namespace AccApi.Repository.Managers
 
                     packageSuppliersPrice.SupplierId = item.SupplierId;
                     packageSuppliersPrice.SupplierName = item.SupplierName;
-
+                    byboq = item.byboq;
                     IEnumerable<RevisionDetails> revDtlQry;
 
                     if (byboq==1)
@@ -271,8 +271,7 @@ namespace AccApi.Repository.Managers
                         if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
                         if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
                         if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
-                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
+                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));                
                     }
                     else
                     {
@@ -280,7 +279,8 @@ namespace AccApi.Repository.Managers
                                      join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId                                                                         
                                      join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq                                    
-                                     join e in _context.TblResources on d.BoqResSeq equals e.ResSeq                                 
+                                     join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
+                                     join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                      join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
@@ -291,7 +291,9 @@ namespace AccApi.Repository.Managers
                                          resourceUnit = d.BoqUnitMesure,
                                          resourceQty = c.RdQty,
                                          price = c.RdPrice,
-                                         perc = c.RdAssignedPerc
+                                         perc = c.RdAssignedPerc,
+                                         ItemO = o.ItemO,
+                                         DescriptionO = o.DescriptionO
                                      });
 
                         if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -303,8 +305,7 @@ namespace AccApi.Repository.Managers
                         if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
                         if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
                         if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
-                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-                        if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.BoqScope == input.Package);
+                        if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));      
                     }
 
                     
@@ -322,17 +323,17 @@ namespace AccApi.Repository.Managers
                     packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
                     packageSuppliersPrice.fieldLists = fieldLists;
 
-                    if (revisionDetails.Count > 0)
+                    if (packageSuppliersPrice.revisionDetails.Count > 0)
                     {
-                        foreach (var itemRevision in revisionDetails)
+                        foreach (var itemRevision in packageSuppliersPrice.revisionDetails)
                         {
                             packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
                         }
                     }
 
-                    if (fieldLists.Count > 0)
+                    if (packageSuppliersPrice.fieldLists.Count > 0)
                     {
-                        foreach (var itemFields in fieldLists)
+                        foreach (var itemFields in packageSuppliersPrice.fieldLists)
                         {
                             if (itemFields.Type == 1)
                                 packageSuppliersPrice.totalAdditionalPrice += (decimal)itemFields.Value;
