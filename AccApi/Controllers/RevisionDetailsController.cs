@@ -24,11 +24,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetRevisionDetails")]
-        public List<RevisionDetailsList> GetRevisionDetails(int RevisionId)
+        public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
         {
             try
             {
-                return this._revisionDetailsRepository.GetRevisionDetails(RevisionId);
+                return this._revisionDetailsRepository.GetRevisionDetails(RevisionId, itemDesc, resource);
             }
             catch (Exception ex)
             {
@@ -57,6 +57,34 @@ namespace AccApi.Controllers
             try
             {
                 return this._revisionDetailsRepository.AssignSupplierPackage(packId, SupPercentList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateRevisionDetailsPrice")]
+        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.UpdateRevisionDetailsPrice(revisionDetailsList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateRevisionDetailsPriceByBoq")]
+        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.UpdateRevisionDetailsPriceByBoq(revisionDetailsList);
             }
             catch (Exception ex)
             {

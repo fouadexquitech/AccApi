@@ -53,6 +53,38 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
+        public SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId)
+        {
+            var res = (from b in _context.TblSupplierPackageRevisions
+                           where b.PrRevId == revisionId
+                           
+                           select new SupplierPackagesRevList
+                           {
+                               PrRevId = b.PrRevId,
+                               PrRevNo = b.PrRevNo,
+                               PrRevDate = b.PrRevDate,
+                               PrTotPrice = b.PrTotPrice,
+                               PrCurrency = b.PrCurrency,
+                               PrExchRate = b.PrExchRate
+                           }).FirstOrDefault();
+
+            var fields = _context.TblRevisionFields.Where(x => x.RevisionId == revisionId).ToList();
+            if (fields.Count > 0)
+            {
+                foreach (var itemFields in fields)
+                {
+                    if (itemFields.Type == 1)
+                        res.PrTotPrice += (decimal)itemFields.Value;
+                    else
+                        res.PrTotPrice += res.PrTotPrice * ((decimal)itemFields.Value / 100m);
+                }
+            }
+
+            return res;
+        }
+
+
+
         public decimal? AddField(int revId, string lbl, double val, int type)
         {
             var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val , Type=type };
