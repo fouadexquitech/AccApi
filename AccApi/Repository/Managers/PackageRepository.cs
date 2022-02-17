@@ -259,7 +259,9 @@ namespace AccApi.Repository.Managers
                                          UnitO = o.UnitO,
                                          QtyO = o.QtyO,
                                          price = c.RdPrice,
-                                         perc = c.RdAssignedPerc
+                                         perc = c.RdAssignedPerc,
+                                         missedPrice = c.RdMissedPrice,
+                                         priceOrigCur = c.RdPriceOrigCurrency
                                      });
 
                         if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -292,6 +294,8 @@ namespace AccApi.Repository.Managers
                                          resourceQty = c.RdQty,
                                          price = c.RdPrice,
                                          perc = c.RdAssignedPerc,
+                                         missedPrice=c.RdMissedPrice,
+                                         priceOrigCur=c.RdPriceOrigCurrency,
                                          ItemO = o.ItemO,
                                          DescriptionO = o.DescriptionO
                                      });

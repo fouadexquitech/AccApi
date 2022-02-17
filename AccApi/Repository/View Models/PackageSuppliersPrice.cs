@@ -49,6 +49,8 @@ namespace AccApi.Repository.View_Models
         public double? resourceQty { get; set; }
         public double? price { get; set; }
         public double? perc { get; set; }
+        public double? priceOrigCur { get; set; }
+        public byte? missedPrice { get; set; }
 
     }
 }
