@@ -93,7 +93,7 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetPackageSuppliersPrice")]
+        [HttpPost("GetPackageSuppliersPrice")]
         public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
         {
             try

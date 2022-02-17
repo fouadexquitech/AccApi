@@ -79,6 +79,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("UpdateRevisionDetailsPriceByBoq")]
+        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.UpdateRevisionDetailsPriceByBoq(revisionDetailsList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
         [HttpPost("AssignSupplierRessource")]
         public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList)
         {

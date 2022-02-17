@@ -355,6 +355,20 @@ namespace AccApi.Repository.Managers
             }
         }
 
+        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
+        {
+            foreach (var item in revisionDetailsList)
+            {
+                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdBoqItem == item.RdBoqItem);
+                if (result != null)
+                {
+                    result.RdPrice = item.RdPrice;
+                }
+            }
+            _dbContext.SaveChanges();
+            return true;
+        }
+
         public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
         {
             foreach (var item in revisionDetailsList)
