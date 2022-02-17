@@ -148,7 +148,7 @@ namespace AccApi.Repository.Managers
                         {
                             try
                             {
-                                string boqRef = worksheet.Cells[row, 1].Value == null ? "" : worksheet.Cells[row, 1].Value.ToString();
+                                string boqRef = worksheet.Cells[row,1].Value == null ? "" : worksheet.Cells[row, 1].Value.ToString();
                                 string boqDesc = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
                                 double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
 
