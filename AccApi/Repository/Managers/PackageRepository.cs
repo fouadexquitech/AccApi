@@ -238,6 +238,7 @@ namespace AccApi.Repository.Managers
 
                     packageSuppliersPrice.SupplierId = item.SupplierId;
                     packageSuppliersPrice.SupplierName = item.SupplierName;
+                    packageSuppliersPrice.ByBoq = item.byboq;
                     byboq = item.byboq;
                     IEnumerable<RevisionDetails> revDtlQry;
 
@@ -319,7 +320,8 @@ namespace AccApi.Repository.Managers
                                   select new FieldList
                                   {
                                       Label = c.Label,
-                                      Value = c.Value
+                                      Value = c.Value,
+                                      Type = c.Type
                                   }).ToList();
 
                     packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
