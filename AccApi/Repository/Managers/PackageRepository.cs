@@ -255,7 +255,7 @@ namespace AccApi.Repository.Managers
                                          ItemO = o.ItemO,
                                          DescriptionO = o.DescriptionO,
                                          UnitO = o.UnitO,
-                                         QtyO = o.QtyO,
+                                         QtyO = c.RdQty,
                                          price = c.RdPrice,
                                          perc = c.RdAssignedPerc,
                                          missedPrice = c.RdMissedPrice,
@@ -329,8 +329,12 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var itemRevision in packageSuppliersPrice.revisionDetails)
                         {
-                            packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
+                            if (byboq == 1)
+                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.price);
+                            else
+                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
                         }
+
                     }
 
                     if (packageSuppliersPrice.fieldLists.Count > 0)
