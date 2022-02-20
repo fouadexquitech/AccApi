@@ -13,6 +13,8 @@ namespace AccApi.Repository.View_Models
         public decimal totalAdditionalPrice { get; set; }
 
         public decimal totalNetPrice { get; set; }
+
+        public byte ByBoq { get; set; }
     }
 
     public class FieldList
