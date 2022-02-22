@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace AccApi.Repository.View_Models
 {
@@ -15,6 +16,8 @@ namespace AccApi.Repository.View_Models
         public decimal totalNetPrice { get; set; }
 
         public byte ByBoq { get; set; }
+
+        public DateTime? LastRevisionDate { get; set; }
     }
 
     public class FieldList

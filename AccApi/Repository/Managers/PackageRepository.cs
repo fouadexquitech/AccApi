@@ -222,11 +222,13 @@ namespace AccApi.Repository.Managers
 
             var query = (from a in _context.TblSupplierPackages
                          join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                         join rev in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals rev.PrPackSuppId
                          where (a.SpPackageId == pckgID)
                          select new
                          {
                              SupplierId = a.SpSupplierId,
                              SupplierName = sup.SupName,
+                             LastRevisionDate = rev.PrRevDate,
                              byboq= (byte)((a.SpByBoq == null) ? 0 : a.SpByBoq)
                          }).ToList();
 
@@ -239,6 +241,7 @@ namespace AccApi.Repository.Managers
                     packageSuppliersPrice.SupplierId = item.SupplierId;
                     packageSuppliersPrice.SupplierName = item.SupplierName;
                     packageSuppliersPrice.ByBoq = item.byboq;
+                    packageSuppliersPrice.LastRevisionDate = item.LastRevisionDate;
                     byboq = item.byboq;
                     IEnumerable<RevisionDetails> revDtlQry;
 
@@ -336,6 +339,8 @@ namespace AccApi.Repository.Managers
                             else
                                 packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
                         }
+
+                        
 
                     }
 
