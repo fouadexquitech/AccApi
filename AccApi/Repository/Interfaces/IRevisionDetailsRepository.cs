@@ -14,8 +14,10 @@ namespace AccApi.Repository.Interfaces
         bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate);
         bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList);
         bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList);
-
         bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList);
         bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList);
+        bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList);
+        bool AssignSupplierListBoqList(int packId, List<SupplierPercent> SupplierPercentList, List<boqItem> boqItemList);
+        bool AssignSupplierListRessourceList(int packId, List<SupplierPercent> SupplierPercentList, List<ressourceItem> ressourceItemList);
     }
 }

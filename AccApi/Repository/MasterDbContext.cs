@@ -20,6 +20,7 @@ namespace AccApi.Repository
 
         public virtual DbSet<AtsArea> AtsAreas { get; set; }
         public virtual DbSet<BemArea> BemAreas { get; set; }
+        public virtual DbSet<TblComCond> TblComConds { get; set; }
         public virtual DbSet<TblCompany> TblCompanies { get; set; }
         public virtual DbSet<TblCompanyCode> TblCompanyCodes { get; set; }
         public virtual DbSet<TblCurrency> TblCurrencies { get; set; }
@@ -51,6 +52,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblStaffCostUnit> TblStaffCostUnits { get; set; }
         public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
         public virtual DbSet<TblSupplierDiv> TblSupplierDivs { get; set; }
+        public virtual DbSet<TblTechCond> TblTechConds { get; set; }
         public virtual DbSet<TblTempCount> TblTempCounts { get; set; }
         public virtual DbSet<TblTempReportsAdmin> TblTempReportsAdmins { get; set; }
         public virtual DbSet<TblTempReportsDm> TblTempReportsDms { get; set; }
@@ -86,6 +88,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.New).IsUnicode(false);
 
                 entity.Property(e => e.Old).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblComCond>(entity =>
+            {
+                entity.Property(e => e.CmSelected).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblCompany>(entity =>
@@ -164,6 +171,13 @@ namespace AccApi.Repository
                 entity.Property(e => e.GdDesc).IsUnicode(false);
 
                 entity.Property(e => e.GdEmail).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblEmailTemplate>(entity =>
+            {
+                entity.Property(e => e.EtLang)
+                    .IsUnicode(false)
+                    .IsFixedLength(true);
             });
 
             modelBuilder.Entity<TblEmployee>(entity =>
@@ -462,6 +476,11 @@ namespace AccApi.Repository
                 entity.HasKey(e => new { e.SupCode, e.SupDiv });
 
                 entity.Property(e => e.SupDiv).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblTechCond>(entity =>
+            {
+                entity.Property(e => e.TcSelected).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblTempCount>(entity =>

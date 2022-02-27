@@ -107,5 +107,47 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("AssignSupplierBOQ")]
+        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.AssignSupplierBOQ(packId, SupplierBOQList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("AssignSupplierListBoqList")]
+        public bool AssignSupplierListBoqList(int packId, List<SupplierPercent> SupplierPercentList, List<boqItem> boqItemList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId,SupplierPercentList, boqItemList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("AssignSupplierListRessourceList")]
+        public bool AssignSupplierListRessourceList(int packId, List<SupplierPercent> SupplierPercentList, List<ressourceItem> ressourceItemList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, SupplierPercentList, ressourceItemList);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
     }
 }

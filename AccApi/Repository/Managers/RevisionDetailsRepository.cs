@@ -343,9 +343,124 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
+
+        public bool AssignSupplierListRessourceList(int packId, List<SupplierPercent> SupplierPercentList, List<ressourceItem> ressourceItemList)
+        {
+            foreach (var sup in SupplierPercentList)
+            {            
+                    var revisionDetails = (from a in _dbContext.TblSupplierPackages
+                                           join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                           join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                           join d in ressourceItemList on c.RdResourceSeq equals d.resId
+                                           where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
+
+                                           select new AssignRevisionDetails
+                                           {
+                                               resourceID = c.RdResourceSeq,
+                                               resourceQty = c.RdQty,
+                                               price = c.RdPrice * (b.PrExchRate > 0 ? b.PrExchRate : 1),
+                                               assignpercent = sup.percent,
+                                               assignQty = c.RdQty * (sup.percent / 100),
+                                               assignPrice = c.RdPrice * c.RdQty * (sup.percent / 100),
+                                               revisionId = b.PrRevId,
+                                               priceOrigCurrency = c.RdPriceOrigCurrency
+                                           }).ToList();
+
+                    if (revisionDetails.Count > 0)
+                    {
+                        foreach (var revDtl in revisionDetails)
+                        {
+                            UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        }
+                    }
+                
+            }
+            return true;
+        }
+
+        public bool AssignSupplierListBoqList(int packId, List<SupplierPercent> SupplierPercentList, List<boqItem> boqItemList)
+        {
+            foreach (var sup in SupplierPercentList)
+            {
+                var revisionDetails = (from a in _dbContext.TblSupplierPackages
+                                       join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                       join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                       join d in boqItemList on c.RdBoqItem equals d.BoqItemID
+                                       where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
+
+                                       select new AssignRevisionDetails
+                                       {
+                                           boqItem = c.RdBoqItem,
+                                           boqQty = c.RdQty,
+                                           price = c.RdPrice * (b.PrExchRate > 0 ? b.PrExchRate : 1),
+                                           assignpercent = sup.percent,
+                                           assignQty = c.RdQty * (sup.percent / 100),
+                                           assignPrice = c.RdPrice * c.RdQty * (sup.percent / 100),
+                                           revisionId = b.PrRevId,
+                                           priceOrigCurrency = c.RdPriceOrigCurrency
+                                       }).ToList();
+
+                if (revisionDetails.Count > 0)
+                {
+                    foreach (var revDtl in revisionDetails)
+                    {
+                        UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                    }
+                }
+
+            }
+            return true;
+        }
+
+        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList)
+        {
+            foreach (var sup in SupplierBOQList)
+            {
+                foreach (var supPerc in sup.supplierPercents)
+                {
+                    var revisionDetails = (from a in _dbContext.TblSupplierPackages
+                                           join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                           join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                           where (a.SpPackageId == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && c.RdBoqItem == sup.BoqItemID)
+
+                                           select new AssignRevisionDetails
+                                           {
+                                               boqItem = c.RdBoqItem,
+                                               boqQty = c.RdQty,
+                                               price = c.RdPrice * (b.PrExchRate > 0 ? b.PrExchRate : 1),
+                                               assignpercent = supPerc.percent,
+                                               assignQty = c.RdQty * (supPerc.percent / 100),
+                                               assignPrice = c.RdPrice * c.RdQty * (supPerc.percent / 100),
+                                               revisionId = b.PrRevId,
+                                               priceOrigCurrency = c.RdPriceOrigCurrency
+                                           }).ToList();
+
+                    if (revisionDetails.Count > 0)
+                    {
+                        foreach (var revDtl in revisionDetails)
+                        {
+                            UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         public void UpdateRevDtlAssignedQty(int revisionId, int resourceID, double assignpercent, double assignQty, double assignPrice)
         {
             var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);
+            if (result != null)
+            {
+                result.RdAssignedPerc = assignpercent;
+                result.RdAssignedQty = assignQty;
+                result.RdAssignedPrice = assignPrice;
+                _dbContext.SaveChanges();
+            }
+        }
+
+        public void UpdateRevDtlAssignedQtyBOQ(int revisionId, string boqItem, double assignpercent, double assignQty, double assignPrice)
+        {
+            var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdBoqItem == boqItem);
             if (result != null)
             {
                 result.RdAssignedPerc = assignpercent;

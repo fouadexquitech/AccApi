@@ -15,10 +15,14 @@ namespace AccApi.Repository.Managers
     public class SupplierPackagesRepository : ISupplierPackagesRepository
     {
         private readonly AccDbContext _dbcontext;
+        private readonly MasterDbContext _mdbcontext;
+        private readonly PolicyDbContext _pdbcontext;
 
-        public SupplierPackagesRepository(AccDbContext Context)
+        public SupplierPackagesRepository(AccDbContext Context, MasterDbContext mdbcontext, PolicyDbContext pdbcontext)
         {
             _dbcontext = Context;
+            _mdbcontext = mdbcontext;
+            _pdbcontext = pdbcontext;
         }
 
         public List<SupplierPackagesList> SupplierPackagesList(int packageid)
@@ -310,7 +314,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInput> supList, string FilePath, string EmailContent,byte ByBoq)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInput> supList, string FilePath, string EmailContent,byte ByBoq,List<ComercialCond> comCondList)
         {
             foreach (var supplier in supList)
             {
@@ -358,15 +362,88 @@ namespace AccApi.Repository.Managers
                             MailBody += "Best regards";
                         }
 
-                        string Attachment = FilePath;
+                        var AttachmentList = new List<string>();
+                        AttachmentList.Add(FilePath);
+
+                        //Commercial Conditions
+                        if (comCondList.Count>0)
+                        {
+                            string ComCondAttch = SendComercialConditions(packId, comCondList);
+                            AttachmentList.Add(ComCondAttch);
+                        }
 
                         Mail m = new Mail();
-
-                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, Attachment, false);
+                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                     }
                 }
             }
             return true;
+        }
+
+
+        public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
+        {
+            var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+            string PackageName = package.PkgeName;
+
+            var p = _dbcontext.TblParameters.FirstOrDefault();
+            var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            string ProjectName = proj.PrjName;
+
+            var stream = new MemoryStream();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using (var xlPackage = new ExcelPackage(stream))
+            {
+                var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
+                worksheet.Columns.AutoFit();
+                worksheet.Protection.IsProtected = true;
+
+                int i, j;
+
+                worksheet.Cells[1, 1].Value = "Project :" + ProjectName;
+                worksheet.Cells["A1:C1"].Merge = true;
+
+                worksheet.Cells[2, 1].Value = "";
+                worksheet.Cells["A2:C2"].Merge = true;
+
+                worksheet.Cells[3, 1].Value = "ACC conditions";
+                worksheet.Cells["A3:B3"].Merge = true;
+
+                worksheet.Cells[3, 3].Value = "Supplier/subcontractor reply";
+                worksheet.Column(3).Width = 40;
+                worksheet.Columns[3].Style.WrapText = true;
+                worksheet.Column(3).AutoFit();
+
+                worksheet.Cells[4, 1].Value = "Commercial Conditions";
+                worksheet.Cells[4, 1].Style.Font.Bold = true;
+                worksheet.Cells[4, 1].Style.Font.UnderLine = true;
+                worksheet.Cells["A4:B4"].Merge = true;
+
+                i = 5;
+                foreach (var x in comCondList)
+                {
+                    worksheet.Cells[i, 2].Value = (x.description == null) ? "" : x.description;
+                    worksheet.Column(2).Width = 50;
+
+                    i++;
+                }
+
+                xlPackage.Save();
+                stream.Position = 0;
+                string excelName = $"Technical Conditions-{PackageName}-{ProjectName}-{DateTime.Now.ToString("ddMMyyyy")}.xlsx";
+
+                string path = @"C:\App";
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                string FullPath = path + "//" + excelName;
+                xlPackage.SaveAs(FullPath);
+
+                return FullPath;
+            }
         }
 
     }

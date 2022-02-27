@@ -111,11 +111,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public bool AssignPackageSuppliers(int packId,List<SupplierInput> supList, string FilePath, string EmailContent, byte ByBoq)
+        public bool AssignPackageSuppliers(int packId,List<SupplierInput> supList, string FilePath, string EmailContent, byte ByBoq, List<ComercialCond> comList)
         {
             try
             {
-                return this._supplierPackagesRepository.AssignPackageSuppliers(packId, supList, FilePath, EmailContent, ByBoq);
+                return this._supplierPackagesRepository.AssignPackageSuppliers(packId, supList, FilePath, EmailContent, ByBoq, comList);
             }
             catch (Exception ex)
             {

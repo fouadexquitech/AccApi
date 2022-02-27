@@ -10,7 +10,7 @@ namespace AccApi.Data_Layer
 {
     public class Mail
     {
-        public string SendMail(List<General> MailTo, List<General> MailCC, string MailSubject, string MailBody, string MailAttach, Boolean BodyHtml)
+        public string SendMail(List<General> MailTo, List<General> MailCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml)
         {
             try
             {
@@ -48,10 +48,10 @@ namespace AccApi.Data_Layer
                     mail.CC.Add(copy);
                 }
 
-                if (MailAttach != "")
+                foreach (var attach in MailAttach)
                 {
-                    if (File.Exists(MailAttach))
-                        mail.Attachments.Add(new Attachment(MailAttach));
+                    if (File.Exists(attach))
+                        mail.Attachments.Add(new Attachment(attach));
                 }
 
                 client.Send(mail);

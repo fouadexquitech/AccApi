@@ -39,11 +39,17 @@ namespace AccApi.Repository.Models.MasterModels
         [StringLength(50)]
         public string MsPbiReport { get; set; }
         [Column("msDCname")]
-        [StringLength(100)]
+        [StringLength(200)]
         public string MsDcname { get; set; }
         [Column("msDCemail")]
-        [StringLength(100)]
+        [StringLength(200)]
         public string MsDcemail { get; set; }
         public int? NewProject { get; set; }
+        [Column("msCMname")]
+        [StringLength(200)]
+        public string MsCmname { get; set; }
+        [Column("msCMemail")]
+        [StringLength(200)]
+        public string MsCmemail { get; set; }
     }
 }
