@@ -52,5 +52,9 @@ namespace AccApi.Repository.Models
         public double? BwpTotAmnt { get; set; }
         [Column("bwpPrelim")]
         public bool? BwpPrelim { get; set; }
+        [Column("bwpSubcQty")]
+        public double? BwpSubcQty { get; set; }
+        [Column("bwpSubcExecQty")]
+        public double? BwpSubcExecQty { get; set; }
     }
 }

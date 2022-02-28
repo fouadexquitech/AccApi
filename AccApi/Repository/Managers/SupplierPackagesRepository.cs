@@ -380,7 +380,6 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
         {
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();

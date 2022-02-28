@@ -24,5 +24,11 @@ namespace AccApi.Repository.Models
         public string Unit { get; set; }
         [Column("Cum Progress Qty")]
         public double? CumProgressQty { get; set; }
+        [Column("Subcontractor Progress Qty")]
+        public double? SubcontractorProgressQty { get; set; }
+        [Column("ACC Cum Progress Qty")]
+        public double? AccCumProgressQty { get; set; }
+        [Column("Subcontractor Cum Progress Qty")]
+        public double? SubcontractorCumProgressQty { get; set; }
     }
 }

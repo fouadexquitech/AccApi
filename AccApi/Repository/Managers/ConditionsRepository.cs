@@ -1,7 +1,9 @@
 ﻿using AccApi.Data_Layer;
 using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
+using Microsoft.AspNetCore.Http;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -90,7 +92,15 @@ namespace AccApi.Repository.Managers
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"Technical Conditions-{PackageName}-{ProjectName}-{DateTime.Now.ToString("ddMMyyyy")}.xlsx";
-                xlPackage.SaveAs(excelName);
+                
+                string path = @"C:\App";
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                string FullPath = path + "//" + excelName;
+                xlPackage.SaveAs(FullPath);
 
 
                 //send email
@@ -129,10 +139,9 @@ namespace AccApi.Repository.Managers
                         MailBody += "Best regards";
 
                         var AttachmentList = new List<string>();
-                        AttachmentList.Add(excelName);
+                        AttachmentList.Add(FullPath);
 
                         Mail m = new Mail();
-
                         m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                     }
                 }                   
@@ -140,5 +149,151 @@ namespace AccApi.Repository.Managers
             }
         }
 
+        public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
+        {
+            if (ExcelFile?.Length > 0)
+            {
+                var stream = ExcelFile.OpenReadStream();
+                List<TblSuppComCondReply> LstSuppComCondReply = new List<TblSuppComCondReply>();
+             
+                try
+                {
+                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                    using (var package = new ExcelPackage(stream))
+                    {
+                        var worksheet = package.Workbook.Worksheets.First();
+                        var rowCount = worksheet.Dimension.Rows;
+
+                        string resComment, resCode = "", oldBoqRef = "";
+                        double resQty, resPrice;
+
+                        for (var row = 2; row <= rowCount; row++)
+                        {
+                            try
+                            {
+                                string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
+                                string reply = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
+                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
+
+                                if ((desc !="") && (reply!="") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
+                                {
+                                    var comCond = _mdbcontext.TblComConds.Where(x => x.CmDescription == desc).FirstOrDefault();                              
+                                       int comcondId = comCond.CmSeq == null ? 0 : comCond.CmSeq;
+
+                                    if (comcondId>0)
+                                    {
+                                        var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                         int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
+
+                                        if (comcondIdExist == 0)
+                                        {
+                                            var SuppCom = new TblSuppComCondReply()
+                                            {
+                                                CdComConId = comcondId,
+                                                CdPackageSupliersId = PackageSupliersID,
+                                                CdSuppReply = reply
+                                            };
+                                            LstSuppComCondReply.Add(SuppCom);
+                                        }
+                                        else
+                                        {
+                                            comCondExist.CdSuppReply = reply;
+                                            _dbcontext.TblSuppComCondReplies.Update(comCondExist);
+                                            _dbcontext.SaveChanges();
+                                        }                                          
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                    _dbcontext.AddRange(LstSuppComCondReply);               
+                    _dbcontext.SaveChanges();
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return true;
+
+        }
+
+        public bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile)
+        {
+            if (ExcelFile?.Length > 0)
+            {
+                var stream = ExcelFile.OpenReadStream();
+                List<TblSuppTechCondReply> LstSuppComCondReply = new List<TblSuppTechCondReply>();
+
+                try
+                {
+                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                    using (var package = new ExcelPackage(stream))
+                    {
+                        var worksheet = package.Workbook.Worksheets.First();
+                        var rowCount = worksheet.Dimension.Rows;
+
+                        for (var row = 2; row <= rowCount; row++)
+                        {
+                            try
+                            {
+                                string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
+                                string reply = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
+                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
+
+                                if ((desc != "") && (reply != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
+                                {
+                                    var comCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == desc).FirstOrDefault();
+                                    int condId = comCond.TcSeq == null ? 0 : comCond.TcSeq;
+
+                                    if (condId > 0)
+                                    {
+                                        var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                        int comcondIdExist = comCondExist.TcComConId == null ? 0 : comCondExist.TcComConId;
+
+                                        if (comcondIdExist == 0)
+                                        {
+                                            var SuppCom = new TblSuppTechCondReply()
+                                            {
+                                                TcComConId = condId,
+                                                TcPackageSupliersId = PackageSupliersID,
+                                                TcSuppReply = reply
+                                            };
+                                            LstSuppComCondReply.Add(SuppCom);
+                                        }
+                                        else
+                                        {
+                                            comCondExist.TcSuppReply = reply;
+                                            _dbcontext.TblSuppTechCondReplies.Update(comCondExist);
+                                            _dbcontext.SaveChanges();
+                                        }
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+                        }
+                    }
+                    _dbcontext.AddRange(LstSuppComCondReply);
+                    _dbcontext.SaveChanges();
+                }
+
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+            return true;
+
+        }
     }
 }

@@ -102,6 +102,8 @@ namespace AccApi.Repository
         public virtual DbSet<TblSubcontractorOffer> TblSubcontractorOffers { get; set; }
         public virtual DbSet<TblSubcontractorPricesTradeTest> TblSubcontractorPricesTradeTests { get; set; }
         public virtual DbSet<TblSummaryException> TblSummaryExceptions { get; set; }
+        public virtual DbSet<TblSuppComCondReply> TblSuppComCondReplies { get; set; }
+        public virtual DbSet<TblSuppTechCondReply> TblSuppTechCondReplies { get; set; }
         public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
         public virtual DbSet<TblSupplierDiv> TblSupplierDivs { get; set; }
         public virtual DbSet<TblSupplierPackage> TblSupplierPackages { get; set; }
@@ -139,14 +141,14 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        //                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-        //            }
-        //        }
+//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//        {
+//            if (!optionsBuilder.IsConfigured)
+//            {
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+//            }
+//        }
 
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
@@ -441,6 +443,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.BwpPrelim).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BwpSubcExecQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BwpSubcQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpTotAmnt).HasDefaultValueSql("((0))");
 
@@ -1564,6 +1570,17 @@ namespace AccApi.Repository
                 entity.Property(e => e.LastUserUpdate).IsUnicode(false);
             });
 
+            modelBuilder.Entity<TblSuppComCondReply>(entity =>
+            {
+                entity.HasKey(e => new { e.CdPackageSupliersId, e.CdComConId });
+            });
+
+            modelBuilder.Entity<TblSuppTechCondReply>(entity =>
+            {
+                entity.HasKey(e => new { e.TcPackageSupliersId, e.TcComConId })
+                    .HasName("PK_tblSuppTechConReply");
+            });
+
             modelBuilder.Entity<TblSupplier>(entity =>
             {
                 entity.HasKey(e => e.SupCode)
@@ -1961,7 +1978,13 @@ namespace AccApi.Repository
                 entity.HasKey(e => e.Seq)
                     .HasName("PK__tmpWbsPr__CA1E3C88C152185C");
 
+                entity.Property(e => e.AccCumProgressQty).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Level).IsUnicode(false);
+
+                entity.Property(e => e.SubcontractorCumProgressQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SubcontractorProgressQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Unit).IsUnicode(false);
 

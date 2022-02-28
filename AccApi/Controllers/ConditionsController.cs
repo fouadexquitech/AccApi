@@ -65,5 +65,36 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+
+        [HttpPost("UpdateCommercialConditions")]
+        public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
+        {
+            try
+            {
+                return this._conditionsRepository.UpdateCommercialConditions( PackageSupliersID,ExcelFile);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateTechnicalConditions")]
+        public bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile)
+        {
+            try
+            {
+                return this._conditionsRepository.UpdateTechnicalConditions(PackageSupliersID, ExcelFile);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+
     }
 }

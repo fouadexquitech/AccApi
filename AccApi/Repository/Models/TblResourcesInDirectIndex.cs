@@ -74,6 +74,8 @@ namespace AccApi.Repository.Models
         public int? RiiSort { get; set; }
         [Column("riiProductiveLab")]
         public byte? RiiProductiveLab { get; set; }
+        [Column("riisBudget_O")]
+        public double? RiisBudgetO { get; set; }
 
         [InverseProperty(nameof(TblResourcesInDirect.RinHdrSeqNavigation))]
         public virtual ICollection<TblResourcesInDirect> TblResourcesInDirects { get; set; }
