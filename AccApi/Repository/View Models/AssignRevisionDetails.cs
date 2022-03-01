@@ -50,4 +50,16 @@ namespace AccApi.Repository.View_Models
     {
         public int resId { get; set; }
     }
+
+    public class AssignSuppliertBoq
+    {
+        public List<SupplierPercent> supplierPercentList { get; set; }
+        public List<boqItem> supplierBoqItemList { get; set; }
+    }
+
+    public class AssignSuppliertRes
+    {
+        public List<SupplierPercent> supplierPercentList { get; set; }
+        public List<ressourceItem> supplierResItemList { get; set; }
+    }
 }
