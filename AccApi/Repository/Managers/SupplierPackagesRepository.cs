@@ -314,68 +314,71 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInput> supList, string FilePath, string EmailContent,byte ByBoq,List<ComercialCond> comCondList)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, string EmailContent,byte ByBoq)
         {
-            foreach (var supplier in supList)
+            foreach (var item in supInputList)
             {
-                if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
-                {
-                    var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID,SpByBoq= ByBoq };
-                    _dbcontext.Add<TblSupplierPackage>(spack);
-                    _dbcontext.SaveChanges();
-
-                    //send email
-                    string SupEmail = (from r in _dbcontext.TblSuppliers
-                                       where r.SupCode == supplier.supID
-                                       select r.SupEmail).First<string>();
-
-                    if (SupEmail != "")
+                foreach (var supplier in item.supplierInputList)
+                { 
+                    if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                     {
-                        List<General> mylistTo = new List<General>();
-                        General g = new General();
-                        g.mail = (string)SupEmail;
-                        mylistTo.Add(g);
+                        var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
+                        _dbcontext.Add<TblSupplierPackage>(spack);
+                        _dbcontext.SaveChanges();
 
-                        List<General> mylistCC = new List<General>();
-                        General cc = new General();
-                        cc.mail = (string)SupEmail;
-                        mylistTo.Add(cc);
+                        //send email
+                        string SupEmail = (from r in _dbcontext.TblSuppliers
+                                           where r.SupCode == supplier.supID
+                                           select r.SupEmail).First<string>();
 
-                        string Subject = "Procurement";
-
-                        string MailBody;
-
-                        if (EmailContent != "")
+                        if (SupEmail != "")
                         {
-                            MailBody = EmailContent;
-                        }
-                        else
-                        {
-                            MailBody = "Dear Sir,";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Please find attached , and fill the price ";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Best regards";
-                        }
+                            List<General> mylistTo = new List<General>();
+                            General g = new General();
+                            g.mail = (string)SupEmail;
+                            mylistTo.Add(g);
 
-                        var AttachmentList = new List<string>();
-                        AttachmentList.Add(FilePath);
+                            List<General> mylistCC = new List<General>();
+                            General cc = new General();
+                            cc.mail = (string)SupEmail;
+                            mylistTo.Add(cc);
 
-                        //Commercial Conditions
-                        if (comCondList.Count>0)
-                        {
-                            string ComCondAttch = SendComercialConditions(packId, comCondList);
-                            AttachmentList.Add(ComCondAttch);
+                            string Subject = "Procurement";
+
+                            string MailBody;
+
+                            if (EmailContent != "")
+                            {
+                                MailBody = EmailContent;
+                            }
+                            else
+                            {
+                                MailBody = "Dear Sir,";
+                                MailBody += Environment.NewLine;
+                                MailBody += Environment.NewLine;
+                                MailBody += "Please find attached , and fill the price ";
+                                MailBody += Environment.NewLine;
+                                MailBody += Environment.NewLine;
+                                MailBody += Environment.NewLine;
+                                MailBody += Environment.NewLine;
+                                MailBody += "Best regards";
+                            }
+
+                            var AttachmentList = new List<string>();
+                            AttachmentList.Add(FilePath);
+
+                            //Commercial Conditions
+                            if (item.comercialCondList.Count > 0)
+                            {
+                                string ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
+                                AttachmentList.Add(ComCondAttch);
+                            }
+
+                            Mail m = new Mail();
+                            m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                         }
-
-                        Mail m = new Mail();
-                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                     }
-                }
+            }
             }
             return true;
         }

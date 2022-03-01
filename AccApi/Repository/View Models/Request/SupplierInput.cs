@@ -5,8 +5,5 @@ using System.Threading.Tasks;
 
 namespace AccApi.Repository.View_Models.Request
 {
-    public class SupplierInput
-    {
-        public int supID { get; set; }
-    }
+
 }

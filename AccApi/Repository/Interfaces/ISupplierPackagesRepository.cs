@@ -10,6 +10,6 @@ namespace AccApi.Repository.Interfaces
     {
         List<SupplierPackagesList> SupplierPackagesList(int packageid);
         string ValidateExcelBeforeAssign(int packId, byte byBoq);
-        bool AssignPackageSuppliers(int packId, List<SupplierInput> supList,string FilePath, string EmailContent, byte ByBoq, List<ComercialCond> comList);
+        bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList,string FilePath, string EmailContent, byte ByBoq);
     }
 }
