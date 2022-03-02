@@ -17,7 +17,7 @@ namespace AccApi.Repository.Interfaces
         bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList);
         bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList);
         bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList);
-        bool AssignSupplierListBoqList(int packId, List<AssignSuppliertBoq> AssignSuppliertBoqList);
-        bool AssignSupplierListRessourceList(int packId, List<AssignSuppliertRes> AssignSuppliertResList);
+        bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item);
+        bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item);
     }
 }

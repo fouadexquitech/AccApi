@@ -122,11 +122,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListBoqList")]
-        public bool AssignSupplierListBoqList(int packId, List<AssignSuppliertBoq> AssignSuppliertBoqList)
+        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, AssignSuppliertBoqList);
+                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, item);
             }
             catch (Exception ex)
             {
@@ -136,11 +136,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListRessourceList")]
-        public bool AssignSupplierListRessourceList(int packId, List<AssignSuppliertRes> AssignSuppliertResList)
+        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, AssignSuppliertResList);
+                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, item);
             }
             catch (Exception ex)
             {
