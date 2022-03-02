@@ -345,14 +345,17 @@ namespace AccApi.Repository.Managers
         }
 
         public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item)
-        {
-           
+        {     
             foreach (var sup in item.supplierPercentList)
             {
+                //List<ressourceItem> itemList = item.supplierResItemList;
+
+                //join d in item.supplierResItemList.AsQueryable() on c.RdResourceSeq equals d.resId
+                //(a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
+
                 var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                         join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                        join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                        join d in item.supplierResItemList on c.RdResourceSeq equals d.resId
+                                        join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId   
                                         where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                         select new AssignRevisionDetails
@@ -367,12 +370,11 @@ namespace AccApi.Repository.Managers
                                             priceOrigCurrency = c.RdPriceOrigCurrency
                                         }).ToList();
 
-                if (revisionDetails.Count > 0)
+                var filtered = revisionDetails.Where(x => item.supplierResItemList.All(y => y.resId == x.resourceID));
+
+                foreach (var revDtl in filtered)
                 {
-                    foreach (var revDtl in revisionDetails)
-                    {
-                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
-                    }
+                    UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
                 }
             }
             
@@ -386,8 +388,7 @@ namespace AccApi.Repository.Managers
             {
                 var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                         join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                        join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                        join d in item.supplierBoqItemList on c.RdBoqItem equals d.BoqItemID
+                                        join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId                                     
                                         where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                         select new AssignRevisionDetails
@@ -402,13 +403,13 @@ namespace AccApi.Repository.Managers
                                             priceOrigCurrency = c.RdPriceOrigCurrency
                                         }).ToList();
 
-                if (revisionDetails.Count > 0)
-                {
-                    foreach (var revDtl in revisionDetails)
+                var filtered = revisionDetails.Where(x => item.supplierBoqItemList.All(y => y.BoqItemID == x.boqItem));
+
+                    foreach (var revDtl in filtered)
                     {
                         UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
                     }
-                }
+                
             }
             
             return true;
