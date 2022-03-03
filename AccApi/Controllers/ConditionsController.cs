@@ -80,7 +80,7 @@ namespace AccApi.Controllers
         }
 
 
-        [HttpGet("SendTechnicalConditions")]
+        [HttpPost("SendTechnicalConditions")]
         public bool SendTechnicalConditions(int packId)
         {
             try

@@ -19,15 +19,15 @@ namespace AccApi.Data_Layer
                 .AddJsonFile("appsettings.json").Build();
 
                 SmtpClient client = new SmtpClient();
-                client.Port = Int32.Parse(config["SMTPPort"]);
+                client.Port = Int32.Parse(config["MailSettings:SMTPPort"]);
                 client.DeliveryMethod = SmtpDeliveryMethod.Network;
                 client.UseDefaultCredentials = false;
-                client.Host = config["SMTPHost"];
-                client.Credentials = new System.Net.NetworkCredential(config["SMTPUserName"], config["SMTPPassword"]);
+                client.Host = config["MailSettings:SMTPHost"];
+                client.Credentials = new System.Net.NetworkCredential(config["MailSettings:SMTPUserName"], config["MailSettings:SMTPPassword"]);
 
                 MailMessage mail = new MailMessage();
-                string MailFrom = config["MailFrom"];
-                string MailFromName = config["MailFromName"];
+                string MailFrom = config["MailSettings:MailFrom"];
+                string MailFromName = config["MailSettings:MailFromName"];
                 mail.From = new MailAddress(MailFromName + "<" + MailFrom + ">");
                 //mail.Headers.Add("Sender", MailFromName);
 
