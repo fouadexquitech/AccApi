@@ -13,10 +13,8 @@ namespace AccApi.Repository.Interfaces
         List<TblTechCond> GetTechConditions(int packId);
         bool SendTechnicalConditions(int packId);
         bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile);
-
         bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile);
-
+        List<TblComCond> GetComConditionsReply(int PackageSupliersID);
+        List<TblTechCond> GetTechConditionsReply(int PackageSupliersID);
     }
-
- 
 }

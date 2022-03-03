@@ -51,6 +51,34 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpGet("GetComConditionsReply")]
+        public List<TblComCond> GetComConditionsReply(int PackageSupliersID)
+        {
+            try
+            {
+                return this._conditionsRepository.GetComConditionsReply(PackageSupliersID);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpGet("GetTechConditionsReply")]
+        public List<TblTechCond> GetTechConditionsReply(int PackageSupliersID)
+        {
+            try
+            {
+                return this._conditionsRepository.GetTechConditionsReply(PackageSupliersID);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
 
         [HttpGet("SendTechnicalConditions")]
         public bool SendTechnicalConditions(int packId)
@@ -72,7 +100,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._conditionsRepository.UpdateCommercialConditions( PackageSupliersID,ExcelFile);
+                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersID,ExcelFile);
             }
             catch (Exception ex)
             {

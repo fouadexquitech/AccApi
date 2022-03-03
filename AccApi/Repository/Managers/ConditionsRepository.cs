@@ -38,6 +38,18 @@ namespace AccApi.Repository.Managers
             return result;
         }
 
+        public List<TblSuppComCondReply> GetComConditionsReply(int PackageSupliersID)
+        {
+            var result = _dbcontext.TblSuppComCondReplies.Where(x => x.CdPackageSupliersId == PackageSupliersID).ToList();
+            return result;
+        }
+
+        public List<TblSuppTechCondReply> GetTechConditionsReply(int PackageSupliersID)
+        {
+            var result = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcPackageSupliersId == PackageSupliersID).ToList();
+            return result;
+        }
+
         public bool SendTechnicalConditions(int packId)
         {
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
