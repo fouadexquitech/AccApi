@@ -370,7 +370,7 @@ namespace AccApi.Repository.Managers
                                             priceOrigCurrency = c.RdPriceOrigCurrency
                                         }).ToList();
 
-                var filtered = revisionDetails.Where(x => item.supplierResItemList.All(y => y.resId == x.resourceID));
+                var filtered = revisionDetails.Where(x => item.supplierResItemList.Contains(item.supplierResItemList.Where(y=>y.resId == x.resourceID).FirstOrDefault()));
 
                 foreach (var revDtl in filtered)
                 {
@@ -403,9 +403,9 @@ namespace AccApi.Repository.Managers
                                             priceOrigCurrency = c.RdPriceOrigCurrency
                                         }).ToList();
 
-                var filtered = revisionDetails.Where(x => item.supplierBoqItemList.All(y => y.BoqItemID == x.boqItem));
+                var filtered = revisionDetails.Where(x => item.supplierBoqItemList.Contains(item.supplierBoqItemList.Where(y => y.BoqItemID == x.boqItem).FirstOrDefault()));
 
-                    foreach (var revDtl in filtered)
+                foreach (var revDtl in filtered)
                     {
                         UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
                     }
