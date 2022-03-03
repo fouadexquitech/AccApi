@@ -14,7 +14,7 @@ namespace AccApi.Repository.Models.MasterModels
         [Key]
         [Column("cmSeq")]
         public int CmSeq { get; set; }
-        [Column("cmDescription", TypeName = "text")]
+        [Column("cmDescription")]
         public string CmDescription { get; set; }
         [Column("cmSelected")]
         public byte? CmSelected { get; set; }
