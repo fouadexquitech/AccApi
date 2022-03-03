@@ -253,28 +253,31 @@ namespace AccApi.Repository.Managers
                                 if ((desc != "") && (reply != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
                                 {
                                     var comCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == desc).FirstOrDefault();
-                                    int condId = comCond.TcSeq == null ? 0 : comCond.TcSeq;
-
-                                    if (condId > 0)
+                                    if (comCond != null)
                                     {
-                                        var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcPackageSupliersId == PackageSupliersID).FirstOrDefault();
-                                        int comcondIdExist = comCondExist.TcComConId == null ? 0 : comCondExist.TcComConId;
+                                        int condId = comCond.TcSeq == null ? 0 : comCond.TcSeq;
 
-                                        if (comcondIdExist == 0)
+                                        if (condId > 0)
                                         {
-                                            var SuppCom = new TblSuppTechCondReply()
+                                            var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                            bool comcondIdExist = (comCondExist != null);
+
+                                            if (!comcondIdExist)
                                             {
-                                                TcComConId = condId,
-                                                TcPackageSupliersId = PackageSupliersID,
-                                                TcSuppReply = reply
-                                            };
-                                            LstSuppComCondReply.Add(SuppCom);
-                                        }
-                                        else
-                                        {
-                                            comCondExist.TcSuppReply = reply;
-                                            _dbcontext.TblSuppTechCondReplies.Update(comCondExist);
-                                            _dbcontext.SaveChanges();
+                                                var SuppCom = new TblSuppTechCondReply()
+                                                {
+                                                    TcComConId = condId,
+                                                    TcPackageSupliersId = PackageSupliersID,
+                                                    TcSuppReply = reply
+                                                };
+                                                LstSuppComCondReply.Add(SuppCom);
+                                            }
+                                            else
+                                            {
+                                                comCondExist.TcSuppReply = reply;
+                                                _dbcontext.TblSuppTechCondReplies.Update(comCondExist);
+                                                _dbcontext.SaveChanges();
+                                            }
                                         }
                                     }
                                 }
@@ -282,6 +285,7 @@ namespace AccApi.Repository.Managers
                             catch (Exception ex)
                             {
                                 Console.WriteLine(ex.Message);
+                                return false;
                             }
                         }
                     }
