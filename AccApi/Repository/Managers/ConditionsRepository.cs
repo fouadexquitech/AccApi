@@ -58,7 +58,7 @@ namespace AccApi.Repository.Managers
                 var sent = false;
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = true;
+                worksheet.Protection.IsProtected = false;
 
                 int i, j;
          
