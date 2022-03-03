@@ -55,6 +55,7 @@ namespace AccApi.Repository.Managers
 
             using (var xlPackage = new ExcelPackage(stream))
             {
+                var sent = false;
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
                 worksheet.Protection.IsProtected = true;
@@ -142,10 +143,11 @@ namespace AccApi.Repository.Managers
                         AttachmentList.Add(FullPath);
 
                         Mail m = new Mail();
-                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                        var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                        sent = (res == "sent");
                     }
                 }                   
-                return true;
+                return sent;
             }
         }
 

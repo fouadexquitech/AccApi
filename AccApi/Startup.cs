@@ -51,6 +51,7 @@ namespace AccApi
             services.AddTransient<ISupplierPackagesRevRepository, SupplierPackagesRevRepository>();
             services.AddTransient<IRevisionDetailsRepository, RevisionDetailsRepository>();
             services.AddTransient<IlogonRepository, LogonRepository>();
+            services.AddTransient<IConditionsRepository, ConditionsRepository>();
 
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
         }
