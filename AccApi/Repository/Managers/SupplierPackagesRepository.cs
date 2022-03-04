@@ -329,6 +329,7 @@ namespace AccApi.Repository.Managers
         public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, string EmailContent,byte ByBoq)
         {
             string sent = "";
+            string ComCondAttch = "";
 
             var AttachmentList = new List<string>();
 
@@ -337,9 +338,11 @@ namespace AccApi.Repository.Managers
             AttachmentList.Clear();
             AttachmentList.Add(FilePath);
 
-            if (item.comercialCondList.Count > 0)
+            if (item.comercialCondList.Count >0)
             {
-                string ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
+                    if (ComCondAttch=="")
+                        ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
+
                 AttachmentList.Add(ComCondAttch);
             }
 
