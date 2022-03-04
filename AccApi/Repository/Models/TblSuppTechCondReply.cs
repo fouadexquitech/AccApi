@@ -17,7 +17,7 @@ namespace AccApi.Repository.Models
         [Key]
         [Column("tcComConID")]
         public int TcComConId { get; set; }
-        [Column("tcSuppReply", TypeName = "text")]
+        [Column("tcSuppReply")]
         public string TcSuppReply { get; set; }
     }
 }

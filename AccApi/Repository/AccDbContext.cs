@@ -440,6 +440,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.BwpExecQty).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.BwpMatQtySource).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BwpMaterialExecQty).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.BwpPrelim).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpQty).HasDefaultValueSql("((0))");

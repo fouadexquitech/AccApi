@@ -56,5 +56,9 @@ namespace AccApi.Repository.Models
         public double? BwpSubcQty { get; set; }
         [Column("bwpSubcExecQty")]
         public double? BwpSubcExecQty { get; set; }
+        [Column("bwpMaterialExecQty")]
+        public double? BwpMaterialExecQty { get; set; }
+        [Column("bwpMatQtySource")]
+        public byte? BwpMatQtySource { get; set; }
     }
 }

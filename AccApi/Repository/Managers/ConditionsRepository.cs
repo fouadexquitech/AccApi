@@ -104,7 +104,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"Technical Conditions-{PackageName}-{ProjectName}-{DateTime.Now.ToString("ddMMyyyy")}.xlsx";
+                string excelName = $"Technical Conditions-{PackageName}-{ProjectName}.xlsx";
                 
                 string path = @"C:\App";
 
@@ -113,6 +113,10 @@ namespace AccApi.Repository.Managers
                     Directory.CreateDirectory(path);
                 }
                 string FullPath = path + "//" + excelName;
+
+                if (File.Exists(FullPath))
+                    File.Delete(FullPath);
+
                 xlPackage.SaveAs(FullPath);
 
 
@@ -135,7 +139,7 @@ namespace AccApi.Repository.Managers
                         List<General> mylistCC = new List<General>();
                         General cc = new General();
                         cc.mail = (string)SupEmail;
-                        mylistTo.Add(cc);
+                        mylistCC.Add(cc);
 
                         string Subject = "Technical Conditions";
 

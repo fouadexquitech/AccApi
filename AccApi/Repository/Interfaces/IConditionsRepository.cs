@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.Models.MasterModels;
+﻿using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace AccApi.Repository.Interfaces
         bool SendTechnicalConditions(int packId);
         bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile);
         bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile);
-        List<TblComCond> GetComConditionsReply(int PackageSupliersID);
-        List<TblTechCond> GetTechConditionsReply(int PackageSupliersID);
+        List<TblSuppComCondReply> GetComConditionsReply(int PackageSupliersID);
+        List<TblSuppTechCondReply> GetTechConditionsReply(int PackageSupliersID);
     }
 }
