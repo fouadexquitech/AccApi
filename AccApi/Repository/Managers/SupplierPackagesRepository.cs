@@ -450,7 +450,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"Technical Conditions-{PackageName}-{ProjectName}.xlsx";
+                string excelName = $"Commercial Conditions-{PackageName}-{ProjectName}.xlsx";
 
                 string path = @"C:\App\";
 

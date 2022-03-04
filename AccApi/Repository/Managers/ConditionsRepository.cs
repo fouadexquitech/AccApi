@@ -202,9 +202,9 @@ namespace AccApi.Repository.Managers
                                     if (comcondId>0)
                                     {
                                         var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
-                                         int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
+                                         //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
 
-                                        if (comcondIdExist == 0)
+                                        if (comCondExist == null)
                                         {
                                             var SuppCom = new TblSuppComCondReply()
                                             {
