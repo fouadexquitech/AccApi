@@ -316,71 +316,72 @@ namespace AccApi.Repository.Managers
 
         public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, string EmailContent,byte ByBoq)
         {
+            var sent = "";
             foreach (var item in supInputList)
             {
-                foreach (var supplier in item.supplierInputList)
-                { 
-                    if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+                var supplier = item.supplierInput;
+                 
+                if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+                {
+                    var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
+                    _dbcontext.Add<TblSupplierPackage>(spack);
+                    _dbcontext.SaveChanges();
+
+                    //send email
+                    string SupEmail = (from r in _dbcontext.TblSuppliers
+                                        where r.SupCode == supplier.supID
+                                        select r.SupEmail).First<string>();
+
+                    if (SupEmail != "")
                     {
-                        var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
-                        _dbcontext.Add<TblSupplierPackage>(spack);
-                        _dbcontext.SaveChanges();
+                        List<General> mylistTo = new List<General>();
+                        General g = new General();
+                        g.mail = (string)SupEmail;
+                        mylistTo.Add(g);
 
-                        //send email
-                        string SupEmail = (from r in _dbcontext.TblSuppliers
-                                           where r.SupCode == supplier.supID
-                                           select r.SupEmail).First<string>();
+                        List<General> mylistCC = new List<General>();
+                        General cc = new General();
+                        cc.mail = (string)SupEmail;
+                        mylistTo.Add(cc);
 
-                        if (SupEmail != "")
+                        string Subject = "Procurement";
+
+                        string MailBody;
+
+                        if (EmailContent != "")
                         {
-                            List<General> mylistTo = new List<General>();
-                            General g = new General();
-                            g.mail = (string)SupEmail;
-                            mylistTo.Add(g);
-
-                            List<General> mylistCC = new List<General>();
-                            General cc = new General();
-                            cc.mail = (string)SupEmail;
-                            mylistTo.Add(cc);
-
-                            string Subject = "Procurement";
-
-                            string MailBody;
-
-                            if (EmailContent != "")
-                            {
-                                MailBody = EmailContent;
-                            }
-                            else
-                            {
-                                MailBody = "Dear Sir,";
-                                MailBody += Environment.NewLine;
-                                MailBody += Environment.NewLine;
-                                MailBody += "Please find attached , and fill the price ";
-                                MailBody += Environment.NewLine;
-                                MailBody += Environment.NewLine;
-                                MailBody += Environment.NewLine;
-                                MailBody += Environment.NewLine;
-                                MailBody += "Best regards";
-                            }
-
-                            var AttachmentList = new List<string>();
-                            AttachmentList.Add(FilePath);
-
-                            //Commercial Conditions
-                            if (item.comercialCondList.Count > 0)
-                            {
-                                string ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
-                                AttachmentList.Add(ComCondAttch);
-                            }
-
-                            Mail m = new Mail();
-                            m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                            MailBody = EmailContent;
                         }
+                        else
+                        {
+                            MailBody = "Dear Sir,";
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += "Please find attached , and fill the price ";
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += "Best regards";
+                        }
+
+                        var AttachmentList = new List<string>();
+                        AttachmentList.Add(FilePath);
+
+                        //Commercial Conditions
+                        if (item.comercialCondList.Count > 0)
+                        {
+                            string ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
+                            AttachmentList.Add(ComCondAttch);
+                        }
+
+                        Mail m = new Mail();
+                        sent = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                     }
+                    
+                }
             }
-            }
-            return true;
+            return (sent == "sent");
         }
 
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
