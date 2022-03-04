@@ -306,13 +306,13 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"Package-{PackageName}.xlsx";
 
-                string path = @"C:\App";
+                string path = @"C:\App\";
 
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
                 }
-                string FullPath = path + "//" + excelName;
+                string FullPath = path + excelName;
 
                 if (File.Exists(FullPath))
                     File.Delete(FullPath);
@@ -413,7 +413,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = true;
+                //worksheet.Protection.IsProtected = true;
 
                 int i, j;
 
@@ -449,13 +449,13 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"Technical Conditions-{PackageName}-{ProjectName}.xlsx";
 
-                string path = @"C:\App";
+                string path = @"C:\App\";
 
                 if (!Directory.Exists(path))
                 {
                     Directory.CreateDirectory(path);
                 }
-                string FullPath = path + "//" + excelName;
+                string FullPath = path + excelName;
 
                 if (File.Exists(FullPath))           
                     File.Delete(FullPath);
