@@ -326,21 +326,25 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, SupplierInputList supInputList, string FilePath, string EmailContent,byte ByBoq)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, string EmailContent,byte ByBoq)
         {
+            string sent = "";
 
             var AttachmentList = new List<string>();
+
+            foreach(var item in supInputList)
+            {
+            AttachmentList.Clear();
             AttachmentList.Add(FilePath);
 
-            if (supInputList.comercialCondList.Count > 0)
+            if (item.comercialCondList.Count > 0)
             {
-                string ComCondAttch = SendComercialConditions(packId, supInputList.comercialCondList);
+                string ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
                 AttachmentList.Add(ComCondAttch);
             }
 
+                SupplierInput supplier = item.supplierInput;
 
-            foreach (var supplier in supInputList.supplierInputList)
-            {
                 if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                 {
                     var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
@@ -385,13 +389,12 @@ namespace AccApi.Repository.Managers
                             MailBody += "Best regards";
                         }
 
-                        Mail m = new Mail();
-                        m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                       Mail m = new Mail();
+                       sent= m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                     }
                 }
             }
-            
-            return true;
+            return (sent=="sent");
         }
 
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
