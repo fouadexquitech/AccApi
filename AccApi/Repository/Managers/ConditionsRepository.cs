@@ -50,16 +50,42 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<TblSuppComCondReply> GetComConditionsReply(int PackageSupliersID)
+        public List<ConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
-            var result = _dbcontext.TblSuppComCondReplies.Where(x => x.CdPackageSupliersId == PackageSupliersID).ToList();
-            return result;
+            var result = from a in _dbcontext.TblSuppComCondReplies
+                         join b in _mdbcontext.TblComConds on a.CdComConId equals b.CmSeq
+                         join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
+                         join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                         where (a.CdPackageSupliersId == PackageSupliersID)
+                         select new ConditionsReply
+                         {
+                             condId=a.CdComConId,
+                             condDesc=b.CmDescription,
+                             supId=d.SupCode,
+                            supName=d.SupName,
+                            condReply=a.CdSuppReply
+                         };
+
+            return result.ToList();
         }
 
-        public List<TblSuppTechCondReply> GetTechConditionsReply(int PackageSupliersID)
+        public List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
-            var result = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcPackageSupliersId == PackageSupliersID).ToList();
-            return result;
+            var result = from a in _dbcontext.TblSuppTechCondReplies
+                         join b in _mdbcontext.TblComConds on a.TcComConId equals b.CmSeq
+                         join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
+                         join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                         where (a.TcPackageSupliersId == PackageSupliersID)
+                         select new ConditionsReply
+                         {
+                             condId = a.TcComConId,
+                             condDesc = b.CmDescription,
+                             supId = d.SupCode,
+                             supName = d.SupName,
+                             condReply = a.TcSuppReply
+                         };
+
+            return result.ToList();
         }
 
         public bool SendTechnicalConditions(int packId)
