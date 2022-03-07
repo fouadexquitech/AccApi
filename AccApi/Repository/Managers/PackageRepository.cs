@@ -91,7 +91,6 @@ namespace AccApi.Repository.Managers
                 .ToList();
 
             return resutl.OrderBy(w => w.RowNumber).ToList();
-
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
         }
 
@@ -112,8 +111,6 @@ namespace AccApi.Repository.Managers
             //                   BoqScope = b.BoqScope,
             //                   ResDescription = r.ResDescription
             //               }).ToList();
-
-
             //return results;
 
             IEnumerable<BoqModel> condQuery = (from b in _context.TblBoqs

@@ -52,8 +52,11 @@ namespace AccApi.Repository.Managers
 
         public List<ConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
-            var result = from a in _dbcontext.TblSuppComCondReplies
-                         join b in _mdbcontext.TblComConds on a.CdComConId equals b.CmSeq
+            var comcond = (from b in _mdbcontext.TblComConds
+                            select b).ToList();
+
+            var result = (from b in comcond
+                         join a in _dbcontext.TblSuppComCondReplies on  b.CmSeq equals a.CdComConId 
                          join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
                          join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
                          where (a.CdPackageSupliersId == PackageSupliersID)
@@ -64,26 +67,29 @@ namespace AccApi.Repository.Managers
                              supId=d.SupCode,
                             supName=d.SupName,
                             condReply=a.CdSuppReply
-                         };
+                         });
 
             return result.ToList();
         }
 
         public List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
-            var result = from a in _dbcontext.TblSuppTechCondReplies
-                         join b in _mdbcontext.TblComConds on a.TcComConId equals b.CmSeq
-                         join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
-                         join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
-                         where (a.TcPackageSupliersId == PackageSupliersID)
-                         select new ConditionsReply
-                         {
-                             condId = a.TcComConId,
-                             condDesc = b.CmDescription,
-                             supId = d.SupCode,
-                             supName = d.SupName,
-                             condReply = a.TcSuppReply
-                         };
+            var techcond = (from b in _mdbcontext.TblTechConds
+                             select b).ToList();
+
+            var result = (from b in techcond
+                join a in _dbcontext.TblSuppTechCondReplies   on b.TcSeq equals a.TcComConId                    
+                        join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
+                        join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                        where ( a.TcComConId==b.TcSeq && a.TcPackageSupliersId == PackageSupliersID)
+                       
+                        select new ConditionsReply
+                        {
+                            condId = a.TcComConId,                       
+                            supId = d.SupCode,
+                            supName = d.SupName,
+                            condReply = a.TcSuppReply
+                        });
 
             return result.ToList();
         }
