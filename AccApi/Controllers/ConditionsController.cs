@@ -1,6 +1,7 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
+using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -25,7 +26,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditions")]
-        public List<TblComCond> GetComConditions()
+        public List<ComConditions> GetComConditions()
         {
             try
             {
@@ -39,7 +40,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditions")]
-        public List<TblTechCond> GetTechConditions(int packId)
+        public List<TechConditions> GetTechConditions(int packId)
         {
             try
             {

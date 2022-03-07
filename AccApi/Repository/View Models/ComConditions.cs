@@ -7,5 +7,7 @@ namespace AccApi.Repository.View_Models
 {
     public class ComConditions
     {
+        public int CmSeq { get; set; }
+        public string CmDescription { get; set; }
     }
 }

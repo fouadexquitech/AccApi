@@ -26,16 +26,28 @@ namespace AccApi.Repository.Managers
             _pdbcontext = pdbcontext;
         }
 
-        public List<TblComCond> GetComConditions()
+        public List<ComConditions> GetComConditions()
         {
-            var result = _mdbcontext.TblComConds.ToList();
-            return result;
+            var result = from b in _mdbcontext.TblComConds
+                         select new ComConditions
+                         { 
+                             CmSeq=b.CmSeq,
+                             CmDescription=b.CmDescription
+                         };
+
+            return result.ToList();
         }
 
-        public List<TblTechCond> GetTechConditions(int packId)
+        public List<TechConditions> GetTechConditions(int packId)
         {
-            var result = _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
-            return result;
+            var result = from b in _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId)
+                         select new TechConditions
+                         { TcSeq=b.TcSeq,
+                         TcDescription=b.TcDescription,
+                         TcPackId=b.TcPackId
+                         };
+
+            return result.ToList();
         }
 
         public List<TblSuppComCondReply> GetComConditionsReply(int PackageSupliersID)
