@@ -85,7 +85,8 @@ namespace AccApi.Repository.Managers
                        
                         select new ConditionsReply
                         {
-                            condId = a.TcComConId,                       
+                            condId = a.TcComConId,
+                            condDesc = b.TcDescription,
                             supId = d.SupCode,
                             supName = d.SupName,
                             condReply = a.TcSuppReply
