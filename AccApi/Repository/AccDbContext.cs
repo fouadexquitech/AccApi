@@ -121,6 +121,7 @@ namespace AccApi.Repository
         public virtual DbSet<Temp> Temps { get; set; }
         public virtual DbSet<TempImportAcc> TempImportAccs { get; set; }
         public virtual DbSet<TempLabourCost> TempLabourCosts { get; set; }
+        public virtual DbSet<TmpConditionsReply> TmpConditionsReplies { get; set; }
         public virtual DbSet<TmpDivCostCode> TmpDivCostCodes { get; set; }
         public virtual DbSet<TmpEarnedValue> TmpEarnedValues { get; set; }
         public virtual DbSet<TmpEngReport> TmpEngReports { get; set; }
@@ -1841,6 +1842,15 @@ namespace AccApi.Repository
                 entity.Property(e => e.TxtNote).IsUnicode(false);
 
                 entity.Property(e => e.Wbs).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TmpConditionsReply>(entity =>
+            {
+                entity.Property(e => e.CondDesc).IsUnicode(false);
+
+                entity.Property(e => e.CondReply).IsUnicode(false);
+
+                entity.Property(e => e.SupName).IsUnicode(false);
             });
 
             modelBuilder.Entity<TmpDivCostCode>(entity =>

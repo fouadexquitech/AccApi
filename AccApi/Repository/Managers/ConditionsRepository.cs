@@ -4,6 +4,8 @@ using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -51,48 +53,66 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<ConditionsReply> GetComConditionsReply(int PackageSupliersID)
+        public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
-            var comcond = (from b in _mdbcontext.TblComConds
-                           select b).ToList();
+            //var comcond = (from b in _mdbcontext.TblComConds
+            //               select b).ToList();
 
-            var result = (from b in comcond
-                          join a in _dbcontext.TblSuppComCondReplies on b.CmSeq equals a.CdComConId
-                          join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
-                          join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
-                          where (a.CdPackageSupliersId == PackageSupliersID)
-                          select new ConditionsReply
-                          {
-                              condId = a.CdComConId,
-                              condDesc = b.CmDescription,
-                              supId = d.SupCode,
-                              supName = d.SupName,
-                              condReply = a.CdSuppReply
-                          });
+            //var result = (from b in comcond
+            //              join a in _dbcontext.TblSuppComCondReplies on b.CmSeq equals a.CdComConId
+            //              join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
+            //              join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+            //              where (a.CdPackageSupliersId == PackageSupliersID)
+            //              select new ConditionsReply
+            //              {
+            //                  condId = a.CdComConId,
+            //                  condDesc = b.CmDescription,
+            //                  supId = d.SupCode,
+            //                  supName = d.SupName,
+            //                  condReply = a.CdSuppReply
+            //              });
 
-            return result.ToList();
+            var param1 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
+            var param2 = new SqlParameter("@Type", 1);
+
+            List<TmpConditionsReply> list = _dbcontext
+                        .TmpConditionsReplies
+                        .FromSqlRaw("exec SP_GetConditionsReply @PackageSupliersID,@Type", param1, param2)
+                        .ToList();
+
+            return list;
         }
 
-        public List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID)
+        public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
-            var techcond = (from b in _mdbcontext.TblTechConds
-                            select b).ToList();
+            //var techcond = (from b in _mdbcontext.TblTechConds
+            //                select b).ToList();
 
-            var result = (from b in techcond
-                          join a in _dbcontext.TblSuppTechCondReplies on b.TcSeq equals a.TcComConId
-                          join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
-                          join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
-                          where (a.TcComConId == b.TcSeq && a.TcPackageSupliersId == PackageSupliersID)
+            //var result = (from b in techcond
+            //              join a in _dbcontext.TblSuppTechCondReplies on b.TcSeq equals a.TcComConId
+            //              join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
+            //              join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+            //              where (a.TcComConId == b.TcSeq && a.TcPackageSupliersId == PackageSupliersID)
 
-                          select new ConditionsReply
-                          {
-                              condId = a.TcComConId,
-                              supId = d.SupCode,
-                              supName = d.SupName,
-                              condReply = a.TcSuppReply
-                          });
+            //              select new ConditionsReply
+            //              {
+            //                  condId = a.TcComConId,
+            //                  supId = d.SupCode,
+            //                  supName = d.SupName,
+            //                  condReply = a.TcSuppReply
+            //              });
 
-            return result.ToList();
+            //return result.ToList();
+
+            var param1 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
+            var param2 = new SqlParameter("@Type", 2);
+
+            List<TmpConditionsReply> list = _dbcontext
+                        .TmpConditionsReplies
+                        .FromSqlRaw("exec SP_GetConditionsReply @PackageSupliersID,@Type", param1, param2)
+                        .ToList();
+
+            return list;
         }
 
         public bool SendTechnicalConditions(int packId)

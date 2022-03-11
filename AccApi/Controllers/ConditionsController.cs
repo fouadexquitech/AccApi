@@ -54,7 +54,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditionsReply")]
-        public List<ConditionsReply> GetComConditionsReply(int PackageSupliersID)
+        public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditionsReply")]
-        public List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID)
+        public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             try
             {

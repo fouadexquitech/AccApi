@@ -16,7 +16,7 @@ namespace AccApi.Repository.Interfaces
         bool SendTechnicalConditions(int packId);
         bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile);
         bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile);
-        List<ConditionsReply> GetComConditionsReply(int PackageSupliersID);
-        List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID);
+        List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID);
+        List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID);
     }
 }
