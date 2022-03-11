@@ -25,6 +25,23 @@ namespace AccApi.Repository.Managers
             _pdbcontext = pdbcontext;
         }
 
+        public SupplierPackagesList GetSupplierPackage(int spId)
+        {
+            var results = from b in _dbcontext.TblSupplierPackages
+                          join c in _dbcontext.TblSuppliers on b.SpSupplierId equals c.SupCode
+                          where b.SpPackSuppId == spId
+                          orderby b.SpPackSuppId
+                          select new SupplierPackagesList
+                          {
+                              PsId = b.SpPackSuppId,
+                              PsPackId = b.SpPackageId,
+                              PsSuppId = b.SpSupplierId,
+                              PsSupName = c.SupName,
+                              PsByBoq = b.SpByBoq
+                          };
+            return results.FirstOrDefault();
+        }
+
         public List<SupplierPackagesList> SupplierPackagesList(int packageid)
         {
             var results = from b in _dbcontext.TblSupplierPackages

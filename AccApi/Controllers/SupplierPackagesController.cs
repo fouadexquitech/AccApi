@@ -27,6 +27,21 @@ namespace AccApi.Controllers
             this._hostingEnvironment = hostingEnvironment;
         }
 
+        [HttpGet("GetSupplierPackage")]
+        public SupplierPackagesList GetSupplierPackage(int psId)
+        {
+            try
+            {
+                return this._supplierPackagesRepository.GetSupplierPackage(psId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+
         [HttpGet("GetSupplierPackagesList")]
         public List<SupplierPackagesList> GetSupplierPackagesList(int packageid)
         {
