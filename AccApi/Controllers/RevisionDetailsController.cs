@@ -149,5 +149,18 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("SendCompToManagement")]
+        public bool SendCompToManagement(int packId, List<TopManagement> topManagList, IFormFile ExcelComparisonSheet)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.SendCompToManagement(packId, topManagList,  ExcelComparisonSheet);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }

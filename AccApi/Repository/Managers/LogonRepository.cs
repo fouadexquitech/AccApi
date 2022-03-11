@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
@@ -161,6 +162,19 @@ namespace AccApi.Repository.Managers
                          };
 
             return result.FirstOrDefault();
+        }
+
+        public List<TopManagement> GetManagementEmail()
+        {
+            var result = (from b in _mdbcontext.TblManagementUsers
+                         select new TopManagement
+                         {
+                             UserName=b.UserName,
+                             Mail = b.Mail,
+                             Occupation = b.Occupation
+                         }).ToList(); 
+
+            return result.ToList();
         }
 
         public bool SaveEmailTemplate(int id, string emailbody)

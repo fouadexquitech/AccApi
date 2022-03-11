@@ -30,9 +30,9 @@ namespace AccApi.Repository.Managers
         {
             var result = from b in _mdbcontext.TblComConds
                          select new ComConditions
-                         { 
-                             CmSeq=b.CmSeq,
-                             CmDescription=b.CmDescription
+                         {
+                             CmSeq = b.CmSeq,
+                             CmDescription = b.CmDescription
                          };
 
             return result.ToList();
@@ -42,9 +42,10 @@ namespace AccApi.Repository.Managers
         {
             var result = from b in _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId)
                          select new TechConditions
-                         { TcSeq=b.TcSeq,
-                         TcDescription=b.TcDescription,
-                         TcPackId=b.TcPackId
+                         {
+                             TcSeq = b.TcSeq,
+                             TcDescription = b.TcDescription,
+                             TcPackId = b.TcPackId
                          };
 
             return result.ToList();
@@ -53,21 +54,21 @@ namespace AccApi.Repository.Managers
         public List<ConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
             var comcond = (from b in _mdbcontext.TblComConds
-                            select b).ToList();
+                           select b).ToList();
 
             var result = (from b in comcond
-                         join a in _dbcontext.TblSuppComCondReplies on  b.CmSeq equals a.CdComConId 
-                         join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
-                         join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
-                         where (a.CdPackageSupliersId == PackageSupliersID)
-                         select new ConditionsReply
-                         {
-                             condId=a.CdComConId,
-                             condDesc=b.CmDescription,
-                             supId=d.SupCode,
-                            supName=d.SupName,
-                            condReply=a.CdSuppReply
-                         });
+                          join a in _dbcontext.TblSuppComCondReplies on b.CmSeq equals a.CdComConId
+                          join c in _dbcontext.TblSupplierPackages on a.CdPackageSupliersId equals c.SpPackSuppId
+                          join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                          where (a.CdPackageSupliersId == PackageSupliersID)
+                          select new ConditionsReply
+                          {
+                              condId = a.CdComConId,
+                              condDesc = b.CmDescription,
+                              supId = d.SupCode,
+                              supName = d.SupName,
+                              condReply = a.CdSuppReply
+                          });
 
             return result.ToList();
         }
@@ -75,21 +76,21 @@ namespace AccApi.Repository.Managers
         public List<ConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             var techcond = (from b in _mdbcontext.TblTechConds
-                             select b).ToList();
+                            select b).ToList();
 
             var result = (from b in techcond
-                join a in _dbcontext.TblSuppTechCondReplies   on b.TcSeq equals a.TcComConId                    
-                        join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
-                        join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
-                        where ( a.TcComConId==b.TcSeq && a.TcPackageSupliersId == PackageSupliersID)
-                       
-                        select new ConditionsReply
-                        {
-                            condId = a.TcComConId,                       
-                            supId = d.SupCode,
-                            supName = d.SupName,
-                            condReply = a.TcSuppReply
-                        });
+                          join a in _dbcontext.TblSuppTechCondReplies on b.TcSeq equals a.TcComConId
+                          join c in _dbcontext.TblSupplierPackages on a.TcPackageSupliersId equals c.SpPackSuppId
+                          join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                          where (a.TcComConId == b.TcSeq && a.TcPackageSupliersId == PackageSupliersID)
+
+                          select new ConditionsReply
+                          {
+                              condId = a.TcComConId,
+                              supId = d.SupCode,
+                              supName = d.SupName,
+                              condReply = a.TcSuppReply
+                          });
 
             return result.ToList();
         }
@@ -99,10 +100,9 @@ namespace AccApi.Repository.Managers
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p= _dbcontext.TblParameters.FirstOrDefault();
+            var p = _dbcontext.TblParameters.FirstOrDefault();
             var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             string ProjectName = proj.PrjName;
-
 
             var result = _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
 
@@ -117,7 +117,7 @@ namespace AccApi.Repository.Managers
                 //worksheet.Protection.IsProtected = false;
 
                 int i, j;
-         
+
                 worksheet.Cells[1, 1].Value = "Project :" + ProjectName;
                 worksheet.Cells["A1:C1"].Merge = true;
 
@@ -126,7 +126,7 @@ namespace AccApi.Repository.Managers
 
                 worksheet.Cells[3, 1].Value = "ACC conditions";
                 worksheet.Cells["A3:B3"].Merge = true;
-                
+
                 worksheet.Cells[3, 3].Value = "Supplier/subcontractor reply";
                 worksheet.Column(3).Width = 40;
                 worksheet.Columns[3].Style.WrapText = true;
@@ -149,7 +149,7 @@ namespace AccApi.Repository.Managers
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"Technical Conditions-{PackageName}-{ProjectName}.xlsx";
-                
+
                 string path = @"C:\App\";
 
                 if (!Directory.Exists(path))
@@ -205,8 +205,12 @@ namespace AccApi.Repository.Managers
                         Mail m = new Mail();
                         var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
                         sent = (res == "sent");
+
+                        sp.TecCondSent = true;
+                        _dbcontext.TblSupplierPackages.Update(sp);
+                        _dbcontext.SaveChanges();
                     }
-                }                   
+                }
                 return sent;
             }
         }
@@ -217,7 +221,7 @@ namespace AccApi.Repository.Managers
             {
                 var stream = ExcelFile.OpenReadStream();
                 List<TblSuppComCondReply> LstSuppComCondReply = new List<TblSuppComCondReply>();
-             
+
                 try
                 {
                     ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -238,15 +242,15 @@ namespace AccApi.Repository.Managers
                                 string reply = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
                                 double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
 
-                                if ((desc !="") && (reply!="") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
+                                if ((desc != "") && (reply != "") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
                                 {
-                                    var comCond = _mdbcontext.TblComConds.Where(x => x.CmDescription == desc).FirstOrDefault();                              
-                                       int comcondId = comCond.CmSeq == null ? 0 : comCond.CmSeq;
+                                    var comCond = _mdbcontext.TblComConds.Where(x => x.CmDescription == desc).FirstOrDefault();
+                                    int comcondId = comCond.CmSeq == null ? 0 : comCond.CmSeq;
 
-                                    if (comcondId>0)
+                                    if (comcondId > 0)
                                     {
                                         var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
-                                         //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
+                                        //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
 
                                         if (comCondExist == null)
                                         {
@@ -263,7 +267,7 @@ namespace AccApi.Repository.Managers
                                             comCondExist.CdSuppReply = reply;
                                             _dbcontext.TblSuppComCondReplies.Update(comCondExist);
                                             _dbcontext.SaveChanges();
-                                        }                                          
+                                        }
                                     }
                                 }
                             }
@@ -273,7 +277,7 @@ namespace AccApi.Repository.Managers
                             }
                         }
                     }
-                    _dbcontext.AddRange(LstSuppComCondReply);               
+                    _dbcontext.AddRange(LstSuppComCondReply);
                     _dbcontext.SaveChanges();
                 }
 
@@ -359,7 +363,7 @@ namespace AccApi.Repository.Managers
                 }
             }
             return true;
-
         }
     }
 }
+

@@ -20,5 +20,6 @@ namespace AccApi.Repository.Models
         public int? SpSupplierId { get; set; }
         [Column("spByBoq")]
         public byte? SpByBoq { get; set; }
+        public bool? TecCondSent { get; set; }
     }
 }

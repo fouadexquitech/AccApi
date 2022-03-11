@@ -34,6 +34,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblMailHdr> TblMailHdrs { get; set; }
         public virtual DbSet<TblMailRequest> TblMailRequests { get; set; }
         public virtual DbSet<TblMailTocc> TblMailToccs { get; set; }
+        public virtual DbSet<TblManagementUser> TblManagementUsers { get; set; }
         public virtual DbSet<TblMasterProject> TblMasterProjects { get; set; }
         public virtual DbSet<TblMasterProjectsOld> TblMasterProjectsOlds { get; set; }
         public virtual DbSet<TblNetSalary> TblNetSalaries { get; set; }
@@ -250,6 +251,15 @@ namespace AccApi.Repository
                 entity.Property(e => e.MldMailDisabled).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.MldToCc).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblManagementUser>(entity =>
+            {
+                entity.Property(e => e.Mail).IsUnicode(false);
+
+                entity.Property(e => e.Occupation).IsUnicode(false);
+
+                entity.Property(e => e.UserName).IsFixedLength(true);
             });
 
             modelBuilder.Entity<TblMasterProject>(entity =>

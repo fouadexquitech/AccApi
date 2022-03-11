@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -106,5 +107,20 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+        [HttpGet("GetManagementEmail")]
+        public List<TopManagement> GetManagementEmail()
+        {
+            try
+            {
+                return this._logonRepository.GetManagementEmail();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
     }
 }

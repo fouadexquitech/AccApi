@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.Interfaces;
+﻿using AccApi.Data_Layer;
+using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
@@ -14,10 +15,11 @@ namespace AccApi.Repository.Managers
     public class RevisionDetailsRepository : IRevisionDetailsRepository
     {
         private AccDbContext _dbContext;
-
-        public RevisionDetailsRepository(AccDbContext dbContext)
+        private PolicyDbContext _pdbContext;
+        public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext)
         {
             _dbContext = dbContext;
+            _pdbContext = pdbContext;
         }
 
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
@@ -415,7 +417,6 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-
         public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList)
         {
             foreach (var sup in SupplierBOQList)
@@ -501,5 +502,74 @@ namespace AccApi.Repository.Managers
             _dbContext.SaveChanges();
             return true;
         }
+
+        public bool SendCompToManagement(int packId, List<TopManagement> topManagList, IFormFile ExcelComparisonSheet)
+        {
+            string send = "";
+
+            if (topManagList.Count > 0)
+            {
+                var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+                string PackageName = package.PkgeName;
+
+                var p = _dbContext.TblParameters.FirstOrDefault();
+                var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+                string ProjectName = proj.PrjName;
+
+                //string excelName = $"{PackageName}-{ProjectName}.xlsx";
+
+                //string path = @"C:\App\";
+
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + ExcelComparisonSheet;
+
+                //if (File.Exists(FullPath))
+                //    File.Delete(FullPath);
+
+                //xlPackage.SaveAs(FullPath);
+
+
+                //Send Email
+                List<General> mylistTo = new List<General>();
+                foreach (var item in topManagList)
+                {
+                    General g = new General();
+                    g.mail = (string)item.Mail == null ? "" : item.Mail.ToString(); ;
+                    mylistTo.Add(g);
+                }
+
+                List<General> mylistCC = new List<General>();
+                mylistCC = null;
+
+                string Subject = "Project: " + ProjectName + ", Package: " + PackageName;
+
+                string MailBody;
+
+                MailBody = "Dear Sir,";
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += "Please find attached Comparison sheet.";
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += "Best regards";
+
+                var AttachmentList = new List<string>();
+                string fileName = Path.GetFileName(ExcelComparisonSheet.FileName);
+                AttachmentList.Add(fileName);
+
+                Mail m = new Mail();
+                var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+
+                send = "sent";
+            }
+
+            return (send == "sent");
+        }
+
     }
 }

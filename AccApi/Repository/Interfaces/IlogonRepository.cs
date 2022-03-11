@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.View_Models;
+﻿using AccApi.Repository.Models.MasterModels;
+using AccApi.Repository.View_Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,6 @@ namespace AccApi.Repository.Interfaces
         ProjectCurrency GetProjectCurrency();
         EmailTemplate GetSuppliersEmailTemplate(string Lang);
         bool SaveEmailTemplate(int id, string emailbody);
+        List<TopManagement> GetManagementEmail();
     }
 }
