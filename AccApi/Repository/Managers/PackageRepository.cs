@@ -220,7 +220,7 @@ namespace AccApi.Repository.Managers
             var query = (from a in _context.TblSupplierPackages
                          join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
                          join rev in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals rev.PrPackSuppId
-                         where (a.SpPackageId == pckgID)
+                         where (a.SpPackageId == pckgID && rev.PrRevNo == 0)
                          select new
                          {
                              SupplierId = a.SpSupplierId,
