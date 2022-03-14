@@ -37,7 +37,8 @@ namespace AccApi.Repository.Managers
                               PsPackId = b.SpPackageId,
                               PsSuppId = b.SpSupplierId,
                               PsSupName = c.SupName,
-                              PsByBoq = b.SpByBoq
+                              PsByBoq = b.SpByBoq,
+                              TecCondSent = b.TecCondSent
                           };
             return results.FirstOrDefault();
         }
@@ -54,7 +55,8 @@ namespace AccApi.Repository.Managers
                               PsPackId = b.SpPackageId,
                               PsSuppId = b.SpSupplierId,
                               PsSupName = c.SupName,
-                              PsByBoq = b.SpByBoq
+                              PsByBoq = b.SpByBoq,
+                              TecCondSent = b.TecCondSent
                           };
             return results.ToList();
         }

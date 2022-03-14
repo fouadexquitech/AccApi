@@ -19,6 +19,6 @@ namespace AccApi.Repository.Interfaces
         bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList);
         bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item);
         bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item);
-        bool SendCompToManagement(int packId, List<TopManagement> topManagList, IFormFile ExcelComparisonSheet);
+        bool SendCompToManagement(int packId, List<TopManagement> topManagList);
     }
 }

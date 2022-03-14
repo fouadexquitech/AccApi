@@ -150,11 +150,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public bool SendCompToManagement(int packId, List<TopManagement> topManagList, IFormFile ExcelComparisonSheet)
+        public bool SendCompToManagement(int packId, List<TopManagement> topManagList)
         {
             try
             {
-                return this._revisionDetailsRepository.SendCompToManagement(packId, topManagList,  ExcelComparisonSheet);
+                return this._revisionDetailsRepository.SendCompToManagement(packId, topManagList);
             }
             catch (Exception ex)
             {

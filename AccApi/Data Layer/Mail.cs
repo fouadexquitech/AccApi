@@ -42,16 +42,22 @@ namespace AccApi.Data_Layer
                 mail.IsBodyHtml = BodyHtml;
                 mail.BodyEncoding = System.Text.Encoding.UTF8;
 
-                foreach (General g in MailCC)
+                if (MailCC != null)
                 {
-                    MailAddress copy = new MailAddress(g.mail);
-                    mail.CC.Add(copy);
+                    foreach (General g in MailCC)
+                    {
+                        MailAddress copy = new MailAddress(g.mail);
+                        mail.CC.Add(copy);
+                    }
                 }
 
-                foreach (var attach in MailAttach)
+                if (MailAttach != null)
                 {
-                    if (File.Exists(attach))
-                        mail.Attachments.Add(new Attachment(attach));
+                    foreach (var attach in MailAttach)
+                    {
+                        if (File.Exists(attach))
+                            mail.Attachments.Add(new Attachment(attach));
+                    }
                 }
 
                 client.Send(mail);

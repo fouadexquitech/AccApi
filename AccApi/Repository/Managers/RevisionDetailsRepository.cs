@@ -503,7 +503,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(int packId, List<TopManagement> topManagList, IFormFile ExcelComparisonSheet)
+        public bool SendCompToManagement(int packId, List<TopManagement> topManagList)
         {
             string send = "";
 
@@ -537,7 +537,7 @@ namespace AccApi.Repository.Managers
                 foreach (var item in topManagList)
                 {
                     General g = new General();
-                    g.mail = (string)item.Mail == null ? "" : item.Mail.ToString(); ;
+                    g.mail = (string)item.Mail == null ? "" : item.Mail.ToString();
                     mylistTo.Add(g);
                 }
 
@@ -559,8 +559,8 @@ namespace AccApi.Repository.Managers
                 MailBody += "Best regards";
 
                 var AttachmentList = new List<string>();
-                string fileName = Path.GetFileName(ExcelComparisonSheet.FileName);
-                AttachmentList.Add(fileName);
+                //string fileName = Path.GetFileName(ExcelComparisonSheet.FileName);
+               // AttachmentList.Add(fileName);
 
                 Mail m = new Mail();
                 var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);

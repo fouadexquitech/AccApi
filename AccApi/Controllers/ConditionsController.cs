@@ -18,11 +18,13 @@ namespace AccApi.Controllers
     {
         private readonly ILogger<ConditionsController> _ilogger;
         private IConditionsRepository _conditionsRepository;
+        private ISupplierPackagesRepository _supplierPackagesRepository;
 
-        public ConditionsController(ILogger<ConditionsController> Ilogger, IConditionsRepository conditionsRepository)
+        public ConditionsController(ILogger<ConditionsController> Ilogger, IConditionsRepository conditionsRepository, ISupplierPackagesRepository supplierPackagesRepository)
         {
             _ilogger = Ilogger;
             _conditionsRepository = conditionsRepository;
+            _supplierPackagesRepository = supplierPackagesRepository;
         }
 
         [HttpGet("GetComConditions")]
@@ -51,6 +53,106 @@ namespace AccApi.Controllers
                 _ilogger.LogError(ex.Message);
                 return null;
             }
+        }
+
+        [HttpGet("GetTechCondReplies")]
+        public List<DisplayCondition> GetTechCondReplies(int packId)
+        {
+            try
+            {
+                
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId).Select(x=>new DisplayCondition { 
+                    Id = x.TcSeq,
+                    Description = x.TcDescription,
+                    Replies = new List<DisplayCondReply>()
+                }).ToList();
+                
+                var listPackageSuppliers = this._supplierPackagesRepository.SupplierPackagesList(packId);
+                listPackageSuppliers.ForEach(sp =>
+                {
+                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId);
+
+                    replies.ForEach(x => {
+                        if (x.SupId != null)
+                        {
+                            DisplayCondReply displayReply = new DisplayCondReply
+                            {
+                                SupplierId = x.SupId.Value,
+                                SupplierName = x.SupName,
+                                ConditionId = x.CondId,
+                                Reply = x.CondReply
+                            };
+                            var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
+                            cond.Replies.Add(displayReply);
+                        }
+
+                        
+
+                    });
+
+                    
+
+                });
+                return displayConditions;
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+
+            
+        }
+
+
+        [HttpGet("GetComCondReplies")]
+        public List<DisplayCondition> GetComCondReplies(int packId)
+        {
+            try
+            {
+
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetComConditions().Select(x => new DisplayCondition
+                {
+                    Id = x.CmSeq,
+                    Description = x.CmDescription,
+                    Replies = new List<DisplayCondReply>()
+                }).ToList();
+
+                var listPackageSuppliers = this._supplierPackagesRepository.SupplierPackagesList(packId);
+                listPackageSuppliers.ForEach(sp =>
+                {
+                    var replies = _conditionsRepository.GetComConditionsReply(sp.PsId);
+
+                    replies.ForEach(x => {
+                        if (x.SupId != null)
+                        {
+                            DisplayCondReply displayReply = new DisplayCondReply
+                            {
+                                SupplierId = x.SupId.Value,
+                                SupplierName = x.SupName,
+                                ConditionId = x.CondId,
+                                Reply = x.CondReply
+                            };
+                            var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
+                            cond.Replies.Add(displayReply);
+                        }
+
+
+
+                    });
+
+
+
+                });
+                return displayConditions;
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+
+
         }
 
         [HttpGet("GetComConditionsReply")]
