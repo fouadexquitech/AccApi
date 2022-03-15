@@ -150,11 +150,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public bool SendCompToManagement(int packId, List<TopManagement> topManagList)
+        public bool SendCompToManagement(string parameters, IFormFile attachement)
         {
             try
             {
-                return this._revisionDetailsRepository.SendCompToManagement(packId, topManagList);
+                return this._revisionDetailsRepository.SendCompToManagement(parameters, attachement);
             }
             catch (Exception ex)
             {

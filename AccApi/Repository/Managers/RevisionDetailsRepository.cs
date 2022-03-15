@@ -503,12 +503,19 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(int packId, List<TopManagement> topManagList)
+        public bool SendCompToManagement(string parameters, IFormFile attachement)
         {
             string send = "";
-
-            if (topManagList.Count > 0)
+            
+            string[] paramArray = parameters.Split(",");
+            string[] emails = new string[paramArray.Length - 1];
+            if (paramArray.Length > 0)
             {
+                int packId = Convert.ToInt32(paramArray[0]);
+                for (int i = 1; i < paramArray.Length; i++)
+                {
+                    emails[i - 1] = paramArray[i];
+                }
                 var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
                 string PackageName = package.PkgeName;
 
@@ -534,10 +541,10 @@ namespace AccApi.Repository.Managers
 
                 //Send Email
                 List<General> mylistTo = new List<General>();
-                foreach (var item in topManagList)
+                foreach (var email in emails)
                 {
                     General g = new General();
-                    g.mail = (string)item.Mail == null ? "" : item.Mail.ToString();
+                    g.mail = email == null ? "" : email;
                     mylistTo.Add(g);
                 }
 
@@ -559,8 +566,8 @@ namespace AccApi.Repository.Managers
                 MailBody += "Best regards";
 
                 var AttachmentList = new List<string>();
-                //string fileName = Path.GetFileName(ExcelComparisonSheet.FileName);
-               // AttachmentList.Add(fileName);
+                string fileName = Path.GetFileName(attachement.FileName);
+                AttachmentList.Add(fileName);
 
                 Mail m = new Mail();
                 var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
