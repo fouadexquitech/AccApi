@@ -16,7 +16,7 @@ namespace AccApi.Repository.Models.MasterModels
         public int TcSeq { get; set; }
         [Column("tcPackId")]
         public int? TcPackId { get; set; }
-        [Column("tcDescription", TypeName = "text")]
+        [Column("tcDescription")]
         public string TcDescription { get; set; }
         [Column("tcSelected")]
         public byte? TcSelected { get; set; }
