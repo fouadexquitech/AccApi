@@ -172,7 +172,10 @@ namespace AccApi.Controllers
                                 Reply = x.CondReply
                             };
                             var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
-                            cond.Replies.Add(displayReply);
+                            if (cond != null)
+                            {
+                                cond.Replies.Add(displayReply);
+                            }
                         }
 
 
@@ -304,11 +307,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("UpdateTechnicalConditions")]
-        public bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile)
         {
             try
             {
-                return this._conditionsRepository.UpdateTechnicalConditions(PackageSupliersID, ExcelFile);
+                return this._conditionsRepository.UpdateTechnicalConditions(packageId, PackageSupliersID, ExcelFile);
             }
             catch (Exception ex)
             {

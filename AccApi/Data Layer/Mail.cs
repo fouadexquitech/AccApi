@@ -61,9 +61,12 @@ namespace AccApi.Data_Layer
                     }
                 }
 
-                string fileName = Path.GetFileName(AttachFile.FileName);
-                if (fileName!="")
-                mail.Attachments.Add(new Attachment(AttachFile.OpenReadStream(), fileName));
+                if (AttachFile != null)
+                {
+                    string fileName = Path.GetFileName(AttachFile.FileName);
+                    if (fileName != "")
+                        mail.Attachments.Add(new Attachment(AttachFile.OpenReadStream(), fileName));
+                }
 
 
                 client.Send(mail);
