@@ -310,7 +310,7 @@ namespace AccApi.Repository.Managers
 
         }
 
-        public bool UpdateTechnicalConditions(int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
             {
@@ -336,7 +336,7 @@ namespace AccApi.Repository.Managers
 
                                 if ((desc != "") && (reply != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
                                 {
-                                    var comCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == desc).FirstOrDefault();
+                                    var comCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == desc && x.TcPackId == packageId).FirstOrDefault();
                                     if (comCond != null)
                                     {
                                         int condId = comCond.TcSeq == null ? 0 : comCond.TcSeq;
