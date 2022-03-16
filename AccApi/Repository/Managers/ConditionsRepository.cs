@@ -384,6 +384,92 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
+
+
+        public bool AddComConditions(List<ComConditions> cond)
+        {
+            foreach (var item in cond)
+            {
+                var result = new TblComCond { CmDescription=item.CmDescription,CmSelected=0};
+                _mdbcontext.Add<TblComCond>(result);
+                _mdbcontext.SaveChanges();
+            }
+
+            return true;
+        }
+
+        public bool UpdateComConditions(ComConditions cond)
+        {
+            var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == cond.CmSeq).FirstOrDefault();
+            result.CmDescription = cond.CmDescription;
+            result.CmSelected = 0;
+           
+            if (result != null)
+            {
+                _mdbcontext.TblComConds.Update(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool DelComConditions(int id)
+        {
+            var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == id).FirstOrDefault();
+
+            if (result != null)
+            {
+                _mdbcontext.TblComConds.Remove(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool AddTechConditions(List<TechConditions> cond)
+        {
+            foreach (var item in cond)
+            {
+                var result = new TblTechCond { TcDescription = item.TcDescription,TcPackId=item.TcPackId,TcSelected = 0 };
+                _mdbcontext.Add<TblTechCond>(result);
+                _mdbcontext.SaveChanges();
+            }
+
+            return true;
+        }
+
+        public bool UpdateTechConditions(TechConditions cond)
+        {
+            var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == cond.TcSeq).FirstOrDefault();
+            result.TcDescription = cond.TcDescription;
+            result.TcPackId = cond.TcPackId;
+            result.TcSelected = 0;
+
+            if (result != null)
+            {
+                _mdbcontext.TblTechConds.Update(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool DelTechConditions(int id)
+        {
+            var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == id).FirstOrDefault();
+
+            if (result != null)
+            {
+                _mdbcontext.TblTechConds.Remove(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
     }
 }
 

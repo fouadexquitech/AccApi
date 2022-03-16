@@ -41,6 +41,50 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("AddComConditions")]
+        public bool AddComConditions(List<ComConditions> comcond)
+        {
+            try
+            {
+                return this._conditionsRepository.AddComConditions(comcond);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateComConditions")]
+        public bool UpdateComConditions(ComConditions comcond)
+        {
+            try
+            {
+                return this._conditionsRepository.UpdateComConditions(comcond);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DelComConditions")]
+        public bool DelComConditions(int id)
+        {
+            try
+            {
+                return this._conditionsRepository.DelComConditions(id);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+
+
         [HttpGet("GetTechConditions")]
         public List<TechConditions> GetTechConditions(int packId)
         {
@@ -55,24 +99,69 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("AddTechConditions")]
+        public bool AddTechConditions(List<TechConditions> techcond)
+        {
+            try
+            {
+                return this._conditionsRepository.AddTechConditions(techcond);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateTechConditions")]
+        public bool UpdateTechConditions(TechConditions techcond)
+        {
+            try
+            {
+                return this._conditionsRepository.UpdateTechConditions(techcond);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DelTechConditions")]
+        public bool DelTechConditions(int id)
+        {
+            try
+            {
+                return this._conditionsRepository.DelTechConditions(id);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+
         [HttpGet("GetTechCondReplies")]
         public List<DisplayCondition> GetTechCondReplies(int packId)
         {
             try
             {
-                
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId).Select(x=>new DisplayCondition { 
+
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId).Select(x => new DisplayCondition
+                {
                     Id = x.TcSeq,
                     Description = x.TcDescription,
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
-                
+
                 var listPackageSuppliers = this._supplierPackagesRepository.SupplierPackagesList(packId);
                 listPackageSuppliers.ForEach(sp =>
                 {
                     var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId);
 
-                    replies.ForEach(x => {
+                    replies.ForEach(x =>
+                    {
                         if (x.SupId != null)
                         {
                             DisplayCondReply displayReply = new DisplayCondReply
@@ -86,11 +175,11 @@ namespace AccApi.Controllers
                             cond.Replies.Add(displayReply);
                         }
 
-                        
+
 
                     });
 
-                    
+
 
                 });
                 return displayConditions;
@@ -101,7 +190,7 @@ namespace AccApi.Controllers
                 return null;
             }
 
-            
+
         }
 
 
@@ -123,7 +212,8 @@ namespace AccApi.Controllers
                 {
                     var replies = _conditionsRepository.GetComConditionsReply(sp.PsId);
 
-                    replies.ForEach(x => {
+                    replies.ForEach(x =>
+                    {
                         if (x.SupId != null)
                         {
                             DisplayCondReply displayReply = new DisplayCondReply
@@ -204,7 +294,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersID,ExcelFile);
+                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersID, ExcelFile);
             }
             catch (Exception ex)
             {
