@@ -412,7 +412,7 @@ namespace AccApi.Repository.Managers
                         }
 
                        Mail m = new Mail();
-                       sent= m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                       sent= m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false,null);
                     }
                 }
             }

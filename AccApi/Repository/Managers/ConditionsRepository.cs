@@ -223,7 +223,7 @@ namespace AccApi.Repository.Managers
                         AttachmentList.Add(FullPath);
 
                         Mail m = new Mail();
-                        var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                        var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false,null);
                         sent = (res == "sent");
 
                         sp.TecCondSent = true;

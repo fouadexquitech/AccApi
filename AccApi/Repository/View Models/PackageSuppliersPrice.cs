@@ -29,7 +29,6 @@ namespace AccApi.Repository.View_Models
 
     public class RevisionDetails
     {
-
         public short? RowNumber { get; set; }
         public string SectionO { get; set; }
         public string ItemO { get; set; }
@@ -56,6 +55,9 @@ namespace AccApi.Repository.View_Models
         public double? perc { get; set; }
         public double? priceOrigCur { get; set; }
         public byte? missedPrice { get; set; }
+        public string ResDiv { get; set; }
+        public string ResCtg{ get; set; }
 
+        public bool AssignedToSupplier { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 
 namespace AccApi.Repository.Managers
@@ -565,12 +566,12 @@ namespace AccApi.Repository.Managers
                 MailBody += Environment.NewLine;
                 MailBody += "Best regards";
 
+
+
                 var AttachmentList = new List<string>();
-                string fileName = Path.GetFileName(attachement.FileName);
-                AttachmentList.Add(fileName);
 
                 Mail m = new Mail();
-                var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false);
+                var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false, attachement);
 
                 send = "sent";
             }
