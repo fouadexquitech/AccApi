@@ -16,5 +16,9 @@ namespace AccApi.Repository.Interfaces
         EmailTemplate GetSuppliersEmailTemplate(string Lang);
         bool SaveEmailTemplate(int id, string emailbody);
         List<TopManagement> GetManagementEmail(string filter);
+        bool AddManagementEmail(List<TopManagement> users);
+        bool UpdateManagementEmail(TopManagement user);
+        bool DeleteManagementEmail(int id);
+
     }
 }

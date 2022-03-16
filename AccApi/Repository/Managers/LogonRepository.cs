@@ -164,6 +164,22 @@ namespace AccApi.Repository.Managers
             return result.FirstOrDefault();
         }
 
+
+        public bool SaveEmailTemplate(int id, string emailbody)
+        {
+            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtSeq == id).FirstOrDefault();
+            result.EtContent = emailbody;
+
+            if (result != null)
+            {
+                _mdbcontext.TblEmailTemplates.Update(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
         public List<TopManagement> GetManagementEmail(string filter)
         {
             var result = (from b in _mdbcontext.TblManagementUsers
@@ -182,14 +198,28 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public bool SaveEmailTemplate(int id, string emailbody)
+        public bool AddManagementEmail(List<TopManagement> users)
         {
-            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtSeq == id).FirstOrDefault();
-            result.EtContent = emailbody;
+            foreach(var item in users)
+            { 
+               var result = new TblManagementUser {  Mail = item.Mail, UserName = item.UserName, Occupation = item.Occupation};
+              _mdbcontext.Add<TblManagementUser>(result);
+              _mdbcontext.SaveChanges();
+            }
+            
+            return true;
+        }
+
+        public bool UpdateManagementEmail(TopManagement user)
+        {
+            var result = _mdbcontext.TblManagementUsers.Where(x => x.Seq == user.id).FirstOrDefault();
+            result.Mail = user.Mail;
+            result.Occupation = user.Occupation;
+            result.UserName = user.UserName;
 
             if (result != null)
             {
-                _mdbcontext.TblEmailTemplates.Update(result);
+                _mdbcontext.TblManagementUsers.Update(result);
                 _mdbcontext.SaveChanges();
                 return true;
             }
@@ -197,6 +227,18 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
-        
+        public bool DeleteManagementEmail(int id)
+        {
+            var result = _mdbcontext.TblManagementUsers.Where(x => x.Seq == id).FirstOrDefault();
+
+            if (result != null)
+            {
+                _mdbcontext.TblManagementUsers.Remove(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
     }
 }

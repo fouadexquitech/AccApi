@@ -122,5 +122,46 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("AddManagementEmail")]
+        public bool AddManagementEmail(List<TopManagement> users)
+        {
+            try
+            {
+                return this._logonRepository.AddManagementEmail(users);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateManagementEmail")]
+        public bool UpdateManagementEmail(TopManagement user)
+        {
+            try
+            {
+                return this._logonRepository.UpdateManagementEmail(user);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DeleteManagementEmail")]
+        public bool DeleteManagementEmail(int id)
+        {
+            try
+            {
+                return this._logonRepository.DeleteManagementEmail(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }
