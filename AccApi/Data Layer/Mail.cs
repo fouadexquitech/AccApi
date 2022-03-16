@@ -4,13 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
 namespace AccApi.Data_Layer
 {
     public class Mail
     {
-        public string SendMail(List<General> MailTo, List<General> MailCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml)
+        public string SendMail(List<General> MailTo, List<General> MailCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml, IFormFile AttachFile)
         {
             try
             {
@@ -59,6 +60,11 @@ namespace AccApi.Data_Layer
                             mail.Attachments.Add(new Attachment(attach));
                     }
                 }
+
+                string fileName = Path.GetFileName(AttachFile.FileName);
+                if (fileName!="")
+                mail.Attachments.Add(new Attachment(AttachFile.OpenReadStream(), fileName));
+
 
                 client.Send(mail);
                 return "sent";

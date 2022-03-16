@@ -244,11 +244,13 @@ namespace AccApi.Repository.Managers
 
                     if (byboq==1)
                     {
-                        revDtlQry = (from a in _context.TblSupplierPackages
+                       revDtlQry = (from a in _context.TblSupplierPackages
                                      join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                      join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
-                                     join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                    // join d in _context.TblBoqs on o.ItemO equals d.BoqItem
+                                    //join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
+                                    join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                      select new RevisionDetails
@@ -260,17 +262,27 @@ namespace AccApi.Repository.Managers
                                          price = c.RdPrice,
                                          perc = c.RdAssignedPerc,
                                          missedPrice = c.RdMissedPrice,
-                                         priceOrigCur = c.RdPriceOrigCurrency
+                                         priceOrigCur = c.RdPriceOrigCurrency,
+                                         Scope = o.Scope,
+                                         BoqDiv = o.SectionO,
+                                         ObSheetDesc=o.ObSheetDesc,
+                                         RowNumber = o.RowNumber,
+                                         //BoqPackage = d.BoqPackage,
+                                         //BoqScope = d.BoqScope,
+                                         //ResDescription = e.ResDescription,
+                                         //ResDiv=d.BoqDiv,
+                                         //ResCtg=d.BoqCtg
+                                         AssignedToSupplier =((c.RdAssignedQty == null || c.RdAssignedQty==0)) ? false : true
                                      });
 
-                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
+                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                         if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
                         if (!string.IsNullOrEmpty(input.BOQDesc)) revDtlQry = revDtlQry.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
                         if (!string.IsNullOrEmpty(input.SheetDesc)) revDtlQry = revDtlQry.Where(w => w.ObSheetDesc == input.SheetDesc);
                         if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) revDtlQry = revDtlQry.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
                         if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);
-                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
-                        if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
+                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.ResDiv));
+                        if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.ResCtg));
                         if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
                         if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));                
                     }
@@ -296,16 +308,26 @@ namespace AccApi.Repository.Managers
                                          missedPrice=c.RdMissedPrice,
                                          priceOrigCur=c.RdPriceOrigCurrency,
                                          ItemO = o.ItemO,
-                                         DescriptionO = o.DescriptionO
+                                         DescriptionO = o.DescriptionO,                                       
+                                         SectionO = o.SectionO,
+                                         Scope = o.Scope,
+                                         BoqDiv = o.SectionO,
+                                         ObSheetDesc = o.ObSheetDesc,
+                                         RowNumber = o.RowNumber,
+                                         BoqPackage = d.BoqPackage,
+                                         BoqScope = d.BoqScope, 
+                                         ResDiv = d.BoqDiv,
+                                         ResCtg = d.BoqCtg,
+                                         AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true
                                      });
 
-                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.SectionO));
+                        if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                         if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
                         if (!string.IsNullOrEmpty(input.BOQDesc)) revDtlQry = revDtlQry.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
                         if (!string.IsNullOrEmpty(input.SheetDesc)) revDtlQry = revDtlQry.Where(w => w.ObSheetDesc == input.SheetDesc);
                         if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) revDtlQry = revDtlQry.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
                         if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);
-                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.BoqDiv));
+                        if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.ResDiv));
                         if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.BoqCtg));
                         if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
                         if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));      
@@ -336,9 +358,6 @@ namespace AccApi.Repository.Managers
                             else
                                 packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
                         }
-
-                        
-
                     }
 
                     if (packageSuppliersPrice.fieldLists.Count > 0)
