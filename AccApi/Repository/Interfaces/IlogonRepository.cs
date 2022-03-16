@@ -15,6 +15,6 @@ namespace AccApi.Repository.Interfaces
         ProjectCurrency GetProjectCurrency();
         EmailTemplate GetSuppliersEmailTemplate(string Lang);
         bool SaveEmailTemplate(int id, string emailbody);
-        List<TopManagement> GetManagementEmail();
+        List<TopManagement> GetManagementEmail(string filter);
     }
 }

@@ -164,7 +164,7 @@ namespace AccApi.Repository.Managers
             return result.FirstOrDefault();
         }
 
-        public List<TopManagement> GetManagementEmail()
+        public List<TopManagement> GetManagementEmail(string filter)
         {
             var result = (from b in _mdbcontext.TblManagementUsers
                          select new TopManagement
@@ -172,7 +172,12 @@ namespace AccApi.Repository.Managers
                              UserName=b.UserName,
                              Mail = b.Mail,
                              Occupation = b.Occupation
-                         }).ToList(); 
+                         }).ToList();
+
+            if (filter != null)
+            {
+                result = result.Where(x => string.Concat(x.UserName.ToUpper(), x.Mail.ToUpper(), x.Occupation.ToUpper()).Contains(filter.ToUpper())).ToList();
+            }
 
             return result.ToList();
         }

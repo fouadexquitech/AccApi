@@ -109,11 +109,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetManagementEmail")]
-        public List<TopManagement> GetManagementEmail()
+        public List<TopManagement> GetManagementEmail(string filter)
         {
             try
             {
-                return this._logonRepository.GetManagementEmail();
+                return this._logonRepository.GetManagementEmail(filter);
             }
             catch (Exception ex)
             {
