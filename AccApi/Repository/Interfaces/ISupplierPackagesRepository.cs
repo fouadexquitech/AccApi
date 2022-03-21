@@ -13,6 +13,6 @@ namespace AccApi.Repository.Interfaces
         SupplierPackagesList GetSupplierPackage(int spId);
 
         string ValidateExcelBeforeAssign(int packId, byte byBoq);
-        bool AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList,string FilePath, string EmailContent, byte ByBoq);
+        bool AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList,string FilePath, byte ByBoq);
     }
 }

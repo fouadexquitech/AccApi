@@ -185,6 +185,7 @@ namespace AccApi.Repository.Managers
             var result = (from b in _mdbcontext.TblManagementUsers
                          select new TopManagement
                          {
+                             Id = b.Seq,
                              UserName=b.UserName,
                              Mail = b.Mail,
                              Occupation = b.Occupation
@@ -212,7 +213,7 @@ namespace AccApi.Repository.Managers
 
         public bool UpdateManagementEmail(TopManagement user)
         {
-            var result = _mdbcontext.TblManagementUsers.Where(x => x.Seq == user.id).FirstOrDefault();
+            var result = _mdbcontext.TblManagementUsers.Where(x => x.Seq == user.Id).FirstOrDefault();
             result.Mail = user.Mail;
             result.Occupation = user.Occupation;
             result.UserName = user.UserName;

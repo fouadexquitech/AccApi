@@ -345,7 +345,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, string EmailContent,byte ByBoq)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, byte ByBoq)
         {
             string sent = "";
             string ComCondAttch = "";
@@ -394,9 +394,9 @@ namespace AccApi.Repository.Managers
 
                         string MailBody;
 
-                        if (EmailContent != "")
+                        if (item.EmailTemplate != "")
                         {
-                            MailBody = EmailContent;
+                            MailBody = item.EmailTemplate;
                         }
                         else
                         {

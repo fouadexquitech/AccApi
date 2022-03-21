@@ -19,6 +19,7 @@ namespace AccApi.Repository.View_Models
     public class SupplierInputList
     {
         public SupplierInput supplierInput { get; set; }
+        public string EmailTemplate { get; set; }
         public List<ComercialCond> comercialCondList { get; set; }
     }
 }
