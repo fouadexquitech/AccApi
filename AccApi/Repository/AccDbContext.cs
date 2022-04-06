@@ -142,6 +142,8 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
+        public virtual DbSet<ComparisonPackageGroup> ComparisonPackageGroups { get; set; }
+
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -388,6 +390,17 @@ namespace AccApi.Repository
                 entity.Property(e => e.AsTrade).IsUnicode(false);
             });
 
+            modelBuilder.Entity<ComparisonPackageGroup>(entity =>
+            {
+                entity.HasKey(e => new { e.Id });
+
+                entity.HasOne<PackagesNetwork>(x => x.Package)
+                .WithMany(x => x.ComparisonPackageGroups)
+                .HasForeignKey(x => x.PackageId);
+            });
+
+            
+
             modelBuilder.Entity<TblAuditLog>(entity =>
             {
                 entity.Property(e => e.Action).IsUnicode(false);
@@ -479,6 +492,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.Luser).IsUnicode(false);
 
                 entity.Property(e => e.QtyScope).HasDefaultValueSql("((0))");
+
+                entity.HasOne<ComparisonPackageGroup>(x => x.Group)
+                        .WithMany(x => x.Boqs)
+                        .HasForeignKey(x => x.GroupId);
+
             });
 
             modelBuilder.Entity<TblBoqWbsL>(entity =>

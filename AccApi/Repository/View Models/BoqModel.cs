@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 
 namespace AccApi.Repository.View_Models
 {
@@ -16,5 +17,6 @@ namespace AccApi.Repository.View_Models
         public int? BoqScope { get; set; }
         public string ResDescription { get; set; }
         public string BoqItem { get; set; }
+        
     }
 }

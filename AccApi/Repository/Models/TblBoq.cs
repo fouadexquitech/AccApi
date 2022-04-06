@@ -117,5 +117,7 @@ namespace AccApi.Repository.Models
         public double? QtyScope { get; set; }
         [Column("boqBillQty")]
         public double? BoqBillQty { get; set; }
+        public int? GroupId { get; set; }
+        public ComparisonPackageGroup? Group { get; set; }
     }
 }

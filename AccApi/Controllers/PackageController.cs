@@ -15,11 +15,13 @@ namespace AccApi.Controllers
     {
         private readonly ILogger<PackageController> _logger;
         private IPackageRepository _packageRepository;
+        private IComparisonGroupRepository _comparisonGroupRepository;
 
-        public PackageController(ILogger<PackageController> logger, IPackageRepository packageRepository)
+        public PackageController(ILogger<PackageController> logger, IPackageRepository packageRepository, IComparisonGroupRepository comparisonGroupRepository)
         {
             _logger = logger;
             _packageRepository = packageRepository;
+            _comparisonGroupRepository = comparisonGroupRepository;
         }
 
         [HttpPost("GetOriginalBoqList")]
@@ -64,7 +66,6 @@ namespace AccApi.Controllers
             }
         }
 
-
         [HttpGet("GetPackageById")]
         public PackageDetailsModel GetPackageById(int IdPkge)
         {
@@ -104,6 +105,76 @@ namespace AccApi.Controllers
             {
                 _logger.LogError(ex.Message);
                 return null;
+            }
+        }
+
+        [HttpPost("GetGroupBoqList")]
+        public List<GroupingBoqModel> GetGroupBoqList(int packageId, int groupId, SearchInput input)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.GetBoqList(packageId, groupId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("AddGroup")]
+        public bool AddGroup(ComparisonPackageGroupModel comparisonPackageGroup)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.AddGroup(comparisonPackageGroup);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpGet("GetGroups")]
+        public List<ComparisonPackageGroupModel> GetGroups(int packageId)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.GetGroups(packageId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("AttachToGroup")]
+        public bool AttachToGroup(int groupId, List<GroupingResourceModel> list)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.AttachToGroup(groupId, list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DetachFromGroup")]
+        public bool DetachFromGroup(int groupId, List<GroupingResourceModel> list)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.DetachFromGroup(groupId, list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
             }
         }
     }
