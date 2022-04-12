@@ -122,6 +122,22 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpPost("GetGroupBoqListOnly")]
+        public List<GroupingBoqModel> GetGroupBoqListOnly(int packageId, int groupId, SearchInput input)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.GetBoqListOnly(packageId, groupId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+
         [HttpPost("AddGroup")]
         public bool AddGroup(ComparisonPackageGroupModel comparisonPackageGroup)
         {
@@ -177,5 +193,34 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+        [HttpPost("AttachToGroupByBoq")]
+        public bool AttachToGroupByBoq(int groupId, List<GroupingBoqModel> list)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.AttachToGroupByBoq(groupId, list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DetachFromGroupByBoq")]
+        public bool DetachFromGroupByBoq(int groupId, List<GroupingBoqModel> list)
+        {
+            try
+            {
+                return this._comparisonGroupRepository.DetachFromGroupByBoq(groupId, list);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
     }
 }

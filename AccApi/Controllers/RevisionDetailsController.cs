@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -155,6 +156,93 @@ namespace AccApi.Controllers
             try
             {
                 return this._revisionDetailsRepository.SendCompToManagement(parameters, attachement);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+
+        [HttpPost("GetComparisonSheet")]
+        public List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.GetComparisonSheet(packageId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("GetComparisonSheetByBoq")]
+        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("GetComparisonSheetResourcesByGroup")]
+        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup(packageId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("GetComparisonSheetBoqByGroup")]
+        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.GetComparisonSheetBoqByGroup(packageId, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+
+        [HttpPost("AssignSupplierListGroupList")]
+        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.AssignSupplierListGroupList(packId, byBoq, item);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+
+        [HttpPost("AssignSupplierGroup")]
+        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.AssignSupplierGroup(packId, byBoq, SupplierGroupList);
             }
             catch (Exception ex)
             {

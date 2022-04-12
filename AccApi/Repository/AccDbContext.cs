@@ -1033,6 +1033,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.RefNumber).IsUnicode(false);
 
                 entity.Property(e => e.Zone).IsUnicode(false);
+
+                entity.HasOne<ComparisonPackageGroup>(x => x.Group)
+                        .WithMany(x => x.OriginalBoqs)
+                        .HasForeignKey(x => x.GroupId);
             });
 
             modelBuilder.Entity<TblOriginalBoqtemp>(entity =>

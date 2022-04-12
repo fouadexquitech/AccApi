@@ -17,7 +17,9 @@ namespace AccApi.Repository.View_Models
         public int? Scope { get; set; }
         public string ObSheetDesc { get; set; }
 
-
+        public int? GroupId { get; set; }
+        public string? GroupName { get; set; }
+        public int? BurRev { get; set; }
         public int BoqSeq { get; set; }
         public string BoqCtg { get; set; }
         public string BoqUnitMesure { get; set; }
@@ -26,6 +28,8 @@ namespace AccApi.Repository.View_Models
         public string BoqDiv { get; set; }
         public string BoqPackage { get; set; }
         public int? BoqScope { get; set; }
+
+        public string ResSeq { get; set; }
         public string ResDescription { get; set; }
 
     }

@@ -19,5 +19,7 @@ namespace AccApi.Repository.Models
         public string UpdateUserId { get; set; }
         public List<TblBoq>? Boqs { get; set; }
 
+        public List<TblOriginalBoq>? OriginalBoqs { get; set; }
+
     }
 }

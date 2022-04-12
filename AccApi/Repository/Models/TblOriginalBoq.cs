@@ -102,5 +102,9 @@ namespace AccApi.Repository.Models
         public string L6 { get; set; }
         [Column(TypeName = "money")]
         public decimal? BillSubmitted { get; set; }
+
+        public int? GroupId { get; set; }
+
+        public ComparisonPackageGroup? Group { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,15 @@ namespace AccApi.Repository.Interfaces
         bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList);
         bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList);
         bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList);
+        bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList);
         bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item);
+
+        bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item);
         bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item);
         bool SendCompToManagement(string parameters, IFormFile attachement);
+        List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input);
+        List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input);
+        List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input);
+        List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input);
     }
 }
