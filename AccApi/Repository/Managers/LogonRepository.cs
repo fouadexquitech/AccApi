@@ -18,6 +18,8 @@ namespace AccApi.Repository.Managers
 
         public IConfiguration Configuration { get; }
 
+        private static PolicyDbContext pdb;
+
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration)
         {
             _mdbcontext = mdbcontext;
@@ -48,9 +50,9 @@ namespace AccApi.Repository.Managers
         {
             var conn = _mdbcontext.TblDataBases.Where(x => x.DbSeq == dbSeq).FirstOrDefault();
             string ConName = conn.DbConnection;
-            var db = _pdbcontext.CreateConnectionFromOut(ConName);
+            pdb = _pdbcontext.CreateConnectionFromOut(ConName);
 
-            var result = from b in db.Tblprojects
+            var result = from b in pdb.Tblprojects
                          where b.PrjCostDatabase != null
                          select new Project
                          {
@@ -80,9 +82,17 @@ namespace AccApi.Repository.Managers
             User usr = new User();
             usr = checkCredentials(user, pass);
 
-            if (!checkAccessProject(user, projSeq))
-                usr = null;
-            else if (!connectToProject(projSeq))
+            bool isAdmin = (bool)(usr.UsrAdmin);
+            if (!isAdmin)
+            {
+                if (!checkAccessProject(user, projSeq))
+                {
+                    usr = null;
+                    return usr;
+                }
+            }
+
+            if (!connectToProject(projSeq))
                 usr = null; 
             
             return usr;
@@ -90,7 +100,7 @@ namespace AccApi.Repository.Managers
 
         private Boolean connectToProject(int projSeq)
         {
-            var result = _pdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+            var result = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
             string costDb = result.PrjCostDatabase;
 
             if ((costDb != "") && (costDb != null))
