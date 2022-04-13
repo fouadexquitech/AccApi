@@ -65,12 +65,12 @@ namespace AccApi.Repository.Managers
         public ProjectCurrency GetProjectCurrency()
         {
             var result = from a in _dbcontext.TblParameters
-                         join b in _mdbcontext.TblCurrencies
+                         join b in _dbcontext.TblCurrencies
                          on a.EstimatedCur equals b.CurId
                          select new ProjectCurrency
                          {
                              curId = (int)a.EstimatedCur,
-                             curCode = b.CurCode
+                             curCode = b.CudCode
                          };
 
             return result.FirstOrDefault();
