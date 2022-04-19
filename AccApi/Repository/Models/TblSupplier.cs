@@ -17,13 +17,10 @@ namespace AccApi.Repository.Models
         [Column("supProj")]
         public int? SupProj { get; set; }
         [Column("supName")]
-        [StringLength(50)]
         public string SupName { get; set; }
         [Column("supAddress")]
-        [StringLength(50)]
         public string SupAddress { get; set; }
         [Column("supPhone")]
-        [StringLength(8)]
         public string SupPhone { get; set; }
         [Column("supRef")]
         [StringLength(30)]
@@ -72,7 +69,6 @@ namespace AccApi.Repository.Models
         [StringLength(16)]
         public string SupFax { get; set; }
         [Column("supEmail")]
-        [StringLength(30)]
         public string SupEmail { get; set; }
         [Column("supAccPreson")]
         [StringLength(40)]

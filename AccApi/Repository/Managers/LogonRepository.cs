@@ -132,7 +132,7 @@ namespace AccApi.Repository.Managers
 
         private User checkCredentials(string username, string password)
         {
-            var result = from u in _pdbcontext.TblUsers                
+            var result = from u in pdb.TblUsers                
                         where u.UsrId == username &&
                         u.UsrPwd == password
                         select new User

@@ -30,5 +30,8 @@ namespace AccApi.Repository.Models
         public double? AccCumProgressQty { get; set; }
         [Column("Subcontractor Cum Progress Qty")]
         public double? SubcontractorCumProgressQty { get; set; }
+        [Column("BOQItem")]
+        [StringLength(50)]
+        public string Boqitem { get; set; }
     }
 }

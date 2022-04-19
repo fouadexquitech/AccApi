@@ -19,5 +19,8 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("curCode")]
         [StringLength(50)]
         public string CurCode { get; set; }
+        [Column("curDesc")]
+        [StringLength(50)]
+        public string CurDesc { get; set; }
     }
 }

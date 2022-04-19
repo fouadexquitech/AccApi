@@ -15,13 +15,11 @@ namespace AccApi.Repository.Managers
     public class SupplierPackagesRepository : ISupplierPackagesRepository
     {
         private readonly AccDbContext _dbcontext;
-        private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
 
-        public SupplierPackagesRepository(AccDbContext Context, MasterDbContext mdbcontext, PolicyDbContext pdbcontext)
+        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext)
         {
             _dbcontext = Context;
-            _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
         }
 
@@ -76,12 +74,40 @@ namespace AccApi.Repository.Managers
                                l4 = o.L4,
                                l5 = o.L5,
                                l6 = o.L6,
+                               l7 = o.L7,
+                               l8 = o.L8,
+                               l9 = o.L9,
+                               l10 = o.L10,
+                               l1Ref = o.L1ref,
+                               l2Ref = o.L2ref,
+                               l3Ref = o.L3ref,
+                               l4Ref = o.L4ref,
+                               l5Ref = o.L5ref,
+                               l6Ref = o.L6ref,
+                               l7Ref = o.L7ref,
+                               l8Ref = o.L8ref,
+                               l9Ref = o.L9ref,
+                               l10Ref = o.L10ref,
                                c1 = o.C1,
                                c2 = o.C2,
                                c3 = o.C3,
                                c4 = o.C4,
                                c5 = o.C5,
                                c6 = o.C6,
+                               c7 = o.C7,
+                               c8 = o.C8,
+                               c9 = o.C9,
+                               c10 = o.C10,
+                               c1Ref = o.C1ref,
+                               c2Ref = o.C2ref,
+                               c3Ref = o.C3ref,
+                               c4Ref = o.C4ref,
+                               c5Ref = o.C5ref,
+                               c6Ref = o.C6ref,
+                               c7Ref = o.C7ref,
+                               c8Ref = o.C8ref,
+                               c9Ref = o.C9ref,
+                               c10Ref = o.C10ref,
                                item = o.ItemO,
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
@@ -200,6 +226,7 @@ namespace AccApi.Repository.Managers
                     {
                         if ((l1 != "") && (l1 != oldl1))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref; 
                             worksheet.Cells[i, 2].Value = "1";
                             worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -208,6 +235,7 @@ namespace AccApi.Repository.Managers
                         }
                         if ((l2 != "") && (l2 != oldl2))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
                             worksheet.Cells[i, 2].Value = "2";
                             worksheet.Cells[i, 3].Value = (x.l2 == null) ? "" : x.l2;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -216,6 +244,7 @@ namespace AccApi.Repository.Managers
                         }
                         if ((l3 != "") && (l3 != oldl3))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
                             worksheet.Cells[i, 2].Value = "3";
                             worksheet.Cells[i, 3].Value = (x.l3 == null) ? "" : x.l3;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -224,6 +253,7 @@ namespace AccApi.Repository.Managers
                         }
                         if ((l4 != "") && (l4 != oldl4))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
                             worksheet.Cells[i, 2].Value = "4";
                             worksheet.Cells[i, 3].Value = (x.l4 == null) ? "" : x.l4;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -232,6 +262,7 @@ namespace AccApi.Repository.Managers
                         }
                         if ((l5 != "") && (l5 != oldl5))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
                             worksheet.Cells[i, 2].Value = "5";
                             worksheet.Cells[i, 3].Value = (x.l5 == null) ? "" : x.l5;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -240,6 +271,7 @@ namespace AccApi.Repository.Managers
                         }
                         if ((l6 != "") && (l6 != oldl6))
                         {
+                            worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
                             worksheet.Cells[i, 2].Value = "6";
                             worksheet.Cells[i, 3].Value = (x.l6 == null) ? "" : x.l6;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -251,6 +283,7 @@ namespace AccApi.Repository.Managers
                         {
                             if (((x.c1 == null) ? "" : x.c1) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c1 == null) ? "" : x.c1;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -259,6 +292,7 @@ namespace AccApi.Repository.Managers
                             }
                             if (((x.c2 == null) ? "" : x.c2) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c2 == null) ? "" : x.c2;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -266,6 +300,7 @@ namespace AccApi.Repository.Managers
                             }
                             if (((x.c3 == null) ? "" : x.c3) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c3 == null) ? "" : x.c3;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -273,6 +308,7 @@ namespace AccApi.Repository.Managers
                             }
                             if (((x.c4 == null) ? "" : x.c4) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c4 == null) ? "" : x.c4;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -280,6 +316,7 @@ namespace AccApi.Repository.Managers
                             }
                             if (((x.c5 == null) ? "" : x.c5) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -287,6 +324,7 @@ namespace AccApi.Repository.Managers
                             }
                             if (((x.c6 == null) ? "" : x.c6) != "")
                             {
+                                worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
                                 worksheet.Cells[i, 2].Value = "C";
                                 worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;

@@ -24,6 +24,5 @@ namespace AccApi.Repository.Models
         public short? Trade { get; set; }
         [StringLength(200)]
         public string FilePath { get; set; }
-        public List<ComparisonPackageGroup>? ComparisonPackageGroups { get; set; }
     }
 }

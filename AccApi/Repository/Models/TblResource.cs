@@ -60,6 +60,5 @@ namespace AccApi.Repository.Models
         [Column("resSubTrade")]
         [StringLength(3)]
         public string ResSubTrade { get; set; }
-
     }
 }
