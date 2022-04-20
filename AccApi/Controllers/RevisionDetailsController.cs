@@ -95,11 +95,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierRessource")]
-        public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList)
+        public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList, bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList);
+                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList,  isPercent);
             }
             catch (Exception ex)
             {
@@ -109,11 +109,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierBOQ")]
-        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList)
+        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierBOQ(packId, SupplierBOQList);
+                return this._revisionDetailsRepository.AssignSupplierBOQ(packId, SupplierBOQList,  isPercent);
             }
             catch (Exception ex)
             {
@@ -123,11 +123,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListBoqList")]
-        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item)
+        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, item);
+                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, item,  isPercent);
             }
             catch (Exception ex)
             {
@@ -137,11 +137,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListRessourceList")]
-        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item)
+        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item,  bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, item);
+                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, item,  isPercent);
             }
             catch (Exception ex)
             {
@@ -223,11 +223,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignSupplierListGroupList")]
-        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item)
+        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListGroupList(packId, byBoq, item);
+                return this._revisionDetailsRepository.AssignSupplierListGroupList(packId, byBoq, item,  isPercent);
             }
             catch (Exception ex)
             {
@@ -238,11 +238,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignSupplierGroup")]
-        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList)
+        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierGroup(packId, byBoq, SupplierGroupList);
+                return this._revisionDetailsRepository.AssignSupplierGroup(packId, byBoq, SupplierGroupList,  isPercent);
             }
             catch (Exception ex)
             {

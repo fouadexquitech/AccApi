@@ -14,15 +14,15 @@ namespace AccApi.Repository.Interfaces
         List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource);
         bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate);
         bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList);
-        bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList);
+        bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList,bool isPercent);
         bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList);
         bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList);
-        bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList);
-        bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList);
-        bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item);
+        bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent);
+        bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent);
+        bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent);
 
-        bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item);
-        bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item);
+        bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent);
+        bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent);
         bool SendCompToManagement(string parameters, IFormFile attachement);
         List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input);
         List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input);

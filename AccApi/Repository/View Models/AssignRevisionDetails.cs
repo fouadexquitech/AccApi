@@ -28,11 +28,21 @@ namespace AccApi.Repository.View_Models
     {
         public int supID { get; set; }
         public double percent { get; set; }
+      
+    }
+
+    public class SupplierQty
+    {
+        public int supID { get; set; }
+        public double qty { get; set; }
+
     }
 
     public class SupplierResrouces
     {
         public int resourceID { get; set; }
+
+        public List<SupplierQty> supplierQtys { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
     }
 
@@ -40,12 +50,14 @@ namespace AccApi.Repository.View_Models
     {
         public string BoqItemID { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
+        public List<SupplierQty> supplierQtys { get; set; }
     }
 
     public class SupplierGroups
     {
         public int GroupId { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
+        public List<SupplierQty> supplierQtys { get; set; }
     }
 
     public class boqItem
@@ -65,6 +77,7 @@ namespace AccApi.Repository.View_Models
 
     public class AssignSuppliertBoq
     {
+        public List<SupplierQty> supplierQtyList { get; set; }
         public List<SupplierPercent> supplierPercentList { get; set; }
         public List<boqItem> supplierBoqItemList { get; set; }
     }
@@ -73,11 +86,14 @@ namespace AccApi.Repository.View_Models
     {
         public List<SupplierPercent> supplierPercentList { get; set; }
         public List<Group> supplierGroupList { get; set; }
+        public List<SupplierQty> supplierQtyList { get; set; }
     }
 
     public class AssignSuppliertRes
     {
+        public List<SupplierQty> supplierQtyList { get; set; }
         public List<SupplierPercent> supplierPercentList { get; set; }
         public List<ressourceItem> supplierResItemList { get; set; }
+
     }
 }
