@@ -1058,6 +1058,7 @@ namespace AccApi.Repository.Managers
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
                                  AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                  Qty = c.RdQty,
@@ -1137,6 +1138,7 @@ namespace AccApi.Repository.Managers
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
                                  AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                  Qty = c.RdQty,
@@ -1236,6 +1238,7 @@ namespace AccApi.Repository.Managers
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
                                  AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  GroupId = g.Id
@@ -1333,6 +1336,7 @@ namespace AccApi.Repository.Managers
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
                                  AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  GroupId = g.Id

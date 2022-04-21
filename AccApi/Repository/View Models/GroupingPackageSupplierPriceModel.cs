@@ -25,5 +25,7 @@ namespace AccApi.Repository.View_Models
         public int? GroupId { get; set; }
 
         public double? AssignedPercentage { get; set; }
+
+        public double? AssignedQty { get; set; }
     }
 }
