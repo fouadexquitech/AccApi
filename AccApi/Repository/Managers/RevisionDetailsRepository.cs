@@ -916,18 +916,18 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(string parameters, IFormFile attachement)
+        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement)
         {
             string send = "";
 
-            string[] paramArray = parameters.Split(",");
-            string[] emails = new string[paramArray.Length - 1];
-            if (paramArray.Length > 0)
+            
+            string[] emails = new string[topManagementTemplate.TopManagements.Count];
+            if (topManagementTemplate.TopManagements.Count > 0)
             {
-                int packId = Convert.ToInt32(paramArray[0]);
-                for (int i = 1; i < paramArray.Length; i++)
+                int packId = topManagementTemplate.PackageId;
+                for (int i = 0; i < topManagementTemplate.TopManagements.Count; i++)
                 {
-                    emails[i - 1] = paramArray[i];
+                    emails[i] = topManagementTemplate.TopManagements[i].Mail;
                 }
                 var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
                 string PackageName = package.PkgeName;
@@ -966,7 +966,7 @@ namespace AccApi.Repository.Managers
 
                 string Subject = "Project: " + ProjectName + ", Package: " + PackageName;
 
-                string MailBody;
+                /*string MailBody;
 
                 MailBody = "Dear Sir,";
                 MailBody += Environment.NewLine;
@@ -976,14 +976,14 @@ namespace AccApi.Repository.Managers
                 MailBody += Environment.NewLine;
                 MailBody += Environment.NewLine;
                 MailBody += Environment.NewLine;
-                MailBody += "Best regards";
+                MailBody += "Best regards";*/
 
 
 
                 var AttachmentList = new List<string>();
 
                 Mail m = new Mail();
-                var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false, attachement);
+                var res = m.SendMail(mylistTo, mylistCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachement);
 
                 send = "sent";
             }

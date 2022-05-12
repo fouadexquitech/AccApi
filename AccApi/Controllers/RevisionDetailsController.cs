@@ -5,6 +5,7 @@ using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -156,11 +157,17 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public bool SendCompToManagement(string parameters, IFormFile attachement)
+        public async Task<bool> SendCompToManagement()
         {
             try
             {
-                return this._revisionDetailsRepository.SendCompToManagement(parameters, attachement);
+                var formCollection = await Request.ReadFormAsync();
+                var topManagementTemplateStr = formCollection["topManagementTemplate"];
+                var topManagementTemplate = JsonConvert.DeserializeObject<TopManagementTemplateModel>(topManagementTemplateStr[0]);
+
+                var attachement = formCollection.Files[0];
+
+                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachement);
             }
             catch (Exception ex)
             {
