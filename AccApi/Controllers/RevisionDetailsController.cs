@@ -100,11 +100,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierRessource")]
-        public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList, bool isPercent)
+        public bool AssignSupplierRessource(int packId, bool isPercent, List<SupplierResrouces> supplierResList)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList, isPercent);
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierBOQ")]
-        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent)
+        public bool AssignSupplierBOQ(int packId, bool isPercent, List<SupplierBOQ> SupplierBOQList)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListBoqList")]
-        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent)
+        public bool AssignSupplierListBoqList(int packId, bool isPercent, AssignSuppliertBoq item)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListRessourceList")]
-        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item,  bool isPercent)
+        public bool AssignSupplierListRessourceList(int packId, bool isPercent, AssignSuppliertRes item)
         {
             try
             {
@@ -258,7 +258,7 @@ namespace AccApi.Controllers
         }
       
         [HttpPost("AssignSupplierListGroupList")]
-        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent)
+        public bool AssignSupplierListGroupList(int packId, bool byBoq, bool isPercent, AssignSupplierGroup item)
         {
             try
             {
@@ -272,7 +272,7 @@ namespace AccApi.Controllers
         }
       
         [HttpPost("AssignSupplierGroup")]
-        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent)
+        public bool AssignSupplierGroup(int packId, bool byBoq, bool isPercent, List<SupplierGroups> SupplierGroupList)
         {
             try
             {
