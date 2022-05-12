@@ -83,6 +83,19 @@ namespace AccApi.Repository.Managers
             return list;
         }
 
+        public List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID)
+        {        
+            var param1 = new SqlParameter("@PackageID", PackageID);
+            var param2 = new SqlParameter("@Type", 1);
+
+            List<TmpConditionsReply> list = _dbcontext
+                        .TmpConditionsReplies
+                        .FromSqlRaw("exec SP_GetPackageConditionsReply @PackageID,@Type", param1, param2)
+                        .ToList();
+
+            return list;
+        }
+
         public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
@@ -110,6 +123,19 @@ namespace AccApi.Repository.Managers
             List<TmpConditionsReply> list = _dbcontext
                         .TmpConditionsReplies
                         .FromSqlRaw("exec SP_GetConditionsReply @PackageSupliersID,@Type", param1, param2)
+                        .ToList();
+
+            return list;
+        }
+
+        public List<TmpConditionsReply> GetPackageTechConditionsReply(int PackageID)
+        {
+            var param1 = new SqlParameter("@PackageID", PackageID);
+            var param2 = new SqlParameter("@Type", 2);
+
+            List<TmpConditionsReply> list = _dbcontext
+                        .TmpConditionsReplies
+                        .FromSqlRaw("exec SP_GetPackageConditionsReply @PackageID,@Type", param1, param2)
                         .ToList();
 
             return list;
@@ -251,9 +277,6 @@ namespace AccApi.Repository.Managers
                         var worksheet = package.Workbook.Worksheets.First();
                         var rowCount = worksheet.Dimension.Rows;
 
-                        string resComment, resCode = "", oldBoqRef = "";
-                        double resQty, resPrice;
-
                         for (var row = 2; row <= rowCount; row++)
                         {
                             try
@@ -265,31 +288,34 @@ namespace AccApi.Repository.Managers
                                 if ((desc != "") && (reply != "") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
                                 {
                                     var comCond = _mdbcontext.TblComConds.Where(x => x.CmDescription == desc).FirstOrDefault();
-                                    int comcondId = comCond.CmSeq == null ? 0 : comCond.CmSeq;
-
-                                    if (comcondId > 0)
+                                    if (comCond != null)      
                                     {
-                                        var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
-                                        //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
+                                        int comcondId = comCond.CmSeq == null ? 0 : comCond.CmSeq;
 
-                                        if (comCondExist == null)
+                                        if (comcondId > 0)
                                         {
-                                            var SuppCom = new TblSuppComCondReply()
+                                            var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                            //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
+
+                                            if (comCondExist == null)
                                             {
-                                                CdComConId = comcondId,
-                                                CdPackageSupliersId = PackageSupliersID,
-                                                CdSuppReply = reply
-                                            };
-                                            LstSuppComCondReply.Add(SuppCom);
-                                        }
-                                        else
-                                        {
-                                            comCondExist.CdSuppReply = reply;
-                                            _dbcontext.TblSuppComCondReplies.Update(comCondExist);
-                                            _dbcontext.SaveChanges();
+                                                var SuppCom = new TblSuppComCondReply()
+                                                {
+                                                    CdComConId = comcondId,
+                                                    CdPackageSupliersId = PackageSupliersID,
+                                                    CdSuppReply = reply
+                                                };
+                                                LstSuppComCondReply.Add(SuppCom);
+                                            }
+                                            else
+                                            {
+                                                comCondExist.CdSuppReply = reply;
+                                                _dbcontext.TblSuppComCondReplies.Update(comCondExist);
+                                                _dbcontext.SaveChanges();
+                                            }
                                         }
                                     }
-                                }
+                            }
                             }
                             catch (Exception ex)
                             {
@@ -470,6 +496,8 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
+
     }
 }
 

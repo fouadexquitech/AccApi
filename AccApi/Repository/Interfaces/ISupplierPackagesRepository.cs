@@ -14,5 +14,6 @@ namespace AccApi.Repository.Interfaces
 
         string ValidateExcelBeforeAssign(int packId, byte byBoq);
         bool AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList,string FilePath, byte ByBoq);
+        List<boqPackageList> boqPackageList(int packId, byte byboq);
     }
 }

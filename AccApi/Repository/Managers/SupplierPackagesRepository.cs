@@ -59,7 +59,7 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        private List<boqPackageList> boqPackageList(int packId, byte byboq)
+        public List<boqPackageList> boqPackageList(int packId, byte byboq)
         {
             if (byboq == 1)
             {

@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.View_Models;
+﻿using AccApi.Repository.Models;
+using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -20,7 +21,6 @@ namespace AccApi.Repository.Interfaces
         bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent);
         bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent);
         bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent);
-
         bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent);
         bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent);
         bool SendCompToManagement(string parameters, IFormFile attachement);
@@ -28,5 +28,7 @@ namespace AccApi.Repository.Interfaces
         List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input);
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input);
         List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input);
+        string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
+        string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
@@ -17,11 +18,15 @@ namespace AccApi.Controllers
     {
        private readonly ILogger<RevisionDetailsController> _logger;
        private readonly IRevisionDetailsRepository _revisionDetailsRepository;
+       private IConditionsRepository _conditionsRepository;
+       private ISupplierPackagesRepository _supplierPackagesRepository;    
 
-        public RevisionDetailsController (ILogger<RevisionDetailsController> logger, IRevisionDetailsRepository revisionDetailsRepository)
+        public RevisionDetailsController (ILogger<RevisionDetailsController> logger, IRevisionDetailsRepository revisionDetailsRepository, IConditionsRepository conditionsRepository, ISupplierPackagesRepository supplierPackagesRepository)
         {
             _logger = logger;
             _revisionDetailsRepository=revisionDetailsRepository;
+            _conditionsRepository = conditionsRepository;
+            _supplierPackagesRepository = supplierPackagesRepository;
         }
 
         [HttpGet("GetRevisionDetails")]
@@ -193,6 +198,22 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("GetComparisonSheetByBoq_Excel")]
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input)
+        {
+            try
+            {
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1);
+                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                return this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetComparisonSheetResourcesByGroup")]
         public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
         {
@@ -206,7 +227,7 @@ namespace AccApi.Controllers
                 return null;
             }
         }
-
+     
         [HttpPost("GetComparisonSheetBoqByGroup")]
         public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
         {
@@ -220,8 +241,22 @@ namespace AccApi.Controllers
                 return null;
             }
         }
-
-
+     
+        [HttpPost("GetComparisonSheetBoqByGroup_Excel")]
+        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input)
+        {
+            try
+            {
+                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                return this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, comcondRepLst);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+      
         [HttpPost("AssignSupplierListGroupList")]
         public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent)
         {
@@ -235,8 +270,7 @@ namespace AccApi.Controllers
                 return false;
             }
         }
-
-
+      
         [HttpPost("AssignSupplierGroup")]
         public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent)
         {
