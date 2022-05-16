@@ -27,5 +27,8 @@ namespace AccApi.Repository.View_Models
         public double? AssignedPercentage { get; set; }
 
         public double? AssignedQty { get; set; }
+
+        public string? OriginalCurrency { get; set; }
+        public double? ExchRate { get; set; }
     }
 }

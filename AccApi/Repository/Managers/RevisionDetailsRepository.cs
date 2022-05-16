@@ -18,10 +18,13 @@ namespace AccApi.Repository.Managers
     {
         private AccDbContext _dbContext;
         private PolicyDbContext _pdbContext;
-        public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext)
+        private MasterDbContext _mdbContext;
+
+        public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext, MasterDbContext mdbContext)
         {
             _dbContext = dbContext;
             _pdbContext = pdbContext;
+            _mdbContext = mdbContext;
         }
 
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
@@ -35,9 +38,15 @@ namespace AccApi.Repository.Managers
             RevisionDetailsList revDtlList = new RevisionDetailsList();
             IEnumerable<RevisionDetailsList> revDtlQry;
 
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
             if (byBoq == 1)
             {
-                revDtlQry = (from b in _dbContext.TblRevisionDetails
+                revDtlQry = (from cur in curList
+                             join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                             join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                              join c in _dbContext.TblOriginalBoqs on b.RdBoqItem equals c.ItemO
                              where b.RdRevisionId == RevisionId
 
@@ -47,14 +56,24 @@ namespace AccApi.Repository.Managers
                                  RdPrice = b.RdPrice,
                                  RdMissedPrice = b.RdMissedPrice,
                                  RdBoqItem = b.RdBoqItem,
-                                 RdItemDescription = c.DescriptionO
+                                 RdItemDescription = c.DescriptionO,
+                                 RdQty=b.RdQty,
+                                 RdUnitRate=c.UnitRate,
+                                 RdTotalBudget=c.Submitted,
+                                 ExchangeRate=bb.PrExchRate,
+                                 RdOriginalPrice=b.RdPriceOrigCurrency,
+                                 TotalSupplierPrice=b.RdAssignedPrice,
+                                 currency=cur.CurCode
                              }).ToList();
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
             }
             else
             {
-                revDtlQry = (from b in _dbContext.TblRevisionDetails
+                revDtlQry = (from cur in curList
+                             join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                             join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                              join c in _dbContext.TblBoqs on b.RdResourceSeq equals c.BoqSeq
                              join i in _dbContext.TblOriginalBoqs on c.BoqItem equals i.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
@@ -67,7 +86,14 @@ namespace AccApi.Repository.Managers
                                  RdMissedPrice = b.RdMissedPrice,
                                  RdBoqItem = i.ItemO,
                                  RdBoqItemDescription = i.DescriptionO,
-                                 RdItemDescription = e.ResDescription
+                                 RdItemDescription = e.ResDescription,
+                                 RdQty = b.RdQty,
+                                 RdUnitRate = c.BoqUprice,
+                                 RdTotalBudget = (b.RdQty) * (c.BoqUprice),
+                                 ExchangeRate = bb.PrExchRate,
+                                 RdOriginalPrice = b.RdPriceOrigCurrency,
+                                 TotalSupplierPrice = b.RdAssignedPrice,
+                                 currency = cur.CurCode
                              }).ToList();
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdBoqItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
@@ -1047,10 +1073,14 @@ namespace AccApi.Repository.Managers
 
                 }).ToList();
 
-            var querySupp = (from a in _dbContext.TblSupplierPackages
-                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+            var curList = (from b in _mdbContext.TblCurrencies
+                            select b).ToList();
+
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode                            
                              where (a.SpPackageId == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
@@ -1064,10 +1094,10 @@ namespace AccApi.Repository.Managers
                                  Qty = c.RdQty,
                                  UnitPrice = c.RdPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
-                                 BoqItemO = c.RdBoqItem
-
+                                 BoqItemO = c.RdBoqItem,                               
+                                 OriginalCurrency =cur.CurCode,
+                                 ExchRate = b.PrExchRate                                
                              }).ToList();
-
 
             foreach (var item in items)
             {
@@ -1075,6 +1105,16 @@ namespace AccApi.Repository.Managers
             }
 
             return items;
+        }
+
+        private string getCurDesc(int id)
+        {
+            var cur = _mdbContext.TblCurrencies.Where(x=> x.CurId==id).FirstOrDefault();
+
+            if (cur != null)
+                return cur.CurDesc;
+            else
+                return "";
         }
 
         public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
@@ -1325,9 +1365,12 @@ namespace AccApi.Repository.Managers
                     RowNumber = p.RowNumber.Value
                 }).ToList();
 
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
 
-            var querySupp = (from a in _dbContext.TblSupplierPackages
-                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
                              where (a.SpPackageId == packageId && b.PrRevNo == 0)
@@ -1343,8 +1386,9 @@ namespace AccApi.Repository.Managers
                                  Qty = c.RdQty,
                                  UnitPrice = c.RdPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
-                                 BoqResourceId = c.RdResourceSeq
-
+                                 BoqResourceId = c.RdResourceSeq,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate
                              }).ToList();
 
             foreach (var item in items)
@@ -1422,9 +1466,12 @@ namespace AccApi.Repository.Managers
                     TotalPrice = p.Sum(c => c.BoqQty * c.BoqUprice)
                 }).ToList();
 
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
 
-            var querySupp = (from a in _dbContext.TblSupplierPackages
-                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
                              join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
@@ -1440,8 +1487,9 @@ namespace AccApi.Repository.Managers
                                  AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
-                                 GroupId = g.Id
-
+                                 GroupId = g.Id,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate
                              }).ToList();
 
             foreach (var group in groups)
@@ -1459,7 +1507,9 @@ namespace AccApi.Repository.Managers
                         LastRevisionDate = p.First().LastRevisionDate,
                         AssignedPercentage = p.First().AssignedPercentage,
                         MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice)
+                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        OriginalCurrency = p.First().OriginalCurrency,
+                        ExchRate = p.First().ExchRate
                     }).ToList();
             }
 
@@ -1520,14 +1570,16 @@ namespace AccApi.Repository.Managers
                     TotalPrice = p.Sum(c => c.QtyO * c.UnitRate)
                 }).ToList();
 
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
 
-            var querySupp = (from a in _dbContext.TblSupplierPackages
-                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
                              join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
                              join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
-
                              where (a.SpPackageId == packageId && boq.Scope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
@@ -1538,8 +1590,9 @@ namespace AccApi.Repository.Managers
                                  AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
-                                 GroupId = g.Id
-
+                                 GroupId = g.Id,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate
                              }).ToList();
 
             foreach (var group in groups)
@@ -1557,7 +1610,9 @@ namespace AccApi.Repository.Managers
                         LastRevisionDate = p.First().LastRevisionDate,
                         AssignedPercentage = p.First().AssignedPercentage,
                         MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice)
+                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        OriginalCurrency = p.First().OriginalCurrency,
+                        ExchRate = p.First().ExchRate
                     }).ToList();
             }
 

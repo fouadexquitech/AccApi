@@ -9,11 +9,29 @@ namespace AccApi.Repository.View_Models
     {
         public int RdRevisionId { get; set; }
         public int RdResourceSeq { get; set; }
+        //Supplier price after exchange 
         public double? RdPrice { get; set; }
         public byte? RdMissedPrice { get; set; }
 
         public string RdBoqItem { get; set; }
         public string RdBoqItemDescription { get; set; }
         public string RdItemDescription  { get; set; }
+
+        //budget
+        public double? RdQty { get; set; }
+        public double? RdUnitRate { get; set; }
+        public double? RdTotalBudget { get; set; }
+        ///budget
+
+        public double? ExchangeRate{ get; set; }
+
+        //Supplier price before exchange 
+        public double? RdOriginalPrice { get; set; }
+
+        //Total Supplier price after exchange 
+        public double? TotalSupplierPrice { get; set; }
+        //currency of supplier
+        public string currency { get; set; }
+
     }
 }
