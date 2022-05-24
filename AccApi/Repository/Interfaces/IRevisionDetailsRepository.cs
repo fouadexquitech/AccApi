@@ -28,7 +28,10 @@ namespace AccApi.Repository.Interfaces
         List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input);
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input);
         List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input);
-        string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
+        
         string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
+        string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
+        string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
+        string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
     }
 }

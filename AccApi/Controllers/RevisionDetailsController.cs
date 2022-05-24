@@ -221,6 +221,22 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("GetComparisonSheet_Excel")]
+        public string GetComparisonSheet_Excel(int packageId, SearchInput input)
+        {
+            try
+            {
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
+                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                return this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetComparisonSheetResourcesByGroup")]
         public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
         {
@@ -234,7 +250,22 @@ namespace AccApi.Controllers
                 return null;
             }
         }
-     
+
+        [HttpPost("GetComparisonSheetResourcesByGroup_Excel")]
+        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input)
+        {
+            try
+            {
+                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                return this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetComparisonSheetBoqByGroup")]
         public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
         {
