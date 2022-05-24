@@ -1027,294 +1027,6 @@ namespace AccApi.Repository.Managers
                 return "";
         }
 
-        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
-        {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-
-                                                        where o.Scope == packageId
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = o.SectionO,
-                                                            ItemO = o.ItemO,
-                                                            DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            QtyO = o.QtyO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = b.BoqCtg,
-                                                            BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqQty = b.BoqQty,
-                                                            BoqUprice = o.UnitRate,
-                                                            BoqDiv = b.BoqDiv,
-                                                            BoqPackage = b.BoqPackage,
-                                                            BoqScope = b.BoqScope,
-                                                            ResSeq = r.ResSeq,
-                                                            ResDescription = r.ResDescription
-                                                        });
-
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-
-            var items = condQuery
-                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.BoqUprice, x.BoqUnitMesure })
-                .Select(p => p.FirstOrDefault()).ToList()
-                .Select(p => new GroupingBoqModel
-                {
-                    ItemO = p.ItemO,
-                    DescriptionO = p.DescriptionO,
-                    IsSelected = false,
-                    ValidPerc = true,
-                    RowNumber = p.RowNumber.Value,
-                    Qty = p.QtyO,
-                    UnitPrice = p.UnitRate,
-                    Unit = p.UnitO,
-                    TotalPrice = (p.QtyO * p.UnitRate)
-
-                }).ToList();
-
-            var curList = (from b in _mdbContext.TblCurrencies
-                            select b).ToList();
-
-            var querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode                            
-                             where (a.SpPackageId == packageId && b.PrRevNo == 0)
-                             select new GroupingPackageSupplierPriceModel
-                             {
-                                 SupplierId = sup.SupCode,
-                                 SupplierName = sup.SupName,
-                                 LastRevisionDate = b.PrRevDate,
-                                 AssignedPercentage = c.RdAssignedPerc,
-                                 AssignedQty = c.RdAssignedQty,
-                                 MissedPrice = c.RdMissedPrice,
-                                 OriginalCurrencyPrice = c.RdPriceOrigCurrency,
-                                 Qty = c.RdQty,
-                                 UnitPrice = c.RdPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
-                                 BoqItemO = c.RdBoqItem,                               
-                                 OriginalCurrency =cur.CurCode,
-                                 ExchRate = b.PrExchRate                                
-                             }).ToList();
-
-            foreach (var item in items)
-            {
-                item.GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqItemO == item.ItemO).ToList();
-            }
-
-            return items;
-        }
-
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
-        {
-            List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input);
-
-            var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
-            string PackageName = package.PkgeName;
-
-            var p = _dbContext.TblParameters.FirstOrDefault();
-            var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
-            string ProjectName = proj.PrjName;
-
-            List<string> suppliers = new List<string>(); 
-
-            var stream = new MemoryStream();
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-            using (var xlPackage = new ExcelPackage(stream))
-            {
-                var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
-                worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
-
-                int row, j, c;
-
-                worksheet.Cells["A1:C1"].Merge = true;
-                worksheet.Cells["A2:C2"].Merge = true;
-                worksheet.Cells["A3:C3"].Merge = true;
-                worksheet.Cells["A4:C4"].Merge = true;
-                worksheet.Cells["A5:C5"].Merge = true;
-
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
-                worksheet.Cells[2, 1].Style.Font.Bold = true;
-                worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
-                worksheet.Cells[3, 1].Style.Font.Bold = true;
-                worksheet.Cells[3, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.Cells[4, 1].Value = "Department :";
-                worksheet.Cells[4, 1].Style.Font.Bold = true;
-                worksheet.Cells[4, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.Cells[5, 1].Value = PackageName;
-                worksheet.Cells[5, 1].Style.Font.Bold = true;
-                worksheet.Cells[5, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                worksheet.SelectedRange[5, 50].Style.Font.Bold = true;
-                worksheet.SelectedRange[5, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.SelectedRange[7, 50].Style.Font.Bold = true;
-                worksheet.SelectedRange[7, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                worksheet.Cells["E6:F6"].Merge = true;
-                worksheet.Cells[6, 5].Value = "ACC budget";
-                worksheet.Cells[6, 5].Style.Font.Bold = true;
-                worksheet.Cells[6, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                worksheet.Column(5).Width = 20;
-
-                if (items.Count > 0)
-                {
-                    GroupingBoqModel item1 = items.First();
-                    GroupingPackageSupplierPriceModel sup = item1.GroupingPackageSuppliersPrices.First();
-                    string boq = sup.BoqItemO;
-
-                    var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-
-                    int col = 7;
-                    int m = 7;
-                    foreach (var l in lst1)
-                    {
-                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
-                        worksheet.Cells[6, m].Style.Font.Bold = true;
-                        worksheet.Columns[m].Style.WrapText = true;
-                        worksheet.Column(m).AutoFit();
-                        worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m,6,m+1].Merge = true;
-                        m = m + 2;
-                        if (!suppliers.Contains(l.SupplierName))
-                            suppliers.Add(l.SupplierName.ToString());
-
-                        col++;
-                    }
-                }
-
-                row = 7;
-                worksheet.Cells[row, 1].Value = "No";
-                worksheet.Cells[row, 2].Value = "Description";
-                worksheet.Column(2).Width = 70;
-                worksheet.Columns[2].Style.WrapText = true;
-                worksheet.Column(2).AutoFit();
-                worksheet.Cells[row, 3].Value = "U.";
-                worksheet.Cells[row, 4].Value = "Qty Total";
-                worksheet.Cells[row, 5].Value = "P.U.";
-                worksheet.Cells[row, 6].Value = "P.T.";
-
-                worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-
-                row = 9;
-                j = 0;
-                foreach (var item in items)
-                {
-                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    foreach (var sup in item.GroupingPackageSuppliersPrices)
-                    {
-                        worksheet.Cells[row, 1].Value = j++;
-                        worksheet.Column(2).Width = 70;
-                        worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
-                        worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
-                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                        worksheet.Columns[2].Style.WrapText = true;
-                        worksheet.Cells[row, 3].Value = (item.Unit) == null ? "" : item.Unit;
-                        worksheet.Cells[row, 4].Value = (item.Qty) == null ? "" : item.Qty;
-                        worksheet.Cells[row, 5].Value = (item.UnitPrice) == null ? "" : item.UnitPrice;
-                        worksheet.Cells[row, 6].Value = (item.TotalPrice) == null ? "" : item.TotalPrice;
-
-                        int col = 0;
-                        foreach (var suplier in suppliers)
-                        {
-                            var v = worksheet.Cells[7, 7 + col].Value;
-                            if (v == null)
-                            {
-                                worksheet.Cells[7, 7 + col].Value = "P.U.";
-                                worksheet.Cells[7, 8 + col].Value = "P.T.";
-                            }
-
-                            var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName==suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();                                                                           
-                            if (supReply != null)
-                            {
-                                worksheet.Cells[row, 7+col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
-                                worksheet.Cells[row, 8+col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
-                            }                               
-                            col=col+2;
-                        }
-                    }
-                    row++;
-                }
-
-                row++;
-
-                //Commercial Conditions
-                var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
-
-                var replies = comcondRep.GroupBy(x => new { x.CondDesc })
-                .Select(p => p.FirstOrDefault())
-                .Select(p => new TmpConditionsReply
-                {
-                    CondId = p.CondId,
-                    CondDesc = p.CondDesc
-                })
-                .ToList();
-
-                if (replies.Count > 0)
-                {
-                    worksheet.SelectedRange[row, 3].Merge = true;
-                    worksheet.Cells[row, 1].Value = "Commercial Conditions";
-                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                    worksheet.Cells[row, 1].Style.Font.Bold = true;
-
-                    row++;
-                    foreach (var reply in replies)
-                    {
-                        worksheet.Cells[row, 2].Value = reply.CondDesc;
-                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                        int colsup = 7;
-                        foreach (var sup in suppliers)
-                        {
-                            var supReply = comcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
-                            if (supReply != null)
-                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
-
-                            colsup=colsup+2;
-                        }
-                        row++;
-                    }
-                }
-
-                xlPackage.Save();
-                stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
-
-                string path = @"C:\App\";
-
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
-
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
-
-                xlPackage.SaveAs(FullPath);
-
-                package.FilePath = FullPath;
-                _dbContext.SaveChanges();
-
-                return FullPath;
-            }
-        }
-         
         public List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input)
         {
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
@@ -1409,6 +1121,300 @@ namespace AccApi.Repository.Managers
             }
             return items;
         }
+
+        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
+        {
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
+                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
+
+                                                        where o.Scope == packageId
+                                                        select new BoqRessourcesList
+                                                        {
+                                                            RowNumber = o.RowNumber,
+                                                            SectionO = o.SectionO,
+                                                            ItemO = o.ItemO,
+                                                            DescriptionO = o.DescriptionO,
+                                                            UnitO = o.UnitO,
+                                                            QtyO = o.QtyO,
+                                                            UnitRate = o.UnitRate,
+                                                            Scope = o.Scope,
+                                                            BoqSeq = b.BoqSeq,
+                                                            BoqCtg = b.BoqCtg,
+                                                            BoqUnitMesure = b.BoqUnitMesure,
+                                                            BoqQty = b.BoqQty,
+                                                            BoqUprice = o.UnitRate,
+                                                            BoqDiv = b.BoqDiv,
+                                                            BoqPackage = b.BoqPackage,
+                                                            BoqScope = b.BoqScope,
+                                                            ResSeq = r.ResSeq,
+                                                            ResDescription = r.ResDescription
+                                                        });
+
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+            var items = condQuery
+                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.BoqUprice, x.BoqUnitMesure })
+                .Select(p => p.FirstOrDefault()).ToList()
+                .Select(p => new GroupingBoqModel
+                {
+                    ItemO = p.ItemO,
+                    DescriptionO = p.DescriptionO,
+                    IsSelected = false,
+                    ValidPerc = true,
+                    RowNumber = p.RowNumber.Value,
+                    Qty = p.QtyO,
+                    UnitPrice = p.UnitRate,
+                    Unit = p.UnitO,
+                    TotalPrice = (p.QtyO * p.UnitRate)
+
+                }).ToList();
+
+            var curList = (from b in _mdbContext.TblCurrencies
+                            select b).ToList();
+
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode                            
+                             where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                             select new GroupingPackageSupplierPriceModel
+                             {
+                                 SupplierId = sup.SupCode,
+                                 SupplierName = sup.SupName,
+                                 LastRevisionDate = b.PrRevDate,
+                                 AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
+                                 MissedPrice = c.RdMissedPrice,
+                                 OriginalCurrencyPrice = c.RdPriceOrigCurrency,
+                                 Qty = c.RdQty,
+                                 UnitPrice = c.RdPrice,
+                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 BoqItemO = c.RdBoqItem,                               
+                                 OriginalCurrency =cur.CurCode,
+                                 ExchRate = b.PrExchRate                                
+                             }).ToList();
+
+            foreach (var item in items)
+            {
+                item.GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqItemO == item.ItemO).ToList();
+            }
+
+            return items;
+        }
+
+        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
+        {
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
+                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        join g in _dbContext.ComparisonPackageGroups on o.GroupId equals g.Id
+                                                        where o.Scope == packageId
+                                                        select new BoqRessourcesList
+                                                        {
+                                                            RowNumber = o.RowNumber,
+                                                            SectionO = o.SectionO,
+                                                            ItemO = o.ItemO,
+                                                            DescriptionO = o.DescriptionO,
+                                                            UnitO = o.UnitO,
+                                                            QtyO = o.QtyO,
+                                                            UnitRate = o.UnitRate,
+                                                            Scope = o.Scope,
+                                                            BoqSeq = b.BoqSeq,
+                                                            BoqCtg = b.BoqCtg,
+                                                            BoqUnitMesure = b.BoqUnitMesure,
+                                                            BoqQty = b.BoqQty,
+                                                            BoqUprice = o.UnitRate,
+                                                            BoqDiv = b.BoqDiv,
+                                                            BoqPackage = b.BoqPackage,
+                                                            BoqScope = b.BoqScope,
+                                                            ResSeq = r.ResSeq,
+                                                            ResDescription = r.ResDescription,
+                                                            GroupName = g.Name,
+                                                            GroupId = g.Id
+                                                        });
+
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+
+            var groups = condQuery
+                .GroupBy(x => new { x.GroupId, x.GroupName })
+                //.Select(p => p.Gr)
+                .Select(p => new GroupingBoqGroupModel
+                {
+                    Id = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
+                    Name = p.First().GroupName,
+                    ValidPerc = true,
+                    TotalPrice = p.Sum(c => c.QtyO * c.UnitRate)
+                }).ToList();
+
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
+                             where (a.SpPackageId == packageId && boq.Scope == packageId && b.PrRevNo == 0)
+                             select new GroupingPackageSupplierPriceModel
+                             {
+                                 SupplierId = sup.SupCode,
+                                 SupplierName = sup.SupName,
+                                 LastRevisionDate = b.PrRevDate,
+                                 AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
+                                 MissedPrice = c.RdMissedPrice,
+                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 GroupId = g.Id,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate
+                             }).ToList();
+
+            foreach (var group in groups)
+            {
+                var lsst = querySupp.Where(x => x.GroupId == group.Id).ToList();
+                group.GroupingPackageSuppliersPrices = lsst
+                    .GroupBy(x => new {
+                        x.SupplierId,
+                        x.SupplierName
+                    })
+                    .Select(p => new GroupingPackageSupplierPriceModel
+                    {
+                        SupplierId = p.First().SupplierId,
+                        SupplierName = p.First().SupplierName,
+                        LastRevisionDate = p.First().LastRevisionDate,
+                        AssignedPercentage = p.First().AssignedPercentage,
+                        MissedPrice = p.First().MissedPrice,
+                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        OriginalCurrency = p.First().OriginalCurrency,
+                        ExchRate = p.First().ExchRate
+                    }).ToList();
+            }
+            return groups;
+        }
+
+        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
+        {
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
+                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        join g in _dbContext.ComparisonPackageGroups on b.GroupId equals g.Id
+                                                        where o.Scope == packageId
+                                                        select new BoqRessourcesList
+                                                        {
+                                                            RowNumber = o.RowNumber,
+                                                            SectionO = o.SectionO,
+                                                            ItemO = o.ItemO,
+                                                            DescriptionO = o.DescriptionO,
+                                                            UnitO = o.UnitO,
+                                                            QtyO = o.QtyO,
+                                                            UnitRate = o.UnitRate,
+                                                            Scope = o.Scope,
+                                                            BoqSeq = b.BoqSeq,
+                                                            BoqCtg = b.BoqCtg,
+                                                            BoqUnitMesure = b.BoqUnitMesure,
+                                                            BoqQty = b.BoqQty,
+                                                            BoqUprice = b.BoqUprice,
+                                                            BoqDiv = b.BoqDiv,
+                                                            BoqPackage = b.BoqPackage,
+                                                            BoqScope = b.BoqScope,
+                                                            ResSeq = r.ResSeq,
+                                                            ResDescription = r.ResDescription,
+                                                            GroupName = g.Name,
+                                                            GroupId = g.Id
+                                                        });
+
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+
+            var groups = condQuery
+                .GroupBy(x => new { x.GroupId, x.GroupName })
+                //.Select(p => p.Gr)
+                .Select(p => new GroupingBoqGroupModel
+                {
+                    Id = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
+                    Name = p.First().GroupName,
+                    ValidPerc = true,
+                    TotalPrice = p.Sum(c => c.BoqQty * c.BoqUprice)
+                }).ToList();
+
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
+            var querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
+
+                             where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
+                             select new GroupingPackageSupplierPriceModel
+                             {
+                                 SupplierId = sup.SupCode,
+                                 SupplierName = sup.SupName,
+                                 LastRevisionDate = b.PrRevDate,
+                                 AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
+                                 MissedPrice = c.RdMissedPrice,
+                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 GroupId = g.Id,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate
+                             }).ToList();
+
+            foreach (var group in groups)
+            {
+                var lsst = querySupp.Where(x => x.GroupId == group.Id).ToList();
+                group.GroupingPackageSuppliersPrices = lsst
+                    .GroupBy(x => new { x.SupplierId, 
+                        x.SupplierName
+                        
+                        })
+                    .Select(p => new GroupingPackageSupplierPriceModel
+                    {
+                        SupplierId = p.First().SupplierId,
+                        SupplierName = p.First().SupplierName,
+                        LastRevisionDate = p.First().LastRevisionDate,
+                        AssignedPercentage = p.First().AssignedPercentage,
+                        MissedPrice = p.First().MissedPrice,
+                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        OriginalCurrency = p.First().OriginalCurrency,
+                        ExchRate = p.First().ExchRate
+                    }).ToList();
+            }
+            return groups;
+        }
+
 
         public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
         {
@@ -1613,108 +1619,204 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        join g in _dbContext.ComparisonPackageGroups on b.GroupId equals g.Id
-                                                        where o.Scope == packageId
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = o.SectionO,
-                                                            ItemO = o.ItemO,
-                                                            DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            QtyO = o.QtyO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = b.BoqCtg,
-                                                            BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqQty = b.BoqQty,
-                                                            BoqUprice = b.BoqUprice,
-                                                            BoqDiv = b.BoqDiv,
-                                                            BoqPackage = b.BoqPackage,
-                                                            BoqScope = b.BoqScope,
-                                                            ResSeq = r.ResSeq,
-                                                            ResDescription = r.ResDescription,
-                                                            GroupName = g.Name,
-                                                            GroupId = g.Id
-                                                        });
+            List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input);
 
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+            var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
+            string PackageName = package.PkgeName;
 
+            var p = _dbContext.TblParameters.FirstOrDefault();
+            var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            string ProjectName = proj.PrjName;
 
-            var groups = condQuery
-                .GroupBy(x => new { x.GroupId, x.GroupName })
-                //.Select(p => p.Gr)
-                .Select(p => new GroupingBoqGroupModel
-                {
-                    Id = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
-                    Name = p.First().GroupName,
-                    ValidPerc = true,
-                    TotalPrice = p.Sum(c => c.BoqQty * c.BoqUprice)
-                }).ToList();
+            List<string> suppliers = new List<string>(); 
 
-            var curList = (from b in _mdbContext.TblCurrencies
-                           select b).ToList();
+            var stream = new MemoryStream();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-            var querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
-                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
-
-                             where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
-                             select new GroupingPackageSupplierPriceModel
-                             {
-                                 SupplierId = sup.SupCode,
-                                 SupplierName = sup.SupName,
-                                 LastRevisionDate = b.PrRevDate,
-                                 AssignedPercentage = c.RdAssignedPerc,
-                                 AssignedQty = c.RdAssignedQty,
-                                 MissedPrice = c.RdMissedPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
-                                 GroupId = g.Id,
-                                 OriginalCurrency = cur.CurCode,
-                                 ExchRate = b.PrExchRate
-                             }).ToList();
-
-            foreach (var group in groups)
+            using (var xlPackage = new ExcelPackage(stream))
             {
-                var lsst = querySupp.Where(x => x.GroupId == group.Id).ToList();
-                group.GroupingPackageSuppliersPrices = lsst
-                    .GroupBy(x => new { x.SupplierId, 
-                        x.SupplierName
-                        
-                        })
-                    .Select(p => new GroupingPackageSupplierPriceModel
-                    {
-                        SupplierId = p.First().SupplierId,
-                        SupplierName = p.First().SupplierName,
-                        LastRevisionDate = p.First().LastRevisionDate,
-                        AssignedPercentage = p.First().AssignedPercentage,
-                        MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice),
-                        OriginalCurrency = p.First().OriginalCurrency,
-                        ExchRate = p.First().ExchRate
-                    }).ToList();
-            }
-            return groups;
-        }
+                var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
+                worksheet.Columns.AutoFit();
+                worksheet.Protection.IsProtected = false;
 
+                int row, j, c;
+
+                worksheet.Cells["A1:C1"].Merge = true;
+                worksheet.Cells["A2:C2"].Merge = true;
+                worksheet.Cells["A3:C3"].Merge = true;
+                worksheet.Cells["A4:C4"].Merge = true;
+                worksheet.Cells["A5:C5"].Merge = true;
+
+                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Style.Font.Bold = true;
+                worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
+                worksheet.Cells[3, 1].Style.Font.Bold = true;
+                worksheet.Cells[3, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[4, 1].Value = "Department :";
+                worksheet.Cells[4, 1].Style.Font.Bold = true;
+                worksheet.Cells[4, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[5, 1].Value = PackageName;
+                worksheet.Cells[5, 1].Style.Font.Bold = true;
+                worksheet.Cells[5, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.SelectedRange[5, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[5, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.SelectedRange[7, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[7, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.Cells["E6:F6"].Merge = true;
+                worksheet.Cells[6, 5].Value = "ACC budget";
+                worksheet.Cells[6, 5].Style.Font.Bold = true;
+                worksheet.Cells[6, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Column(5).Width = 20;
+
+                if (items.Count > 0)
+                {
+                    GroupingBoqModel item1 = items.First();
+                    GroupingPackageSupplierPriceModel sup = item1.GroupingPackageSuppliersPrices.First();
+                    string boq = sup.BoqItemO;
+
+                    var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+
+                    int col = 7;
+                    int m = 7;
+                    foreach (var l in lst1)
+                    {
+                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Style.Font.Bold = true;
+                        worksheet.Columns[m].Style.WrapText = true;
+                        worksheet.Column(m).AutoFit();
+                        worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[6, m,6,m+1].Merge = true;
+                        m = m + 2;
+                        if (!suppliers.Contains(l.SupplierName))
+                            suppliers.Add(l.SupplierName.ToString());
+
+                        col++;
+                    }
+                }
+
+                row = 7;
+                worksheet.Cells[row, 1].Value = "No";
+                worksheet.Cells[row, 2].Value = "Description";
+                worksheet.Column(2).Width = 70;
+                worksheet.Columns[2].Style.WrapText = true;
+                worksheet.Column(2).AutoFit();
+                worksheet.Cells[row, 3].Value = "U.";
+                worksheet.Cells[row, 4].Value = "Qty Total";
+                worksheet.Cells[row, 5].Value = "P.U.";
+                worksheet.Cells[row, 6].Value = "P.T.";
+
+                worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                row = 9;
+                j = 0;
+                foreach (var item in items)
+                {
+                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    foreach (var sup in item.GroupingPackageSuppliersPrices)
+                    {
+                        worksheet.Cells[row, 1].Value = j++;
+                        worksheet.Column(2).Width = 70;
+                        worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
+                        worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        worksheet.Columns[2].Style.WrapText = true;
+                        worksheet.Cells[row, 3].Value = (item.Unit) == null ? "" : item.Unit;
+                        worksheet.Cells[row, 4].Value = (item.Qty) == null ? "" : item.Qty;
+                        worksheet.Cells[row, 5].Value = (item.UnitPrice) == null ? "" : item.UnitPrice;
+                        worksheet.Cells[row, 6].Value = (item.TotalPrice) == null ? "" : item.TotalPrice;
+
+                        int col = 0;
+                        foreach (var suplier in suppliers)
+                        {
+                            var v = worksheet.Cells[7, 7 + col].Value;
+                            if (v == null)
+                            {
+                                worksheet.Cells[7, 7 + col].Value = "P.U.";
+                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                            }
+
+                            var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName==suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();                                                                           
+                            if (supReply != null)
+                            {
+                                worksheet.Cells[row, 7+col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
+                                worksheet.Cells[row, 8+col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                            }                               
+                            col=col+2;
+                        }
+                    }
+                    row++;
+                }
+
+                row++;
+
+                //Commercial Conditions
+                var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var replies = comcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (replies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Commercial Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in replies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = comcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup=colsup+2;
+                        }
+                        row++;
+                    }
+                }
+
+                xlPackage.Save();
+                stream.Position = 0;
+                string excelName = $"{PackageName}-Comparison.xlsx";
+
+                string path = @"C:\App\";
+
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                string FullPath = path + excelName;
+
+                if (File.Exists(FullPath))
+                    File.Delete(FullPath);
+
+                xlPackage.SaveAs(FullPath);
+
+                package.FilePath = FullPath;
+                _dbContext.SaveChanges();
+
+                return FullPath;
+            }
+        }
+         
         public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
@@ -1898,108 +2000,7 @@ namespace AccApi.Repository.Managers
                 return FullPath;
             }
         }
-
-        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
-        {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        join g in _dbContext.ComparisonPackageGroups on o.GroupId equals g.Id
-                                                        where o.Scope == packageId
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = o.SectionO,
-                                                            ItemO = o.ItemO,
-                                                            DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            QtyO = o.QtyO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = b.BoqCtg,
-                                                            BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqQty = b.BoqQty,
-                                                            BoqUprice = o.UnitRate,
-                                                            BoqDiv = b.BoqDiv,
-                                                            BoqPackage = b.BoqPackage,
-                                                            BoqScope = b.BoqScope,
-                                                            ResSeq = r.ResSeq,
-                                                            ResDescription = r.ResDescription,
-                                                            GroupName = g.Name,
-                                                            GroupId = g.Id
-                                                        });
-
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-
-
-            var groups = condQuery
-                .GroupBy(x => new { x.GroupId, x.GroupName })
-                //.Select(p => p.Gr)
-                .Select(p => new GroupingBoqGroupModel
-                {
-                    Id = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
-                    Name = p.First().GroupName,
-                    ValidPerc = true,
-                    TotalPrice = p.Sum(c => c.QtyO * c.UnitRate)
-                }).ToList();
-
-            var curList = (from b in _mdbContext.TblCurrencies
-                           select b).ToList();
-
-            var querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
-                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
-                             where (a.SpPackageId == packageId && boq.Scope == packageId && b.PrRevNo == 0)
-                             select new GroupingPackageSupplierPriceModel
-                             {
-                                 SupplierId = sup.SupCode,
-                                 SupplierName = sup.SupName,
-                                 LastRevisionDate = b.PrRevDate,
-                                 AssignedPercentage = c.RdAssignedPerc,
-                                 AssignedQty = c.RdAssignedQty,
-                                 MissedPrice = c.RdMissedPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
-                                 GroupId = g.Id,
-                                 OriginalCurrency = cur.CurCode,
-                                 ExchRate = b.PrExchRate
-                             }).ToList();
-
-            foreach (var group in groups)
-            {
-                var lsst = querySupp.Where(x => x.GroupId == group.Id).ToList();
-                group.GroupingPackageSuppliersPrices = lsst
-                    .GroupBy(x => new {
-                        x.SupplierId,
-                        x.SupplierName
-                    })
-                    .Select(p => new GroupingPackageSupplierPriceModel
-                    {
-                        SupplierId = p.First().SupplierId,
-                        SupplierName = p.First().SupplierName,
-                        LastRevisionDate = p.First().LastRevisionDate,
-                        AssignedPercentage = p.First().AssignedPercentage,
-                        MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice),
-                        OriginalCurrency = p.First().OriginalCurrency,
-                        ExchRate = p.First().ExchRate
-                    }).ToList();
-            }
-            return groups;
-        }
-
+  
         public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
