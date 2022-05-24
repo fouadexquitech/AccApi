@@ -206,13 +206,13 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq_Excel")]
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input)
         {
             try
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1);
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst));
             }
             catch (Exception ex)
             {
@@ -222,13 +222,13 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheet_Excel")]
-        public string GetComparisonSheet_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input)
         {
             try
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst));
             }
             catch (Exception ex)
             {
@@ -252,12 +252,12 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetResourcesByGroup_Excel")]
-        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input)
         {
             try
             {
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst));
             }
             catch (Exception ex)
             {
@@ -281,12 +281,12 @@ namespace AccApi.Controllers
         }
      
         [HttpPost("GetComparisonSheetBoqByGroup_Excel")]
-        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input)
         {
             try
             {
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, comcondRepLst);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, comcondRepLst));
             }
             catch (Exception ex)
             {
