@@ -31,7 +31,7 @@ namespace AccApi.Repository.Interfaces
         
         string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
         string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
-        string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
+        string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst);
         string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst);
     }
 }

@@ -112,6 +112,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblSupplierPackageRevision> TblSupplierPackageRevisions { get; set; }
         public virtual DbSet<TblSystemRevLog> TblSystemRevLogs { get; set; }
         public virtual DbSet<TblTargetQty> TblTargetQties { get; set; }
+        public virtual DbSet<TblTechCondGroup> TblTechCondGroups { get; set; }
         public virtual DbSet<TblTotal> TblTotals { get; set; }
         public virtual DbSet<TblTotalAdditional> TblTotalAdditionals { get; set; }
         public virtual DbSet<TblTotalAdditionalTemp> TblTotalAdditionalTemps { get; set; }
@@ -144,15 +145,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        //                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=NewProject_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-        //            }
-        //        }
-
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -160,6 +152,7 @@ namespace AccApi.Repository
             var context = new AccDbContext(optionsBuilder.Options);
             return context;
         }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -1791,6 +1784,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.TqTrade)
                     .IsUnicode(false)
                     .HasDefaultValueSql("((0))");
+            });
+
+            modelBuilder.Entity<TblTechCondGroup>(entity =>
+            {
+                entity.HasKey(e => new { e.GroupId, e.TechCondId });
             });
 
             modelBuilder.Entity<TblTotal>(entity =>

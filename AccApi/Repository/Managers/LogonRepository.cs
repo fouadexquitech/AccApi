@@ -142,7 +142,6 @@ namespace AccApi.Repository.Managers
                             UsrAdmin=u.UsrAdmin,
                             UsrEmail=u.UsrEmail
                         };
-
             User user = new User();
             user = result.FirstOrDefault();
    
@@ -157,7 +156,6 @@ namespace AccApi.Repository.Managers
                         where u.UpUserId == username &&
                          p.Seq== projSeq
                         select u;
-
             return query.FirstOrDefault() != null;
         }
 
@@ -170,7 +168,6 @@ namespace AccApi.Repository.Managers
                              EtSeq=b.EtSeq,
                              EtContent=b.EtContent
                          };
-
             return result.FirstOrDefault();
         }
 
@@ -205,7 +202,6 @@ namespace AccApi.Repository.Managers
             {
                 result = result.Where(x => string.Concat(x.UserName.ToUpper(), x.Mail.ToUpper(), x.Occupation.ToUpper()).Contains(filter.ToUpper())).ToList();
             }
-
             return result.ToList();
         }
 

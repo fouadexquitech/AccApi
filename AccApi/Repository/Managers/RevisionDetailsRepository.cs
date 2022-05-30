@@ -1599,23 +1599,23 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                xlPackage.SaveAs(FullPath);
+                xlPackage.SaveAs(excelName);
 
-                package.FilePath = FullPath;
+                package.FilePath = excelName;
                 _dbContext.SaveChanges();
 
-                return FullPath;
+                return excelName;
             }
         }
 
@@ -1676,15 +1676,15 @@ namespace AccApi.Repository.Managers
                 if (items.Count > 0)
                 {
                     GroupingBoqModel item1 = items.First();
-                    GroupingPackageSupplierPriceModel sup = item1.GroupingPackageSuppliersPrices.First();
-                    string boq = sup.BoqItemO;
+                    GroupingPackageSupplierPriceModel supItem = item1.GroupingPackageSuppliersPrices.First();
+                    //string boq = sup.BoqItemO;
 
-                    var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    var SupList = item1.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //var SupList = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
 
                     int col = 7;
                     int m = 7;
-                    foreach (var l in lst1)
+                    foreach (var l in SupList)
                     {
                         worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, m].Style.Font.Bold = true;
@@ -1718,7 +1718,7 @@ namespace AccApi.Repository.Managers
                 j = 0;
                 foreach (var item in items)
                 {
-                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
                     foreach (var sup in item.GroupingPackageSuppliersPrices)
                     {
                         worksheet.Cells[row, 1].Value = j++;
@@ -1797,23 +1797,23 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                xlPackage.SaveAs(FullPath);
+                xlPackage.SaveAs(excelName);
 
-                package.FilePath = FullPath;
+                package.FilePath = excelName;
                 _dbContext.SaveChanges();
 
-                return FullPath;
+                return excelName;
             }
         }
          
@@ -1981,27 +1981,27 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                xlPackage.SaveAs(FullPath);
+                xlPackage.SaveAs(excelName);
 
-                package.FilePath = FullPath;
+                package.FilePath = excelName;
                 _dbContext.SaveChanges();
 
-                return FullPath;
+                return excelName;
             }
         }
   
-        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst)
+        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
 
@@ -2063,13 +2063,13 @@ namespace AccApi.Repository.Managers
                 {
                     GroupingBoqGroupModel item1 = items.First();                  
                     GroupingPackageSupplierPriceModel sup = item1.GroupingPackageSuppliersPrices.First();
-                    string boq = sup.BoqItemO;
+                    //string boq = sup.BoqItemO;
 
-                    var lst= item1.GroupingPackageSuppliersPrices.Where(x=> x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    var lst1 =lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s=>s.LastRevisionDate).ToList();
+                    var Suplist = item1.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //var lst1 =lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s=>s.LastRevisionDate).ToList();
 
                     int col = 7;
-                    foreach (var l in lst1)
+                    foreach (var l in Suplist)
                     {
                         worksheet.Cells[6, col].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy") ; 
                         worksheet.Cells[6, col].Style.Font.Bold = true;
@@ -2098,24 +2098,22 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
                 row = 8;
-                j = 0;
+                j = 1;
                 foreach(var item in items)
                 {
                     worksheet.Cells[row, 1].Value = j++;
                     worksheet.Cells[row, 2].Value = (item.Name) == null ? "" : item.Name;
+                    worksheet.Column(2).Width = 70;
+                    worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Columns[2].Style.WrapText = true;
 
-                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
                     foreach (var sup in item.GroupingPackageSuppliersPrices)
-                    {
-                       
-                       worksheet.Column(2).Width = 70;
-                       worksheet.Cells[row, 2].Value = (sup.BoqItemO) == null ? "" : sup.BoqItemO;
-                       worksheet.Cells[row, 2].Style.HorizontalAlignment =OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                       worksheet.Columns[2].Style.WrapText = true;
-                       worksheet.Cells[row, 3].Value = (sup.Qty) == null ? "" : sup.Qty;
+                    {                          
+                       //worksheet.Cells[row, 3].Value = (sup.Qty) == null ? "" : sup.Qty;
                        worksheet.Cells[row, 4].Value = (sup.TotalPrice) == null ? "" : sup.TotalPrice;
 
-                        var supList = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                        var supList = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
                         c = 0;
                         foreach (var s in supList)
                         {
@@ -2168,23 +2166,23 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                xlPackage.SaveAs(FullPath);
+                xlPackage.SaveAs(excelName);
 
-                package.FilePath = FullPath;
+                package.FilePath = excelName;
                 _dbContext.SaveChanges();
 
-                return FullPath;
+                return excelName;
             }
         }
     }

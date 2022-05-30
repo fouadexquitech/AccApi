@@ -42,13 +42,21 @@ namespace AccApi.Repository.Managers
 
         public List<TechConditions> GetTechConditions(int packId)
         {
-            var result = from b in _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId)
-                         select new TechConditions
-                         {
-                             TcSeq = b.TcSeq,
-                             TcDescription = b.TcDescription,
-                             TcPackId = b.TcPackId
-                         };
+            var techCond = (from b in _mdbcontext.TblTechConds
+                            select b).ToList();
+                         
+            var result = (from c in techCond
+                          join b in _dbcontext.TblTechCondGroups on c.TcSeq equals b.TechCondId 
+                          join a in _dbcontext.ComparisonPackageGroups on b.GroupId equals a.Id                            
+                          where a.PackageId== packId 
+                
+                select new TechConditions
+                {
+                    TcDescription=c.TcDescription,
+                    TcPackId=packId,                   
+                    TcSeq=c.TcSeq,
+                    groupId=a.Id
+                }).ToList();
 
             return result.ToList();
         }

@@ -286,7 +286,8 @@ namespace AccApi.Controllers
             try
             {
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, comcondRepLst));
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst));
             }
             catch (Exception ex)
             {

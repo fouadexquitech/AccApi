@@ -11,5 +11,8 @@ namespace AccApi.Repository.View_Models
         public int TcSeq { get; set; }
         public int? TcPackId { get; set; }
         public string TcDescription { get; set; }
+
+        public int groupId { get; set; }
+        public string groupDescription { get; set; }
     }
 }

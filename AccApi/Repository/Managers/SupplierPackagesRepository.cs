@@ -176,6 +176,7 @@ namespace AccApi.Repository.Managers
 
                 i = 1;
                 worksheet.Cells[i, 1].Value = "Item";
+                worksheet.Column(1).Width = 40;
                 worksheet.Cells[i, 2].Value = "Level";
                 worksheet.Column(3).Width = 50;
                 worksheet.Columns[3].Style.WrapText = true;                
@@ -363,16 +364,16 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"Package-{PackageName}.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
                 xlPackage.SaveAs(excelName);
 
