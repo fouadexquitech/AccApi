@@ -510,20 +510,20 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"Commercial Conditions-{PackageName}-{ProjectName}.xlsx";
 
-                string path = @"C:\App\";
+                //string path = @"C:\App\";
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
 
-                if (File.Exists(FullPath))           
-                    File.Delete(FullPath);
-                
-                xlPackage.SaveAs(FullPath);
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                return FullPath;
+                xlPackage.SaveAs(excelName);
+
+                return excelName;
             }
         }
 
