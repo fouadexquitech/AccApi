@@ -1527,8 +1527,11 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
                         worksheet.Columns[2].Style.WrapText = true;
 
+                    row++;
+
                         foreach (var res in item.GroupingResources)
                         {
+                            worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
                             worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
                             worksheet.Cells[row, 4].Value = (res.Qty) == null ? "" : res.Qty;
                             worksheet.Cells[row, 5].Value = (res.UnitPrice) == null ? "" : res.UnitPrice;
@@ -1613,9 +1616,6 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 xlPackage.SaveAs(excelName);
-
-                package.FilePath = excelName;
-                _dbContext.SaveChanges();
 
                 return excelName;
             }
@@ -1812,9 +1812,6 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.SaveAs(excelName);
 
-                package.FilePath = excelName;
-                _dbContext.SaveChanges();
-
                 return excelName;
             }
         }
@@ -1995,9 +1992,6 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 xlPackage.SaveAs(excelName);
-
-                package.FilePath = excelName;
-                _dbContext.SaveChanges();
 
                 return excelName;
             }
@@ -2180,9 +2174,6 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 xlPackage.SaveAs(excelName);
-
-                package.FilePath = excelName;
-                _dbContext.SaveChanges();
 
                 return excelName;
             }
