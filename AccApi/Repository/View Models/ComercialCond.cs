@@ -20,6 +20,7 @@ namespace AccApi.Repository.View_Models
     {
         public SupplierInput supplierInput { get; set; }
         public string EmailTemplate { get; set; }
+        public string FilePath { get; set; }
         public List<ComercialCond> comercialCondList { get; set; }
     }
 }

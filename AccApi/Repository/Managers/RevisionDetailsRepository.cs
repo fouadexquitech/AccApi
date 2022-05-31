@@ -1473,15 +1473,17 @@ namespace AccApi.Repository.Managers
                 if (items.Count > 0)
                 {
                     GroupingBoqModel item1 = items.First();
-                    GroupingPackageSupplierPriceModel sup = item1.GroupingPackageSuppliersPrices.First();
-                    string boq = sup.BoqItemO;
+                    GroupingResourceModel sup = item1.GroupingResources.First();
+                    string boq = item1.ItemO;
 
-                    var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    
+                    var SupList = sup.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
 
                     int col = 7;
                     int m = 7;
-                    foreach (var l in lst1)
+                    foreach (var l in SupList)
                     {
                         worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, m].Style.Font.Bold = true;
@@ -1515,9 +1517,9 @@ namespace AccApi.Repository.Managers
                 j = 0;
                 foreach (var item in items)
                 {
-                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                    foreach (var sup in item.GroupingPackageSuppliersPrices)
-                    {
+                    //var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //foreach (var sup in item.GroupingPackageSuppliersPrices)
+                    //{
                         worksheet.Cells[row, 1].Value = j++;
                         worksheet.Column(2).Width = 70;
                         worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
@@ -1542,7 +1544,7 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[7, 8 + col].Value = "P.T.";
                                 }
 
-                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == sup.BoqResourceId && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
+                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
                                     worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
@@ -1552,7 +1554,7 @@ namespace AccApi.Repository.Managers
                             }
                             row++;
                         }
-                    }
+                    //}
                     row++;
                 }
 

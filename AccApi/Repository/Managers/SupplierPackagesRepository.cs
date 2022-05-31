@@ -384,7 +384,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, string FilePath, byte ByBoq)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq)
         {
             string sent = "";
             string ComCondAttch = "";
@@ -394,7 +394,7 @@ namespace AccApi.Repository.Managers
             foreach(var item in supInputList)
             {
             AttachmentList.Clear();
-            AttachmentList.Add(FilePath);
+            AttachmentList.Add(item.FilePath);
 
             if (item.comercialCondList.Count >0)
             {
