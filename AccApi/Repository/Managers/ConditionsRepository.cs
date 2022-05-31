@@ -27,7 +27,6 @@ namespace AccApi.Repository.Managers
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
         }
-
         public List<ComConditions> GetComConditions()
         {
             var result = from b in _mdbcontext.TblComConds
@@ -39,7 +38,6 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
-
         public List<TechConditions> GetTechConditions(int packId)
         {
             var techCond = (from b in _mdbcontext.TblTechConds
@@ -60,7 +58,6 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
-
         public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
             //var comcond = (from b in _mdbcontext.TblComConds
@@ -90,7 +87,6 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
-
         public List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID)
         {        
             var param1 = new SqlParameter("@PackageID", PackageID);
@@ -103,7 +99,6 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
-
         public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
@@ -135,7 +130,6 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
-
         public List<TmpConditionsReply> GetPackageTechConditionsReply(int PackageID)
         {
             var param1 = new SqlParameter("@PackageID", PackageID);
@@ -148,7 +142,6 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
-
         public bool SendTechnicalConditions(int packId)
         {
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
@@ -268,7 +261,6 @@ namespace AccApi.Repository.Managers
                 return sent;
             }
         }
-
         public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
@@ -343,7 +335,6 @@ namespace AccApi.Repository.Managers
             return true;
 
         }
-
         public bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
@@ -418,8 +409,6 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
-
-
         public bool AddComConditions(List<ComConditions> cond)
         {
             foreach (var item in cond)
@@ -431,7 +420,6 @@ namespace AccApi.Repository.Managers
 
             return true;
         }
-
         public bool UpdateComConditions(ComConditions cond)
         {
             var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == cond.CmSeq).FirstOrDefault();
@@ -447,7 +435,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool DelComConditions(int id)
         {
             var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == id).FirstOrDefault();
@@ -461,7 +448,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool AddTechConditions(List<TechConditions> cond)
         {
             foreach (var item in cond)
@@ -473,7 +459,6 @@ namespace AccApi.Repository.Managers
 
             return true;
         }
-
         public bool UpdateTechConditions(TechConditions cond)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == cond.TcSeq).FirstOrDefault();
@@ -490,7 +475,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool DelTechConditions(int id)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == id).FirstOrDefault();
@@ -504,8 +488,17 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+        public bool AddTechConditionsGroup(List<TechConditions> cond)
+        {
+            foreach (var item in cond)
+            {
+                var result = new TblTechCondGroup { GroupId = item.groupId, TechCondId = item.TcSeq };
+                _dbcontext.Add<TblTechCondGroup>(result);
+                _dbcontext.SaveChanges();
+            }
 
-
+            return true;
+        }
     }
 }
 
