@@ -494,7 +494,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-        public bool DelTechConditions(int id)
+        public bool DelTechConditions(int groupId,int id)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == id).FirstOrDefault();
 
@@ -502,6 +502,17 @@ namespace AccApi.Repository.Managers
             {
                 _mdbcontext.TblTechConds.Remove(result);
                 _mdbcontext.SaveChanges();
+
+                if (groupId > 0)
+                {
+                    var group = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == id && x.GroupId == groupId).FirstOrDefault();
+                    if (group!= null)
+                    {
+                        _dbcontext.TblTechCondGroups.Remove(group);
+                        _dbcontext.SaveChanges();
+                    }
+                }
+
                 return true;
             }
             else
