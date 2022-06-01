@@ -113,26 +113,13 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpPost("AddTechConditionsGroup")]
-        public bool AddTechConditionsGroup(List<TechConditions> techcond)
-        {
-            try
-            {
-                return this._conditionsRepository.AddTechConditionsGroup(techcond);
-            }
-            catch (Exception ex)
-            {
-                _ilogger.LogError(ex.Message);
-                return false;
-            }
-        }
 
         [HttpPost("UpdateTechConditions")]
-        public bool UpdateTechConditions(TechConditions techcond)
+        public bool UpdateTechConditions(int groupId,TechConditions techcond)
         {
             try
             {
-                return this._conditionsRepository.UpdateTechConditions(techcond);
+                return this._conditionsRepository.UpdateTechConditions(groupId,techcond);
             }
             catch (Exception ex)
             {

@@ -456,11 +456,18 @@ namespace AccApi.Repository.Managers
                 var result = new TblTechCond { TcDescription = item.TcDescription,TcPackId=item.TcPackId,TcSelected = 0 };
                 _mdbcontext.Add<TblTechCond>(result);
                 _mdbcontext.SaveChanges();
+
+                if (item.groupId>0)
+                { 
+                var result1 = new TblTechCondGroup { GroupId = item.groupId, TechCondId = item.TcSeq };
+                _dbcontext.Add<TblTechCondGroup>(result1);
+                _dbcontext.SaveChanges();
+                }          
             }
 
             return true;
         }
-        public bool UpdateTechConditions(TechConditions cond)
+        public bool UpdateTechConditions(int groupId,TechConditions cond)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == cond.TcSeq).FirstOrDefault();
             result.TcDescription = cond.TcDescription;
@@ -471,6 +478,17 @@ namespace AccApi.Repository.Managers
             {
                 _mdbcontext.TblTechConds.Update(result);
                 _mdbcontext.SaveChanges();
+
+                if (groupId > 0)
+                {
+                    var group = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == cond.TcSeq && x.GroupId == groupId).FirstOrDefault();
+                    if (group == null)
+                    {
+                        _dbcontext.Add<TblTechCondGroup>(group);
+                        _dbcontext.SaveChanges();
+                    }
+                }
+
                 return true;
             }
             else
@@ -489,17 +507,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-        public bool AddTechConditionsGroup(List<TechConditions> cond)
-        {
-            foreach (var item in cond)
-            {
-                var result = new TblTechCondGroup { GroupId = item.groupId, TechCondId = item.TcSeq };
-                _dbcontext.Add<TblTechCondGroup>(result);
-                _dbcontext.SaveChanges();
-            }
 
-            return true;
-        }
     }
 }
 
