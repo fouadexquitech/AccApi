@@ -129,11 +129,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("DelTechConditions")]
-        public bool DelTechConditions(int groupId, int id)
+        public bool DelTechConditions(int id)
         {
             try
             {
-                return this._conditionsRepository.DelTechConditions(groupId, id);
+                return this._conditionsRepository.DelTechConditions(id);
             }
             catch (Exception ex)
             {

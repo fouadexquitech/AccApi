@@ -453,18 +453,29 @@ namespace AccApi.Repository.Managers
         {
             foreach (var item in cond)
             {
-                var result = new TblTechCond { TcDescription = item.TcDescription,TcPackId=item.TcPackId,TcSelected = 0 };
-                _mdbcontext.Add<TblTechCond>(result);
-                _mdbcontext.SaveChanges();
+                int condSeq;
+                var techCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == item.TcDescription).FirstOrDefault();
 
-                if (item.groupId>0)
-                { 
-                var result1 = new TblTechCondGroup { GroupId = item.groupId, TechCondId = item.TcSeq };
-                _dbcontext.Add<TblTechCondGroup>(result1);
-                _dbcontext.SaveChanges();
-                }          
+                if (techCond == null)
+                {
+                    var result = new TblTechCond { TcDescription = item.TcDescription, TcPackId = item.TcPackId, TcSelected = 0 };
+                    _mdbcontext.Add<TblTechCond>(result);
+                    _mdbcontext.SaveChanges();
+
+                    var inserted = _mdbcontext.TblTechConds.Where(x => x.TcDescription == item.TcDescription).FirstOrDefault();
+                    condSeq = inserted.TcSeq;
+                }
+                else
+                    condSeq = techCond.TcSeq;
+
+                if (item.groupId > 0)
+                {
+                    var result1 = new TblTechCondGroup { GroupId = item.groupId, TechCondId = condSeq };
+                    _dbcontext.Add<TblTechCondGroup>(result1);
+                    _dbcontext.SaveChanges();
+                }
+
             }
-
             return true;
         }
         public bool UpdateTechConditions(int groupId,TechConditions cond)
@@ -484,7 +495,11 @@ namespace AccApi.Repository.Managers
                     var group = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == cond.TcSeq && x.GroupId == groupId).FirstOrDefault();
                     if (group == null)
                     {
-                        _dbcontext.Add<TblTechCondGroup>(group);
+                        var techCondGroup = new TblTechCondGroup();
+
+                        techCondGroup.TechCondId = cond.TcSeq;
+                        techCondGroup.GroupId = groupId;
+                        _dbcontext.Add<TblTechCondGroup>(techCondGroup);
                         _dbcontext.SaveChanges();
                     }
                 }
@@ -494,7 +509,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-        public bool DelTechConditions(int groupId,int id)
+        public bool DelTechConditions(int id)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == id).FirstOrDefault();
 
@@ -503,14 +518,11 @@ namespace AccApi.Repository.Managers
                 _mdbcontext.TblTechConds.Remove(result);
                 _mdbcontext.SaveChanges();
 
-                if (groupId > 0)
+                var groupList = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == id).ToList();
+                if (groupList != null)
                 {
-                    var group = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == id && x.GroupId == groupId).FirstOrDefault();
-                    if (group!= null)
-                    {
-                        _dbcontext.TblTechCondGroups.Remove(group);
-                        _dbcontext.SaveChanges();
-                    }
+                    _dbcontext.TblTechCondGroups.RemoveRange(groupList);
+                    _dbcontext.SaveChanges();
                 }
 
                 return true;
