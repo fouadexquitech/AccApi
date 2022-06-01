@@ -53,7 +53,8 @@ namespace AccApi.Repository.Managers
                     TcDescription=c.TcDescription,
                     TcPackId=packId,                   
                     TcSeq=c.TcSeq,
-                    groupId=a.Id
+                    groupId=a.Id,
+                    groupDescription=a.Name
                 }).ToList();
 
             return result.ToList();
