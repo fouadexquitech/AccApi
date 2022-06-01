@@ -100,7 +100,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddTechConditions")]
-        public bool AddTechConditions(List<TechConditions> techcond)
+        public bool AddTechConditions(TechConditions techcond)
         {
             try
             {
@@ -113,13 +113,12 @@ namespace AccApi.Controllers
             }
         }
 
-
         [HttpPost("UpdateTechConditions")]
-        public bool UpdateTechConditions(int groupId,TechConditions techcond)
+        public bool UpdateTechConditions(TechConditions techcond)
         {
             try
             {
-                return this._conditionsRepository.UpdateTechConditions(groupId,techcond);
+                return this._conditionsRepository.UpdateTechConditions(techcond);
             }
             catch (Exception ex)
             {

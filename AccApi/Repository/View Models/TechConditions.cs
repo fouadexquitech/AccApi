@@ -7,11 +7,19 @@ namespace AccApi.Repository.View_Models
 {
     public class TechConditions
     {
-     
+
         public int TcSeq { get; set; }
         public int? TcPackId { get; set; }
         public string TcDescription { get; set; }
 
+        //public int groupId { get; set; }
+        //public string groupDescription { get; set; }
+
+        public List<TechConditionGroup> techConditionGroups { get; set; }
+    }
+
+    public class TechConditionGroup
+    {
         public int groupId { get; set; }
         public string groupDescription { get; set; }
     }
