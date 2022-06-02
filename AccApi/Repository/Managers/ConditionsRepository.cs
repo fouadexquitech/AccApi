@@ -534,15 +534,15 @@ namespace AccApi.Repository.Managers
 
             if (result != null)
             {
-                _mdbcontext.TblTechConds.Remove(result);
-                _mdbcontext.SaveChanges();
-
                 var groupList = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == id).ToList();
                 if (groupList != null)
                 {
                     _dbcontext.TblTechCondGroups.RemoveRange(groupList);
                     _dbcontext.SaveChanges();
                 }
+
+                _mdbcontext.TblTechConds.Remove(result);
+                _mdbcontext.SaveChanges();
 
                 return true;
             }
