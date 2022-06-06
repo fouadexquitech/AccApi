@@ -86,11 +86,11 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetTechConditions")]
-        public List<TechConditions> GetTechConditions(int packId)
+        public List<TechConditions> GetTechConditions(int packId, string? filter)
         {
             try
             {
-                return this._conditionsRepository.GetTechConditions(packId);
+                return this._conditionsRepository.GetTechConditions(packId, filter);
             }
             catch (Exception ex)
             {
@@ -148,7 +148,7 @@ namespace AccApi.Controllers
             try
             {
 
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId).Select(x => new DisplayCondition
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId, null).Select(x => new DisplayCondition
                 {
                     Id = x.TcSeq,
                     Description = x.TcDescription,

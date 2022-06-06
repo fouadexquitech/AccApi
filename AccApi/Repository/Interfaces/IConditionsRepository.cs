@@ -12,7 +12,7 @@ namespace AccApi.Repository.Interfaces
     public interface IConditionsRepository
     {
         List<ComConditions> GetComConditions();
-        List<TechConditions> GetTechConditions(int packId);
+        List<TechConditions> GetTechConditions(int packId, string? filter);
         bool SendTechnicalConditions(int packId);
         bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile);
         bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile);

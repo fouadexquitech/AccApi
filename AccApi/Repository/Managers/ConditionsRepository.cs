@@ -39,7 +39,7 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<TechConditions> GetTechConditions(int packId)
+        public List<TechConditions> GetTechConditions(int packId, string? filter)
         {
             var techCond = (from b in _mdbcontext.TblTechConds
                             select b).ToList();
@@ -54,7 +54,17 @@ namespace AccApi.Repository.Managers
                     TcDescription=c.TcDescription,
                     TcPackId=packId,                   
                     TcSeq=c.TcSeq,
-                }).ToList();
+                }).GroupBy(p => p.TcSeq)
+                  .Select(g => g.First())
+                  .ToList();
+
+            if (filter != null)
+            {
+                if (filter != "")
+                {
+                    result = result.Where(x => x.TcDescription.ToUpper().Contains(filter.ToUpper())).ToList();
+                }
+            }
 
             foreach (var tc in result)
             {
