@@ -51,6 +51,7 @@ namespace AccApi
             services.AddTransient<IlogonRepository, LogonRepository>();
             services.AddTransient<IConditionsRepository, ConditionsRepository>();
             services.AddTransient<IComparisonGroupRepository, ComparisonGroupRepository>();
+            services.AddTransient<ICurrencyConverterRepository, CurrencyConverterRepository>();
 
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 

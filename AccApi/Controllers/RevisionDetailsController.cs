@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace AccApi.Controllers
@@ -323,5 +325,34 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+
+        //[HttpGet("GetExchangeRate")]
+        //public string GetExchangeRate(string fromCurrency, string toCurrency)
+        //{
+        //    try
+        //    { 
+
+        //    const string urlPattern = "https://free.currconv.com/api/v7/convert?q={0}_{1}&compact=ultra&apiKey=7726dd1cebe5aeb063da";
+        //    string url = string.Format(urlPattern, fromCurrency, toCurrency);
+
+        //        using (var wc = new WebClient())
+        //        {
+        //            var json = wc.DownloadString(url);
+
+        //            Newtonsoft.Json.Linq.JToken token = Newtonsoft.Json.Linq.JObject.Parse(json);
+        //            string exchangeRate = (string)token.SelectToken("USD_AED[0]");
+
+        //            return exchangeRate;
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        return "";
+        //    }
+        //}
+
     }
 }
