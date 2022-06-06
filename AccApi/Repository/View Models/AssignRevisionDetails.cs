@@ -16,7 +16,6 @@ namespace AccApi.Repository.View_Models
         public double? price { get; set; }
         public string boqItem { get; set; }
         public double? boqQty { get; set; }
-
         public double? assignpercent { get; set; }
         public double? assignQty { get; set; }
         public double? assignPrice { get; set; }
@@ -41,7 +40,6 @@ namespace AccApi.Repository.View_Models
     public class SupplierResrouces
     {
         public int resourceID { get; set; }
-
         public List<SupplierQty> supplierQtys { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
     }

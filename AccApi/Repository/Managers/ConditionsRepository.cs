@@ -474,7 +474,6 @@ namespace AccApi.Repository.Managers
 
         public bool AddTechConditions(TechConditions item)
         {
-
                 int condSeq;
                 var techCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == item.TcDescription).FirstOrDefault();
 
@@ -495,7 +494,6 @@ namespace AccApi.Repository.Managers
                     _dbcontext.Add<TblTechCondGroup>(result1);
                     _dbcontext.SaveChanges();
                 }
-
             return true;
         }
 
@@ -531,7 +529,6 @@ namespace AccApi.Repository.Managers
                         _dbcontext.SaveChanges();
                     }
                 }
-
                 return true;
             }
             else
@@ -544,15 +541,15 @@ namespace AccApi.Repository.Managers
 
             if (result != null)
             {
-                _mdbcontext.TblTechConds.Remove(result);
-                _mdbcontext.SaveChanges();
-
                 var groupList = _dbcontext.TblTechCondGroups.Where(x => x.TechCondId == id).ToList();
                 if (groupList != null)
                 {
                     _dbcontext.TblTechCondGroups.RemoveRange(groupList);
                     _dbcontext.SaveChanges();
                 }
+
+                _mdbcontext.TblTechConds.Remove(result);
+                _mdbcontext.SaveChanges();
 
                 return true;
             }
