@@ -20,7 +20,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetCurrencyExchange")]
-        public decimal GetCurrencyExchange(string localCurrency, string foreignCurrency)
+        public double GetCurrencyExchange(string localCurrency, string foreignCurrency)
         {
             try
             {   

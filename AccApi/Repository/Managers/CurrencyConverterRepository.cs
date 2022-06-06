@@ -17,20 +17,20 @@ namespace AccApi.Repository.Managers
 
         //public FreeCurrencyConverterService() { }
 
-        public Decimal GetCurrencyExchange(String localCurrency, String foreignCurrency)
+        public double GetCurrencyExchange(String localCurrency, String foreignCurrency)
         {
             var code = $"{localCurrency}_{foreignCurrency}";
             var newRate = FetchSerializedData(code);
             return newRate;
         }
 
-        private Decimal FetchSerializedData(String code)
+        private double FetchSerializedData(String code)
         {
             var url = $"{BASE_URI}/api/{API_VERSION}/convert?q={code}&compact=ultra&apiKey=7726dd1cebe5aeb063da";
             var webClient = new WebClient();
             string jsonData ;
 
-            var conversionRate = 0m;
+            double conversionRate = 0;
             try
             {
                 jsonData = webClient.DownloadString(url);
@@ -46,7 +46,7 @@ namespace AccApi.Repository.Managers
                      exch =v.Value;
                 }
 
-                conversionRate = Decimal.Parse(exch);
+                conversionRate = Double.Parse(exch);
             }
             catch (Exception) { }
 

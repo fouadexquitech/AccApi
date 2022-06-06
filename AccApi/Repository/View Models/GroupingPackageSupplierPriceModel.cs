@@ -30,5 +30,6 @@ namespace AccApi.Repository.View_Models
 
         public string? OriginalCurrency { get; set; }
         public double? ExchRate { get; set; }
+        public double? ExchRateNow { get; set; }
     }
 }

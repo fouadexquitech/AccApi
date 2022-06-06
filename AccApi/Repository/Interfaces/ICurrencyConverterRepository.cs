@@ -2,7 +2,6 @@
 {
     public interface ICurrencyConverterRepository
     {
-        public decimal GetCurrencyExchange(string localCurrency, string foreignCurrency);
-
+        public double GetCurrencyExchange(string localCurrency, string foreignCurrency);
     }
 }

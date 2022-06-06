@@ -20,6 +20,10 @@ namespace AccApi.Repository.Managers
 
         private static PolicyDbContext pdb;
 
+        public LogonRepository()
+        {      
+        }
+
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration)
         {
             _mdbcontext = mdbcontext;

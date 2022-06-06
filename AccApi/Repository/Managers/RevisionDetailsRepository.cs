@@ -1099,7 +1099,8 @@ namespace AccApi.Repository.Managers
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  BoqResourceId = c.RdResourceSeq,
                                  OriginalCurrency = cur.CurCode,
-                                 ExchRate = b.PrExchRate
+                                 ExchRate = b.PrExchRate,
+                                 ExchRateNow=GetExchange(cur.CurCode)
                              }).ToList();
 
             foreach (var item in items)
@@ -1201,7 +1202,8 @@ namespace AccApi.Repository.Managers
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  BoqItemO = c.RdBoqItem,                               
                                  OriginalCurrency =cur.CurCode,
-                                 ExchRate = b.PrExchRate                                
+                                 ExchRate = b.PrExchRate,
+                                 ExchRateNow = GetExchange(cur.CurCode)
                              }).ToList();
 
             foreach (var item in items)
@@ -1287,7 +1289,8 @@ namespace AccApi.Repository.Managers
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
-                                 ExchRate = b.PrExchRate
+                                 ExchRate = b.PrExchRate,
+                                 ExchRateNow = GetExchange(cur.CurCode)
                              }).ToList();
 
             foreach (var group in groups)
@@ -1307,7 +1310,8 @@ namespace AccApi.Repository.Managers
                         MissedPrice = p.First().MissedPrice,
                         TotalPrice = p.Sum(c => c.TotalPrice),
                         OriginalCurrency = p.First().OriginalCurrency,
-                        ExchRate = p.First().ExchRate
+                        ExchRate = p.First().ExchRate,
+                        ExchRateNow = p.First().ExchRateNow
                     }).ToList();
             }
             return groups;
@@ -1389,7 +1393,8 @@ namespace AccApi.Repository.Managers
                                  TotalPrice = (c.RdQty * c.RdPrice),
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
-                                 ExchRate = b.PrExchRate
+                                 ExchRate = b.PrExchRate,
+                                 ExchRateNow = GetExchange(cur.CurCode)
                              }).ToList();
 
             foreach (var group in groups)
@@ -1409,7 +1414,8 @@ namespace AccApi.Repository.Managers
                         MissedPrice = p.First().MissedPrice,
                         TotalPrice = p.Sum(c => c.TotalPrice),
                         OriginalCurrency = p.First().OriginalCurrency,
-                        ExchRate = p.First().ExchRate
+                        ExchRate = p.First().ExchRate,
+                        ExchRateNow =p.First().ExchRateNow
                     }).ToList();
             }
             return groups;
@@ -2178,5 +2184,15 @@ namespace AccApi.Repository.Managers
                 return excelName;
             }
         }
+
+        private double GetExchange(string fromCur)
+        {
+            LogonRepository logonRepository =new LogonRepository();
+            string ProjectCur =logonRepository.GetProjectCurrency().curCode;
+
+            CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
+            return currencyConverterRepository.GetCurrencyExchange(fromCur, ProjectCur);
+        }
+
     }
 }
