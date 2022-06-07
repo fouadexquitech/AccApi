@@ -15,7 +15,6 @@ namespace AccApi.Repository.Managers
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
         private readonly AccDbContext _dbcontext;
-
         public IConfiguration Configuration { get; }
 
         private static PolicyDbContext pdb;

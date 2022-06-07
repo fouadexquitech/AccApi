@@ -2187,8 +2187,17 @@ namespace AccApi.Repository.Managers
 
         private double GetExchange(string fromCur)
         {
-            LogonRepository logonRepository =new LogonRepository();
-            string ProjectCur =logonRepository.GetProjectCurrency().curCode;
+            var result = from a in _dbContext.TblParameters
+                         join b in _dbContext.TblCurrencies
+                         on a.EstimatedCur equals b.CurId
+                         select new ProjectCurrency
+                         {
+                             curId = (int)a.EstimatedCur,
+                             curCode = b.CudCode
+                         };
+
+
+            string ProjectCur = result.FirstOrDefault().curCode;
 
             CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
             return currencyConverterRepository.GetCurrencyExchange(fromCur, ProjectCur);
