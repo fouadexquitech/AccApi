@@ -21,7 +21,13 @@ namespace AccApi.Repository.Managers
 
         public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
         {
-            var results = (from b in _context.TblSupplierPackageRevisions
+
+
+            var curList = (from b in _masterDbContext.TblCurrencies
+                           select b).ToList();
+
+            var results = (from cur in curList
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                           where b.PrPackSuppId==PackageSupplierId
                           orderby b.PrRevNo
                           select new SupplierPackagesRevList
@@ -31,7 +37,8 @@ namespace AccApi.Repository.Managers
                               PrRevDate = b.PrRevDate,
                               PrTotPrice = b.PrTotPrice,
                               PrCurrency=b.PrCurrency,
-                              PrExchRate=b.PrExchRate
+                              PrExchRate=b.PrExchRate,
+                              Currency=cur.CurCode
                           }).ToList();
 
 

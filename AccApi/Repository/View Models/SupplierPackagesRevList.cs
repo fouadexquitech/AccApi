@@ -14,5 +14,7 @@ namespace AccApi.Repository.View_Models
         public int? PrPackSuppId { get; set; }
         public int? PrCurrency { get; set; }
         public double? PrExchRate { get; set; }
+
+        public string? Currency { get; set; }
     }
 }
