@@ -174,7 +174,9 @@ namespace AccApi.Repository.Managers
             var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             string ProjectName = proj.PrjName;
 
-            var result = _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
+            //var result =  _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
+
+            var result = GetTechConditions(packId,"");
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
