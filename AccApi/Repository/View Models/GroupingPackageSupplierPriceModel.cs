@@ -32,4 +32,10 @@ namespace AccApi.Repository.View_Models
         public double? ExchRate { get; set; }
         public double? ExchRateNow { get; set; }
     }
+
+    public class LiveExchange
+    {
+        public string? fromCurrency { get; set; }
+        public double? ExchRateNow { get; set; }
+    }
 }

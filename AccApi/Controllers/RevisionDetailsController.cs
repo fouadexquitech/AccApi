@@ -214,7 +214,8 @@ namespace AccApi.Controllers
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1);
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst));
+                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
             {
@@ -230,7 +231,8 @@ namespace AccApi.Controllers
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst));
+                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
             {
@@ -259,7 +261,8 @@ namespace AccApi.Controllers
             try
             {
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst));
+                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
             {
@@ -288,8 +291,9 @@ namespace AccApi.Controllers
             try
             {
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
             {

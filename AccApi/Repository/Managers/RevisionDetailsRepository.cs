@@ -1079,6 +1079,17 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
+            var ExchNowList = (from cur in curList
+                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                               select new LiveExchange
+                               {
+                                   fromCurrency = cur.CurCode,
+                                   ExchRateNow = GetExchange(cur.CurCode)
+                               }).ToList();
+
             var querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1100,7 +1111,7 @@ namespace AccApi.Repository.Managers
                                  BoqResourceId = c.RdResourceSeq,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow=GetExchange(cur.CurCode)
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
                              }).ToList();
 
             foreach (var item in items)
@@ -1182,6 +1193,18 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                             select b).ToList();
 
+
+            var ExchNowList = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                             select new LiveExchange
+                             {                              
+                                 fromCurrency = cur.CurCode,
+                                 ExchRateNow = GetExchange(cur.CurCode)
+                             }).ToList();
+
             var querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1203,7 +1226,7 @@ namespace AccApi.Repository.Managers
                                  BoqItemO = c.RdBoqItem,                               
                                  OriginalCurrency =cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = GetExchange(cur.CurCode)
+                                 ExchRateNow = ExchNowList.Find(x=> x.fromCurrency ==cur.CurCode).ExchRateNow
                              }).ToList();
 
             foreach (var item in items)
@@ -1270,6 +1293,17 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
+            var ExchNowList = (from cur in curList
+                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                               select new LiveExchange
+                               {
+                                   fromCurrency = cur.CurCode,
+                                   ExchRateNow = GetExchange(cur.CurCode)
+                               }).ToList();
+
             var querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1290,7 +1324,7 @@ namespace AccApi.Repository.Managers
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = GetExchange(cur.CurCode)
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
                              }).ToList();
 
             foreach (var group in groups)
@@ -1373,6 +1407,17 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
+            var ExchNowList = (from cur in curList
+                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                               select new LiveExchange
+                               {
+                                   fromCurrency = cur.CurCode,
+                                   ExchRateNow = GetExchange(cur.CurCode)
+                               }).ToList();
+
             var querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1394,7 +1439,7 @@ namespace AccApi.Repository.Managers
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = GetExchange(cur.CurCode)
+                                 ExchRateNow = ExchNowList.Find(x=> x.fromCurrency ==cur.CurCode).ExchRateNow
                              }).ToList();
 
             foreach (var group in groups)
@@ -1422,7 +1467,7 @@ namespace AccApi.Repository.Managers
         }
 
 
-        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
+        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheet(packageId, input);
 
@@ -1606,6 +1651,46 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
@@ -1627,7 +1712,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input);
 
@@ -1801,6 +1886,46 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"{PackageName}-Comparison.xlsx";
@@ -1822,7 +1947,7 @@ namespace AccApi.Repository.Managers
             }
         }
          
-        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst)
+        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
 
@@ -1976,11 +2101,51 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup++;
+                            colsup = colsup + 2;
                         }
                         row++;
                     }
                 }
+
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
 
                 xlPackage.Save();
                 stream.Position = 0;
@@ -2003,7 +2168,7 @@ namespace AccApi.Repository.Managers
             }
         }
   
-        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst)
+        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
 
@@ -2157,12 +2322,52 @@ namespace AccApi.Repository.Managers
                             var supReply = comcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId==reply.CondId).FirstOrDefault();
                             if (supReply!= null) 
                               worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
-                            
-                            colsup++;
+
+                            colsup = colsup + 2;
                         }
                         row++;
                     }
                 }
+
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
 
                 xlPackage.Save();
                 stream.Position = 0;
