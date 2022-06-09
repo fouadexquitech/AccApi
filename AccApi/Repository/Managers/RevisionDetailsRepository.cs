@@ -1127,7 +1127,7 @@ namespace AccApi.Repository.Managers
                     TotalPrice = (y.BoqQty * y.BoqUprice),
                     ValidPerc = true,
                     IsSelected = false,
-                    GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqResourceId == y.BoqSeq).ToList()
+                    GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqResourceId == y.BoqSeq).OrderBy(x=>x.SupplierName).ToList()
 
                 }).ToList();
             }
@@ -1231,7 +1231,7 @@ namespace AccApi.Repository.Managers
 
             foreach (var item in items)
             {
-                item.GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqItemO == item.ItemO).ToList();
+                item.GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqItemO == item.ItemO).OrderBy(x => x.SupplierName).ToList();
             }
 
             return items;
@@ -1346,7 +1346,7 @@ namespace AccApi.Repository.Managers
                         OriginalCurrency = p.First().OriginalCurrency,
                         ExchRate = p.First().ExchRate,
                         ExchRateNow = p.First().ExchRateNow
-                    }).ToList();
+                    }).OrderBy(x => x.SupplierName).ToList();
             }
             return groups;
         }
@@ -1461,7 +1461,7 @@ namespace AccApi.Repository.Managers
                         OriginalCurrency = p.First().OriginalCurrency,
                         ExchRate = p.First().ExchRate,
                         ExchRateNow =p.First().ExchRateNow
-                    }).ToList();
+                    }).OrderBy(x => x.SupplierName).ToList();
             }
             return groups;
         }
