@@ -11,7 +11,6 @@ namespace AccApi.Repository.Managers
 {
     public class CurrencyConverterRepository: ICurrencyConverterRepository
     {
-
         private readonly String BASE_URI = "https://free.currconv.com";
         private readonly String API_VERSION = "v7";
 
@@ -19,7 +18,7 @@ namespace AccApi.Repository.Managers
 
         public double GetCurrencyExchange(String localCurrency, String foreignCurrency)
         {
-            var code = $"{localCurrency}_{foreignCurrency}";
+            var code = $"{foreignCurrency}_{localCurrency}";
             var newRate = FetchSerializedData(code);
             return newRate;
         }
