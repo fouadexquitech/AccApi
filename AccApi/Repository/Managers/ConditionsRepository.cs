@@ -27,6 +27,7 @@ namespace AccApi.Repository.Managers
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
         }
+
         public List<ComConditions> GetComConditions()
         {
             var result = from b in _mdbcontext.TblComConds
@@ -122,6 +123,7 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
+
         public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
@@ -165,6 +167,7 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
+
         public bool SendTechnicalConditions(int packId)
         {
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
@@ -286,6 +289,7 @@ namespace AccApi.Repository.Managers
                 return sent;
             }
         }
+
         public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
@@ -307,10 +311,9 @@ namespace AccApi.Repository.Managers
                             try
                             {
                                 string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
-                                string reply = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
-                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
-
-                                if ((desc != "") && (reply != "") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
+                                string reply = worksheet.Cells[row, 3].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();
+                              
+                                if ((desc != "") && (!desc.Contains("Commercial Condition")) && (!desc.Contains("ACC condition")))
                                 {
                                     var comCond = _mdbcontext.TblComConds.Where(x => x.CmDescription == desc).FirstOrDefault();
                                     if (comCond != null)      
@@ -381,10 +384,9 @@ namespace AccApi.Repository.Managers
                             try
                             {
                                 string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
-                                string reply = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
-                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
+                                string reply = worksheet.Cells[row, 3].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();                     
 
-                                if ((desc != "") && (reply != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
+                                if ((desc != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
                                 {
                                     var comCond = _mdbcontext.TblTechConds.Where(x => x.TcDescription == desc && x.TcPackId == packageId).FirstOrDefault();
                                     if (comCond != null)
@@ -434,6 +436,7 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
+
         public bool AddComConditions(List<ComConditions> cond)
         {
             foreach (var item in cond)
@@ -498,7 +501,6 @@ namespace AccApi.Repository.Managers
                 }
             return true;
         }
-
         public bool UpdateTechConditions(TechConditions cond)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == cond.TcSeq).FirstOrDefault();
@@ -536,7 +538,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool DelTechConditions(int id)
         {
             var result = _mdbcontext.TblTechConds.Where(x => x.TcSeq == id).FirstOrDefault();
