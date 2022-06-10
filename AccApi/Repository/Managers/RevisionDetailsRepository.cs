@@ -2390,7 +2390,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private double GetExchange(string fromCur)
+        private double GetExchange(string foreignCurrency)
         {
             var result = from a in _dbContext.TblParameters
                          join b in _dbContext.TblCurrencies
@@ -2402,10 +2402,10 @@ namespace AccApi.Repository.Managers
                          };
 
 
-            string ProjectCur = result.FirstOrDefault().curCode;
+            string localCurrency = result.FirstOrDefault().curCode;
 
             CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
-            return currencyConverterRepository.GetCurrencyExchange(fromCur, ProjectCur);
+            return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
         }
 
     }

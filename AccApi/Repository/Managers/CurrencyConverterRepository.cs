@@ -6,51 +6,78 @@ using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
 using Nancy.Json;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AccApi.Repository.Managers
 {
     public class CurrencyConverterRepository: ICurrencyConverterRepository
     {
-        private readonly String BASE_URI = "https://free.currconv.com";
-        private readonly String API_VERSION = "v7";
-
-        //public FreeCurrencyConverterService() { }
-
         public double GetCurrencyExchange(String localCurrency, String foreignCurrency)
         {
-            var code = $"{foreignCurrency}_{localCurrency}";
-            var newRate = FetchSerializedData(code);
-            return newRate;
-        }
-
-        private double FetchSerializedData(String code)
-        {
-            var url = $"{BASE_URI}/api/{API_VERSION}/convert?q={code}&compact=ultra&apiKey=7726dd1cebe5aeb063da";
+            var url = $"https://api.apilayer.com/exchangerates_data/convert?to={localCurrency}& from={foreignCurrency}&amount=1&apikey=4zN5nYjguyVQhynDgczfYxYpActZD8zx";
             var webClient = new WebClient();
-            string jsonData ;
+            string jsonData;
 
             double conversionRate = 0;
             try
             {
                 jsonData = webClient.DownloadString(url);
 
-                var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+                //var jsonObject = JsonConvert.DeserializeObject<ExchangeRate>(jsonData);
 
-                //var jsonObject = new JavaScriptSerializer().Deserialize<Dictionary<string, Dictionary<string, decimal>>>(jsonData);
-                //var jsonObject = new JavaScriptSerializer().Deserialize<ExchangeRate>(jsonData);
-                //var result = jsonObject[code];
-                string exch="0";
-                foreach (var v in jsonObject)
-                {
-                     exch =v.Value;
-                }
+                var jo = JObject.Parse(jsonData);
+                var id = jo["result"].ToString();
 
-                conversionRate = Double.Parse(exch);
+                //string exch = "0";             
+                //foreach (var v in jsonObject)
+                //{
+                //    exch = v.Value;
+                //}
+
+                conversionRate = Double.Parse(id);
             }
             catch (Exception) { }
 
             return conversionRate;
         }
+
+
+        ////https://free.currconv.com
+        //private readonly String BASE_URI = "https://free.currconv.com";
+        //private readonly String API_VERSION = "v7";
+
+        //public double GetCurrencyExchange(String localCurrency, String foreignCurrency)
+        //{
+        //    var code = $"{foreignCurrency}_{localCurrency}";
+        //    var newRate = FetchSerializedData(code);
+        //    return newRate;
+        //}
+
+        //private double FetchSerializedData(String code)
+        //{
+        //    var url = $"{BASE_URI}/api/{API_VERSION}/convert?q={code}&compact=ultra&apiKey=7726dd1cebe5aeb063da";
+        //    var webClient = new WebClient();
+        //    string jsonData ;
+
+        //    double conversionRate = 0;
+        //    try
+        //    {
+        //        jsonData = webClient.DownloadString(url);
+
+        //        var jsonObject = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonData);
+
+        //        string exch="0";
+        //        foreach (var v in jsonObject)
+        //        {
+        //             exch =v.Value;
+        //        }
+
+        //        conversionRate = Double.Parse(exch);
+        //    }
+        //    catch (Exception) { }
+
+        //    return conversionRate;
+        //}
 
     }
 }
