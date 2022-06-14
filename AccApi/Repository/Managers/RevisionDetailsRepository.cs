@@ -2101,7 +2101,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 1;
                         }
                         row++;
                     }
@@ -2140,7 +2140,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 1;
                         }
                         row++;
                     }
@@ -2323,7 +2323,7 @@ namespace AccApi.Repository.Managers
                             if (supReply!= null) 
                               worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 1;
                         }
                         row++;
                     }
@@ -2362,7 +2362,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 1;
                         }
                         row++;
                     }
