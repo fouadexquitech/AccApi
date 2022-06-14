@@ -401,7 +401,7 @@ namespace AccApi.Repository.Managers
                     result.Add(packageSuppliersPrice);
                 }
             }
-            return result;
+            return result.OrderBy(x=> x.SupplierName).ToList();
         }
 
 
