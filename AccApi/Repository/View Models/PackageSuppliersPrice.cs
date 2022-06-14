@@ -25,6 +25,7 @@ namespace AccApi.Repository.View_Models
         public string Label { get; set; }
         public double Value { get; set; }
         public int? Type { get; set; }
+        public string? OriginalCurrency { get; set; }
     }
 
     public class RevisionDetails
@@ -54,6 +55,7 @@ namespace AccApi.Repository.View_Models
         public double? price { get; set; }
         public double? perc { get; set; }
         public double? priceOrigCur { get; set; }
+        public string? OriginalCurrency { get; set; }
         public byte? missedPrice { get; set; }
         public string ResDiv { get; set; }
         public string ResCtg{ get; set; }

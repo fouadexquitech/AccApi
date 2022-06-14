@@ -12,11 +12,13 @@ namespace AccApi.Repository.Managers
     public class PackageRepository : IPackageRepository
     {
         private readonly AccDbContext _context;
+        private readonly MasterDbContext _mcontext;
         private readonly IMapper _mapper;
 
-        public PackageRepository(AccDbContext context, IMapper mapper)
+        public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper)
         {
             _context = context;
+            _mcontext = mcontext;
             _mapper = mapper;
         }
 
@@ -211,6 +213,22 @@ namespace AccApi.Repository.Managers
 
         public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input)
         {
+            //get Exchange Rate Now
+            var curList = (from b in _mcontext.TblCurrencies
+                           select b).ToList();
+           
+            var ExchNowList = (from cur in curList
+                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                               join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                               where (a.SpPackageId == pckgID && b.PrRevNo == 0)
+                               select new LiveExchange
+                               {
+                                   fromCurrency = cur.CurCode,
+                                   ExchRateNow = GetExchange(cur.CurCode)
+                               }).ToList();
+
+
             List<PackageSuppliersPrice> result = new List<PackageSuppliersPrice>();
             List<RevisionDetails> revisionDetails = new List<RevisionDetails>();
             List<FieldList> fieldLists = new List<FieldList>();
@@ -230,7 +248,7 @@ namespace AccApi.Repository.Managers
                          }).ToList();
 
             if (query.Count > 0)
-            {
+            {               
                 foreach (var item in query)
                 {
                     PackageSuppliersPrice packageSuppliersPrice = new PackageSuppliersPrice();
@@ -244,13 +262,14 @@ namespace AccApi.Repository.Managers
 
                     if (byboq==1)
                     {
-                       revDtlQry = (from a in _context.TblSupplierPackages
-                                     join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                       revDtlQry = (from cur in curList
+                                     join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                     join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                      join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
                                     // join d in _context.TblBoqs on o.ItemO equals d.BoqItem
                                     //join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
-                                    join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                     join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                      select new RevisionDetails
@@ -272,7 +291,8 @@ namespace AccApi.Repository.Managers
                                          //ResDescription = e.ResDescription,
                                          //ResDiv=d.BoqDiv,
                                          //ResCtg=d.BoqCtg
-                                         AssignedToSupplier =((c.RdAssignedQty == null || c.RdAssignedQty==0)) ? false : true
+                                         AssignedToSupplier =((c.RdAssignedQty == null || c.RdAssignedQty==0)) ? false : true,
+                                         OriginalCurrency = cur.CurCode
                                      });
 
                         if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -288,10 +308,11 @@ namespace AccApi.Repository.Managers
                     }
                     else
                     {
-                        revDtlQry = (from a in _context.TblSupplierPackages
-                                     join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                     join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId                                                                         
-                                     join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq                                    
+                        revDtlQry = (from cur in curList
+                                     join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                     join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                     join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                     join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
                                      join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
                                      join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                      join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
@@ -318,7 +339,8 @@ namespace AccApi.Repository.Managers
                                          BoqScope = d.BoqScope, 
                                          ResDiv = d.BoqDiv,
                                          ResCtg = d.BoqCtg,
-                                         AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true
+                                         AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
+                                         OriginalCurrency = cur.CurCode
                                      });
 
                         if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -333,30 +355,32 @@ namespace AccApi.Repository.Managers
                         if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));      
                     }
 
-                    
-                    fieldLists = (from a in _context.TblSupplierPackages
-                                  join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                    fieldLists = (from cur in curList
+                                  join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                  join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                   join c in _context.TblRevisionFields on b.PrRevId equals c.RevisionId
                                   where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                   select new FieldList
                                   {
                                       Label = c.Label,
-                                      Value = c.Value,
-                                      Type = c.Type
+                                      Value =  c.Type==1 ? (double)(c.Value * ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)  : c.Value,
+                                      Type = c.Type,
+                                      OriginalCurrency=cur.CurCode
                                   }).ToList();
 
                     packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
                     packageSuppliersPrice.fieldLists = fieldLists;
+
 
                     if (packageSuppliersPrice.revisionDetails.Count > 0)
                     {
                         foreach (var itemRevision in packageSuppliersPrice.revisionDetails)
                         {
                             if (byboq == 1)
-                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.price);
+                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.priceOrigCur) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                             else
-                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.price);
+                                packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.resourceQty) * Convert.ToDecimal(itemRevision.priceOrigCur) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                         }
                     }
 
@@ -365,7 +389,7 @@ namespace AccApi.Repository.Managers
                         foreach (var itemFields in packageSuppliersPrice.fieldLists)
                         {
                             if (itemFields.Type == 1)
-                                packageSuppliersPrice.totalAdditionalPrice += (decimal)itemFields.Value;
+                                packageSuppliersPrice.totalAdditionalPrice += (decimal)itemFields.Value ;
                             else
                                 packageSuppliersPrice.totalAdditionalPrice += packageSuppliersPrice.totalprice * ((decimal)itemFields.Value / 100m);
                         }
@@ -379,5 +403,25 @@ namespace AccApi.Repository.Managers
             }
             return result;
         }
+
+
+        private double GetExchange(string foreignCurrency)
+        {
+            var result = from a in _context.TblParameters
+                         join b in _context.TblCurrencies
+                         on a.EstimatedCur equals b.CurId
+                         select new ProjectCurrency
+                         {
+                             curId = (int)a.EstimatedCur,
+                             curCode = b.CudCode
+                         };
+
+
+            string localCurrency = result.FirstOrDefault().curCode;
+
+            CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
+            return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
+        }
+
     }
 }

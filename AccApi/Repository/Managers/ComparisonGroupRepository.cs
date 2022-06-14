@@ -73,7 +73,6 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
 
-
             var items = condQuery
                 .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
                 .Select(p => p.FirstOrDefault())
