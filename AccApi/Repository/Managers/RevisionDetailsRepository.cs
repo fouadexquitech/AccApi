@@ -1342,7 +1342,7 @@ namespace AccApi.Repository.Managers
                         LastRevisionDate = p.First().LastRevisionDate,
                         AssignedPercentage = p.First().AssignedPercentage,
                         MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        TotalPrice = p.Sum(c => c.TotalPrice) * p.First().ExchRateNow,
                         OriginalCurrency = p.First().OriginalCurrency,
                         ExchRate = p.First().ExchRate,
                         ExchRateNow = p.First().ExchRateNow
@@ -1457,7 +1457,7 @@ namespace AccApi.Repository.Managers
                         LastRevisionDate = p.First().LastRevisionDate,
                         AssignedPercentage = p.First().AssignedPercentage,
                         MissedPrice = p.First().MissedPrice,
-                        TotalPrice = p.Sum(c => c.TotalPrice),
+                        TotalPrice = p.Sum(c => c.TotalPrice) * p.First().ExchRateNow,
                         OriginalCurrency = p.First().OriginalCurrency,
                         ExchRate = p.First().ExchRate,
                         ExchRateNow =p.First().ExchRateNow
