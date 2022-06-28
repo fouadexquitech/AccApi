@@ -16,11 +16,11 @@ namespace AccApi.Repository.Models.PolicyModels
         public int ProjId { get; set; }
         [Key]
         [Column("wbsCode")]
-        [StringLength(20)]
+        [StringLength(30)]
         public string WbsCode { get; set; }
         [Key]
         [Column("wbsProject")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string WbsProject { get; set; }
         [Key]
         public short WbsLevel { get; set; }

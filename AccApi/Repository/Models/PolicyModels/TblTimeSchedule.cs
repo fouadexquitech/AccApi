@@ -16,7 +16,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int TsdProjId { get; set; }
         [Key]
         [Column("tsdProjectDef")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string TsdProjectDef { get; set; }
         [Key]
         [Column("tsdnight")]
@@ -47,5 +47,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public float? TsdPrayHrs { get; set; }
         [Column("tsdWeekEnd")]
         public byte? TsdWeekEnd { get; set; }
+        [Column("tsdWeekEndFrom", TypeName = "datetime")]
+        public DateTime? TsdWeekEndFrom { get; set; }
+        [Column("tsdWeekEndTo", TypeName = "datetime")]
+        public DateTime? TsdWeekEndTo { get; set; }
     }
 }

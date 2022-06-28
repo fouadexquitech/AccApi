@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.Models;
+﻿using AccApi.Data_Layer;
+using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
@@ -23,9 +24,9 @@ namespace AccApi.Repository.Interfaces
         bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent);
         bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent);
         bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent);
-        bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement);
-        List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input);
-        List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input);
+        bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement, List<mailCCAttach> ccAttachList, string UserName);
+        List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input, int supId);
+        List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId);
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input);
         List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input);
         
@@ -33,5 +34,6 @@ namespace AccApi.Repository.Interfaces
         string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
         string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
         string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
+        string GenerateSuppliersContracts_Excel(int packageId,int supId,SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
     }
 }

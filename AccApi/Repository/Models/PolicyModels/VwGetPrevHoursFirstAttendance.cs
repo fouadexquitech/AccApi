@@ -14,7 +14,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? PrevHrs { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? PrevDate { get; set; }
-        [StringLength(15)]
+        [StringLength(8)]
         public string PrevLab { get; set; }
         public double? PrevPrevHrs { get; set; }
         [Column("disProjectDef")]

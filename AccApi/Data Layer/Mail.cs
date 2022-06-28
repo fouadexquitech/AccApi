@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -11,7 +12,7 @@ namespace AccApi.Data_Layer
 {
     public class Mail
     {
-        public string SendMail(List<General> MailTo, List<General> MailCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml, IFormFile AttachFile)
+        public string SendMail(List<string> MailTo, List<string> MailCC, List<string> MailBCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml, IFormFile AttachFile)
         {
             try
             {
@@ -32,9 +33,9 @@ namespace AccApi.Data_Layer
                 mail.From = new MailAddress(MailFromName + "<" + MailFrom + ">");
                 //mail.Headers.Add("Sender", MailFromName);
 
-                foreach (General g in MailTo)
+                foreach (string g in MailTo)
                 {
-                    MailAddress to = new MailAddress(g.mail);
+                    MailAddress to = new MailAddress(g);
                     mail.To.Add(to);
                 }
 
@@ -42,13 +43,23 @@ namespace AccApi.Data_Layer
                 mail.Body = MailBody;
                 mail.IsBodyHtml = BodyHtml;
                 mail.BodyEncoding = System.Text.Encoding.UTF8;
+                mail.AlternateViews.Add(Mail_Body(MailBody));
 
                 if (MailCC != null)
                 {
-                    foreach (General g in MailCC)
+                    foreach (string g in MailCC)
                     {
-                        MailAddress copy = new MailAddress(g.mail);
+                        MailAddress copy = new MailAddress(g);
                         mail.CC.Add(copy);
+                    }
+                }
+
+                if (MailBCC != null)
+                {
+                    foreach (string g in MailBCC)
+                    {
+                        MailAddress copy = new MailAddress(g);
+                        mail.Bcc.Add(copy);
                     }
                 }
 
@@ -68,7 +79,6 @@ namespace AccApi.Data_Layer
                         mail.Attachments.Add(new Attachment(AttachFile.OpenReadStream(), fileName));
                 }
 
-
                 client.Send(mail);
                 return "sent";
             }
@@ -79,6 +89,31 @@ namespace AccApi.Data_Layer
             }
         }
 
+
+        private AlternateView Mail_Body(string MailBody)
+        {
+            string path = Directory.GetCurrentDirectory()+"\\Assets\\Images\\ACC50.jpg";
+            LinkedResource Img = new LinkedResource(path, MediaTypeNames.Image.Jpeg);
+            Img.ContentId = "MyImage";
+            
+            string str = @"  
+            <table>  
+                <tr>  
+                    <td> " + MailBody + @"
+                    </td>  
+                </tr>  
+                <tr>  
+                    <td>  
+                      <img src=cid:MyImage  id='img' alt='' width='100px' height='100px'/>   
+                    </td>  
+                </tr></table>  
+            ";
+
+            AlternateView AV =
+            AlternateView.CreateAlternateViewFromString(str, null, MediaTypeNames.Text.Html);
+            AV.LinkedResources.Add(Img);
+            return AV;
+        }
 
     }
 }

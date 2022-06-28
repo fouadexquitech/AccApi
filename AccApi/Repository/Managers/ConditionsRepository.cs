@@ -6,6 +6,7 @@ using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace AccApi.Repository.Managers
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
         private readonly AccDbContext _dbcontext;
+        IConfiguration configuration;
 
         public ConditionsRepository(AccDbContext Context, MasterDbContext mdbcontext, PolicyDbContext pdbcontext)
         {
@@ -168,7 +170,7 @@ namespace AccApi.Repository.Managers
             return list;
         }
 
-        public bool SendTechnicalConditions(int packId)
+        public bool SendTechnicalConditions(int packId, List<String> cc, string UserName)
         {
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -250,15 +252,22 @@ namespace AccApi.Repository.Managers
 
                     if (SupEmail != "")
                     {
-                        List<General> mylistTo = new List<General>();
-                        General g = new General();
-                        g.mail = (string)SupEmail;
-                        mylistTo.Add(g);
+                        List<string> mylistTo = new List<string>();
+                        mylistTo.Add(SupEmail);
 
-                        List<General> mylistCC = new List<General>();
-                        General cc = new General();
-                        cc.mail = (string)SupEmail;
-                        mylistCC.Add(cc);
+                        List<string> mylistCC = new List<string>();
+                        mylistCC = null;
+                        foreach (var mail in cc)
+                        {
+                            mylistCC.Add(mail);
+                        }
+
+                        //BCC
+                        List<string> mylistBCC = new List<string>();
+                        mylistBCC = null;
+                        User user = new LogonRepository(_mdbcontext, _pdbcontext, _dbcontext, configuration).GetUser(UserName);
+                        if (user.UsrEmail != "")
+                            mylistBCC.Add(user.UsrEmail);
 
                         string Subject = "Technical Conditions";
 
@@ -278,7 +287,7 @@ namespace AccApi.Repository.Managers
                         AttachmentList.Add(FullPath);
 
                         Mail m = new Mail();
-                        var res = m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, false,null);
+                        var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, false,null);
                         sent = (res == "sent");
 
                         sp.TecCondSent = true;

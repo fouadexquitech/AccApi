@@ -13,14 +13,11 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TmpReplaceWb
     {
         [Column("File NO")]
-        [StringLength(255)]
+        [StringLength(150)]
         public string FileNo { get; set; }
-        [Column("New File NO")]
-        [StringLength(255)]
-        public string NewFileNo { get; set; }
-        [StringLength(255)]
+        [StringLength(50)]
         public string Foreman { get; set; }
-        [StringLength(255)]
+        [StringLength(50)]
         public string Area { get; set; }
         [Column("From Date", TypeName = "datetime")]
         public DateTime? FromDate { get; set; }
@@ -38,13 +35,16 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("New Project Definition")]
         [StringLength(255)]
         public string NewProjectDefinition { get; set; }
-        [StringLength(255)]
+        [StringLength(30)]
         public string NewProjectCode { get; set; }
-        [StringLength(255)]
+        [StringLength(50)]
         public string NewArea { get; set; }
-        [StringLength(255)]
+        [Column("New File No")]
+        [StringLength(8)]
+        public string NewFileNo { get; set; }
+        [StringLength(150)]
         public string OldSponsor { get; set; }
-        [StringLength(255)]
+        [StringLength(150)]
         public string NewSponsor { get; set; }
     }
 }

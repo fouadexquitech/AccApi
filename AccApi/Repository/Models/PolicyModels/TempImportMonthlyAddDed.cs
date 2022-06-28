@@ -8,10 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("TempImportMonthlyAddDed")]
     public partial class TempImportMonthlyAddDed
     {
+        [Key]
+        [Column("seq")]
+        public int Seq { get; set; }
         [Column("LaborID")]
         [StringLength(10)]
         public string LaborId { get; set; }
@@ -26,5 +28,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public string Project { get; set; }
         [StringLength(30)]
         public string ProjectDef { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? EndDate1 { get; set; }
     }
 }

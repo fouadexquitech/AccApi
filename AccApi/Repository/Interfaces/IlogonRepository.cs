@@ -19,6 +19,7 @@ namespace AccApi.Repository.Interfaces
         bool AddManagementEmail(List<TopManagement> users);
         bool UpdateManagementEmail(TopManagement user);
         bool DeleteManagementEmail(int id);
+        User GetUser(string username);
 
     }
 }

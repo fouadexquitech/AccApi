@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("tblTempLaborContract")]
     public partial class TblTempLaborContract
     {
+        [Key]
         [StringLength(14)]
         public string LabId { get; set; }
         [Column("labname")]
@@ -46,6 +46,8 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? LabFixMon { get; set; }
         [StringLength(50)]
         public string LabPassNatA { get; set; }
+        [Column("labHousing")]
+        public double? LabHousing { get; set; }
         [Column("labContact")]
         [StringLength(50)]
         public string LabContact { get; set; }

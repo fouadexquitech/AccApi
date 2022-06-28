@@ -14,9 +14,6 @@ namespace AccApi.Repository.Models.PolicyModels
         [Key]
         [Column("rSeq")]
         public long RSeq { get; set; }
-        [Key]
-        [StringLength(30)]
-        public string UserName { get; set; }
         [Column("disProj")]
         [StringLength(20)]
         public string DisProj { get; set; }
@@ -100,9 +97,11 @@ namespace AccApi.Repository.Models.PolicyModels
         public short? ProjId { get; set; }
         public int? ShowOnAbsent { get; set; }
         public byte? Monthly { get; set; }
+        [StringLength(30)]
+        public string UserName { get; set; }
         [StringLength(100)]
         public string MainSponsor { get; set; }
-        [StringLength(50)]
+        [StringLength(30)]
         public string StatusDesc { get; set; }
         public int? OtherSorts { get; set; }
         [StringLength(100)]

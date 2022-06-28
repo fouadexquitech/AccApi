@@ -28,9 +28,9 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(1)]
         public string InternalOrder { get; set; }
         [Column("WBS")]
-        [StringLength(24)]
+        [StringLength(50)]
         public string Wbs { get; set; }
-        [StringLength(24)]
+        [StringLength(50)]
         public string CostCenter { get; set; }
         [Column("AA_Type")]
         public short? AaType { get; set; }

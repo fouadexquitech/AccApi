@@ -9,6 +9,7 @@ using OfficeOpenXml;
 using AccApi.Data_Layer;
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace AccApi.Repository.Managers
 {
@@ -16,6 +17,9 @@ namespace AccApi.Repository.Managers
     {
         private readonly AccDbContext _dbcontext;
         private readonly PolicyDbContext _pdbcontext;
+
+        MasterDbContext mdbcontext;
+        IConfiguration configuration;
 
         public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext)
         {
@@ -150,7 +154,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string ValidateExcelBeforeAssign(int packId,byte byBoq)
+        public string ValidateExcelBeforeAssign(int packId, byte byBoq)
         {
             //AH0702
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
@@ -160,7 +164,7 @@ namespace AccApi.Repository.Managers
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId,byBoq);
+            var result = boqPackageList(packId, byBoq);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -179,17 +183,17 @@ namespace AccApi.Repository.Managers
                 worksheet.Column(1).Width = 40;
                 worksheet.Cells[i, 2].Value = "Level";
                 worksheet.Column(3).Width = 50;
-                worksheet.Columns[3].Style.WrapText = true;                
+                worksheet.Columns[3].Style.WrapText = true;
                 worksheet.Column(3).AutoFit();
                 worksheet.Cells[i, 3].Value = "Bill Description";
                 worksheet.Cells[i, 4].Value = "Unit";
                 worksheet.Cells[i, 5].Value = "Qty";
 
-                if (byBoq==1)
+                if (byBoq == 1)
                 {
                     worksheet.Cells[i, 6].Value = "Unit Price";
                     worksheet.Cells[i, 7].Value = "Comments";
-                    worksheet.Column(7).Width = 50;              
+                    worksheet.Column(7).Width = 50;
                     worksheet.Columns[7].Style.WrapText = true;
                     worksheet.Column(7).AutoFit();
                 }
@@ -199,7 +203,7 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 7].Value = "Ressouce Code";
                     worksheet.Column(8).Width = 50;
                     worksheet.Columns[8].Style.WrapText = true;
-                    worksheet.Column(8).AutoFit();                  
+                    worksheet.Column(8).AutoFit();
                     worksheet.Cells[i, 8].Value = "Ressouce Description";
                     worksheet.Cells[i, 9].Value = "Ressouce Unit";
                     worksheet.Cells[i, 10].Value = "Ressouce Qty";
@@ -227,7 +231,7 @@ namespace AccApi.Repository.Managers
                     {
                         if ((l1 != "") && (l1 != oldl1))
                         {
-                            worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref; 
+                            worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref;
                             worksheet.Cells[i, 2].Value = "1";
                             worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
                             worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
@@ -350,13 +354,13 @@ namespace AccApi.Repository.Managers
                     {
                         worksheet.Cells[i, 6].Value = (x.resType == null) ? "" : x.resType;
                         worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
-                        worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;                    
+                        worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                         worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
                         worksheet.Cells[i, 11].Style.Locked = false;
                         worksheet.Cells[i, 12].Style.Locked = false;
-                    }             
-                    
+                    }
+
                     i++;
                 }
 
@@ -384,25 +388,37 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName)
         {
             string sent = "";
             string ComCondAttch = "";
 
             var AttachmentList = new List<string>();
 
-            foreach(var item in supInputList)
-            {
-            AttachmentList.Clear();
-            AttachmentList.Add(item.FilePath);
+            //Get User Email Signature
+            //LogonRepository logonRepository=new LogonRepository();
+            //User user= logonRepository.GetUser(UserName);
+            User user = new LogonRepository(mdbcontext, _pdbcontext, _dbcontext, configuration).GetUser(UserName);
+            string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
-            if (item.comercialCondList.Count >0)
+
+            foreach (var item in supInputList)
             {
-                    if (ComCondAttch=="")
+                AttachmentList.Clear();
+                AttachmentList.Add(item.FilePath);
+
+                foreach (var attach in item.mailAttachments)
+                {
+                    AttachmentList.Add(attach);
+                }
+
+                if (item.comercialCondList.Count > 0)
+                {
+                    if (ComCondAttch == "")
                         ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
 
-                AttachmentList.Add(ComCondAttch);
-            }
+                    AttachmentList.Add(ComCondAttch);
+                }
 
                 SupplierInput supplier = item.supplierInput;
 
@@ -419,15 +435,19 @@ namespace AccApi.Repository.Managers
 
                     if (SupEmail != "")
                     {
-                        List<General> mylistTo = new List<General>();
-                        General g = new General();
-                        g.mail = (string)SupEmail;
-                        mylistTo.Add(g);
+                        List<string> mylistTo = new List<string>();
+                        mylistTo.Add(SupEmail);
 
-                        List<General> mylistCC = new List<General>();
-                        General cc = new General();
-                        cc.mail = (string)SupEmail;
-                        mylistCC.Add(cc);
+                        List<string> mylistCC = new List<string>();
+                        foreach (var ccMail in item.mailCC)
+                        {
+                            mylistCC.Add(ccMail);
+                        }
+
+                        List<string> mylistBCC = new List<string>();
+                        if (user.UsrEmail != "")
+                            mylistBCC.Add(user.UsrEmail);
+
 
                         string Subject = "Procurement";
 
@@ -450,12 +470,18 @@ namespace AccApi.Repository.Managers
                             MailBody += "Best regards";
                         }
 
-                       Mail m = new Mail();
-                       sent= m.SendMail(mylistTo, mylistCC, Subject, MailBody, AttachmentList, true,null);
+                        if (userSignature != "")
+                        {
+                            MailBody += @"<br><br>";
+                            MailBody += userSignature;
+                        }
+
+                        Mail m = new Mail();
+                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, null);
                     }
                 }
             }
-            return (sent=="sent");
+            return (sent == "sent");
         }
 
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)

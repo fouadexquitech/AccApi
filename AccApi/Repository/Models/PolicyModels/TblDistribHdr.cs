@@ -9,13 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblDistribHdr")]
-    [Index(nameof(DisLab), Name = "IX_tblDistribHdr")]
-    [Index(nameof(DisDate), Name = "IX_tblDistribHdr_1")]
-    [Index(nameof(DisProject), Name = "IX_tblDistribHdr_2")]
-    [Index(nameof(DisForman), Name = "IX_tblDistribHdr_3")]
-    [Index(nameof(DisWbs), Name = "IX_tblDistribHdr_4")]
-    [Index(nameof(DisProjectDef), Name = "IX_tblDistribHdr_5")]
-    [Index(nameof(DisDeleted), Name = "IX_tblDistribHdr_6")]
+    [Index(nameof(DisDate), Name = "IX_tblDistribHdr")]
+    [Index(nameof(DisProject), Name = "IX_tblDistribHdr_1")]
+    [Index(nameof(DisDeleted), Name = "IX_tblDistribHdr_2")]
     public partial class TblDistribHdr
     {
         [Key]
@@ -30,7 +26,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disTimeout", TypeName = "datetime")]
         public DateTime? DisTimeout { get; set; }
         [Column("disWBS")]
-        [StringLength(15)]
+        [StringLength(50)]
         public string DisWbs { get; set; }
         [Column("disStatus")]
         public short? DisStatus { get; set; }
@@ -44,7 +40,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disEntry")]
         public byte? DisEntry { get; set; }
         [Column("disProjectDef")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string DisProjectDef { get; set; }
         [Column("disTimeInAct", TypeName = "datetime")]
         public DateTime? DisTimeInAct { get; set; }
@@ -53,8 +49,8 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disNight")]
         [StringLength(5)]
         public string DisNight { get; set; }
-        [Column("disForman")]
-        public int? DisForman { get; set; }
+        [Column("disforman")]
+        public int? Disforman { get; set; }
         [Column("disTimeinRnd", TypeName = "datetime")]
         public DateTime? DisTimeinRnd { get; set; }
         [Column("disTimeoutRnd", TypeName = "datetime")]

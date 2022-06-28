@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AccApi.Repository.Managers
 {
-    public class LogonRepository : IlogonRepository
+    public class LogonRepository : IlogonRepository 
     {
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
@@ -18,10 +18,6 @@ namespace AccApi.Repository.Managers
         public IConfiguration Configuration { get; }
 
         private static PolicyDbContext pdb;
-
-        public LogonRepository()
-        {      
-        }
 
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration)
         {
@@ -143,12 +139,30 @@ namespace AccApi.Repository.Managers
                             UsrDesc=u.UsrDesc,
                             UsrPwd=u.UsrPwd,
                             UsrAdmin=u.UsrAdmin,
-                            UsrEmail=u.UsrEmail
+                            UsrEmail=u.UsrEmail,
+                            UsrEmailSignature=u.EmailSignature
                         };
             User user = new User();
             user = result.FirstOrDefault();
    
             return user;
+        }
+
+        public User GetUser(string username)
+        {
+            var result = from u in _pdbcontext.TblUsers
+                         where u.UsrId == username
+                         select new User
+                         {
+                             UsrId = (u.UsrId == null) ? "" : u.UsrId,
+                             UsrDesc = (u.UsrDesc == null) ? "" : u.UsrDesc,
+                             UsrPwd = (u.UsrPwd == null) ? "" : u.UsrPwd,
+                             UsrAdmin = (u.UsrAdmin == null) ? false : u.UsrAdmin,
+                             UsrEmail = (u.UsrEmail == null) ? "" : u.UsrEmail,
+                             UsrEmailSignature = (u.EmailSignature == null) ? "" : u.EmailSignature
+                         };
+
+            return result.FirstOrDefault();
         }
 
         private bool checkAccessProject(string username, int projSeq)

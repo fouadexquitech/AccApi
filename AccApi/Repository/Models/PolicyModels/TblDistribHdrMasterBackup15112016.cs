@@ -8,15 +8,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Table("tblDistribHdrDeleted")]
-    public partial class TblDistribHdrDeleted
+    [Keyless]
+    [Table("tblDistribHdrMaster_Backup_15112016")]
+    public partial class TblDistribHdrMasterBackup15112016
     {
-        [Key]
-        public long Seq { get; set; }
+        public int? Seq { get; set; }
         [Column("disDate", TypeName = "datetime")]
         public DateTime? DisDate { get; set; }
         [Column("disLab")]
-        [StringLength(10)]
+        [StringLength(8)]
         public string DisLab { get; set; }
         [Column("disTimein", TypeName = "datetime")]
         public DateTime? DisTimein { get; set; }
@@ -32,12 +32,12 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disContraHrs")]
         public double? DisContraHrs { get; set; }
         [Column("disProject")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string DisProject { get; set; }
         [Column("disEntry")]
         public byte? DisEntry { get; set; }
         [Column("disProjectDef")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string DisProjectDef { get; set; }
         [Column("disTimeInAct", TypeName = "datetime")]
         public DateTime? DisTimeInAct { get; set; }
@@ -74,8 +74,8 @@ namespace AccApi.Repository.Models.PolicyModels
         public float? DisHrsDay { get; set; }
         [Column("disLunchBreakHrs")]
         public float? DisLunchBreakHrs { get; set; }
-        [Column("disIdleHrs")]
-        public float? DisIdleHrs { get; set; }
+        [Column("disPrayHrs")]
+        public float? DisPrayHrs { get; set; }
         [Column("disWE")]
         public byte? DisWe { get; set; }
         [Column("disHol")]
@@ -109,6 +109,16 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? DisPayNh { get; set; }
         [Column("disArea")]
         public int? DisArea { get; set; }
+        [Column("disDesig")]
+        public int? DisDesig { get; set; }
+        [Column("disLocation")]
+        public int? DisLocation { get; set; }
+        [Column("disLunchBreakWrkHrs")]
+        public float? DisLunchBreakWrkHrs { get; set; }
+        [StringLength(15)]
+        public string UserOpenExport { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? DateOpenExport { get; set; }
         [Column("disTotalOTHrs")]
         public double? DisTotalOthrs { get; set; }
         [Column("disTotalPayOver")]
@@ -135,8 +145,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? DisFood { get; set; }
         [Column("disDayFeeCS")]
         public double? DisDayFeeCs { get; set; }
-        [Column("disHrsDaySchedule")]
-        public float? DisHrsDaySchedule { get; set; }
         [Column("disDayFee")]
         public float? DisDayFee { get; set; }
         [Column("disNorHrsday")]
@@ -167,16 +175,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? DisNonTaxable { get; set; }
         [Column("disWeek")]
         public double? DisWeek { get; set; }
-        [Column("disDesig")]
-        public int? DisDesig { get; set; }
-        [Column("disLocation")]
-        public int? DisLocation { get; set; }
-        [Column("disLunchBreakWrkHrs")]
-        public float? DisLunchBreakWrkHrs { get; set; }
-        [StringLength(15)]
-        public string UserOpenExport { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? DateOpenExport { get; set; }
         [Column("disRecalc")]
         public byte? DisRecalc { get; set; }
         [Column("disRecalcBy")]
@@ -188,6 +186,8 @@ namespace AccApi.Repository.Models.PolicyModels
         public int? DisSponsor { get; set; }
         [Column("disBldg")]
         public int? DisBldg { get; set; }
+        [Column("disHrsDaySchedule")]
+        public float? DisHrsDaySchedule { get; set; }
         [Column("disTransportPay")]
         public double? DisTransportPay { get; set; }
         [Column(TypeName = "datetime")]
@@ -196,7 +196,5 @@ namespace AccApi.Repository.Models.PolicyModels
         public int? DisJob { get; set; }
         [Column("disHousingPay")]
         public double? DisHousingPay { get; set; }
-        [Column("disOccupGrp")]
-        public int? DisOccupGrp { get; set; }
     }
 }

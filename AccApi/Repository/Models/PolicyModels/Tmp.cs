@@ -13,32 +13,17 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class Tmp
     {
         [Column("ID")]
-        [StringLength(50)]
+        [StringLength(100)]
         public string Id { get; set; }
-        [Column("ID1")]
-        [StringLength(50)]
-        public string Id1 { get; set; }
-        [Column("ID3")]
-        [StringLength(50)]
-        public string Id3 { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? LastAtt { get; set; }
-        [Column("value")]
-        [StringLength(50)]
-        public string Value { get; set; }
-        [StringLength(50)]
-        public string Description { get; set; }
         [Column("DescripID")]
-        [StringLength(50)]
+        [StringLength(100)]
         public string DescripId { get; set; }
-        [Column("DescripID1")]
-        [StringLength(50)]
-        public string DescripId1 { get; set; }
-        [Column("DescripID2")]
-        [StringLength(50)]
-        public string DescripId2 { get; set; }
-        [Column("DescripID3")]
-        [StringLength(50)]
-        public string DescripId3 { get; set; }
+        [StringLength(100)]
+        public string Dte { get; set; }
+        [Column("value")]
+        [StringLength(100)]
+        public string Value { get; set; }
+        [StringLength(100)]
+        public string Description { get; set; }
     }
 }

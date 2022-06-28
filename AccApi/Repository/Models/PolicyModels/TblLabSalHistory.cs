@@ -42,6 +42,8 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? LshPhoneAllowNew { get; set; }
         [Column("lshTransportOld")]
         public double? LshTransportOld { get; set; }
+        [Column("lshbPhoneAllowNew")]
+        public double? LshbPhoneAllowNew { get; set; }
         [Column("lshLabSponsorOld")]
         public int? LshLabSponsorOld { get; set; }
         [Column("lshTransportNew")]
@@ -59,7 +61,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("lshOTRateold")]
         public double? LshOtrateold { get; set; }
         [Column("lshOTRateNew")]
-        public double? LshOtrateNew { get; set; }
+        public float? LshOtrateNew { get; set; }
         [Column("lshWEHRateold")]
         public double? LshWehrateold { get; set; }
         [Column("lshWEHRateNew")]
@@ -86,5 +88,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public byte? LshVisitVisa { get; set; }
         [Column("lshlabHrsDay")]
         public double? LshlabHrsDay { get; set; }
+
+        [ForeignKey(nameof(LshLabSeq))]
+        [InverseProperty(nameof(TblLab.TblLabSalHistories))]
+        public virtual TblLab LshLabSeqNavigation { get; set; }
     }
 }

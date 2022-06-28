@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("DATA")]
-    [Index(nameof(Sts), Name = "IX_DATA_6")]
     public partial class Datum
     {
         [Key]

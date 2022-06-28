@@ -8,10 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("tblTaxRate")]
     public partial class TblTaxRate
     {
+        [Key]
         [Column("taxProj")]
         public int TaxProj { get; set; }
         [Column("taxLastDat", TypeName = "datetime")]

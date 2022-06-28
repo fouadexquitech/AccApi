@@ -8,22 +8,22 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("tblUserCounter")]
     public partial class TblUserCounter
     {
-        [Required]
+        [Key]
         [Column("ucProj")]
         [StringLength(3)]
         public string UcProj { get; set; }
-        [Required]
+        [Key]
         [Column("ucStID")]
         [StringLength(3)]
         public string UcStId { get; set; }
-        [Required]
+        [Key]
         [Column("ucUserKey")]
         [StringLength(3)]
         public string UcUserKey { get; set; }
+        [Key]
         [Column("ucType")]
         public short UcType { get; set; }
         [Column("ucLast")]

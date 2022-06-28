@@ -22,16 +22,16 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("iwLevel")]
         public byte? IwLevel { get; set; }
         [Column("iwDivision")]
-        [StringLength(50)]
+        [StringLength(10)]
         public string IwDivision { get; set; }
         [Column("iwSubDiv")]
-        [StringLength(50)]
+        [StringLength(10)]
         public string IwSubDiv { get; set; }
         [Column("iwTrade")]
-        [StringLength(50)]
+        [StringLength(10)]
         public string IwTrade { get; set; }
         [Column("iwSubTrade")]
-        [StringLength(50)]
+        [StringLength(10)]
         public string IwSubTrade { get; set; }
         [Column("iwDescription")]
         [StringLength(300)]

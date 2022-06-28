@@ -22,5 +22,8 @@ namespace AccApi.Repository.View_Models
         public string EmailTemplate { get; set; }
         public string FilePath { get; set; }
         public List<ComercialCond> comercialCondList { get; set; }
+
+        public List<string> mailCC { get; set; }
+        public List<string> mailAttachments { get; set; }
     }
 }

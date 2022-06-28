@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using AccApi.Repository.Models.PolicyModels;
-using System.Data.Common;
 
 #nullable disable
 
@@ -21,8 +20,6 @@ namespace AccApi.Repository
 
         public virtual DbSet<AddDed> AddDeds { get; set; }
         public virtual DbSet<Area> Areas { get; set; }
-        public virtual DbSet<CopyOfTblTimeSchedule> CopyOfTblTimeSchedules { get; set; }
-        public virtual DbSet<CopyOfTblTimeScheduleExpDtl> CopyOfTblTimeScheduleExpDtls { get; set; }
         public virtual DbSet<DataIdleLostHour> DataIdleLostHours { get; set; }
         public virtual DbSet<Datamaster> Datamasters { get; set; }
         public virtual DbSet<Datum> Data { get; set; }
@@ -64,9 +61,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblDistribHdrIdleLostHour> TblDistribHdrIdleLostHours { get; set; }
         public virtual DbSet<TblDistribHdrManPower> TblDistribHdrManPowers { get; set; }
         public virtual DbSet<TblDistribHdrMaster> TblDistribHdrMasters { get; set; }
-        public virtual DbSet<TblDistribHdrMasterBackUp> TblDistribHdrMasterBackUps { get; set; }
-        public virtual DbSet<TblDistribHdrTemp> TblDistribHdrTemps { get; set; }
-        public virtual DbSet<TblDistribHdrTempReport> TblDistribHdrTempReports { get; set; }
+        public virtual DbSet<TblDistribHdrMasterBackup15112016> TblDistribHdrMasterBackup15112016s { get; set; }
         public virtual DbSet<TblDistribHdrVisitor> TblDistribHdrVisitors { get; set; }
         public virtual DbSet<TblDivision> TblDivisions { get; set; }
         public virtual DbSet<TblEmpTimeSheet> TblEmpTimeSheets { get; set; }
@@ -77,23 +72,12 @@ namespace AccApi.Repository
         public virtual DbSet<TblEntryPayment> TblEntryPayments { get; set; }
         public virtual DbSet<TblEntryResidence> TblEntryResidences { get; set; }
         public virtual DbSet<TblEntrySaudiCouncil> TblEntrySaudiCouncils { get; set; }
-        public virtual DbSet<TblEproDatabase> TblEproDatabases { get; set; }
-        public virtual DbSet<TblEproLab> TblEproLabs { get; set; }
-        public virtual DbSet<TblEproSapLocation> TblEproSapLocations { get; set; }
-        public virtual DbSet<TblEproSapmarStat> TblEproSapmarStats { get; set; }
-        public virtual DbSet<TblEproSapnat> TblEproSapnats { get; set; }
-        public virtual DbSet<TblEproSapreligion> TblEproSapreligions { get; set; }
-        public virtual DbSet<TblEproTsCompany> TblEproTsCompanies { get; set; }
-        public virtual DbSet<TblEproTsLocation> TblEproTsLocations { get; set; }
-        public virtual DbSet<TblEproTsNatio> TblEproTsNatios { get; set; }
-        public virtual DbSet<TblEproTsPosition> TblEproTsPositions { get; set; }
         public virtual DbSet<TblForemanProject> TblForemanProjects { get; set; }
         public virtual DbSet<TblForman> TblFormen { get; set; }
         public virtual DbSet<TblFunction> TblFunctions { get; set; }
         public virtual DbSet<TblGroup> TblGroups { get; set; }
         public virtual DbSet<TblGroupsUser> TblGroupsUsers { get; set; }
         public virtual DbSet<TblHoliday> TblHolidays { get; set; }
-        public virtual DbSet<TblHolidaysMol> TblHolidaysMols { get; set; }
         public virtual DbSet<TblImportEntry> TblImportEntries { get; set; }
         public virtual DbSet<TblImportForman> TblImportFormen { get; set; }
         public virtual DbSet<TblImportGosi> TblImportGosis { get; set; }
@@ -104,7 +88,6 @@ namespace AccApi.Repository
         public virtual DbSet<TblInvDtl> TblInvDtls { get; set; }
         public virtual DbSet<TblInvHdr> TblInvHdrs { get; set; }
         public virtual DbSet<TblJobCode> TblJobCodes { get; set; }
-        public virtual DbSet<TblJobCodesGrouping> TblJobCodesGroupings { get; set; }
         public virtual DbSet<TblJobSkill> TblJobSkills { get; set; }
         public virtual DbSet<TblLab> TblLabs { get; set; }
         public virtual DbSet<TblLabAccomodation> TblLabAccomodations { get; set; }
@@ -140,7 +123,6 @@ namespace AccApi.Repository
         public virtual DbSet<TblPermGrpUsr> TblPermGrpUsrs { get; set; }
         public virtual DbSet<TblPermission> TblPermissions { get; set; }
         public virtual DbSet<TblProjectWeek> TblProjectWeeks { get; set; }
-        public virtual DbSet<TblQuantitysubcontractor> TblQuantitysubcontractors { get; set; }
         public virtual DbSet<TblRegroup> TblRegroups { get; set; }
         public virtual DbSet<TblReport> TblReports { get; set; }
         public virtual DbSet<TblReportsBy> TblReportsBies { get; set; }
@@ -152,8 +134,6 @@ namespace AccApi.Repository
         public virtual DbSet<TblSkillPrice> TblSkillPrices { get; set; }
         public virtual DbSet<TblStatus> TblStatuses { get; set; }
         public virtual DbSet<TblSubConstractorSalary> TblSubConstractorSalaries { get; set; }
-        public virtual DbSet<TblSubDiv> TblSubDivs { get; set; }
-        public virtual DbSet<TblSubTrade> TblSubTrades { get; set; }
         public virtual DbSet<TblSubcontractor> TblSubcontractors { get; set; }
         public virtual DbSet<TblSystemDef> TblSystemDefs { get; set; }
         public virtual DbSet<TblTaxMargin> TblTaxMargins { get; set; }
@@ -168,7 +148,6 @@ namespace AccApi.Repository
         public virtual DbSet<TblTimeScheduleHdr> TblTimeScheduleHdrs { get; set; }
         public virtual DbSet<TblTmpImportGosi> TblTmpImportGosis { get; set; }
         public virtual DbSet<TblTrade> TblTrades { get; set; }
-        public virtual DbSet<TblTrade1> TblTrades1 { get; set; }
         public virtual DbSet<TblTransfPassport> TblTransfPassports { get; set; }
         public virtual DbSet<TblTransfResidence> TblTransfResidences { get; set; }
         public virtual DbSet<TblUser> TblUsers { get; set; }
@@ -182,6 +161,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblWbsMap> TblWbsMaps { get; set; }
         public virtual DbSet<TblZone> TblZones { get; set; }
         public virtual DbSet<Tblproject> Tblprojects { get; set; }
+        public virtual DbSet<Tblquantitysubcontractor> Tblquantitysubcontractors { get; set; }
         public virtual DbSet<TempAyappforman> TempAyappformen { get; set; }
         public virtual DbSet<TempAyappreport> TempAyappreports { get; set; }
         public virtual DbSet<TempAyappreport1> TempAyappreports1 { get; set; }
@@ -192,8 +172,6 @@ namespace AccApi.Repository
         public virtual DbSet<TempImportMonthlyAddDed> TempImportMonthlyAddDeds { get; set; }
         public virtual DbSet<Tempwb> Tempwbs { get; set; }
         public virtual DbSet<Tmp> Tmps { get; set; }
-        public virtual DbSet<Tmp1> Tmp1s { get; set; }
-        public virtual DbSet<Tmp2> Tmp2s { get; set; }
         public virtual DbSet<TmpChangeSalary> TmpChangeSalaries { get; set; }
         public virtual DbSet<TmpExportEntry> TmpExportEntries { get; set; }
         public virtual DbSet<TmpImportAttendance> TmpImportAttendances { get; set; }
@@ -205,37 +183,14 @@ namespace AccApi.Repository
         public virtual DbSet<TmpReplaceWb> TmpReplaceWbs { get; set; }
         public virtual DbSet<TmpResignedLab> TmpResignedLabs { get; set; }
         public virtual DbSet<TmpStaff> TmpStaffs { get; set; }
-        public virtual DbSet<TmpWeekEndDay> TmpWeekEndDays { get; set; }
         public virtual DbSet<TrasferEmp> TrasferEmps { get; set; }
-        public virtual DbSet<View1> View1s { get; set; }
-        public virtual DbSet<View2> View2s { get; set; }
         public virtual DbSet<ViewLaborDailyAttCount> ViewLaborDailyAttCounts { get; set; }
         public virtual DbSet<ViewLaborDailyAttCountHistory> ViewLaborDailyAttCountHistories { get; set; }
         public virtual DbSet<ViewLaborMaxDate> ViewLaborMaxDates { get; set; }
         public virtual DbSet<ViewLaborsAttDay> ViewLaborsAttDays { get; set; }
-        public virtual DbSet<ViewSalary> ViewSalaries { get; set; }
         public virtual DbSet<ViewServerDate> ViewServerDates { get; set; }
         public virtual DbSet<VwGetPrevHoursFirstAttendance> VwGetPrevHoursFirstAttendances { get; set; }
         public virtual DbSet<VwIsFirstAttendance> VwIsFirstAttendances { get; set; }
-        public virtual DbSet<VwPayrollDailyAmount> VwPayrollDailyAmounts { get; set; }
-        public virtual DbSet<VwPayrollDailyAmountsHistory> VwPayrollDailyAmountsHistories { get; set; }
-        public virtual DbSet<VwPayrollDailyHoursAndDay> VwPayrollDailyHoursAndDays { get; set; }
-        public virtual DbSet<VwPayrollDailyHoursAndDaysHistory> VwPayrollDailyHoursAndDaysHistories { get; set; }
-        public virtual DbSet<VwPayrollDailyHoursAndDaysTotal> VwPayrollDailyHoursAndDaysTotals { get; set; }
-        public virtual DbSet<VwPayrollDailyHoursAndDaysTotalHistory> VwPayrollDailyHoursAndDaysTotalHistories { get; set; }
-        public virtual DbSet<VwPayrollDailySalary> VwPayrollDailySalaries { get; set; }
-        public virtual DbSet<VwPayrollDailySalaryHistory> VwPayrollDailySalaryHistories { get; set; }
-        public virtual DbSet<XvwPayrollDailyAmount> XvwPayrollDailyAmounts { get; set; }
-        public virtual DbSet<XxvwPayrollDailyAmount> XxvwPayrollDailyAmounts { get; set; }
-
-        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //        {
-        //            if (!optionsBuilder.IsConfigured)
-        //            {
-        ////#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        //                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=Timesheet;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-        //            }
-        //        }
 
 
         public PolicyDbContext CreateConnectionFromOut(string connectionString)
@@ -245,7 +200,6 @@ namespace AccApi.Repository
             var context = new PolicyDbContext(optionsBuilder.Options);
             return context;
         }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -258,18 +212,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.Remark).IsUnicode(false);
 
                 entity.Property(e => e.Type).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<CopyOfTblTimeSchedule>(entity =>
-            {
-                entity.Property(e => e.TsdProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.Tsdnight).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<CopyOfTblTimeScheduleExpDtl>(entity =>
-            {
-                entity.Property(e => e.Tsednight).IsUnicode(false);
             });
 
             modelBuilder.Entity<DataIdleLostHour>(entity =>
@@ -309,24 +251,6 @@ namespace AccApi.Repository
                 entity.HasKey(e => e.Seq)
                     .HasName("PK_tblLabAttBarCode");
 
-                entity.HasIndex(e => e.F1, "IX_DATA")
-                    .HasFillFactor((byte)90);
-
-                entity.HasIndex(e => e.F2, "IX_DATA_1")
-                    .HasFillFactor((byte)90);
-
-                entity.HasIndex(e => e.F3, "IX_DATA_2")
-                    .HasFillFactor((byte)90);
-
-                entity.HasIndex(e => e.F4, "IX_DATA_3")
-                    .HasFillFactor((byte)90);
-
-                entity.HasIndex(e => e.F5, "IX_DATA_4")
-                    .HasFillFactor((byte)90);
-
-                entity.HasIndex(e => e.F6, "IX_DATA_5")
-                    .HasFillFactor((byte)90);
-
                 entity.Property(e => e.F1).IsUnicode(false);
 
                 entity.Property(e => e.F2).IsUnicode(false);
@@ -337,7 +261,7 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.Luser).IsUnicode(false);
 
-                entity.Property(e => e.Sts).HasDefaultValueSql("(1)");
+                entity.Property(e => e.Sts).HasDefaultValueSql("((1))");
             });
 
             modelBuilder.Entity<LinkArea>(entity =>
@@ -661,8 +585,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.NameP).IsUnicode(false);
 
                 entity.Property(e => e.Title).IsUnicode(false);
-
-                entity.Property(e => e.UserName).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblBankSal>(entity =>
@@ -685,8 +607,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.LabFaccNew).IsUnicode(false);
 
                 entity.Property(e => e.Salary).IsUnicode(false);
-
-                entity.Property(e => e.UserName).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblBuilding>(entity =>
@@ -715,9 +635,6 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblCode>(entity =>
             {
-                entity.HasKey(e => e.Seq)
-                    .HasName("PK_TblCodes");
-
                 entity.Property(e => e.CodAbrv).IsUnicode(false);
 
                 entity.Property(e => e.CodAuxiliaryCost).HasDefaultValueSql("((0))");
@@ -785,10 +702,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblDailyIdleHour>(entity =>
             {
-                entity.HasKey(e => new { e.Seq, e.IdlDate, e.IdlType, e.IdlProject, e.IdlForman, e.IdlArea, e.IdlZone })
+                entity.HasKey(e => new { e.IdlDate, e.IdlType, e.IdlForman, e.IdlProject, e.IdlZone, e.IdlArea })
                     .HasName("PK_tblIdleHours");
-
-                entity.Property(e => e.Seq).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.IdlProject).IsUnicode(false);
 
@@ -818,7 +733,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblDailySubConLabor>(entity =>
             {
-                entity.HasKey(e => new { e.DslProject, e.DslDate, e.DslSubId, e.DslJob, e.DslTrade });
+                entity.HasKey(e => new { e.DslProject, e.DslDate, e.DslSubId, e.DslJob })
+                    .HasName("PK_tblDailySubConLabors_1");
 
                 entity.Property(e => e.DslProject).IsUnicode(false);
             });
@@ -904,6 +820,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.DisLab).IsUnicode(false);
 
+                entity.Property(e => e.DisLocation).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.DisLunchBreak).HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.DisLunchBreakHrs).HasDefaultValueSql("((0))");
@@ -983,6 +901,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.DisWepay).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DisfirstAtt).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Disforman).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Exported).HasDefaultValueSql("((0))");
 
@@ -1157,6 +1077,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.DisDayFee).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.DisDeleted).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.DisDeletedBy).IsUnicode(false);
 
                 entity.Property(e => e.DisExchRate).HasDefaultValueSql("((0))");
@@ -1166,6 +1088,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.DisHolOtpay).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DisHolPay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisHousingPay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisJob).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DisLab).IsUnicode(false);
 
@@ -1220,156 +1146,77 @@ namespace AccApi.Repository
                 entity.Property(e => e.UserOpenExport).IsUnicode(false);
             });
 
-            modelBuilder.Entity<TblDistribHdrMasterBackUp>(entity =>
+            modelBuilder.Entity<TblDistribHdrMasterBackup15112016>(entity =>
             {
-                entity.HasKey(e => e.Seq)
-                    .HasName("PK__tblDistribHdrMas__301996E1");
-
-                entity.Property(e => e.Seq).ValueGeneratedNever();
-
                 entity.Property(e => e.ConfirmedBy).IsUnicode(false);
 
+                entity.Property(e => e.DisBldg).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisDailyPayTax).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisDayFee).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisDeleted).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.DisDeletedBy).IsUnicode(false);
+
+                entity.Property(e => e.DisExchRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisHolHrs).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisHolOtpay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisHolPay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisHousingPay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisJob).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DisLab).IsUnicode(false);
 
                 entity.Property(e => e.DisNight).IsUnicode(false);
 
+                entity.Property(e => e.DisNonTaxable).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisNorHrsday).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisPayAcc).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisPayOver).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisPrevHrs).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.DisProject).IsUnicode(false);
 
                 entity.Property(e => e.DisProjectDef).IsUnicode(false);
 
+                entity.Property(e => e.DisRecalc).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisRecalcBy).IsUnicode(false);
+
+                entity.Property(e => e.DisSponsor).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisTransportPay).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.DisWbs).IsUnicode(false);
+
+                entity.Property(e => e.DisWeek).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisWehrs).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisWepay).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DisfirstAtt).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DteInsFromHdr).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.ExportedBy).IsUnicode(false);
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
 
                 entity.Property(e => e.UpdatedBy).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblDistribHdrTemp>(entity =>
-            {
-                entity.Property(e => e.ConfirmedBy).IsUnicode(false);
-
-                entity.Property(e => e.DisContraHrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisContraHrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHolOthrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHolOthrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisInsertedDate).HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisNorHrsday).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisOthrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisOthrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.DisWeothrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisWeothrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Dislab).IsUnicode(false);
-
-                entity.Property(e => e.ExportedBy).IsUnicode(false);
-
-                entity.Property(e => e.JcDesc).IsUnicode(false);
-
-                entity.Property(e => e.LabName).IsUnicode(false);
-
-                entity.Property(e => e.Sponsor).IsUnicode(false);
-
-                entity.Property(e => e.TotPresWehours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.TotWecontHours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.UpdatedBy).IsUnicode(false);
-
-                entity.Property(e => e.UserName).IsUnicode(false);
 
                 entity.Property(e => e.UserOpenExport).IsUnicode(false);
-
-                entity.Property(e => e.Weabsent).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Wepresent).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Werequired).HasDefaultValueSql("((0))");
-            });
-
-            modelBuilder.Entity<TblDistribHdrTempReport>(entity =>
-            {
-                entity.Property(e => e.Seq).ValueGeneratedNever();
-
-                entity.Property(e => e.ConfirmedBy).IsUnicode(false);
-
-                entity.Property(e => e.DisContraHrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisContraHrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHolOthrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHolOthrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisHours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisInsertedDate).HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisNorHrsday).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisOthrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisOthrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.DisWeothrs).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.DisWeothrsN).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Dislab).IsUnicode(false);
-
-                entity.Property(e => e.ExportedBy).IsUnicode(false);
-
-                entity.Property(e => e.JcDesc).IsUnicode(false);
-
-                entity.Property(e => e.LabName).IsUnicode(false);
-
-                entity.Property(e => e.Sponsor).IsUnicode(false);
-
-                entity.Property(e => e.TotPresWehours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.TotWecontHours).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.UpdatedBy).IsUnicode(false);
-
-                entity.Property(e => e.UserName).IsUnicode(false);
-
-                entity.Property(e => e.UserOpenExport).IsUnicode(false);
-
-                entity.Property(e => e.Weabsent).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Wepresent).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Werequired).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblDistribHdrVisitor>(entity =>
@@ -1436,8 +1283,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.EtsEmpPsc).IsUnicode(false);
 
                 entity.Property(e => e.EtsEmpName).IsUnicode(false);
-
-                entity.Property(e => e.EtsEmpType).HasComment("1: Staff; 2 : Manager");
 
                 entity.Property(e => e.EtsExport).HasDefaultValueSql("((0))");
 
@@ -1612,152 +1457,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.ScNote).IsUnicode(false);
             });
 
-            modelBuilder.Entity<TblEproDatabase>(entity =>
-            {
-                entity.Property(e => e.EproDatabase).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproLab>(entity =>
-            {
-                entity.Property(e => e.LabId).IsUnicode(false);
-
-                entity.Property(e => e.EproCompany).IsUnicode(false);
-
-                entity.Property(e => e.EproCompanyCode).IsUnicode(false);
-
-                entity.Property(e => e.EproCompanyDesc).IsUnicode(false);
-
-                entity.Property(e => e.EproContType).IsUnicode(false);
-
-                entity.Property(e => e.EproCtryOfBirth).IsUnicode(false);
-
-                entity.Property(e => e.EproMstatus).IsUnicode(false);
-
-                entity.Property(e => e.EproNatio).IsUnicode(false);
-
-                entity.Property(e => e.EproPasspNat).IsUnicode(false);
-
-                entity.Property(e => e.EproPasspPls).IsUnicode(false);
-
-                entity.Property(e => e.EproPosition).IsUnicode(false);
-
-                entity.Property(e => e.EproPositionDesc).IsUnicode(false);
-
-                entity.Property(e => e.EproReligion).IsUnicode(false);
-
-                entity.Property(e => e.EproWorkPlace).IsUnicode(false);
-
-                entity.Property(e => e.EproWorkPlaceDesc).IsUnicode(false);
-
-                entity.Property(e => e.IgnoreExport).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.InsertedBy).IsUnicode(false);
-
-                entity.Property(e => e.LabIdNo).IsUnicode(false);
-
-                entity.Property(e => e.LabNotes).IsUnicode(false);
-
-                entity.Property(e => e.LabStaff)
-                    .IsUnicode(false)
-                    .HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.LabprojectCode).IsUnicode(false);
-
-                entity.Property(e => e.Sapexported).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Sex)
-                    .IsUnicode(false)
-                    .HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.TimeAdministrator).IsUnicode(false);
-
-                entity.Property(e => e.TsctryOfBirthId).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.Tsexported).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.UpdatedBy).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproSapLocation>(entity =>
-            {
-                entity.Property(e => e.SapLocationCode).IsUnicode(false);
-
-                entity.Property(e => e.SapLocationDesc).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproSapmarStat>(entity =>
-            {
-                entity.Property(e => e.EproMarStatId).IsUnicode(false);
-
-                entity.Property(e => e.EproMarStatDesc).IsUnicode(false);
-
-                entity.Property(e => e.SapMarStatDesc).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproSapnat>(entity =>
-            {
-                entity.Property(e => e.SapNatCode).IsUnicode(false);
-
-                entity.Property(e => e.SapNatDesc).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproSapreligion>(entity =>
-            {
-                entity.Property(e => e.EproReligionId).IsUnicode(false);
-
-                entity.Property(e => e.EproReligionDesc).IsUnicode(false);
-
-                entity.Property(e => e.SapEproReligionDesc).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproTsCompany>(entity =>
-            {
-                entity.HasKey(e => new { e.EproCompany, e.EproDatabase, e.Tssponsor })
-                    .HasName("PK_tblEproTsCompany_1");
-
-                entity.Property(e => e.EproCompany).IsUnicode(false);
-
-                entity.Property(e => e.EproDatabase).IsUnicode(false);
-
-                entity.Property(e => e.SapcompanyCode).IsUnicode(false);
-
-                entity.Property(e => e.TimeAdmin).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproTsLocation>(entity =>
-            {
-                entity.HasKey(e => e.EproWorkPlaceId)
-                    .HasName("PK_tblEproTsLocation_1");
-
-                entity.Property(e => e.EproWorkPlaceId).IsUnicode(false);
-
-                entity.Property(e => e.EproWorkPlaceDesc).IsUnicode(false);
-
-                entity.Property(e => e.SapworkPlaceCode).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproTsNatio>(entity =>
-            {
-                entity.HasKey(e => new { e.EproNatioId, e.TsnatioId });
-
-                entity.Property(e => e.EproNatioId).IsUnicode(false);
-
-                entity.Property(e => e.EproNatioDesc).IsUnicode(false);
-
-                entity.Property(e => e.SapCode).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblEproTsPosition>(entity =>
-            {
-                entity.HasKey(e => new { e.EproJobId, e.TsjobId });
-
-                entity.Property(e => e.EproJobId).IsUnicode(false);
-
-                entity.Property(e => e.EproJobDesc).IsUnicode(false);
-
-                entity.Property(e => e.Eprocompany).IsUnicode(false);
-            });
-
             modelBuilder.Entity<TblForemanProject>(entity =>
             {
                 entity.HasKey(e => new { e.ForemanId, e.ProjectId });
@@ -1767,8 +1466,11 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblForman>(entity =>
             {
-                entity.HasKey(e => e.ForId)
-                    .HasName("PK_TblForman");
+                entity.HasKey(e => new { e.ForId, e.ForFileNumber });
+
+                entity.Property(e => e.ForId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.ForFileNumber).IsUnicode(false);
 
                 entity.Property(e => e.ForCm).HasDefaultValueSql("((0))");
 
@@ -1810,13 +1512,6 @@ namespace AccApi.Repository
             });
 
             modelBuilder.Entity<TblHoliday>(entity =>
-            {
-                entity.HasKey(e => new { e.HolProjId, e.HolDate });
-
-                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
-            });
-
-            modelBuilder.Entity<TblHolidaysMol>(entity =>
             {
                 entity.HasKey(e => new { e.HolProjId, e.HolDate });
 
@@ -1941,7 +1636,15 @@ namespace AccApi.Repository
             {
                 entity.Property(e => e.IwDescription).IsUnicode(false);
 
+                entity.Property(e => e.IwDivision).IsUnicode(false);
+
                 entity.Property(e => e.IwProjDef).IsUnicode(false);
+
+                entity.Property(e => e.IwSubDiv).IsUnicode(false);
+
+                entity.Property(e => e.IwSubTrade).IsUnicode(false);
+
+                entity.Property(e => e.IwTrade).IsUnicode(false);
 
                 entity.Property(e => e.IwWbsCode).IsUnicode(false);
 
@@ -1950,6 +1653,10 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblImportZoneArea>(entity =>
             {
+                entity.Property(e => e.AreaName).IsUnicode(false);
+
+                entity.Property(e => e.LocationSubArea).IsUnicode(false);
+
                 entity.Property(e => e.ProjectDef).IsUnicode(false);
 
                 entity.Property(e => e.ZoneName).IsUnicode(false);
@@ -2108,16 +1815,9 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.JcSapcode).IsUnicode(false);
-
                 entity.Property(e => e.JcShowDailyRpt).IsUnicode(false);
 
                 entity.Property(e => e.LastUserUpdate).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblJobCodesGrouping>(entity =>
-            {
-                entity.HasKey(e => new { e.JcSeq, e.Grouping });
             });
 
             modelBuilder.Entity<TblJobSkill>(entity =>
@@ -2131,8 +1831,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.JsBasicRate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.JsFdate).HasDefaultValueSql("('01/01/1900')");
-
-                entity.Property(e => e.JsSkillGroup).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.JsSkillPrice).HasDefaultValueSql("((0))");
 
@@ -2157,6 +1855,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabClassSalary).IsUnicode(false);
 
+                entity.Property(e => e.LabDayFee).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabDepartment).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabEntryNo).IsUnicode(false);
@@ -2165,15 +1865,27 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabFileNo).IsUnicode(false);
 
+                entity.Property(e => e.LabFixedMonthly).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabFood).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabGosi).IsUnicode(false);
 
+                entity.Property(e => e.LabGovernorate).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabHasAccommodation).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabHasIdcard).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabHasPhoto).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabHasTransportation).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabHidden).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabHolHrate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabHousing).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabHrsDay).HasDefaultValueSql("((0))");
 
@@ -2183,7 +1895,9 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabInsurancePin).IsUnicode(false);
 
-                entity.Property(e => e.LabLegacyNo).IsUnicode(false);
+                entity.Property(e => e.LabLegacyNo)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabManualEntryPerm).HasDefaultValueSql("((1))");
 
@@ -2191,9 +1905,13 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabMuslim).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.LabNat).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabNationalNo).IsUnicode(false);
 
-                entity.Property(e => e.LabNew).HasDefaultValueSql("((0))");
+                entity.Property(e => e.LabNbPass).IsFixedLength(true);
+
+                entity.Property(e => e.LabNew).HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.LabNotes).IsUnicode(false);
 
@@ -2203,6 +1921,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabOtrate).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.LabPhoneAllow).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabProject).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabReportToPolice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabResidPlace).IsUnicode(false);
@@ -2211,11 +1933,19 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LabSalType).HasDefaultValueSql("((1))");
 
+                entity.Property(e => e.LabSemiEmp).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabShowSalRpt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabSkilled).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.LabSponsor).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LabTeam).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.LabTitle).HasDefaultValueSql("((202))");
+
+                entity.Property(e => e.LabTransport).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabType).HasDefaultValueSql("((0))");
 
@@ -2230,6 +1960,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.LabWithoutTax).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Labbank).IsUnicode(false);
+
+                entity.Property(e => e.Labjob).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LabprojectCode).IsUnicode(false);
 
@@ -2279,6 +2011,11 @@ namespace AccApi.Repository
                     .HasName("PK_tblLabDocuments_1");
 
                 entity.Property(e => e.DocLabId).IsUnicode(false);
+
+                entity.HasOne(d => d.DocLab)
+                    .WithMany(p => p.TblLabDocuments)
+                    .HasForeignKey(d => d.DocLabId)
+                    .HasConstraintName("FK_tblLabDocuments_tblLab");
             });
 
             modelBuilder.Entity<TblLabDraft>(entity =>
@@ -2313,19 +2050,13 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LshDayFeeNew).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.LshDayFeeOld).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.LshExceptionAttendanceNew).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshExceptionAttendanceold).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshFixedMonthlyNew).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.LshFixedMonthlyOld).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.LshFoodNew).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.LshFoodOld).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshHardship).HasDefaultValueSql("((0))");
 
@@ -2334,8 +2065,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.LshHolHrateold).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshHousingNew).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.LshHousingOld).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshLabSponsorNew).HasDefaultValueSql("((0))");
 
@@ -2346,8 +2075,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.LshOtrateold).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshPhoneAllowNew).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.LshPhoneAllowOld).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshSeq).ValueGeneratedOnAdd();
 
@@ -2365,11 +2092,18 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LshWepayTypeOld).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.LshbPhoneAllowNew).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.LshlabHrsDay).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshlabjobNew).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.LshlabjobOld).HasDefaultValueSql("((0))");
+
+                entity.HasOne(d => d.LshLabSeqNavigation)
+                    .WithMany(p => p.TblLabSalHistories)
+                    .HasForeignKey(d => d.LshLabSeq)
+                    .HasConstraintName("FK_tblLabSalHistory_tblLab");
             });
 
             modelBuilder.Entity<TblLabSti>(entity =>
@@ -2382,7 +2116,7 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblLaborHistogram>(entity =>
             {
                 entity.HasKey(e => e.Lhseq)
-                    .HasName("PK__tblLabor__057A622D1ADBF4B1");
+                    .HasName("PK__tblLabor__057A622DD3B0516D");
 
                 entity.Property(e => e.LhDiv).IsUnicode(false);
             });
@@ -2409,7 +2143,7 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblLastLogon>(entity =>
             {
                 entity.HasKey(e => e.LlLogonDate)
-                    .HasName("PK__tblLastLogon__1BFD2C07");
+                    .HasName("PK__tblLastL__6EBFCEA1B74C8E7D");
 
                 entity.Property(e => e.ConCatalog).IsUnicode(false);
 
@@ -2473,7 +2207,7 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblLogInDateChange>(entity =>
             {
                 entity.HasKey(e => e.LdcSeq)
-                    .HasName("PK__tblLogIn__9BB4F434243F9859");
+                    .HasName("PK__tblLogIn__9BB4F434D4C9D1B8");
             });
 
             modelBuilder.Entity<TblManPowerSupp>(entity =>
@@ -2618,7 +2352,7 @@ namespace AccApi.Repository
                 entity.HasOne(d => d.MadLab)
                     .WithMany(p => p.TblMonthlyAddDeds)
                     .HasForeignKey(d => d.MadLabId)
-                    .HasConstraintName("FK_tblMonthlyAddDed_tblLab");
+                    .HasConstraintName("FK_tblMonthlyAddDed_tblLab1");
             });
 
             modelBuilder.Entity<TblNationality>(entity =>
@@ -2631,7 +2365,7 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblNetSalary>(entity =>
             {
                 entity.HasKey(e => e.Seq)
-                    .HasName("PK__tblNetSa__CA1E3C886BE3B7EC");
+                    .HasName("PK__tblNetSa__CA1E3C880EE85AD1");
 
                 entity.Property(e => e.Seq).IsUnicode(false);
 
@@ -2662,8 +2396,6 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblOccupGroup>(entity =>
             {
-                entity.Property(e => e.Seq).ValueGeneratedNever();
-
                 entity.Property(e => e.GrpSort).HasDefaultValueSql("((0))");
             });
 
@@ -2677,23 +2409,13 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblPayrollDate>(entity =>
             {
                 entity.HasKey(e => e.PdPayrollNum)
-                    .HasName("PK__tblPayro__A5104533EE9C3DB4");
+                    .HasName("PK__tblPayro__A5104533F0D84501");
 
                 entity.Property(e => e.CalcLaborDailyWithAllowances).HasDefaultValueSql("((1))");
             });
 
             modelBuilder.Entity<TblPermGrpUsr>(entity =>
             {
-                entity.Property(e => e.MinOfprmDelete).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.MinOfprmRead).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.MinOfprmUpdPeriod).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.MinOfprmUpdate).HasDefaultValueSql("((0))");
-
-                entity.Property(e => e.MinOfprmWrite).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.PrmFuncId).IsUnicode(false);
 
                 entity.Property(e => e.PrmUser).IsUnicode(false);
@@ -2726,18 +2448,6 @@ namespace AccApi.Repository
                     .HasConstraintName("FK_tblProjectWeeks_tblproject");
             });
 
-            modelBuilder.Entity<TblQuantitysubcontractor>(entity =>
-            {
-                entity.HasKey(e => new { e.SubconId, e.Qtydate, e.Qtywbs })
-                    .HasName("PK_tblquantitysubcontractor");
-
-                entity.Property(e => e.Qtywbs).IsUnicode(false);
-
-                entity.Property(e => e.InsertedBy).IsUnicode(false);
-
-                entity.Property(e => e.Qtyproject).IsUnicode(false);
-            });
-
             modelBuilder.Entity<TblReport>(entity =>
             {
                 entity.Property(e => e.PermissionExcept).HasDefaultValueSql("((0))");
@@ -2745,6 +2455,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RptDesc).IsUnicode(false);
 
                 entity.Property(e => e.RptFixSpace).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RptHasColumns).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RptIsDynamicCol).HasDefaultValueSql("((0))");
 
@@ -2793,7 +2505,7 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSickLeave>(entity =>
             {
-                entity.HasKey(e => new { e.SlFromDay, e.SlToDay });
+                entity.Property(e => e.SlStatusId).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<TblSkillPrice>(entity =>
@@ -2804,8 +2516,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.SpFdate).HasDefaultValueSql("('01/01/1900')");
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
-
-                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Luser).IsUnicode(false);
 
@@ -2827,7 +2537,7 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.AsGroup).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.AsHasCost).HasDefaultValueSql("(0)");
+                entity.Property(e => e.AsHasCost).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.AsSort).HasDefaultValueSql("((0))");
 
@@ -2837,38 +2547,6 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblSubConstractorSalary>(entity =>
             {
                 entity.HasKey(e => new { e.SubConId, e.SubConClass });
-            });
-
-            modelBuilder.Entity<TblSubDiv>(entity =>
-            {
-                entity.HasKey(e => new { e.Proj, e.Seq, e.HdrSeq });
-
-                entity.Property(e => e.Seq).IsUnicode(false);
-
-                entity.Property(e => e.HdrSeq).IsUnicode(false);
-
-                entity.Property(e => e.Luser).IsUnicode(false);
-
-                entity.Property(e => e.SubDiv).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblSubTrade>(entity =>
-            {
-                entity.HasKey(e => new { e.Proj, e.Seq, e.Div, e.SubDiv, e.Trade });
-
-                entity.Property(e => e.Seq).IsUnicode(false);
-
-                entity.Property(e => e.Div).IsUnicode(false);
-
-                entity.Property(e => e.SubDiv).IsUnicode(false);
-
-                entity.Property(e => e.Trade).IsUnicode(false);
-
-                entity.Property(e => e.Luser).IsUnicode(false);
-
-                entity.Property(e => e.SubTrade).IsUnicode(false);
-
-                entity.Property(e => e.Wbs).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblSubcontractor>(entity =>
@@ -2902,9 +2580,11 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.SdApplyExcepOt).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.SdApplyFridayFrac).HasComment("0: No Fraction , 1 : Apply Friday Fraction Days");
+
                 entity.Property(e => e.SdApplyTax).HasDefaultValueSql("((0))");
 
-                entity.Property(e => e.SdApplyWedays).HasDefaultValueSql("((0))");
+                entity.Property(e => e.SdApplyWedays).HasComment("0:No ; 1: Yes");
 
                 entity.Property(e => e.SdCompanyTitle).IsUnicode(false);
 
@@ -2940,6 +2620,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblTaxRate>(entity =>
             {
+                entity.Property(e => e.TaxProj).ValueGeneratedNever();
+
                 entity.Property(e => e.TaxBarCodeFile).IsUnicode(false);
 
                 entity.Property(e => e.TaxContChochesion).HasDefaultValueSql("((0))");
@@ -3036,6 +2718,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblTempImportEntry>(entity =>
             {
+                entity.Property(e => e.DayFee).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.FamilyName).IsUnicode(false);
 
                 entity.Property(e => e.FatherName).IsUnicode(false);
@@ -3044,15 +2728,23 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.FirstName).IsUnicode(false);
 
+                entity.Property(e => e.FoodAllow).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.Luser).IsUnicode(false);
 
                 entity.Property(e => e.Natio).IsUnicode(false);
 
                 entity.Property(e => e.Occupation).IsUnicode(false);
 
+                entity.Property(e => e.OtherAllow).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.ProjectCode).IsUnicode(false);
 
                 entity.Property(e => e.Sponsor).IsUnicode(false);
+
+                entity.Property(e => e.Staff).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.تاريخإنتهاءالإقامة).IsUnicode(false);
 
@@ -3065,13 +2757,13 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblTempLaborContract>(entity =>
             {
+                entity.Property(e => e.LabId).IsUnicode(false);
+
                 entity.Property(e => e.LabContact).IsUnicode(false);
 
                 entity.Property(e => e.LabDeg).IsUnicode(false);
 
                 entity.Property(e => e.LabEndRef).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
 
                 entity.Property(e => e.LabIdNo).IsUnicode(false);
 
@@ -3088,12 +2780,6 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblTempReport>(entity =>
             {
-                entity.HasKey(e => new { e.RSeq, e.UserName });
-
-                entity.Property(e => e.RSeq).ValueGeneratedOnAdd();
-
-                entity.Property(e => e.UserName).IsUnicode(false);
-
                 entity.Property(e => e.AbsentFrom).IsUnicode(false);
 
                 entity.Property(e => e.Area).IsUnicode(false);
@@ -3148,6 +2834,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.SubGrp).IsUnicode(false);
 
+                entity.Property(e => e.UserName).IsUnicode(false);
+
                 entity.Property(e => e.WorkTypeDesc).IsUnicode(false);
             });
 
@@ -3167,8 +2855,6 @@ namespace AccApi.Repository
                 entity.HasKey(e => new { e.TsedHdrSeq, e.Tsednight, e.TsedDayNumber });
 
                 entity.Property(e => e.Tsednight).IsUnicode(false);
-
-                entity.Property(e => e.TsedWeekEnd).HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.TsedHdrSeqNavigation)
                     .WithMany(p => p.TblTimeScheduleExpDtls)
@@ -3220,27 +2906,6 @@ namespace AccApi.Repository
             });
 
             modelBuilder.Entity<TblTrade>(entity =>
-            {
-                entity.HasKey(e => new { e.Proj, e.Seq, e.Div, e.SubDiv });
-
-                entity.Property(e => e.Seq).IsUnicode(false);
-
-                entity.Property(e => e.Div).IsUnicode(false);
-
-                entity.Property(e => e.SubDiv).IsUnicode(false);
-
-                entity.Property(e => e.Cc).IsUnicode(false);
-
-                entity.Property(e => e.Luser).IsUnicode(false);
-
-                entity.Property(e => e.Trade).IsUnicode(false);
-
-                entity.Property(e => e.Wbs).IsUnicode(false);
-
-                entity.Property(e => e.WbsMap).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<TblTrade1>(entity =>
             {
                 entity.Property(e => e.TrSeq).ValueGeneratedNever();
 
@@ -3307,10 +2972,15 @@ namespace AccApi.Repository
                 entity.Property(e => e.UsrSignature).IsUnicode(false);
             });
 
+            modelBuilder.Entity<TblUserCounter>(entity =>
+            {
+                entity.HasKey(e => new { e.UcProj, e.UcStId, e.UcUserKey, e.UcType });
+            });
+
             modelBuilder.Entity<TblUsersProject>(entity =>
             {
                 entity.HasKey(e => new { e.UpUserId, e.UpProject })
-                    .HasName("PK__tblUsersProjects__286302EC");
+                    .HasName("PK__tblUsers__4DCF3A536C5F01FE");
 
                 entity.Property(e => e.UpUserId).IsUnicode(false);
             });
@@ -3362,11 +3032,11 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblWb>(entity =>
             {
-                entity.HasKey(e => new { e.ProjId, e.WbsProject, e.WbsCode, e.WbsLevel });
-
-                entity.Property(e => e.WbsProject).IsUnicode(false);
+                entity.HasKey(e => new { e.ProjId, e.WbsCode, e.WbsProject, e.WbsLevel });
 
                 entity.Property(e => e.WbsCode).IsUnicode(false);
+
+                entity.Property(e => e.WbsProject).IsUnicode(false);
 
                 entity.Property(e => e.Div).IsUnicode(false);
 
@@ -3375,8 +3045,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.LastUserUpdate).IsUnicode(false);
-
-                entity.Property(e => e.MapBuilding).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RelatedArea).IsUnicode(false);
 
@@ -3387,8 +3055,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.Trade).IsUnicode(false);
 
                 entity.Property(e => e.Unit).IsUnicode(false);
-
-                entity.Property(e => e.Used).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Wbs).IsUnicode(false);
 
@@ -3428,6 +3094,10 @@ namespace AccApi.Repository
                 entity.HasKey(e => new { e.ZonId, e.ZonProj });
 
                 entity.Property(e => e.ZonId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.ZonName).IsUnicode(false);
             });
 
             modelBuilder.Entity<Tblproject>(entity =>
@@ -3455,7 +3125,7 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.PrjAllowOtHol).HasDefaultValueSql("((1))");
 
-                entity.Property(e => e.PrjAllowOtWe).HasDefaultValueSql("((1))");
+                entity.Property(e => e.PrjAllowOtWe).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PrjCode).IsUnicode(false);
 
@@ -3486,6 +3156,17 @@ namespace AccApi.Repository
                 entity.Property(e => e.PrjSapcode).IsUnicode(false);
 
                 entity.Property(e => e.PrjTitle).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Tblquantitysubcontractor>(entity =>
+            {
+                entity.HasKey(e => new { e.SubconId, e.Qtydate, e.Qtywbs });
+
+                entity.Property(e => e.Qtywbs).IsUnicode(false);
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.Qtyproject).IsUnicode(false);
             });
 
             modelBuilder.Entity<TempAyappreport>(entity =>
@@ -3652,8 +3333,6 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
 
-                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
-
                 entity.Property(e => e.NewArea).IsUnicode(false);
 
                 entity.Property(e => e.NewProjectDef).IsUnicode(false);
@@ -3700,35 +3379,15 @@ namespace AccApi.Repository
             {
                 entity.Property(e => e.DescripId).IsUnicode(false);
 
-                entity.Property(e => e.DescripId1).IsUnicode(false);
-
-                entity.Property(e => e.DescripId2).IsUnicode(false);
-
-                entity.Property(e => e.DescripId3).IsUnicode(false);
-
                 entity.Property(e => e.Description).IsUnicode(false);
+
+                entity.Property(e => e.Dte).IsUnicode(false);
 
                 entity.Property(e => e.Id).IsUnicode(false);
 
-                entity.Property(e => e.Id1).IsUnicode(false);
-
-                entity.Property(e => e.Id3).IsUnicode(false);
-
-                entity.Property(e => e.Value).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<Tmp1>(entity =>
-            {
-                entity.Property(e => e.LabId).IsUnicode(false);
-
-                entity.Property(e => e.LabId1).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<Tmp2>(entity =>
-            {
-                entity.Property(e => e.LabId1).IsUnicode(false);
-
-                entity.Property(e => e.LabId3).IsUnicode(false);
+                entity.Property(e => e.Value)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TmpChangeSalary>(entity =>
@@ -3803,6 +3462,9 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TmpImportLaborHistogram>(entity =>
             {
+                entity.HasKey(e => e.Seq)
+                    .HasName("PK__tmpImpor__DDDFBCBE69FB02A5");
+
                 entity.Property(e => e.Div).IsUnicode(false);
 
                 entity.Property(e => e.Occupation).IsUnicode(false);
@@ -3812,8 +3474,6 @@ namespace AccApi.Repository
             {
                 entity.Property(e => e.Id).IsUnicode(false);
 
-                entity.Property(e => e.JoinTrsfResign).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.Name).IsUnicode(false);
 
                 entity.Property(e => e.ProjCode).IsUnicode(false);
@@ -3821,8 +3481,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.ProjectDef).IsUnicode(false);
 
                 entity.Property(e => e.Psc).IsUnicode(false);
-
-                entity.Property(e => e.Staff).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.UserName).IsUnicode(false);
             });
@@ -3857,6 +3515,25 @@ namespace AccApi.Repository
                 entity.Property(e => e.Wbs).IsUnicode(false);
             });
 
+            modelBuilder.Entity<TmpReplaceWb>(entity =>
+            {
+                entity.Property(e => e.Area).IsUnicode(false);
+
+                entity.Property(e => e.FileNo).IsUnicode(false);
+
+                entity.Property(e => e.Foreman).IsUnicode(false);
+
+                entity.Property(e => e.NewArea).IsUnicode(false);
+
+                entity.Property(e => e.NewFileNo).IsUnicode(false);
+
+                entity.Property(e => e.NewProjectCode).IsUnicode(false);
+
+                entity.Property(e => e.NewSponsor).IsUnicode(false);
+
+                entity.Property(e => e.OldSponsor).IsUnicode(false);
+            });
+
             modelBuilder.Entity<TmpResignedLab>(entity =>
             {
                 entity.Property(e => e.FileNo).IsUnicode(false);
@@ -3864,12 +3541,6 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TmpStaff>(entity =>
             {
-                entity.HasKey(e => new { e.SSeq, e.UserName });
-
-                entity.Property(e => e.SSeq).ValueGeneratedOnAdd();
-
-                entity.Property(e => e.UserName).IsUnicode(false);
-
                 entity.Property(e => e.AbsentFrom).IsUnicode(false);
 
                 entity.Property(e => e.Daily).HasDefaultValueSql("((0))");
@@ -3896,19 +3567,11 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.SubGrp).IsUnicode(false);
 
+                entity.Property(e => e.UserName).IsUnicode(false);
+
                 entity.Property(e => e.WorkTypeDesc).IsUnicode(false);
 
                 entity.Property(e => e.Worktype).HasDefaultValueSql("((0))");
-            });
-
-            modelBuilder.Entity<TmpWeekEndDay>(entity =>
-            {
-                entity.HasKey(e => e.Seq)
-                    .HasName("PK__tmpWeekE__DDDFBCBE82C0CA96");
-
-                entity.Property(e => e.Seq).ValueGeneratedNever();
-
-                entity.Property(e => e.WeProjectDef).IsUnicode(false);
             });
 
             modelBuilder.Entity<TrasferEmp>(entity =>
@@ -3920,32 +3583,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.FromProj).IsUnicode(false);
 
                 entity.Property(e => e.ToProj).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<View1>(entity =>
-            {
-                entity.ToView("View1");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.Expr2).IsUnicode(false);
-
-                entity.Property(e => e.Expr3).IsUnicode(false);
-
-                entity.Property(e => e.Expr4).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<View2>(entity =>
-            {
-                entity.ToView("View2");
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
             });
 
             modelBuilder.Entity<ViewLaborDailyAttCount>(entity =>
@@ -3980,15 +3617,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.DisProjectDef).IsUnicode(false);
             });
 
-            modelBuilder.Entity<ViewSalary>(entity =>
-            {
-                entity.ToView("viewSalaries");
-
-                entity.Property(e => e.FileNo).IsUnicode(false);
-
-                entity.Property(e => e.Name).IsUnicode(false);
-            });
-
             modelBuilder.Entity<ViewServerDate>(entity =>
             {
                 entity.ToView("viewServerDate");
@@ -4012,182 +3640,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.DisLab).IsUnicode(false);
 
                 entity.Property(e => e.DisProjectDef).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyAmount>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyAmounts");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyAmountsHistory>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyAmounts_History");
-
-                entity.Property(e => e.ArZone).IsUnicode(false);
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyHoursAndDay>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyHoursAndDays");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyHoursAndDaysHistory>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyHoursAndDays_History");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyHoursAndDaysTotal>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyHoursAndDaysTotal");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailyHoursAndDaysTotalHistory>(entity =>
-            {
-                entity.ToView("vwPayroll_DailyHoursAndDaysTotal_History");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailySalary>(entity =>
-            {
-                entity.ToView("vwPayroll_DailySalary");
-
-                entity.Property(e => e.ComCompany).IsUnicode(false);
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<VwPayrollDailySalaryHistory>(entity =>
-            {
-                entity.ToView("vwPayroll_DailySalary_History");
-
-                entity.Property(e => e.ComCompany).IsUnicode(false);
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<XvwPayrollDailyAmount>(entity =>
-            {
-                entity.ToView("xvwPayroll_DailyAmounts");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
-            });
-
-            modelBuilder.Entity<XxvwPayrollDailyAmount>(entity =>
-            {
-                entity.ToView("xxvwPayroll_DailyAmounts");
-
-                entity.Property(e => e.DisLab).IsUnicode(false);
-
-                entity.Property(e => e.DisNight).IsUnicode(false);
-
-                entity.Property(e => e.DisProject).IsUnicode(false);
-
-                entity.Property(e => e.DisProjectDef).IsUnicode(false);
-
-                entity.Property(e => e.DisWbs).IsUnicode(false);
-
-                entity.Property(e => e.LabBankAcc).IsUnicode(false);
-
-                entity.Property(e => e.LabId).IsUnicode(false);
             });
 
             OnModelCreatingPartial(modelBuilder);

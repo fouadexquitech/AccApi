@@ -64,7 +64,5 @@ namespace AccApi.Repository.Models.PolicyModels
         public string Country { get; set; }
         [StringLength(150)]
         public string Filler { get; set; }
-        [StringLength(30)]
-        public string UserName { get; set; }
     }
 }

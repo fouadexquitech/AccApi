@@ -277,11 +277,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("SendTechnicalConditions")]
-        public bool SendTechnicalConditions(int packId)
+        public bool SendTechnicalConditions(int packId, List<String> cc, string UserName)
         {
             try
             {
-                return this._conditionsRepository.SendTechnicalConditions(packId);
+                return this._conditionsRepository.SendTechnicalConditions(packId, cc,  UserName);
             }
             catch (Exception ex)
             {

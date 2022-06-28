@@ -15,7 +15,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("lhw")]
         public int Lhw { get; set; }
         [Column("lhwLabSeq")]
-        [StringLength(8)]
+        [StringLength(10)]
         public string LhwLabSeq { get; set; }
         [Column("lhwWeekFr")]
         public int? LhwWeekFr { get; set; }

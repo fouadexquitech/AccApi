@@ -18,7 +18,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(9)]
         public string DisProjectDef { get; set; }
         [Column("disLab")]
-        [StringLength(15)]
+        [StringLength(8)]
         public string DisLab { get; set; }
         [Column("disDate", TypeName = "datetime")]
         public DateTime? DisDate { get; set; }

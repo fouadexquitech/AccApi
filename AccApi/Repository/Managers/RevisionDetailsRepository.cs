@@ -4,6 +4,7 @@ using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,10 @@ namespace AccApi.Repository.Managers
         private AccDbContext _dbContext;
         private PolicyDbContext _pdbContext;
         private MasterDbContext _mdbContext;
+
+        MasterDbContext mdbcontext;
+        IConfiguration configuration;
+
 
         public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext, MasterDbContext mdbContext)
         {
@@ -942,11 +947,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement)
+        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement, List<mailCCAttach> ccAttachList,  string UserName)
         {
             string send = "";
 
-            
             string[] emails = new string[topManagementTemplate.TopManagements.Count];
             if (topManagementTemplate.TopManagements.Count > 0)
             {
@@ -979,16 +983,20 @@ namespace AccApi.Repository.Managers
 
 
                 //Send Email
-                List<General> mylistTo = new List<General>();
+                List<string> mylistTo = new List<string>();
                 foreach (var email in emails)
                 {
-                    General g = new General();
-                    g.mail = email == null ? "" : email;
-                    mylistTo.Add(g);
+                    mylistTo.Add(email);
                 }
 
-                List<General> mylistCC = new List<General>();
-                mylistCC = null;
+ 
+                //BCC
+                List<string> mylistBCC = new List<string>();
+                mylistBCC = null;
+                User user = new LogonRepository(mdbcontext, _pdbContext, _dbContext, configuration).GetUser(UserName);
+                if (user.UsrEmail != "")
+                    mylistBCC.Add(user.UsrEmail);
+               
 
                 string Subject = "Project: " + ProjectName + ", Package: " + PackageName;
 
@@ -1004,12 +1012,27 @@ namespace AccApi.Repository.Managers
                 MailBody += Environment.NewLine;
                 MailBody += "Best regards";*/
 
-
+                List<string> mylistCC = new List<string>();
+                mylistCC = null;
 
                 var AttachmentList = new List<string>();
+                AttachmentList = null;
+
+                foreach (var item in ccAttachList)
+                {                   
+                    foreach (var mail in item.mailCC)
+                    {
+                        mylistCC.Add(mail);
+                    }
+                    
+                    foreach (var attach in item.mailAttachments)
+                    {
+                        AttachmentList.Add(attach);
+                    }
+                }
 
                 Mail m = new Mail();
-                var res = m.SendMail(mylistTo, mylistCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachement);
+                var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachement);
 
                 send = "sent";
             }
@@ -1027,7 +1050,7 @@ namespace AccApi.Repository.Managers
                 return "";
         }
 
-        public List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input)
+        public List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input,int supId)
         {
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
                                                         join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
@@ -1079,18 +1102,27 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
-            var ExchNowList = (from cur in curList
-                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+            var usedCur = from cur in curList
+                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
+            var ExchNowList = (from cur in usedCur
                                select new LiveExchange
                                {
-                                   fromCurrency = cur.CurCode,
-                                   ExchRateNow = GetExchange(cur.CurCode)
+                                   fromCurrency = cur.fromCurrency,
+                                   ExchRateNow = GetExchange(cur.fromCurrency)
                                }).ToList();
 
-            var querySupp = (from cur in curList
+            IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
+
+            if (supId == 0)
+                querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
@@ -1113,6 +1145,31 @@ namespace AccApi.Repository.Managers
                                  ExchRate = b.PrExchRate,
                                  ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
                              }).ToList();
+            else
+                 querySupp = (from cur in curList
+                                 join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                 join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                 join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                 join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                 where (a.SpPackageId == packageId && b.PrRevNo == 0 && a.SpSupplierId==supId)
+                                 select new GroupingPackageSupplierPriceModel
+                                 {
+                                     SupplierId = sup.SupCode,
+                                     SupplierName = sup.SupName,
+                                     LastRevisionDate = b.PrRevDate,
+                                     AssignedPercentage = c.RdAssignedPerc,
+                                     AssignedQty = c.RdAssignedQty,
+                                     MissedPrice = c.RdMissedPrice,
+                                     OriginalCurrencyPrice = c.RdPriceOrigCurrency,
+                                     Qty = c.RdQty,
+                                     UnitPrice = c.RdPrice,
+                                     TotalPrice = (c.RdQty * c.RdPrice),
+                                     BoqResourceId = c.RdResourceSeq,
+                                     OriginalCurrency = cur.CurCode,
+                                     ExchRate = b.PrExchRate,
+                                     ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
+                                 }).ToList();
+
 
             foreach (var item in items)
             {
@@ -1134,7 +1191,7 @@ namespace AccApi.Repository.Managers
             return items;
         }
 
-        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
+        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId)
         {
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
                                                         join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
@@ -1193,23 +1250,31 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                             select b).ToList();
 
+            var usedCur = from cur in curList
+                        join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                        join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                        where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                        group cur by cur.CurCode into g
+                        select new LiveExchange
+                        {
+                            fromCurrency = g.Key
+                        };
 
-            var ExchNowList = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                             where (a.SpPackageId == packageId && b.PrRevNo == 0)
+            var ExchNowList = (from cur in usedCur                       
                              select new LiveExchange
                              {                              
-                                 fromCurrency = cur.CurCode,
-                                 ExchRateNow = GetExchange(cur.CurCode)
+                                 fromCurrency = cur.fromCurrency,
+                                 ExchRateNow = GetExchange(cur.fromCurrency)
                              }).ToList();
 
-            var querySupp = (from cur in curList
+            IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
+
+            if (supId == 0)
+                querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode                            
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
                              where (a.SpPackageId == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
@@ -1223,10 +1288,34 @@ namespace AccApi.Repository.Managers
                                  Qty = c.RdQty,
                                  UnitPrice = c.RdPrice,
                                  TotalPrice = (c.RdQty * c.RdPrice),
-                                 BoqItemO = c.RdBoqItem,                               
-                                 OriginalCurrency =cur.CurCode,
+                                 BoqItemO = c.RdBoqItem,
+                                 OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = ExchNowList.Find(x=> x.fromCurrency ==cur.CurCode).ExchRateNow
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
+                             }).ToList();
+            else
+                querySupp = (from cur in curList
+                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && a.SpSupplierId==supId)
+                             select new GroupingPackageSupplierPriceModel
+                             {
+                                 SupplierId = sup.SupCode,
+                                 SupplierName = sup.SupName,
+                                 LastRevisionDate = b.PrRevDate,
+                                 AssignedPercentage = c.RdAssignedPerc,
+                                 AssignedQty = c.RdAssignedQty,
+                                 MissedPrice = c.RdMissedPrice,
+                                 OriginalCurrencyPrice = c.RdPriceOrigCurrency,
+                                 Qty = c.RdQty,
+                                 UnitPrice = c.RdPrice,
+                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 BoqItemO = c.RdBoqItem,
+                                 OriginalCurrency = cur.CurCode,
+                                 ExchRate = b.PrExchRate,
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
                              }).ToList();
 
             foreach (var item in items)
@@ -1287,21 +1376,28 @@ namespace AccApi.Repository.Managers
                     Id = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
                     Name = p.First().GroupName,
                     ValidPerc = true,
+                    TotalQty = p.Sum(c => c.QtyO),
                     TotalPrice = p.Sum(c => c.QtyO * c.UnitRate)
                 }).ToList();
 
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
-            var ExchNowList = (from cur in curList
-                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+            var usedCur = from cur in curList
+                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
+            var ExchNowList = (from cur in usedCur
                                select new LiveExchange
                                {
-                                   fromCurrency = cur.CurCode,
-                                   ExchRateNow = GetExchange(cur.CurCode)
+                                   fromCurrency = cur.fromCurrency,
+                                   ExchRateNow = GetExchange(cur.fromCurrency)
                                }).ToList();
 
             var querySupp = (from cur in curList
@@ -1407,15 +1503,21 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
-            var ExchNowList = (from cur in curList
-                               join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                               join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                               join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                               where (a.SpPackageId == packageId && b.PrRevNo == 0)
+            var usedCur = from cur in curList
+                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
+            var ExchNowList = (from cur in usedCur
                                select new LiveExchange
                                {
-                                   fromCurrency = cur.CurCode,
-                                   ExchRateNow = GetExchange(cur.CurCode)
+                                   fromCurrency = cur.fromCurrency,
+                                   ExchRateNow = GetExchange(cur.fromCurrency)
                                }).ToList();
 
             var querySupp = (from cur in curList
@@ -1466,10 +1568,9 @@ namespace AccApi.Repository.Managers
             return groups;
         }
 
-
         public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
-            List<GroupingBoqModel> items = GetComparisonSheet(packageId, input);
+            List<GroupingBoqModel> items = GetComparisonSheet(packageId, input,0);
 
             var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -1714,7 +1815,7 @@ namespace AccApi.Repository.Managers
 
         public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
-            List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input);
+            List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input,0);
 
             var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -2274,12 +2375,12 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
                     worksheet.Columns[2].Style.WrapText = true;
 
+                    worksheet.Cells[row, 3].Value = (item.TotalQty) == null ? "" : item.TotalQty;
+                    worksheet.Cells[row, 4].Value = (item.TotalPrice) == null ? "" : item.TotalPrice;
+
                     var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
                     foreach (var sup in item.GroupingPackageSuppliersPrices)
                     {                          
-                       //worksheet.Cells[row, 3].Value = (sup.Qty) == null ? "" : sup.Qty;
-                       worksheet.Cells[row, 4].Value = (sup.TotalPrice) == null ? "" : sup.TotalPrice;
-
                         var supList = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
                         c = 0;
                         foreach (var s in supList)
@@ -2389,6 +2490,259 @@ namespace AccApi.Repository.Managers
                 return excelName;
             }
         }
+
+
+        public byte checkByBoq(int packageId)
+        {
+            var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
+            return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
+        }
+
+
+        public string GenerateSuppliersContracts_Excel(int packageId,int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        {
+            List<GroupingBoqModel> items;
+
+            byte byBoq = checkByBoq(packageId);
+            if (byBoq==1)
+              items = GetComparisonSheetByBoq(packageId, input,supId);
+            else
+              items = GetComparisonSheet(packageId, input, supId);
+
+
+            var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
+            string PackageName = package.PkgeName;
+
+            var p = _dbContext.TblParameters.FirstOrDefault();
+            var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            string ProjectName = proj.PrjName;
+
+            List<string> suppliers = new List<string>();
+
+            var stream = new MemoryStream();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using (var xlPackage = new ExcelPackage(stream))
+            {
+                var worksheet = xlPackage.Workbook.Worksheets.Add("Sheet1");
+                worksheet.Columns.AutoFit();
+                worksheet.Protection.IsProtected = false;
+
+                int row, j, c;
+
+                worksheet.Cells["A1:C1"].Merge = true;
+                worksheet.Cells["A2:C2"].Merge = true;
+                worksheet.Cells["A3:C3"].Merge = true;
+                worksheet.Cells["A4:C4"].Merge = true;
+                worksheet.Cells["A5:C5"].Merge = true;
+
+                //worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                //worksheet.Cells[2, 1].Style.Font.Bold = true;
+                worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
+                worksheet.Cells[3, 1].Style.Font.Bold = true;
+                worksheet.Cells[3, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[4, 1].Value = "Department :";
+                worksheet.Cells[4, 1].Style.Font.Bold = true;
+                worksheet.Cells[4, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[5, 1].Value = PackageName;
+                worksheet.Cells[5, 1].Style.Font.Bold = true;
+                worksheet.Cells[5, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.SelectedRange[5, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[5, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.SelectedRange[7, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[7, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.Cells["E6:F6"].Merge = true;
+                worksheet.Cells[6, 5].Value = "ACC budget";
+                worksheet.Cells[6, 5].Style.Font.Bold = true;
+                worksheet.Cells[6, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Column(5).Width = 20;
+
+                if (items.Count > 0)
+                {
+                    GroupingBoqModel item1 = items.First();
+                    GroupingPackageSupplierPriceModel supItem = item1.GroupingPackageSuppliersPrices.First();
+                    //string boq = sup.BoqItemO;
+
+                    var SupList = item1.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    //var SupList = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+
+                    int col = 7;
+                    int m = 7;
+                    foreach (var supplier in SupList)
+                    {
+                        worksheet.Cells[6, m].Value = supplier.SupplierName + " " + DateTime.Parse(supplier.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Style.Font.Bold = true;
+                        worksheet.Columns[m].Style.WrapText = true;
+                        worksheet.Column(m).AutoFit();
+                        worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[6, m, 6, m + 1].Merge = true;
+                        m = m + 2;
+                        if (!suppliers.Contains(supplier.SupplierName))
+                            suppliers.Add(supplier.SupplierName.ToString());
+
+                        col++;
+                    }
+                }
+
+                row = 7;
+                worksheet.Cells[row, 1].Value = "No";
+                worksheet.Cells[row, 2].Value = "Description";
+                worksheet.Column(2).Width = 70;
+                worksheet.Columns[2].Style.WrapText = true;
+                worksheet.Column(2).AutoFit();
+                worksheet.Cells[row, 3].Value = "U.";
+                worksheet.Cells[row, 4].Value = "Qty Total";
+                worksheet.Cells[row, 5].Value = "P.U.";
+                worksheet.Cells[row, 6].Value = "P.T.";
+
+                worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                row = 9;
+                j = 0;
+                foreach (var item in items)
+                {
+                    var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                    foreach (var sup in item.GroupingPackageSuppliersPrices)
+                    {
+                        worksheet.Cells[row, 1].Value = j++;
+                        worksheet.Column(2).Width = 70;
+                        worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
+                        worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        worksheet.Columns[2].Style.WrapText = true;
+                        worksheet.Cells[row, 3].Value = (item.Unit) == null ? "" : item.Unit;
+                        worksheet.Cells[row, 4].Value = (item.Qty) == null ? "" : item.Qty;
+                        worksheet.Cells[row, 5].Value = (item.UnitPrice) == null ? "" : item.UnitPrice;
+                        worksheet.Cells[row, 6].Value = (item.TotalPrice) == null ? "" : item.TotalPrice;
+
+                        int col = 0;
+                        foreach (var suplier in suppliers)
+                        {
+                            var v = worksheet.Cells[7, 7 + col].Value;
+                            if (v == null)
+                            {
+                                worksheet.Cells[7, 7 + col].Value = "P.U.";
+                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                            }
+
+                            var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
+                            if (supReply != null)
+                            {
+                                worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
+                                worksheet.Cells[row, 8 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                            }
+                            col = col + 2;
+                        }
+                    }
+                    row++;
+                }
+
+                row++;
+
+                //Commercial Conditions
+                var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var replies = comcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (replies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Commercial Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in replies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = comcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+
+                xlPackage.Save();
+                stream.Position = 0;
+
+                string suplierName = suppliers.FirstOrDefault();
+                string excelName = $"{suplierName}-{PackageName}.xlsx";
+
+                //string path = @"C:\App\";
+
+                //if (!Directory.Exists(path))
+                //{
+                //    Directory.CreateDirectory(path);
+                //}
+                //string FullPath = path + excelName;
+
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
+
+                xlPackage.SaveAs(excelName);
+
+                return excelName;
+            }
+        }
+
 
         private double GetExchange(string foreignCurrency)
         {

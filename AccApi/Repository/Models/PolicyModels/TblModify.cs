@@ -13,7 +13,7 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TblModify
     {
         [Column("modProj")]
-        [StringLength(20)]
+        [StringLength(50)]
         public string ModProj { get; set; }
         [Column("modID")]
         public int ModId { get; set; }

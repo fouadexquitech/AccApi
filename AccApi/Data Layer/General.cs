@@ -12,4 +12,11 @@ namespace AccApi.Data_Layer
         public string subject { get; set; }
         public string body { get; set; }
     }
+
+    public class mailCCAttach
+    {
+        public List<string> mailCC { get; set; }
+        public List<string> mailAttachments { get; set; }
+    }
+
 }

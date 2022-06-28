@@ -27,7 +27,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("sdApplyWEDays")]
         public byte? SdApplyWedays { get; set; }
         [Column("sdCeiling")]
-        public double? SdCeiling { get; set; }
+        public int? SdCeiling { get; set; }
         [Column("sdProbationPeriod")]
         public byte? SdProbationPeriod { get; set; }
         [Column("sdTaxRate")]
@@ -59,7 +59,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(30)]
         public string SdUnlockPass { get; set; }
         [Column("sdCurrency")]
-        [StringLength(30)]
+        [StringLength(10)]
         public string SdCurrency { get; set; }
         [Column("sdPayData")]
         [StringLength(50)]

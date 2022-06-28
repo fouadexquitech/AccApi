@@ -217,17 +217,22 @@ namespace AccApi.Repository.Managers
             var curList = (from b in _mcontext.TblCurrencies
                            select b).ToList();
            
-            var ExchNowList = (from cur in curList
-                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                               join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                               where (a.SpPackageId == pckgID && b.PrRevNo == 0)
+            var usedCur = from cur in curList
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          where (a.SpPackageId == pckgID && b.PrRevNo == 0)
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
+            var ExchNowList = (from cur in usedCur
                                select new LiveExchange
                                {
-                                   fromCurrency = cur.CurCode,
-                                   ExchRateNow = GetExchange(cur.CurCode)
+                                   fromCurrency = cur.fromCurrency,
+                                   ExchRateNow = GetExchange(cur.fromCurrency)
                                }).ToList();
-
 
             List<PackageSuppliersPrice> result = new List<PackageSuppliersPrice>();
             List<RevisionDetails> revisionDetails = new List<RevisionDetails>();

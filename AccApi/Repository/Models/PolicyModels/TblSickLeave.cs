@@ -12,9 +12,10 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TblSickLeave
     {
         [Key]
+        [Column("slStatusID")]
+        public short SlStatusId { get; set; }
         [Column("slFromDay")]
         public short SlFromDay { get; set; }
-        [Key]
         [Column("slToDay")]
         public short SlToDay { get; set; }
         [Column("slPer")]

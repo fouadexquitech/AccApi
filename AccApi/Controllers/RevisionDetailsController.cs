@@ -1,4 +1,5 @@
-﻿using AccApi.Repository.Interfaces;
+﻿using AccApi.Data_Layer;
+using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
@@ -159,7 +160,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public async Task<bool> SendCompToManagement()
+        public async Task<bool> SendCompToManagement(  List<mailCCAttach> ccAttachList,  string UserName)
         {
             try
             {
@@ -169,7 +170,7 @@ namespace AccApi.Controllers
 
                 var attachement = formCollection.Files[0];
 
-                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachement);
+                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachement, ccAttachList,  UserName);
             }
             catch (Exception ex)
             {
@@ -184,7 +185,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheet(packageId, input);
+                return this._revisionDetailsRepository.GetComparisonSheet(packageId, input,0);
             }
             catch (Exception ex)
             {
@@ -198,7 +199,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input);
+                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input,0);
             }
             catch (Exception ex)
             {
@@ -284,7 +285,7 @@ namespace AccApi.Controllers
                 return null;
             }
         }
-     
+
         [HttpPost("GetComparisonSheetBoqByGroup_Excel")]
         public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input)
         {
@@ -302,6 +303,8 @@ namespace AccApi.Controllers
             }
         }
       
+
+
         [HttpPost("AssignSupplierListGroupList")]
         public bool AssignSupplierListGroupList(int packId, bool byBoq, bool isPercent, AssignSupplierGroup item)
         {
@@ -331,25 +334,39 @@ namespace AccApi.Controllers
         }
 
 
+        [HttpPost("GenerateSuppliersContracts_Excel")]
+        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input,int supId)
+        {
+            try
+            {              
+                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+
+                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,supId,input,comcondRepLst,techcondRepLst));
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         //[HttpGet("GetExchangeRate")]
         //public string GetExchangeRate(string fromCurrency, string toCurrency)
         //{
         //    try
         //    { 
-
         //    const string urlPattern = "https://free.currconv.com/api/v7/convert?q={0}_{1}&compact=ultra&apiKey=7726dd1cebe5aeb063da";
         //    string url = string.Format(urlPattern, fromCurrency, toCurrency);
 
         //        using (var wc = new WebClient())
         //        {
         //            var json = wc.DownloadString(url);
-
         //            Newtonsoft.Json.Linq.JToken token = Newtonsoft.Json.Linq.JObject.Parse(json);
         //            string exchangeRate = (string)token.SelectToken("USD_AED[0]");
-
         //            return exchangeRate;
         //        }
-
         //    }
         //    catch (Exception ex)
         //    {

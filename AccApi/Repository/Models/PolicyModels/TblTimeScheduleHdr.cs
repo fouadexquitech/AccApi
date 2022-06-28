@@ -16,7 +16,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int TshProjId { get; set; }
         [Key]
         [Column("tshProjectDef")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string TshProjectDef { get; set; }
         [Column("tshCSRate")]
         public short? TshCsrate { get; set; }

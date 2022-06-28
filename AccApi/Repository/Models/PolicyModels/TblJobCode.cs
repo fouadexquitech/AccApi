@@ -43,14 +43,11 @@ namespace AccApi.Repository.Models.PolicyModels
         public string LastUserUpdate { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? LastUpdate { get; set; }
-        public byte? InvoiceGroup { get; set; }
+        public short? InvoiceGroup { get; set; }
         [Column("jcRepCol")]
         public short? JcRepCol { get; set; }
         [Column("codShowOnAbsent")]
         public bool? CodShowOnAbsent { get; set; }
-        [Column("jcSAPCode")]
-        [StringLength(5)]
-        public string JcSapcode { get; set; }
         [Column("codSubGrp")]
         public int? CodSubGrp { get; set; }
         [Column("grade")]

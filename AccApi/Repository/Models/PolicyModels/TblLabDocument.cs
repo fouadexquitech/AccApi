@@ -13,7 +13,7 @@ namespace AccApi.Repository.Models.PolicyModels
     {
         [Key]
         [Column("docLabID")]
-        [StringLength(10)]
+        [StringLength(8)]
         public string DocLabId { get; set; }
         [Key]
         [Column("docType")]
@@ -38,5 +38,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public string DocTypeNum { get; set; }
         [Column("docEndDate", TypeName = "datetime")]
         public DateTime? DocEndDate { get; set; }
+
+        [ForeignKey(nameof(DocLabId))]
+        [InverseProperty(nameof(TblLab.TblLabDocuments))]
+        public virtual TblLab DocLab { get; set; }
     }
 }

@@ -25,7 +25,5 @@ namespace AccApi.Repository.Models.PolicyModels
         public string Salary { get; set; }
         [StringLength(50)]
         public string EmplyerData { get; set; }
-        [StringLength(30)]
-        public string UserName { get; set; }
     }
 }

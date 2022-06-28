@@ -8,11 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("tmpImportLaborHistogram")]
     public partial class TmpImportLaborHistogram
     {
-        [Column(TypeName = "date")]
+        [Key]
+        [Column("seq")]
+        public int Seq { get; set; }
+        [Column(TypeName = "datetime")]
         public DateTime? Mth { get; set; }
         [StringLength(20)]
         public string Div { get; set; }

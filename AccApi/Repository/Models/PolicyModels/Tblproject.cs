@@ -81,9 +81,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public bool? PrjHasLocation { get; set; }
         [Column("prjNewTsVers")]
         public byte? PrjNewTsVers { get; set; }
-        [Column("prjSAPCode")]
-        [StringLength(5)]
-        public string PrjSapcode { get; set; }
         [Column("prjProjectType")]
         public byte? PrjProjectType { get; set; }
         [Column("prjCostDatabase")]
@@ -100,6 +97,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public bool? PrjAllowOtHol { get; set; }
         [Column("prjAllowContra")]
         public bool? PrjAllowContra { get; set; }
+        [Column("prjSAPCode")]
+        [StringLength(50)]
+        public string PrjSapcode { get; set; }
 
         [InverseProperty(nameof(TblProjectWeek.PwkProjectNavigation))]
         public virtual ICollection<TblProjectWeek> TblProjectWeeks { get; set; }

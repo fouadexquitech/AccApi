@@ -28,7 +28,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disTimeout", TypeName = "datetime")]
         public DateTime? DisTimeout { get; set; }
         [Column("disWBS")]
-        [StringLength(15)]
+        [StringLength(50)]
         public string DisWbs { get; set; }
         [Column("disStatus")]
         public short? DisStatus { get; set; }

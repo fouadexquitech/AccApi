@@ -14,7 +14,9 @@ namespace AccApi.Repository.Managers
     {
         public double GetCurrencyExchange(String localCurrency, String foreignCurrency)
         {
-            var url = $"https://api.apilayer.com/exchangerates_data/convert?to={localCurrency}& from={foreignCurrency}&amount=1&apikey=4zN5nYjguyVQhynDgczfYxYpActZD8zx";
+            //var url = $"https://api.apilayer.com/exchangerates_data/convert?to={localCurrency}& from={foreignCurrency}&amount=1&apikey=4zN5nYjguyVQhynDgczfYxYpActZD8zx";
+
+            var url = $"https://v6.exchangerate-api.com/v6/cf4d499450146caf5d37ad3c/pair/{foreignCurrency}/{localCurrency}";
             var webClient = new WebClient();
             string jsonData;
 
@@ -26,7 +28,7 @@ namespace AccApi.Repository.Managers
                 //var jsonObject = JsonConvert.DeserializeObject<ExchangeRate>(jsonData);
 
                 var jo = JObject.Parse(jsonData);
-                var id = jo["result"].ToString();
+                var id = jo["conversion_rate"].ToString();
 
                 //string exch = "0";             
                 //foreach (var v in jsonObject)

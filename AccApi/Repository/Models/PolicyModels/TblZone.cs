@@ -20,15 +20,16 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("zonName")]
         [StringLength(50)]
         public string ZonName { get; set; }
-        [StringLength(15)]
-        public string InsertedBy { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? LastUpdate { get; set; }
+        [Column("LUser")]
+        [StringLength(10)]
+        public string Luser { get; set; }
+        [Column("LDate", TypeName = "datetime")]
+        public DateTime? Ldate { get; set; }
         [Column("arSel")]
         public short? ArSel { get; set; }
         public short? Export { get; set; }
         [Column(TypeName = "datetime")]
-        public DateTime? InsertedDate { get; set; }
+        public DateTime? LastUpdate { get; set; }
         [Column("zonPhase")]
         public int? ZonPhase { get; set; }
         [Column("zonForman")]
@@ -36,14 +37,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public string ZonForman { get; set; }
         [Column("zonSubContartor")]
         public bool? ZonSubContartor { get; set; }
-        [StringLength(15)]
-        public string LastUserUpdate { get; set; }
         [Column("zonConManager")]
         public int? ZonConManager { get; set; }
-        [Column("LDate", TypeName = "datetime")]
-        public DateTime? Ldate { get; set; }
-        [Column("LUser")]
-        [StringLength(10)]
-        public string Luser { get; set; }
     }
 }

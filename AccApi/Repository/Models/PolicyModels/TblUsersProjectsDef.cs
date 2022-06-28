@@ -20,7 +20,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int UpdProject { get; set; }
         [Key]
         [Column("updProjCode")]
-        [StringLength(20)]
+        [StringLength(9)]
         public string UpdProjCode { get; set; }
 
         [ForeignKey("UpdUserId,UpdProject")]
