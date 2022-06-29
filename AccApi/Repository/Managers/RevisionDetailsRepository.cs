@@ -992,7 +992,7 @@ namespace AccApi.Repository.Managers
  
                 //BCC
                 List<string> mylistBCC = new List<string>();
-                mylistBCC = null;
+                //mylistBCC = null;
                 User user = new LogonRepository(mdbcontext, _pdbContext, _dbContext, configuration).GetUser(UserName);
                 if (user.UsrEmail != "")
                     mylistBCC.Add(user.UsrEmail);
@@ -1013,10 +1013,10 @@ namespace AccApi.Repository.Managers
                 MailBody += "Best regards";*/
 
                 List<string> mylistCC = new List<string>();
-                mylistCC = null;
+                //mylistCC = null;
 
                 var AttachmentList = new List<string>();
-                AttachmentList = null;
+                //AttachmentList = null;
 
                 foreach (var item in ccAttachList)
                 {                   
@@ -1029,6 +1029,13 @@ namespace AccApi.Repository.Managers
                     {
                         AttachmentList.Add(attach);
                     }
+                }
+
+                string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+                if (userSignature != "")
+                {
+                    topManagementTemplate.Template += @"<br><br>";
+                    topManagementTemplate.Template += userSignature;
                 }
 
                 Mail m = new Mail();

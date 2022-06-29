@@ -256,7 +256,7 @@ namespace AccApi.Repository.Managers
                         mylistTo.Add(SupEmail);
 
                         List<string> mylistCC = new List<string>();
-                        mylistCC = null;
+                        //mylistCC = null;
                         foreach (var mail in cc)
                         {
                             mylistCC.Add(mail);
@@ -264,7 +264,7 @@ namespace AccApi.Repository.Managers
 
                         //BCC
                         List<string> mylistBCC = new List<string>();
-                        mylistBCC = null;
+                        //mylistBCC = null;
                         User user = new LogonRepository(_mdbcontext, _pdbcontext, _dbcontext, configuration).GetUser(UserName);
                         if (user.UsrEmail != "")
                             mylistBCC.Add(user.UsrEmail);
@@ -285,6 +285,13 @@ namespace AccApi.Repository.Managers
 
                         var AttachmentList = new List<string>();
                         AttachmentList.Add(FullPath);
+
+                        string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;                       
+                        if (userSignature != "")
+                        {
+                            MailBody += @"<br><br>";
+                            MailBody += userSignature;
+                        }
 
                         Mail m = new Mail();
                         var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, false,null);
