@@ -9,5 +9,7 @@ namespace AccApi.Repository.View_Models
         public string Template { get; set; }
 
         public List<TopManagement> TopManagements { get; set; }
+        public List<string> ListCC { get; set; }
+        public List<string> ListAttach { get; set; }
     }
 }

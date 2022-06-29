@@ -160,7 +160,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public async Task<bool> SendCompToManagement(  List<mailCCAttach> ccAttachList,  string UserName)
+        public async Task<bool> SendCompToManagement(List<mailCCAttach> ccAttachList,  string UserName)
         {
             try
             {
@@ -168,9 +168,9 @@ namespace AccApi.Controllers
                 var topManagementTemplateStr = formCollection["topManagementTemplate"];
                 var topManagementTemplate = JsonConvert.DeserializeObject<TopManagementTemplateModel>(topManagementTemplateStr[0]);
 
-                var attachement = formCollection.Files[0];
+                List<IFormFile> attachements = formCollection.Files.ToList();
 
-                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachement, ccAttachList,  UserName);
+                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachements, UserName);
             }
             catch (Exception ex)
             {

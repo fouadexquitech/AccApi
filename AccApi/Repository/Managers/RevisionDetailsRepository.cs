@@ -947,7 +947,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement, List<mailCCAttach> ccAttachList,  string UserName)
+        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachements,  string UserName)
         {
             string send = "";
 
@@ -1014,21 +1014,16 @@ namespace AccApi.Repository.Managers
 
                 List<string> mylistCC = new List<string>();
                 //mylistCC = null;
+                foreach (var mail in topManagementTemplate.ListCC)
+                {
+                    mylistCC.Add(mail);
+                }
 
                 var AttachmentList = new List<string>();
                 //AttachmentList = null;
-
-                foreach (var item in ccAttachList)
-                {                   
-                    foreach (var mail in item.mailCC)
-                    {
-                        mylistCC.Add(mail);
-                    }
-                    
-                    foreach (var attach in item.mailAttachments)
-                    {
-                        AttachmentList.Add(attach);
-                    }
+                foreach (var attach in topManagementTemplate.ListAttach)
+                {
+                    AttachmentList.Add(attach);
                 }
 
                 string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
@@ -1039,7 +1034,7 @@ namespace AccApi.Repository.Managers
                 }
 
                 Mail m = new Mail();
-                var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachement);
+                var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachements);
 
                 send = "sent";
             }

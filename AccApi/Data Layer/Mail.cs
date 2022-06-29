@@ -12,7 +12,7 @@ namespace AccApi.Data_Layer
 {
     public class Mail
     {
-        public string SendMail(List<string> MailTo, List<string> MailCC, List<string> MailBCC, string MailSubject, string MailBody, List<string> MailAttach, Boolean BodyHtml, IFormFile AttachFile)
+        public string SendMail(List<string> MailTo, List<string> MailCC, List<string> MailBCC, string MailSubject, string MailBody,List<string> attachmentList, Boolean BodyHtml, List<IFormFile> AttachFiles)
         {
             try
             {
@@ -63,20 +63,23 @@ namespace AccApi.Data_Layer
                     }
                 }
 
-                if (MailAttach != null)
+                if (attachmentList != null)
                 {
-                    foreach (var attach in MailAttach)
+                    foreach (var attach in attachmentList)
                     {
                         if (File.Exists(attach))
                             mail.Attachments.Add(new Attachment(attach));
                     }
                 }
 
-                if (AttachFile != null)
+                if (AttachFiles != null)
                 {
-                    string fileName = Path.GetFileName(AttachFile.FileName);
-                    if (fileName != "")
-                        mail.Attachments.Add(new Attachment(AttachFile.OpenReadStream(), fileName));
+                    foreach (var item in AttachFiles)
+                    {
+                        string fileName = Path.GetFileName(item.FileName);
+                        if (fileName != "")
+                            mail.Attachments.Add(new Attachment(item.OpenReadStream(), fileName));
+                    }
                 }
 
                 client.Send(mail);

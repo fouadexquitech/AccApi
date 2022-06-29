@@ -24,7 +24,7 @@ namespace AccApi.Repository.Interfaces
         bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent);
         bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent);
         bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent);
-        bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, IFormFile attachement, List<mailCCAttach> ccAttachList, string UserName);
+        bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachements, string UserName);
         List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input, int supId);
         List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId);
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input);
