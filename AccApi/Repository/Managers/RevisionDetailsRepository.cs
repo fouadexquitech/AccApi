@@ -947,7 +947,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachements,  string UserName)
+        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachments,  string UserName)
         {
             string send = "";
 
@@ -1034,7 +1034,7 @@ namespace AccApi.Repository.Managers
                 }
 
                 Mail m = new Mail();
-                var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachements);
+                var res = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, topManagementTemplate.Template, AttachmentList, false, attachments);
 
                 send = "sent";
             }

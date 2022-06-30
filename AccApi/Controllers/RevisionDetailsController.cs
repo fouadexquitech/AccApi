@@ -168,9 +168,9 @@ namespace AccApi.Controllers
                 var topManagementTemplateStr = formCollection["topManagementTemplate"];
                 var topManagementTemplate = JsonConvert.DeserializeObject<TopManagementTemplateModel>(topManagementTemplateStr[0]);
 
-                List<IFormFile> attachements = formCollection.Files.ToList();
+                List<IFormFile> attachments = formCollection.Files.ToList();
 
-                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachements, UserName);
+                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachments, UserName);
             }
             catch (Exception ex)
             {
