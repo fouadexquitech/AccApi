@@ -131,7 +131,6 @@ namespace AccApi.Controllers
         [HttpPost("AssignPackageSuppliers")]
         public async Task<bool> AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList, byte ByBoq, string UserName)
         {
-
             try
             {
                 var formCollection = await Request.ReadFormAsync();
@@ -147,6 +146,5 @@ namespace AccApi.Controllers
                 return false;
             }
         }
-
     }
 }
