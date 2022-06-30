@@ -388,7 +388,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName)
+        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments)
         {
             string sent = "";
             string ComCondAttch = "";
@@ -477,7 +477,7 @@ namespace AccApi.Repository.Managers
                         }
 
                         Mail m = new Mail();
-                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, null);
+                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
                     }
                 }
             }

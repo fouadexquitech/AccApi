@@ -9,6 +9,8 @@ using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.StaticFiles;
 using System.IO;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace AccApi.Controllers
 {
@@ -126,11 +128,14 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public bool AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList, byte ByBoq, string UserName)
+        public async Task<bool> AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList, byte ByBoq, string UserName)
         {
+
             try
             {
-                return this._supplierPackagesRepository.AssignPackageSuppliers(packId, supInputList, ByBoq, UserName);
+                var formCollection = await Request.ReadFormAsync();
+                List<IFormFile> attachments = formCollection.Files.ToList();
+                return this._supplierPackagesRepository.AssignPackageSuppliers(packId, supInputList, ByBoq, UserName, attachments);
             }
             catch (Exception ex)
             {
