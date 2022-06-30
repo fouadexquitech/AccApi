@@ -129,7 +129,7 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public async Task<bool> AssignPackageSuppliers(int packId,List<SupplierInputList> supInputList, byte ByBoq, string UserName)
+        public async Task<bool> AssignPackageSuppliers()
         {
             try
             {
