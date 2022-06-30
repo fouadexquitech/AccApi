@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace AccApi.Controllers
 {
@@ -134,8 +135,11 @@ namespace AccApi.Controllers
             try
             {
                 var formCollection = await Request.ReadFormAsync();
-                List<IFormFile> attachments = formCollection.Files.ToList();
-                return this._supplierPackagesRepository.AssignPackageSuppliers(packId, supInputList, ByBoq, UserName, attachments);
+                var assignPackageTemplateStr = formCollection["assignPackageTemplate"];
+                var assignPackageTemplate = JsonConvert.DeserializeObject<AssignPackageTemplateModel>(assignPackageTemplateStr[0]);
+
+                List<IFormFile> FileAttachments = formCollection.Files.ToList();
+                return this._supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments);
             }
             catch (Exception ex)
             {
