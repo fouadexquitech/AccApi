@@ -1014,16 +1014,22 @@ namespace AccApi.Repository.Managers
 
                 List<string> mylistCC = new List<string>();
                 //mylistCC = null;
-                foreach (var mail in topManagementTemplate.ListCC)
+                if (topManagementTemplate.ListCC != null)
                 {
-                    mylistCC.Add(mail);
+                    foreach (var mail in topManagementTemplate.ListCC)
+                    {
+                        mylistCC.Add(mail);
+                    }
                 }
 
                 var AttachmentList = new List<string>();
                 //AttachmentList = null;
-                foreach (var attach in topManagementTemplate.ListAttach)
+                if (topManagementTemplate.ListAttach != null)
                 {
-                    AttachmentList.Add(attach);
+                    foreach (var attach in topManagementTemplate.ListAttach)
+                    {
+                        AttachmentList.Add(attach);
+                    }
                 }
 
                 string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;

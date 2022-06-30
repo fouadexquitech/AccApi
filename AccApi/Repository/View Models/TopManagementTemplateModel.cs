@@ -11,5 +11,7 @@ namespace AccApi.Repository.View_Models
         public List<TopManagement> TopManagements { get; set; }
         public List<string> ListCC { get; set; }
         public List<string> ListAttach { get; set; }
+
+        public string UserName { get; set; }
     }
 }
