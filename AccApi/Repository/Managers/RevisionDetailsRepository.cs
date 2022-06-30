@@ -927,6 +927,7 @@ namespace AccApi.Repository.Managers
                 if (result != null)
                 {
                     result.RdPrice = item.RdPrice;
+                    result.RdPriceOrigCurrency = item.RdPrice;
                 }
             }
             _dbContext.SaveChanges();
@@ -941,6 +942,7 @@ namespace AccApi.Repository.Managers
                 if (result != null)
                 {
                     result.RdPrice = item.RdPrice;
+                    result.RdPriceOrigCurrency = item.RdPrice;
                 }
             }
             _dbContext.SaveChanges();
