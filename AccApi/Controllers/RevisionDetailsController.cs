@@ -3,13 +3,16 @@ using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -23,14 +26,20 @@ namespace AccApi.Controllers
        private readonly ILogger<RevisionDetailsController> _logger;
        private readonly IRevisionDetailsRepository _revisionDetailsRepository;
        private IConditionsRepository _conditionsRepository;
-       private ISupplierPackagesRepository _supplierPackagesRepository;    
+       private ISupplierPackagesRepository _supplierPackagesRepository;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public RevisionDetailsController (ILogger<RevisionDetailsController> logger, IRevisionDetailsRepository revisionDetailsRepository, IConditionsRepository conditionsRepository, ISupplierPackagesRepository supplierPackagesRepository)
+        public RevisionDetailsController (ILogger<RevisionDetailsController> logger, 
+            IRevisionDetailsRepository revisionDetailsRepository, 
+            IConditionsRepository conditionsRepository, 
+            ISupplierPackagesRepository supplierPackagesRepository,
+            IWebHostEnvironment hostingEnvironment)
         {
             _logger = logger;
             _revisionDetailsRepository=revisionDetailsRepository;
             _conditionsRepository = conditionsRepository;
             _supplierPackagesRepository = supplierPackagesRepository;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         [HttpGet("GetRevisionDetails")]
@@ -351,6 +360,39 @@ namespace AccApi.Controllers
                 _logger.LogError(ex.Message);
                 return null;
             }
+        }
+        private string GetMimeType(string fileName)
+        {
+            // Make Sure Microsoft.AspNetCore.StaticFiles Nuget Package is installed
+            var provider = new FileExtensionContentTypeProvider();
+            string contentType;
+            if (!provider.TryGetContentType(fileName, out contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+            return contentType;
+        }
+
+
+        [HttpGet("DownloadFile")]
+        public FileResult DownloadFile(string filename)
+        {
+            var filepath = Path.Combine($"{this._hostingEnvironment.ContentRootPath}\\{filename}");
+
+            var mimeType = this.GetMimeType(filename);
+
+            byte[] fileBytes;
+
+            if (System.IO.File.Exists(filepath))
+            {
+                fileBytes = System.IO.File.ReadAllBytes(filepath);
+            }
+            else
+            {
+                return null;
+            }
+
+            return File(fileBytes, "application/octet-stream", filename);
         }
 
         //[HttpGet("GetExchangeRate")]

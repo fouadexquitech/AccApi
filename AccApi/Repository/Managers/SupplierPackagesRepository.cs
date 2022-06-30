@@ -407,9 +407,12 @@ namespace AccApi.Repository.Managers
                 AttachmentList.Clear();
                 AttachmentList.Add(item.FilePath);
 
-                foreach (var attach in item.mailAttachments)
+                if (item.mailAttachments != null)
                 {
-                    AttachmentList.Add(attach);
+                    foreach (var attach in item.mailAttachments)
+                    {
+                        AttachmentList.Add(attach);
+                    }
                 }
 
                 if (item.comercialCondList.Count > 0)
@@ -439,9 +442,12 @@ namespace AccApi.Repository.Managers
                         mylistTo.Add(SupEmail);
 
                         List<string> mylistCC = new List<string>();
-                        foreach (var ccMail in item.mailCC)
+                        if (item.mailCC != null)
                         {
-                            mylistCC.Add(ccMail);
+                            foreach (var ccMail in item.mailCC)
+                            {
+                                mylistCC.Add(ccMail);
+                            }
                         }
 
                         List<string> mylistBCC = new List<string>();
