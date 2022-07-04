@@ -345,14 +345,14 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GenerateSuppliersContracts_Excel")]
-        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input,int supId)
+        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input)
         {
             try
             {              
                 List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
                 List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
 
-                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,supId,input,comcondRepLst,techcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst));
                 
             }
             catch (Exception ex)

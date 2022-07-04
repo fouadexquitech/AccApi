@@ -34,6 +34,6 @@ namespace AccApi.Repository.Interfaces
         string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
         string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
         string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
-        string GenerateSuppliersContracts_Excel(int packageId,int supId,SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
+        List<string> GenerateSuppliersContracts_Excel(int packageId,SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst);
     }
 }

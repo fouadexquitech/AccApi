@@ -1206,7 +1206,6 @@ namespace AccApi.Repository.Managers
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
                                                         join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-
                                                         where o.Scope == packageId
                                                         select new BoqRessourcesList
                                                         {
@@ -2509,16 +2508,38 @@ namespace AccApi.Repository.Managers
         }
 
 
-        public string GenerateSuppliersContracts_Excel(int packageId,int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items;
+            List<string> excelList = new List<string>();
 
             byte byBoq = checkByBoq(packageId);
-            if (byBoq==1)
-              items = GetComparisonSheetByBoq(packageId, input,supId);
-            else
-              items = GetComparisonSheet(packageId, input, supId);
 
+            var querySupp = (from b in _dbContext.TblSupplierPackageRevisions
+                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join sup in _dbContext.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.RdPriceOrigCurrency > 0)
+                             group sup by sup.SupCode into s
+                             select new GroupingPackageSupplierPriceModel
+                             {
+                                 SupplierId = s.Key
+                             }).ToList();
+
+            foreach (var sup in querySupp)
+            {
+                if (byBoq == 1)
+                    excelList.Add(GenerateSupplierContract_BOQ_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst));
+                else
+                    excelList.Add(GenerateSupplierContract_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst));
+            }
+
+            return excelList;
+        }
+
+        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        {
+            List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input, supId);
 
             var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -2736,14 +2757,6 @@ namespace AccApi.Repository.Managers
                 string suplierName = suppliers.FirstOrDefault();
                 string excelName = $"{suplierName}-{PackageName}.xlsx";
 
-                //string path = @"C:\App\";
-
-                //if (!Directory.Exists(path))
-                //{
-                //    Directory.CreateDirectory(path);
-                //}
-                //string FullPath = path + excelName;
-
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
@@ -2753,6 +2766,234 @@ namespace AccApi.Repository.Managers
             }
         }
 
+        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        {
+            List<GroupingBoqModel> items = GetComparisonSheet(packageId, input, supId);
+
+            var package = _dbContext.PackagesNetworks.Where(x => x.IdPkge == packageId).FirstOrDefault();
+            string PackageName = package.PkgeName;
+
+            var p = _dbContext.TblParameters.FirstOrDefault();
+            var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            string ProjectName = proj.PrjName;
+
+            List<string> suppliers = new List<string>();
+
+            var stream = new MemoryStream();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using (var xlPackage = new ExcelPackage(stream))
+            {
+                var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
+                worksheet.Columns.AutoFit();
+                worksheet.Protection.IsProtected = false;
+
+                int row, j, c;
+
+                worksheet.Cells["A1:C1"].Merge = true;
+                worksheet.Cells["A2:C2"].Merge = true;
+                worksheet.Cells["A3:C3"].Merge = true;
+                worksheet.Cells["A4:C4"].Merge = true;
+                worksheet.Cells["A5:C5"].Merge = true;
+
+                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Style.Font.Bold = true;
+                worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
+                worksheet.Cells[3, 1].Style.Font.Bold = true;
+                worksheet.Cells[3, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[4, 1].Value = "Department :";
+                worksheet.Cells[4, 1].Style.Font.Bold = true;
+                worksheet.Cells[4, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[5, 1].Value = PackageName;
+                worksheet.Cells[5, 1].Style.Font.Bold = true;
+                worksheet.Cells[5, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.SelectedRange[5, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[5, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.SelectedRange[7, 50].Style.Font.Bold = true;
+                worksheet.SelectedRange[7, 50].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.Cells["E6:F6"].Merge = true;
+                worksheet.Cells[6, 5].Value = "ACC budget";
+                worksheet.Cells[6, 5].Style.Font.Bold = true;
+                worksheet.Cells[6, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Column(5).Width = 20;
+
+                if (items.Count > 0)
+                {
+                    GroupingBoqModel item1 = items.First();
+                    GroupingResourceModel sup = item1.GroupingResources.First();
+                    string boq = item1.ItemO;
+
+                    var SupList = sup.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+
+                    int col = 7;
+                    int m = 7;
+                    foreach (var l in SupList)
+                    {
+                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Style.Font.Bold = true;
+                        worksheet.Columns[m].Style.WrapText = true;
+                        worksheet.Column(m).AutoFit();
+                        worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[6, m, 6, m + 1].Merge = true;
+                        m = m + 2;
+                        if (!suppliers.Contains(l.SupplierName))
+                            suppliers.Add(l.SupplierName.ToString());
+
+                        col++;
+                    }
+                }
+
+                row = 7;
+                worksheet.Cells[row, 1].Value = "No";
+                worksheet.Cells[row, 2].Value = "Description";
+                worksheet.Column(2).Width = 70;
+                worksheet.Columns[2].Style.WrapText = true;
+                worksheet.Column(2).AutoFit();
+                worksheet.Cells[row, 3].Value = "U.";
+                worksheet.Cells[row, 4].Value = "Qty Total";
+                worksheet.Cells[row, 5].Value = "P.U.";
+                worksheet.Cells[row, 6].Value = "P.T.";
+
+                worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                row = 9;
+                j = 0;
+                foreach (var item in items)
+                {
+                    worksheet.Cells[row, 1].Value = j++;
+                    worksheet.Column(2).Width = 70;
+                    worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
+                    worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
+                    worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Columns[2].Style.WrapText = true;
+
+                    row++;
+
+                    foreach (var res in item.GroupingResources)
+                    {
+                        worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
+                        worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
+                        worksheet.Cells[row, 4].Value = (res.Qty) == null ? "" : res.Qty;
+                        worksheet.Cells[row, 5].Value = (res.UnitPrice) == null ? "" : res.UnitPrice;
+                        worksheet.Cells[row, 6].Value = (res.TotalPrice) == null ? "" : res.TotalPrice;
+
+                        int col = 0;
+                        foreach (var suplier in suppliers)
+                        {
+                            var v = worksheet.Cells[7, 7 + col].Value;
+                            if (v == null)
+                            {
+                                worksheet.Cells[7, 7 + col].Value = "P.U.";
+                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                            }
+
+                            var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
+                            if (supReply != null)
+                            {
+                                worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
+                                worksheet.Cells[row, 8 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                            }
+                            col = col + 2;
+                        }
+                        row++;
+                    }
+                    row++;
+                }
+
+                row++;
+
+                //Commercial Conditions
+                var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var replies = comcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (replies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Commercial Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in replies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = comcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+                row++;
+
+                //Technical Conditions
+                var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
+
+                var treplies = techcondRep.GroupBy(x => new { x.CondDesc })
+                .Select(p => p.FirstOrDefault())
+                .Select(p => new TmpConditionsReply
+                {
+                    CondId = p.CondId,
+                    CondDesc = p.CondDesc
+                })
+                .ToList();
+
+                if (treplies.Count > 0)
+                {
+                    worksheet.SelectedRange[row, 3].Merge = true;
+                    worksheet.Cells[row, 1].Value = "Technical Conditions";
+                    worksheet.Cells[row, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    worksheet.Cells[row, 1].Style.Font.Bold = true;
+
+                    row++;
+                    foreach (var reply in treplies)
+                    {
+                        worksheet.Cells[row, 2].Value = reply.CondDesc;
+                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                        int colsup = 7;
+                        foreach (var sup in suppliers)
+                        {
+                            var supReply = techcondRepLst.Where(x => x.SupName == sup.ToString() && x.CondId == reply.CondId).FirstOrDefault();
+                            if (supReply != null)
+                                worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
+
+                            colsup = colsup + 2;
+                        }
+                        row++;
+                    }
+                }
+
+                xlPackage.Save();
+                stream.Position = 0;
+                string excelName = $"{PackageName}-Comparison.xlsx";
+
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
+
+                xlPackage.SaveAs(excelName);
+
+                return excelName;
+            }
+        }
 
         private double GetExchange(string foreignCurrency)
         {
