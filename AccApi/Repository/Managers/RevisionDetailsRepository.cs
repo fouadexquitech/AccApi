@@ -2567,8 +2567,8 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                //worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
-                //worksheet.Cells[2, 1].Style.Font.Bold = true;
+                worksheet.Cells[2, 1].Value = "Résumé de Offre";
+                worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
                 worksheet.Cells[3, 1].Style.Font.Bold = true;
@@ -2796,7 +2796,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Value = "Résumé de Offre";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -2984,7 +2984,9 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
+
+                string suplierName = suppliers.FirstOrDefault();
+                string excelName = $"{suplierName}-{PackageName}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
