@@ -921,13 +921,26 @@ namespace AccApi.Repository.Managers
 
         public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
         {
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
+            var usedCur = from cur in curList
+                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency   
+                          join c in revisionDetailsList on b.PrRevId equals c.RdRevisionId                        
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
             foreach (var item in revisionDetailsList)
             {
                 var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdBoqItem == item.RdBoqItem);
                 if (result != null)
                 {
-                    result.RdPrice = item.RdPrice;
+                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
                     result.RdPriceOrigCurrency = item.RdPrice;
+                    result.RdMissedPriceReason = item.RdMissedPriceReason;
                 }
             }
             _dbContext.SaveChanges();
@@ -936,13 +949,26 @@ namespace AccApi.Repository.Managers
 
         public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
         {
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
+            var usedCur = from cur in curList
+                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join c in revisionDetailsList on b.PrRevId equals c.RdRevisionId
+                          group cur by cur.CurCode into g
+                          select new LiveExchange
+                          {
+                              fromCurrency = g.Key
+                          };
+
             foreach (var item in revisionDetailsList)
             {
                 var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdResourceSeq == item.RdResourceSeq);
                 if (result != null)
                 {
-                    result.RdPrice = item.RdPrice;
+                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
                     result.RdPriceOrigCurrency = item.RdPrice;
+                    result.RdMissedPriceReason=item.RdMissedPriceReason;
                 }
             }
             _dbContext.SaveChanges();
@@ -2499,15 +2525,11 @@ namespace AccApi.Repository.Managers
                 return excelName;
             }
         }
-
-
         public byte checkByBoq(int packageId)
         {
             var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
             return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
         }
-
-
         public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items;

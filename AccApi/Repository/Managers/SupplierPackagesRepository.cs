@@ -192,10 +192,11 @@ namespace AccApi.Repository.Managers
                 if (byBoq == 1)
                 {
                     worksheet.Cells[i, 6].Value = "Unit Price";
-                    worksheet.Cells[i, 7].Value = "Comments";
-                    worksheet.Column(7).Width = 50;
-                    worksheet.Columns[7].Style.WrapText = true;
-                    worksheet.Column(7).AutoFit();
+                    worksheet.Cells[i, 7].Value = "Total Price";
+                    worksheet.Cells[i, 8].Value = "Comments";
+                    worksheet.Column(8).Width = 50;
+                    worksheet.Columns[8].Style.WrapText = true;
+                    //worksheet.Column(7).AutoFit();
                 }
                 else
                 {
@@ -208,10 +209,11 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 9].Value = "Ressouce Unit";
                     worksheet.Cells[i, 10].Value = "Ressouce Qty";
                     worksheet.Cells[i, 11].Value = "Unit Price";
-                    worksheet.Column(12).Width = 50;
-                    worksheet.Columns[12].Style.WrapText = true;
-                    worksheet.Column(12).AutoFit();
-                    worksheet.Cells[i, 12].Value = "Comments";
+                    worksheet.Cells[i, 12].Value = "Total Price";
+                    worksheet.Cells[i, 13].Value = "Comments";
+                    worksheet.Column(13).Width = 50;
+                    worksheet.Columns[13].Style.WrapText = true;
+                    //worksheet.Column(12).AutoFit();                   
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
 
@@ -343,8 +345,9 @@ namespace AccApi.Repository.Managers
 
                         if (byBoq == 1)
                         {
+                            worksheet.Cells[i, 7].Formula = "=E" + i + "*" + "F" + i;
                             worksheet.Cells[i, 6].Style.Locked = false;
-                            worksheet.Cells[i, 7].Style.Locked = false;
+                            worksheet.Cells[i, 8].Style.Locked = false;
                         }
                         i = i + 1;
                         OldBoq = Boq;
@@ -357,8 +360,9 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                         worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
+                        worksheet.Cells[i, 12].Formula = "=J" + i + "*" + "K" + i;
                         worksheet.Cells[i, 11].Style.Locked = false;
-                        worksheet.Cells[i, 12].Style.Locked = false;
+                        worksheet.Cells[i, 13].Style.Locked = false;
                     }
 
                     i++;

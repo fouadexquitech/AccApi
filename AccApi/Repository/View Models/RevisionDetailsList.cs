@@ -33,5 +33,7 @@ namespace AccApi.Repository.View_Models
         //currency of supplier
         public string currency { get; set; }
 
+        public string RdMissedPriceReason { get; set; }
+
     }
 }

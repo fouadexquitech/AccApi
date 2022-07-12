@@ -13,7 +13,7 @@ namespace AccApi.Repository.Interfaces
     {
         List<ComConditions> GetComConditions();
         List<TechConditions> GetTechConditions(int packId, string? filter);
-        bool SendTechnicalConditions(int packId, List<String> cc, string UserName);
+        bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName);
         bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile);
         bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile);
         List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID);

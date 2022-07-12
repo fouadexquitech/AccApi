@@ -145,6 +145,15 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=ABEDHIJAZI;Initial Catalog=CiteMinistrielle_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+            }
+        }
+
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -152,7 +161,6 @@ namespace AccApi.Repository
             var context = new AccDbContext(optionsBuilder.Options);
             return context;
         }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -1601,6 +1609,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdMissedPrice).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdMissedPriceReason).IsUnicode(false);
 
                 entity.Property(e => e.RdPrice).HasDefaultValueSql("((0))");
 

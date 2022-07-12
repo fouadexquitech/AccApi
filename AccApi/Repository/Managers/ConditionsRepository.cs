@@ -29,7 +29,6 @@ namespace AccApi.Repository.Managers
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
         }
-
         public List<ComConditions> GetComConditions()
         {
             var result = from b in _mdbcontext.TblComConds
@@ -41,7 +40,6 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
-
         public List<TechConditions> GetTechConditions(int packId, string? filter)
         {
             var techCond = (from b in _mdbcontext.TblTechConds
@@ -125,7 +123,6 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
-
         public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
@@ -170,8 +167,9 @@ namespace AccApi.Repository.Managers
             return list;
         }
 
-        public bool SendTechnicalConditions(int packId, List<String> cc, string UserName)
+        public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName)
         {
+ 
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
@@ -191,7 +189,7 @@ namespace AccApi.Repository.Managers
                 var sent = false;
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
-                //worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int i, j;
 
@@ -201,18 +199,23 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[2, 1].Value = "";
                 worksheet.Cells["A2:C2"].Merge = true;
 
-                worksheet.Cells[3, 1].Value = "ACC conditions";
+                worksheet.Cells[3, 1].Value = "ACC Conditions";
                 worksheet.Cells["A3:B3"].Merge = true;
-
-                worksheet.Cells[3, 3].Value = "Supplier/subcontractor reply";
-                worksheet.Column(3).Width = 40;
-                worksheet.Columns[3].Style.WrapText = true;
-                worksheet.Column(3).AutoFit();
 
                 worksheet.Cells[4, 1].Value = "Technical Conditions";
                 worksheet.Cells[4, 1].Style.Font.Bold = true;
                 worksheet.Cells[4, 1].Style.Font.UnderLine = true;
                 worksheet.Cells["A4:B4"].Merge = true;
+
+                worksheet.Cells[4, 3].Value = "ACC Conditions";
+                worksheet.Cells[4, 3].Style.Font.Bold = true;
+                worksheet.Cells[4, 3].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+
+                worksheet.Cells[4, 4].Value = "Supplier/subcontractor reply";
+                worksheet.Column(4).Width = 50;
+                worksheet.Columns[4].Style.WrapText = true;
+                worksheet.Cells[4, 4].Style.Font.Bold = true;
+                worksheet.Cells[4, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
                 i = 5;
                 foreach (var x in result)
@@ -220,6 +223,15 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 2].Value = (x.TcDescription == null) ? "" : x.TcDescription;
                     worksheet.Column(2).Width = 50;
 
+                    var accCond = techCondModel.AccCondList.FirstOrDefault(z => z.condId == x.TcSeq);
+                    if (accCond != null)
+                    {
+                        worksheet.Cells[i, 3].Value = accCond.AccCondition;
+                        worksheet.Column(3).AutoFit();
+                    }
+
+                    worksheet.Cells[i, 4].Style.Locked = false;
+                    worksheet.Cells[i, 4].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
                     i++;
                 }
 
@@ -227,18 +239,10 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
                 string excelName = $"Technical Conditions-{PackageName}-{ProjectName}.xlsx";
 
-                string path = @"C:\App\";
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
 
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                string FullPath = path + excelName;
-
-                if (File.Exists(FullPath))
-                    File.Delete(FullPath);
-
-                xlPackage.SaveAs(FullPath);
+                xlPackage.SaveAs(excelName);
 
 
                 //send email
@@ -257,7 +261,7 @@ namespace AccApi.Repository.Managers
 
                         List<string> mylistCC = new List<string>();
                         //mylistCC = null;
-                        foreach (var mail in cc)
+                        foreach (var mail in techCondModel.ListCC)
                         {
                             mylistCC.Add(mail);
                         }
@@ -276,15 +280,15 @@ namespace AccApi.Repository.Managers
                         MailBody = "Dear Sir,";
                         MailBody += Environment.NewLine;
                         MailBody += Environment.NewLine;
-                        MailBody += "Please find attached , and fill requirements";
+                        MailBody += "Please find attached , and fill requirements.";
                         MailBody += Environment.NewLine;
                         MailBody += Environment.NewLine;
                         MailBody += Environment.NewLine;
                         MailBody += Environment.NewLine;
-                        MailBody += "Best regards";
+                        //MailBody += "Best regards";
 
                         var AttachmentList = new List<string>();
-                        AttachmentList.Add(FullPath);
+                        AttachmentList.Add(excelName);
 
                         string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;                       
                         if (userSignature != "")
@@ -305,7 +309,6 @@ namespace AccApi.Repository.Managers
                 return sent;
             }
         }
-
         public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
@@ -400,7 +403,8 @@ namespace AccApi.Repository.Managers
                             try
                             {
                                 string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
-                                string reply = worksheet.Cells[row, 3].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();                     
+                                string AccCond = worksheet.Cells[row, 3].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();
+                                string reply = worksheet.Cells[row, 4].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();
 
                                 if ((desc != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
                                 {
@@ -420,13 +424,15 @@ namespace AccApi.Repository.Managers
                                                 {
                                                     TcComConId = condId,
                                                     TcPackageSupliersId = PackageSupliersID,
-                                                    TcSuppReply = reply
+                                                    TcSuppReply = reply,
+                                                    TcAccCond = AccCond
                                                 };
                                                 LstSuppComCondReply.Add(SuppCom);
                                             }
                                             else
                                             {
                                                 comCondExist.TcSuppReply = reply;
+                                                comCondExist.TcAccCond = AccCond;
                                                 _dbcontext.TblSuppTechCondReplies.Update(comCondExist);
                                                 _dbcontext.SaveChanges();
                                             }
@@ -452,7 +458,6 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
-
         public bool AddComConditions(List<ComConditions> cond)
         {
             foreach (var item in cond)
@@ -492,7 +497,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool AddTechConditions(TechConditions item)
         {
                 int condSeq;
