@@ -64,14 +64,14 @@ namespace AccApi.Repository
         public virtual DbSet<TmpStaffCost> TmpStaffCosts { get; set; }
         public virtual DbSet<TmpUnitCost> TmpUnitCosts { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=ABDHIJAZI\\SQLEXPRESS;Initial Catalog=MasterProjects;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-            }
-        }
+//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//        {
+//            if (!optionsBuilder.IsConfigured)
+//            {
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=MasterProjects;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+//            }
+//        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -94,6 +94,8 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblComCond>(entity =>
             {
                 entity.Property(e => e.CmSelected).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.CmSort).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblCompany>(entity =>
@@ -138,7 +140,7 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblDatabase>(entity =>
             {
-                entity.HasKey(e => new { e.DbSeq, e.DbName, e.DbDescription });
+                entity.HasKey(e => new { e.DbName, e.DbDescription });
 
                 entity.Property(e => e.DbName).IsUnicode(false);
 
@@ -149,6 +151,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.DbConnection).IsUnicode(false);
 
                 entity.Property(e => e.DbLocation).IsUnicode(false);
+
+                entity.Property(e => e.DbSeq).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.DbServer).IsUnicode(false);
 
@@ -694,6 +698,10 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblUsersProject>(entity =>
             {
                 entity.HasKey(e => new { e.UsrProjId, e.UsrId });
+
+                entity.Property(e => e.UsrProjectDataBase).IsUnicode(false);
+
+                entity.Property(e => e.UsrProjectServer).IsUnicode(false);
             });
 
             modelBuilder.Entity<TempLabor>(entity =>

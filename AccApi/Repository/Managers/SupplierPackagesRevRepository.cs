@@ -18,7 +18,6 @@ namespace AccApi.Repository.Managers
             _context = context;
             _masterDbContext = masterDbContext;
         }
-
         public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
         {
 
@@ -59,7 +58,6 @@ namespace AccApi.Repository.Managers
             }
             return results;
         }
-
         public SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId)
         {
             var res = (from b in _context.TblSupplierPackageRevisions
@@ -89,9 +87,6 @@ namespace AccApi.Repository.Managers
 
             return res;
         }
-
-
-
         public decimal? AddField(int revId, string lbl, double val, int type)
         {
             var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val , Type=type };
@@ -119,7 +114,6 @@ namespace AccApi.Repository.Managers
             }
             return SupplierPackageRev.PrTotPrice;
         }
-
         public bool DeleteField(int fieldId)
         {
             var field = _context.TblRevisionFields.Where(x => x.Id == fieldId).FirstOrDefault();
@@ -132,7 +126,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public List<CurrencyList> GetCurrencies()
         {
             var result = from b in _masterDbContext.TblCurrencies
@@ -143,7 +136,6 @@ namespace AccApi.Repository.Managers
                          };
             return result.ToList();
         }
-
         public List<RevisionFieldsList> GetFields(int revisionid)
         {
             var result = (from b in _context.TblRevisionFields

@@ -94,6 +94,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("ExportBoqExcel")]
+        public JsonResult ExportBoqExcel(AssignPackages input)
+        {
+            try
+            {
+                return new JsonResult(this._packageRepository.ExportBoqExcel(input));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetPackageSuppliersPrice")]
         public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
         {

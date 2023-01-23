@@ -11,7 +11,6 @@ namespace AccApi.Repository.Models.MasterModels
     [Table("tblDataBases")]
     public partial class TblDatabase
     {
-        [Key]
         [Column("dbSeq")]
         public int DbSeq { get; set; }
         [Key]

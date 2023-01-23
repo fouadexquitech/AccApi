@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,8 +35,15 @@ namespace AccApi.Repository.View_Models
         public double? TotalSupplierPrice { get; set; }
         //currency of supplier
         public string currency { get; set; }
-
         public string RdMissedPriceReason { get; set; }
+
+        public double? RdDiscount { get; set; }
+        public double? RdPriceAfterDiscount { get; set; }
+        public double? RdTotalPrice { get; set; }
+        public byte? RdAddedItem { get; set; }
+        public string InsertedBy { get; set; }
+        public DateTime? InsertedDate { get; set; }
+        public DateTime? RdAddedItemOn { get; set; }
 
     }
 }

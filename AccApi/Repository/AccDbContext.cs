@@ -145,15 +145,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Data Source=ABEDHIJAZI;Initial Catalog=CiteMinistrielle_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-            }
-        }
-
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
@@ -505,6 +496,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqUnitMesure).IsUnicode(false);
 
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
+
+                entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
 
@@ -1004,6 +997,16 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.C10ref).IsUnicode(false);
 
+                entity.Property(e => e.C11).IsUnicode(false);
+
+                entity.Property(e => e.C12).IsUnicode(false);
+
+                entity.Property(e => e.C13).IsUnicode(false);
+
+                entity.Property(e => e.C14).IsUnicode(false);
+
+                entity.Property(e => e.C15).IsUnicode(false);
+
                 entity.Property(e => e.C1ref).IsUnicode(false);
 
                 entity.Property(e => e.C2).IsUnicode(false);
@@ -1041,6 +1044,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.CandyTemplate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DescriptionO).IsUnicode(false);
+
+                entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.L1).IsUnicode(false);
 
@@ -1602,11 +1607,19 @@ namespace AccApi.Repository
                     .IsUnicode(false)
                     .HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.RdAddedItem).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.RdAssignedPerc).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdDiscount).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdMissedPrice).HasDefaultValueSql("((0))");
 

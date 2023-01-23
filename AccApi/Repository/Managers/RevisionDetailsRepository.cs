@@ -68,7 +68,13 @@ namespace AccApi.Repository.Managers
                                  ExchangeRate=bb.PrExchRate,
                                  RdOriginalPrice=b.RdPriceOrigCurrency,
                                  TotalSupplierPrice=b.RdAssignedPrice,
-                                 currency=cur.CurCode
+                                 currency=cur.CurCode,
+                                 RdMissedPriceReason=b.RdMissedPriceReason,
+                                 RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                 RdPriceAfterDiscount = b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100),
+                                 RdTotalPrice = (b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty,
+                                 RdAddedItem = b.RdAddedItem,
+                                 RdAddedItemOn=b.RdAddedItemOn
                              }).ToList();
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
@@ -98,7 +104,13 @@ namespace AccApi.Repository.Managers
                                  ExchangeRate = bb.PrExchRate,
                                  RdOriginalPrice = b.RdPriceOrigCurrency,
                                  TotalSupplierPrice = b.RdAssignedPrice,
-                                 currency = cur.CurCode
+                                 currency = cur.CurCode,
+                                 RdMissedPriceReason = b.RdMissedPriceReason,
+                                 RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                 RdPriceAfterDiscount = b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100),
+                                 RdTotalPrice = (b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty,
+                                 RdAddedItem = b.RdAddedItem,
+                                 RdAddedItemOn = b.RdAddedItemOn
                              }).ToList();
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdBoqItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
@@ -107,38 +119,41 @@ namespace AccApi.Repository.Managers
             return revDtlQry.ToList();
         }
 
-        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate)
+        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate,double discount,byte addedItem)
         {
-            int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
-
-            if (LastRevNo != -1)
+            if (addedItem != 1)  //add Items to Last Revision
             {
-                int i = LastRevNo;
-                do
+                int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+
+                if (LastRevNo != -1)
                 {
-                    var res = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
-                    if (res != null)
+                    int i = LastRevNo;
+                    do
                     {
-                        res.PrRevNo = i + 1;
-                        _dbContext.SaveChanges();
+                        var res = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
+                        if (res != null)
+                        {
+                            res.PrRevNo = i + 1;
+                            _dbContext.SaveChanges();
+                        }
+                        i--;
                     }
-                    i--;
+                    while (i >= 0);
                 }
-                while (i >= 0);
+
+                var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = PackSuppDate, PrCurrency = curId, PrExchRate = ExchRate };
+                _dbContext.Add<TblSupplierPackageRevision>(result);
+                _dbContext.SaveChanges();
             }
 
-            var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = PackSuppDate, PrCurrency = curId, PrExchRate = ExchRate };
-            _dbContext.Add<TblSupplierPackageRevision>(result);
-            _dbContext.SaveChanges();
-
             //Get inserted Revison ID
-            result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
-            int revId = result.PrRevId;
+            var Rev0 = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
+            int revId = Rev0.PrRevId;
 
             var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
             byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate))
+            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate, discount, addedItem))
                 return false;
             else
             {
@@ -147,21 +162,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public void UpdateTotalPrice(int revId)
-        {
-            var result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
-            if (result != null)
-            {
-                var TotalPrice = (from b in _dbContext.TblRevisionDetails
-                                  where b.RdRevisionId == revId
-                                  select b).Sum(e => (e.RdPrice * e.RdQty));
-
-                result.PrTotPrice = (decimal)TotalPrice;
-                _dbContext.SaveChanges();
-            }
-        }
-
-        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate)
+        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem)
         {
             Boolean ret = true;
 
@@ -184,7 +185,10 @@ namespace AccApi.Repository.Managers
                         //_dbContext.TblMissingPrices.RemoveRange(_dbContext.TblMissingPrices.Where(c => c.RevisionId == revId));
                         //_dbContext.SaveChanges();
                         string resComment, resCode = "", oldBoqRef = "";
-                        double resQty, resPrice;
+                        double resQty, Price,discount=0;
+
+                        if (disc > 0)
+                            discount = disc;
 
                         for (var row = 2; row <= rowCount; row++)
                         {
@@ -198,28 +202,32 @@ namespace AccApi.Repository.Managers
                                 {
                                     if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)))
                                     {
-                                        resPrice = (worksheet.Cells[row, 6].Value == null) ? 0 : (double)worksheet.Cells[row, 6].Value;
-                                        resComment = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
+                                        Price = (worksheet.Cells[row, 6].Value == null) ? 0 : (double)worksheet.Cells[row, 6].Value;
+                                        if (discount==0)
+                                        discount = (worksheet.Cells[row, 7].Value == null) ? 0 : (double)worksheet.Cells[row, 7].Value;
+                                        resComment = worksheet.Cells[row, 10].Value == null ? "" : worksheet.Cells[row, 10].Value.ToString();
                                         resQty = boqQty;
 
                                         byte missPrice = 0;
-                                        if (resPrice <= 0 && boqRef != "")
+                                        if (Price <= 0 && boqRef != "")
                                         {
                                             missPrice = 1;
                                         }
 
-                                        if ((boqRef != "") && (resQty > 0) && (resPrice >= 0))
+                                        if ((boqRef != "") && (resQty > 0) && (Price >= 0))
                                         {
                                             var revdtl = new TblRevisionDetail()
                                             {
                                                 RdRevisionId = revId,
                                                 RdResourceSeq = 0,
                                                 RdBoqItem = boqRef,
-                                                RdPrice = resPrice * (ExchRate > 0 ? ExchRate : 1),
+                                                RdPrice = Price * (ExchRate > 0 ? ExchRate : 1),
+                                                RdPriceOrigCurrency = Price,
                                                 RdQty = resQty,
-                                                RdComment = resComment,
-                                                RdPriceOrigCurrency = resPrice,
-                                                RdMissedPrice = missPrice
+                                                RdComment = resComment,                                                
+                                                RdMissedPrice = missPrice,
+                                                RdDiscount = discount,
+                                                RdAddedItem= (byte?)(addedItem == null ? 0 : addedItem)
                                             };
                                             LstRevDetails.Add(revdtl);
                                         }
@@ -232,7 +240,7 @@ namespace AccApi.Repository.Managers
                                     if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)) || ((oldBoqRef != "") && ((worksheet.Cells[row, 6].Value == null ? "" : worksheet.Cells[row, 6].Value.ToString()) != "")))
                                     {
                                         resQty = worksheet.Cells[row, 10].Value == null ? 0 : (double)worksheet.Cells[row, 10].Value;
-                                        resPrice = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
+                                        Price = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
                                         resComment = worksheet.Cells[row, 12].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
 
                                         int resSeq = 0;
@@ -246,7 +254,7 @@ namespace AccApi.Repository.Managers
 
                                         byte missPrice = 0;
                                         //Insert missing prices
-                                        if (resPrice <= 0 && resSeq != 0)
+                                        if (Price <= 0 && resSeq != 0)
                                         {
                                             //var missPrice = new TblMissingPrice()
                                             //{
@@ -257,23 +265,24 @@ namespace AccApi.Repository.Managers
                                             missPrice = 1;
                                         }
 
-                                        if ((resCode != "") && (resQty > 0) && (resPrice >= 0))
+                                        if ((resCode != "") && (resQty > 0) && (Price >= 0))
                                         {
                                             var revdtl = new TblRevisionDetail()
                                             {
                                                 RdRevisionId = revId,
                                                 RdResourceSeq = resSeq,
-                                                RdPrice = resPrice * (ExchRate > 0 ? ExchRate : 1),
+                                                RdPrice = Price * (ExchRate > 0 ? ExchRate : 1),
                                                 RdQty = resQty,
                                                 RdComment = resComment,
-                                                RdPriceOrigCurrency = resPrice,
-                                                RdMissedPrice = missPrice
+                                                RdPriceOrigCurrency = Price,
+                                                RdMissedPrice = missPrice,
+                                                RdDiscount=discount,
+                                                RdAddedItem = (byte?)(addedItem == null ? 0 : addedItem)
                                             };
                                             LstRevDetails.Add(revdtl);
                                         }
                                         oldBoqRef = boqRef != "" ? boqRef : oldBoqRef;
                                     }
-
                                 }
                             }
                             catch (Exception ex)
@@ -305,6 +314,21 @@ namespace AccApi.Repository.Managers
 
             return ret;
         }
+
+        public void UpdateTotalPrice(int revId)
+        {
+            var result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
+            if (result != null)
+            {
+                var TotalPrice = (from b in _dbContext.TblRevisionDetails
+                                  where b.RdRevisionId == revId
+                                  select b).Sum(e => (e.RdPrice * e.RdQty));
+
+                result.PrTotPrice = (decimal)TotalPrice;
+                _dbContext.SaveChanges();
+            }
+        }
+
 
         public int GetMaxRevisionNumber(int PackageSupplierId)
         {
@@ -940,6 +964,7 @@ namespace AccApi.Repository.Managers
                 {
                     result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
                     result.RdPriceOrigCurrency = item.RdPrice;
+                    result.RdDiscount = item.RdDiscount;
                     result.RdMissedPriceReason = item.RdMissedPriceReason;
                 }
             }
@@ -968,6 +993,7 @@ namespace AccApi.Repository.Managers
                 {
                     result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
                     result.RdPriceOrigCurrency = item.RdPrice;
+                    result.RdDiscount = item.RdDiscount;
                     result.RdMissedPriceReason=item.RdMissedPriceReason;
                 }
             }
@@ -1175,7 +1201,7 @@ namespace AccApi.Repository.Managers
                                  OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                  Qty = c.RdQty,
                                  UnitPrice = c.RdPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 TotalPrice = (c.RdAssignedQty * c.RdPrice),
                                  BoqResourceId = c.RdResourceSeq,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
@@ -1199,7 +1225,7 @@ namespace AccApi.Repository.Managers
                                      OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                      Qty = c.RdQty,
                                      UnitPrice = c.RdPrice,
-                                     TotalPrice = (c.RdQty * c.RdPrice),
+                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
                                      BoqResourceId = c.RdResourceSeq,
                                      OriginalCurrency = cur.CurCode,
                                      ExchRate = b.PrExchRate,
@@ -1223,6 +1249,30 @@ namespace AccApi.Repository.Managers
                     GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqResourceId == y.BoqSeq).OrderBy(x=>x.SupplierName).ToList()
 
                 }).ToList();
+
+                if (supId == 0)
+                {
+                    var minPrice = querySupp.Where(p => p.BoqItemO == item.ItemO).Min(p => p.OriginalCurrencyPrice);
+                    var IdealItem = querySupp.Where(p => p.BoqItemO == item.ItemO && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
+
+                    item.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                    {
+                        SupplierId = 0,
+                        SupplierName = "Ideal",
+                        LastRevisionDate = null,
+                        AssignedPercentage = IdealItem.AssignedPercentage,
+                        AssignedQty = IdealItem.Qty,
+                        MissedPrice = IdealItem.MissedPrice,
+                        OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
+                        Qty = IdealItem.Qty,
+                        UnitPrice = IdealItem.UnitPrice,
+                        TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
+                        BoqItemO = IdealItem.BoqItemO,
+                        OriginalCurrency = IdealItem.OriginalCurrency,
+                        ExchRate = IdealItem.ExchRate,
+                        ExchRateNow = IdealItem.ExchRateNow
+                    });
+                }
             }
             return items;
         }
@@ -1302,7 +1352,7 @@ namespace AccApi.Repository.Managers
                                  ExchRateNow = GetExchange(cur.fromCurrency)
                              }).ToList();
 
-            IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
+            List<GroupingPackageSupplierPriceModel> querySupp;
 
             if (supId == 0)
                 querySupp = (from cur in curList
@@ -1313,6 +1363,7 @@ namespace AccApi.Repository.Managers
                              where (a.SpPackageId == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
+                                 RevisionId=c.RdRevisionId,
                                  SupplierId = sup.SupCode,
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
@@ -1321,13 +1372,16 @@ namespace AccApi.Repository.Managers
                                  MissedPrice = c.RdMissedPrice,
                                  OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                  Qty = c.RdQty,
-                                 UnitPrice = c.RdPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 UnitPrice = Math.Round((double)c.RdPrice, 2),
+                                 TotalPrice = Math.Round((double)(c.RdQty * c.RdPrice) ,2),
                                  BoqItemO = c.RdBoqItem,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
+                                 Discount = c.RdDiscount,
+                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
                              }).ToList();
+            //TotalPrice = (c.RdAssignedQty * c.RdPrice),
             else
                 querySupp = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
@@ -1337,6 +1391,7 @@ namespace AccApi.Repository.Managers
                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && a.SpSupplierId==supId)
                              select new GroupingPackageSupplierPriceModel
                              {
+                                 RevisionId = c.RdRevisionId,
                                  SupplierId = sup.SupCode,
                                  SupplierName = sup.SupName,
                                  LastRevisionDate = b.PrRevDate,
@@ -1345,17 +1400,50 @@ namespace AccApi.Repository.Managers
                                  MissedPrice = c.RdMissedPrice,
                                  OriginalCurrencyPrice = c.RdPriceOrigCurrency,
                                  Qty = c.RdQty,
-                                 UnitPrice = c.RdPrice,
-                                 TotalPrice = (c.RdQty * c.RdPrice),
+                                 UnitPrice = Math.Round((double)c.RdPrice,2),
+                                 TotalPrice = Math.Round((double)(c.RdQty * c.RdPrice),2),
                                  BoqItemO = c.RdBoqItem,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
-                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow
+                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
+                                 Discount=c.RdDiscount,
+                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                              }).ToList();
+            //TotalPrice = (c.RdAssignedQty * c.RdPrice),
+
 
             foreach (var item in items)
             {
                 item.GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqItemO == item.ItemO).OrderBy(x => x.SupplierName).ToList();
+
+                if (supId == 0)
+                {
+                    var minPrice = querySupp.Where(p => p.BoqItemO == item.ItemO).Min(p => p.UPriceAfterDiscount);
+                    var IdealItem = querySupp.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
+
+                    if (IdealItem != null)
+                    {
+                        item.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                        {
+                            SupplierId = 0,
+                            SupplierName = "Ideal",
+                            LastRevisionDate = null,
+                            AssignedPercentage = IdealItem.AssignedPercentage,
+                            AssignedQty = IdealItem.Qty,
+                            MissedPrice = IdealItem.MissedPrice,
+                            OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
+                            Qty = IdealItem.Qty,
+                            UnitPrice = IdealItem.UnitPrice,
+                            TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
+                            BoqItemO = IdealItem.BoqItemO,
+                            OriginalCurrency = IdealItem.OriginalCurrency,
+                            ExchRate = IdealItem.ExchRate,
+                            ExchRateNow = IdealItem.ExchRateNow,
+                            Discount = IdealItem.Discount,
+                            UPriceAfterDiscount = Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                        });
+                    }
+                }
             }
 
             return items;
@@ -1451,7 +1539,7 @@ namespace AccApi.Repository.Managers
                                  AssignedPercentage = c.RdAssignedPerc,
                                  AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
-                                 TotalPrice = (c.RdQty * c.RdPriceOrigCurrency),
+                                 TotalPrice = (c.RdAssignedQty * c.RdPriceOrigCurrency),
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
@@ -1572,7 +1660,7 @@ namespace AccApi.Repository.Managers
                                  AssignedPercentage = c.RdAssignedPerc,
                                  AssignedQty = c.RdAssignedQty,
                                  MissedPrice = c.RdMissedPrice,
-                                 TotalPrice = (c.RdQty * c.RdPriceOrigCurrency),
+                                 TotalPrice = (c.RdAssignedQty * c.RdPriceOrigCurrency),
                                  GroupId = g.Id,
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
@@ -1672,13 +1760,13 @@ namespace AccApi.Repository.Managers
                     int m = 7;
                     foreach (var l in SupList)
                     {
-                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Value = l.SupplierName == "Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, m].Style.Font.Bold = true;
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m, 6, m + 1].Merge = true;
-                        m = m + 2;
+                        worksheet.Cells[6,m,6,m+2].Merge = true;
+                        m = m + 3;
                         if (!suppliers.Contains(l.SupplierName))
                             suppliers.Add(l.SupplierName.ToString());
 
@@ -1730,17 +1818,19 @@ namespace AccApi.Repository.Managers
                                 var v = worksheet.Cells[7, 7 + col].Value;
                                 if (v == null)
                                 {
-                                    worksheet.Cells[7, 7 + col].Value = "P.U.";
-                                    worksheet.Cells[7, 8 + col].Value = "P.T.";
-                                }
+                                worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
+                                worksheet.Cells[7, 8 + col].Value = "P.U.";
+                                worksheet.Cells[7, 9 + col].Value = "P.T.";
+                            }
 
                                 var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
-                                    worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
-                                    worksheet.Cells[row, 8 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                                  worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
+                                  worksheet.Cells[row, 8 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow; 
+                                  worksheet.Cells[row, 9 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                                 }
-                                col = col + 2;
+                                col = col + 3;
                             }
                             row++;
                         }
@@ -1781,7 +1871,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -1820,7 +1910,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -1915,13 +2005,13 @@ namespace AccApi.Repository.Managers
                     int m = 7;
                     foreach (var l in SupList)
                     {
-                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Value = l.SupplierName=="Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, m].Style.Font.Bold = true;
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m,6,m+1].Merge = true;
-                        m = m + 2;
+                        worksheet.Cells[6, m,6,m+2].Merge = true;
+                        m = m + 3;
                         if (!suppliers.Contains(l.SupplierName))
                             suppliers.Add(l.SupplierName.ToString());
 
@@ -1967,17 +2057,19 @@ namespace AccApi.Repository.Managers
                             var v = worksheet.Cells[7, 7 + col].Value;
                             if (v == null)
                             {
-                                worksheet.Cells[7, 7 + col].Value = "P.U.";
-                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                                worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
+                                worksheet.Cells[7, 8 + col].Value = "P.U.";
+                                worksheet.Cells[7, 9 + col].Value = "P.T.";
                             }
 
                             var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName==suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();                                                                           
                             if (supReply != null)
                             {
-                                worksheet.Cells[row, 7+col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
-                                worksheet.Cells[row, 8+col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                                worksheet.Cells[row, 7+col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
+                                worksheet.Cells[row, 8+col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                worksheet.Cells[row, 9+col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                             }                               
-                            col=col+2;
+                            col=col+3;
                         }
                     }
                     row++;
@@ -2016,7 +2108,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup=colsup+2;
+                            colsup=colsup+3;
                         }
                         row++;
                     }
@@ -2055,7 +2147,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -2153,7 +2245,7 @@ namespace AccApi.Repository.Managers
                     int col = 7;
                     foreach (var l in lst1)
                     {
-                        worksheet.Cells[6, col].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, col].Value = l.SupplierName == "Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, col].Style.Font.Bold = true;
                         worksheet.Columns[col].Style.WrapText = true;
                         worksheet.Column(col).AutoFit();
@@ -2374,7 +2466,7 @@ namespace AccApi.Repository.Managers
                     int col = 7;
                     foreach (var l in Suplist)
                     {
-                        worksheet.Cells[6, col].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy") ; 
+                        worksheet.Cells[6, col].Value = l.SupplierName == "Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, col].Style.Font.Bold = true;
                         worksheet.Columns[col].Style.WrapText = true;
                         worksheet.Column(col).AutoFit();
@@ -2626,13 +2718,13 @@ namespace AccApi.Repository.Managers
                     int m = 7;
                     foreach (var supplier in SupList)
                     {
-                        worksheet.Cells[6, m].Value = supplier.SupplierName + " " + DateTime.Parse(supplier.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Value = supplier.SupplierName == "Ideal" ? supplier.SupplierName : supplier.SupplierName + " " + DateTime.Parse(supplier.LastRevisionDate.ToString()).ToString("dd/MM/yyyy"); 
                         worksheet.Cells[6, m].Style.Font.Bold = true;
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m, 6, m + 1].Merge = true;
-                        m = m + 2;
+                        worksheet.Cells[6,m,6,m+2].Merge = true;
+                        m = m + 3;
                         if (!suppliers.Contains(supplier.SupplierName))
                             suppliers.Add(supplier.SupplierName.ToString());
 
@@ -2678,17 +2770,19 @@ namespace AccApi.Repository.Managers
                             var v = worksheet.Cells[7, 7 + col].Value;
                             if (v == null)
                             {
-                                worksheet.Cells[7, 7 + col].Value = "P.U.";
-                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                                worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
+                                worksheet.Cells[7, 8 + col].Value = "P.U.";
+                                worksheet.Cells[7, 9 + col].Value = "P.T.";
                             }
 
                             var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                             if (supReply != null)
                             {
-                                worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
-                                worksheet.Cells[row, 8 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                                worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
+                                worksheet.Cells[row, 8 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                worksheet.Cells[row, 9 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                             }
-                            col = col + 2;
+                            col = col + 3;
                         }
                     }
                     row++;
@@ -2727,7 +2821,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -2766,7 +2860,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -2854,13 +2948,13 @@ namespace AccApi.Repository.Managers
                     int m = 7;
                     foreach (var l in SupList)
                     {
-                        worksheet.Cells[6, m].Value = l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
+                        worksheet.Cells[6, m].Value = l.SupplierName == "Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                         worksheet.Cells[6, m].Style.Font.Bold = true;
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m, 6, m + 1].Merge = true;
-                        m = m + 2;
+                        worksheet.Cells[6, m, 6, m + 2].Merge = true;
+                        m = m + 3;
                         if (!suppliers.Contains(l.SupplierName))
                             suppliers.Add(l.SupplierName.ToString());
 
@@ -2909,17 +3003,19 @@ namespace AccApi.Repository.Managers
                             var v = worksheet.Cells[7, 7 + col].Value;
                             if (v == null)
                             {
-                                worksheet.Cells[7, 7 + col].Value = "P.U.";
-                                worksheet.Cells[7, 8 + col].Value = "P.T.";
+                                worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
+                                worksheet.Cells[7, 8 + col].Value = "P.U.";
+                                worksheet.Cells[7, 9 + col].Value = "P.T.";
                             }
 
                             var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                             if (supReply != null)
                             {
-                                worksheet.Cells[row, 7 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice;
-                                worksheet.Cells[row, 8 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                                worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
+                                worksheet.Cells[row, 8 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                worksheet.Cells[row, 9 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                             }
-                            col = col + 2;
+                            col = col + 3;
                         }
                         row++;
                     }
@@ -2959,7 +3055,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }
@@ -2998,7 +3094,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 2;
+                            colsup = colsup + 3;
                         }
                         row++;
                     }

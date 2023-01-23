@@ -174,5 +174,13 @@ namespace AccApi.Repository.Models
         public string L8 { get; set; }
         public string L9 { get; set; }
         public string L10 { get; set; }
+        public string C11 { get; set; }
+        public string C12 { get; set; }
+        public string C13 { get; set; }
+        public string C14 { get; set; }
+        public string C15 { get; set; }
+        [Column("obBackUpDate", TypeName = "datetime")]
+        public DateTime? ObBackUpDate { get; set; }
+        public byte? ExportedToSupplier { get; set; }
     }
 }

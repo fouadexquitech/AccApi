@@ -61,5 +61,9 @@ namespace AccApi.Repository.View_Models
         public string ResCtg{ get; set; }
 
         public bool AssignedToSupplier { get; set; }
+        public double? AssignedQty { get; set; }
+
+        public double? Discount { get; set; }
+        public double? UPriceAfterDiscount { get; set; }
     }
 }

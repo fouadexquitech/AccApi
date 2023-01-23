@@ -57,11 +57,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddRevision")]
-        public bool AddRevision(int PackageSupplierId, string PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate)
+        public bool AddRevision(int PackageSupplierId, string PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate, double discount, byte addedItem)
         {
             try
             {
-                return this._revisionDetailsRepository.AddRevision(PackageSupplierId, Convert.ToDateTime(PackSuppDate),  ExcelFile, curId,  ExchRate);
+                return this._revisionDetailsRepository.AddRevision(PackageSupplierId, Convert.ToDateTime(PackSuppDate),  ExcelFile, curId,  ExchRate, discount, addedItem);
             }
             catch (Exception ex)
             {

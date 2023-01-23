@@ -15,12 +15,22 @@ namespace AccApi.Repository.Managers
             _context = context;
         }
 
-        public List<BOQDivList> BOQDivList()
+        public List<BOQDivList> GetBOQDivList()
         {
             var results = from b in _context.TblOriginalBoqs
                           group b.SectionO by b.SectionO into g
                           orderby g.Key
                           select new BOQDivList { SectionO = g.Key};
+
+            return results.ToList();
+        }
+
+        public List<BOQLevelList> GetBOQLevel2List()
+        {
+            var results = from b in _context.TblOriginalBoqs
+                          group b.L2 by b.L2 into g
+                          orderby g.Key
+                          select new BOQLevelList { Level = g.Key };
 
             return results.ToList();
         }
@@ -76,5 +86,6 @@ namespace AccApi.Repository.Managers
 
             return results.ToList();
         }
+
     }
 }

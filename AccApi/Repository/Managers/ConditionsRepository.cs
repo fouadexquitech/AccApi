@@ -169,7 +169,6 @@ namespace AccApi.Repository.Managers
 
         public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName)
         {
- 
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
@@ -404,7 +403,7 @@ namespace AccApi.Repository.Managers
                             {
                                 string desc = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
                                 string AccCond = worksheet.Cells[row, 3].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();
-                                string reply = worksheet.Cells[row, 4].Text == null ? "" : worksheet.Cells[row, 3].Text.ToString();
+                                string reply = worksheet.Cells[row, 4].Text == null ? "" : worksheet.Cells[row, 4].Text.ToString();
 
                                 if ((desc != "") && (!desc.Contains("Technical Condition")) && (!desc.Contains("ACC condition")))
                                 {
@@ -497,6 +496,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
         public bool AddTechConditions(TechConditions item)
         {
                 int condSeq;

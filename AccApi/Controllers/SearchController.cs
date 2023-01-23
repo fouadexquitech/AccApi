@@ -24,14 +24,27 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._searchRepository.BOQDivList();
+                return this._searchRepository.GetBOQDivList();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
                 return null;
             }
+        }
 
+        [HttpGet("GetBOQLevel2List")]
+        public List<BOQLevelList> GetBOQLevel2List()
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel2List();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
         }
 
         [HttpGet("GetRESDivList")]
@@ -104,5 +117,6 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
     }
 }

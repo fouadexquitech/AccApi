@@ -39,5 +39,16 @@ namespace AccApi.Repository.Models
         public byte? RdMissedPrice { get; set; }
         [Column("rdMissedPriceReason")]
         public string RdMissedPriceReason { get; set; }
+        [Column("rdDiscount")]
+        public double? RdDiscount { get; set; }
+        [Column("rdAddedItem")]
+        public byte? RdAddedItem { get; set; }
+        [Column("insertedBy")]
+        [StringLength(50)]
+        public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
+        [Column("rdAddedItemOn", TypeName = "datetime")]
+        public DateTime? RdAddedItemOn { get; set; }
     }
 }

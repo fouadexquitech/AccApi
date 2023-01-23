@@ -15,6 +15,7 @@ namespace AccApi.Repository.View_Models
 
         public double? Qty { get; set; }
 
+        public int? RevisionId { get; set; }
         public DateTime? LastRevisionDate { get; set; }
         public double? TotalPrice { get; set; }
 
@@ -31,6 +32,9 @@ namespace AccApi.Repository.View_Models
         public string? OriginalCurrency { get; set; }
         public double? ExchRate { get; set; }
         public double? ExchRateNow { get; set; }
+        public double? Discount { get; set; }
+        public double? UPriceAfterDiscount { get; set; }
+
     }
 
     public class LiveExchange

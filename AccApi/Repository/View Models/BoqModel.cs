@@ -17,6 +17,8 @@ namespace AccApi.Repository.View_Models
         public int? BoqScope { get; set; }
         public string ResDescription { get; set; }
         public string BoqItem { get; set; }
-        
+        public double? BoqTotalPrice { get; set; }
+        public string? AssignedPackage { get; set; }
+
     }
 }

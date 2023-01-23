@@ -32,5 +32,15 @@ namespace AccApi.Repository.View_Models
         public string ResSeq { get; set; }
         public string ResDescription { get; set; }
 
+        public string L2 { get; set; }
+        public string L3 { get; set; }
+
+        public string? AssignedPackage { get; set; }
+    }
+
+    public class packagesList
+    {
+        public int? id { get; set; }
+        public string? name { get; set; }
     }
 }

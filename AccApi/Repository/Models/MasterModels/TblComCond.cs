@@ -18,5 +18,7 @@ namespace AccApi.Repository.Models.MasterModels
         public string CmDescription { get; set; }
         [Column("cmSelected")]
         public byte? CmSelected { get; set; }
+        [Column("cmSort")]
+        public int? CmSort { get; set; }
     }
 }

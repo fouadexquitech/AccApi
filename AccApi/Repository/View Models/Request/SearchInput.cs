@@ -15,6 +15,9 @@ namespace AccApi.Repository.View_Models.Request
         public string FromRow { get; set; }
         public string ToRow { get; set; }
         public string SheetDesc { get; set; }
+        public string itemO { get; set; }
+        public string[] boqLevel2 { get; set; }
+        public string boqLevel3 { get; set; }
 
     }
 }

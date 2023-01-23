@@ -10,6 +10,7 @@ using AccApi.Data_Layer;
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Managers
 {
@@ -68,7 +69,7 @@ namespace AccApi.Repository.Managers
             if (byboq == 1)
             {
                 var pack = from o in _dbcontext.TblOriginalBoqs
-                           where o.Scope == packId
+                           where o.Scope == packId 
                            orderby o.RowNumber
                            select new boqPackageList
                            {
@@ -115,7 +116,8 @@ namespace AccApi.Repository.Managers
                                item = o.ItemO,
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
-                               qty = (double)o.QtyO
+                               qty = (double)o.QtyO,
+                               exportedToSupplier = (byte)o.ExportedToSupplier
                            };
                 return pack.ToList();
             }
@@ -148,7 +150,8 @@ namespace AccApi.Repository.Managers
                                resCode = b.BoqPackage,
                                resDesc = r.ResDescription,
                                ResUnit = b.BoqUnitMesure,
-                               boqQtyScope = (double)b.BoqQtyScope
+                               boqQtyScope = (double)b.BoqQtyScope,
+                               exportedToSupplier = (byte)b.ExportedToSupplier
                            };
                 return pack.ToList();
             }
@@ -164,7 +167,7 @@ namespace AccApi.Repository.Managers
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq);
+            var result = boqPackageList(packId, byBoq).Where(x=>x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -192,10 +195,12 @@ namespace AccApi.Repository.Managers
                 if (byBoq == 1)
                 {
                     worksheet.Cells[i, 6].Value = "Unit Price";
-                    worksheet.Cells[i, 7].Value = "Total Price";
-                    worksheet.Cells[i, 8].Value = "Comments";
-                    worksheet.Column(8).Width = 50;
-                    worksheet.Columns[8].Style.WrapText = true;
+                    worksheet.Cells[i, 7].Value = "Discount %";
+                    worksheet.Cells[i, 8].Value = "Unit Price After Disc.";
+                    worksheet.Cells[i, 9].Value = "Total Price";
+                    worksheet.Cells[i, 10].Value = "Comments";
+                    worksheet.Column(10).Width = 50;
+                    worksheet.Columns[10].Style.WrapText = true;
                     //worksheet.Column(7).AutoFit();
                 }
                 else
@@ -209,10 +214,12 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 9].Value = "Ressouce Unit";
                     worksheet.Cells[i, 10].Value = "Ressouce Qty";
                     worksheet.Cells[i, 11].Value = "Unit Price";
-                    worksheet.Cells[i, 12].Value = "Total Price";
-                    worksheet.Cells[i, 13].Value = "Comments";
-                    worksheet.Column(13).Width = 50;
-                    worksheet.Columns[13].Style.WrapText = true;
+                    worksheet.Cells[i, 12].Value = "Discount %";
+                    worksheet.Cells[i, 13].Value = "Unit Price After Disc.";
+                    worksheet.Cells[i, 14].Value = "Total Price";
+                    worksheet.Cells[i, 15].Value = "Comments";
+                    worksheet.Column(15).Width = 50;
+                    worksheet.Columns[15].Style.WrapText = true;
                     //worksheet.Column(12).AutoFit();                   
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
@@ -338,6 +345,7 @@ namespace AccApi.Repository.Managers
                                 i = i + 2;
                             }
                         }
+
                         worksheet.Cells[i, 1].Value = (x.item == null) ? "" : x.item;
                         worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
@@ -345,9 +353,11 @@ namespace AccApi.Repository.Managers
 
                         if (byBoq == 1)
                         {
-                            worksheet.Cells[i, 7].Formula = "=E" + i + "*" + "F" + i;
+                            worksheet.Cells[i, 8].Formula = "= (F" + i +") - (F" + i + "*" + "G" + i +"/100)";
+                            worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
                             worksheet.Cells[i, 6].Style.Locked = false;
-                            worksheet.Cells[i, 8].Style.Locked = false;
+                            worksheet.Cells[i, 7].Style.Locked = false;
+                            worksheet.Cells[i, 10].Style.Locked = false;
                         }
                         i = i + 1;
                         OldBoq = Boq;
@@ -360,25 +370,35 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                         worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
-                        worksheet.Cells[i, 12].Formula = "=J" + i + "*" + "K" + i;
+                        worksheet.Cells[i, 13].Formula = "= (J" + i +") - (J" + i + "*" + "K" + i + "/100)";
+                        worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "L" + i;
                         worksheet.Cells[i, 11].Style.Locked = false;
-                        worksheet.Cells[i, 13].Style.Locked = false;
+                        worksheet.Cells[i, 12].Style.Locked = false;
+                        worksheet.Cells[i, 15].Style.Locked = false;
                     }
-
                     i++;
                 }
+
+                //Update Exported BOQ
+                if (byBoq == 1)
+                {
+                    var lstBoqo = (from a in result
+                                   join b in _dbcontext.TblOriginalBoqs on a.item equals b.ItemO
+                                   select b).ToList();
+
+                    foreach (var item in result)
+                    {
+                        lstBoqo.Where(d => d.ItemO == item.item).First().ExportedToSupplier = 1;
+                    }
+                    _dbcontext.TblOriginalBoqs.UpdateRange(lstBoqo);
+                    _dbcontext.SaveChanges();
+                }
+
+
 
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"Package-{PackageName}.xlsx";
-
-                //string path = @"C:\App\";
-
-                //if (!Directory.Exists(path))
-                //{
-                //    Directory.CreateDirectory(path);
-                //}
-                //string FullPath = path + excelName;
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
@@ -410,6 +430,11 @@ namespace AccApi.Repository.Managers
             {
                 AttachmentList.Clear();
                 AttachmentList.Add(item.FilePath);
+
+                var itemToRemove = attachments.SingleOrDefault(r => r.FileName == item.FilePath);
+                if (itemToRemove != null)
+                    attachments.Remove(itemToRemove);
+
 
                 if (item.mailAttachments != null)
                 {
