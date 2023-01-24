@@ -63,14 +63,12 @@ namespace AccApi.Repository.Managers
                                                             SectionO = o.SectionO,
                                                             ItemO = o.ItemO,
                                                             DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            QtyO = o.QtyO,
+                                                            UnitO = o.UnitO,                                                           
                                                             UnitRate = o.UnitRate,
                                                             Scope = o.Scope,
                                                             BoqSeq = b.BoqSeq,
                                                             BoqCtg = b.BoqCtg,
                                                             BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqQty = b.BoqQty,
                                                             BoqUprice = b.BoqUprice,
                                                             BoqDiv = b.BoqDiv,
                                                             BoqPackage = b.BoqPackage,
@@ -78,8 +76,13 @@ namespace AccApi.Repository.Managers
                                                             ResDescription = r.ResDescription,
                                                             L2 = ((o.L2 == null) ? "" : o.L2),
                                                             L3 = ((o.L3 == null) ? "" : o.L3),
-                                                            AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName
-
+                                                            AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
+                                                            BillQtyO = o.ObBillQty,
+                                                            QtyO = o.QtyO,                                                        
+                                                            ScopeQtyO = o.QtyScope,
+                                                            BoqBillQty =b.BoqBillQty,
+                                                            BoqQty = b.BoqQty,
+                                                            BoqScopeQty =b.BoqQtyScope
                                                             //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
                                                             //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
                                                         });
@@ -107,11 +110,13 @@ namespace AccApi.Repository.Managers
                     SectionO = p.SectionO,
                     ItemO = p.ItemO,
                     DescriptionO = p.DescriptionO,
-                    UnitO = p.UnitO,
-                    QtyO = p.QtyO,
+                    UnitO = p.UnitO,                
                     UnitRate = p.UnitRate,
                     Scope = p.Scope,
-                    AssignedPackage = p.AssignedPackage
+                    AssignedPackage = p.AssignedPackage,
+                    BillQtyO = p.BillQtyO,
+                    QtyO = p.QtyO,
+                    ScopeQtyO = p.ScopeQtyO
                 })
                 .ToList();
 

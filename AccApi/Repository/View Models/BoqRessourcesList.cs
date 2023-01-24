@@ -13,6 +13,7 @@ namespace AccApi.Repository.View_Models
         public string DescriptionO { get; set; }
         public string UnitO { get; set; }
         public double? QtyO { get; set; }
+        public double? BillQtyO { get; set; }
         public double? ScopeQtyO { get; set; }
         public double? UnitRate { get; set; }
         public int? Scope { get; set; }
@@ -29,15 +30,13 @@ namespace AccApi.Repository.View_Models
         public string BoqDiv { get; set; }
         public string BoqPackage { get; set; }
         public int? BoqScope { get; set; }
-
         public string ResSeq { get; set; }
         public string ResDescription { get; set; }
-
         public string L2 { get; set; }
         public string L3 { get; set; }
-
         public string? AssignedPackage { get; set; }
         public double? BoqScopeQty { get; set; }
+        public double? BoqBillQty { get; set; }
     }
 
     public class packagesList
