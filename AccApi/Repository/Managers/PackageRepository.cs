@@ -183,6 +183,8 @@ namespace AccApi.Repository.Managers
                                                select new BoqModel()
                                                {
                                                    BoqSeq = b.BoqSeq,
+                                                   BoqResSeq = b.BoqResSeq,
+                                                   BoqItem = b.BoqItem,
                                                    BoqCtg = b.BoqCtg,
                                                    BoqUnitMesure = b.BoqUnitMesure,
                                                    BoqQty = b.BoqQty,
