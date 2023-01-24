@@ -236,5 +236,19 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("updateOriginalBoqQty")]
+        public bool updateOriginalBoqQty(OriginalBoqModel boq)
+        {
+            try
+            {
+                return this._packageRepository.updateOriginalBoqQty(boq);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
     }
 }

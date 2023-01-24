@@ -13,6 +13,7 @@ namespace AccApi.Repository.View_Models
         public string DescriptionO { get; set; }
         public string UnitO { get; set; }
         public double? QtyO { get; set; }
+        public double? ScopeQtyO { get; set; }
         public double? UnitRate { get; set; }
         public int? Scope { get; set; }
         public string ObSheetDesc { get; set; }
@@ -36,6 +37,7 @@ namespace AccApi.Repository.View_Models
         public string L3 { get; set; }
 
         public string? AssignedPackage { get; set; }
+        public double? BoqScopeQty { get; set; }
     }
 
     public class packagesList

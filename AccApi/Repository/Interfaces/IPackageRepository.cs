@@ -13,5 +13,7 @@ namespace AccApi.Repository.Interfaces
         bool AssignPackages(AssignPackages input);
         List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input);
         string ExportBoqExcel(AssignPackages input);
+
+        public bool updateOriginalBoqQty(OriginalBoqModel boq);
     }
 }

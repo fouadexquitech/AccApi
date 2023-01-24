@@ -12,8 +12,10 @@ namespace AccApi.Repository.View_Models
         public double? QtyO { get; set; }
         public double? UnitRate { get; set; }
         public int? Scope { get; set; }
-
         public string Package { get; set; }
-        
+        public double? ScopeQtyO { get; set; }
+        public double? BillQtyO { get; set; }
+
+
     }
 }

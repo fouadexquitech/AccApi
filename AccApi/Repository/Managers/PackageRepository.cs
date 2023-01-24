@@ -487,7 +487,8 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
+                                                 
                                              });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -725,5 +726,22 @@ namespace AccApi.Repository.Managers
             }
             return excelName;
         }
+
+
+        public bool updateOriginalBoqQty(OriginalBoqModel boq)
+        {
+            var result = _context.TblOriginalBoqs.Where(x => x.ItemO == boq.ItemO).FirstOrDefault();
+            result.QtyScope = boq.ScopeQtyO;
+            
+            if (result != null)
+            {
+                _context.TblOriginalBoqs.Update(result);
+                _context.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
     }
 }
