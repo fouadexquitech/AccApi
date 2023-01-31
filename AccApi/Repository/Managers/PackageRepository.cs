@@ -750,5 +750,21 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
+        public bool updateBoqResQty(BoqModel res)
+        {
+            var result = _context.TblBoqs.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
+            result.QtyScope = res.BoqScopeQty;
+
+            if (result != null)
+            {
+                _context.TblBoqs.Update(result);
+                _context.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+
     }
 }

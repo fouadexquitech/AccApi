@@ -1,5 +1,6 @@
 ﻿
 using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Mvc;
@@ -249,6 +250,20 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+        public bool updateBoqResQty(BoqModel res)
+        {
+            try
+            {
+                return this._packageRepository.updateBoqResQty(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+    
 
     }
 }

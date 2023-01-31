@@ -10,7 +10,6 @@ namespace AccApi.Repository.View_Models
         public string BoqCtg { get; set; }
         public string BoqUnitMesure { get; set; }
         public string BoqResSeq { get; set; }
-        public double? BoqQty { get; set; }
         public double? BoqUprice { get; set; }
         public string BoqDiv { get; set; }
         public string BoqPackage { get; set; }
@@ -19,7 +18,9 @@ namespace AccApi.Repository.View_Models
         public string BoqItem { get; set; }
         public double? BoqTotalPrice { get; set; }
         public string? AssignedPackage { get; set; }
-        public double? BoqQtyScope { get; set; }
+        public double? BoqQty { get; set; }
+        public double? BoqBillQty { get; set; }
+        public double? BoqScopeQty { get; set; }
 
     }
 }
