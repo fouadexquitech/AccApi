@@ -18,5 +18,8 @@ namespace AccApi.Repository.View_Models
 
         public List<GroupingResourceModel>? GroupingResources { get; set; }
         public List<GroupingPackageSupplierPriceModel>? GroupingPackageSuppliersPrices { get; set; }
+
+        public double? QuotationQty { get; set; }
+        public double? QuotationAmt { get; set; }
     }
 }

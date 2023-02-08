@@ -251,6 +251,7 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("updateBoqResQty")]
         public bool updateBoqResQty(BoqModel res)
         {
             try
@@ -263,7 +264,7 @@ namespace AccApi.Controllers
                 return false;
             }
         }
-    
+
 
     }
 }

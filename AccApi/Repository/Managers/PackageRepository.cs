@@ -158,15 +158,17 @@ namespace AccApi.Repository.Managers
                                                    BoqSeq = b.BoqSeq,
                                                    BoqResSeq = b.BoqResSeq,
                                                    BoqCtg = b.BoqCtg,
-                                                   BoqUnitMesure = b.BoqUnitMesure,
-                                                   BoqQty = b.BoqQty,
+                                                   BoqUnitMesure = b.BoqUnitMesure,                     
                                                    BoqUprice = b.BoqUprice,
                                                    BoqDiv = b.BoqDiv,
                                                    BoqPackage = b.BoqPackage,
                                                    BoqScope = b.BoqScope,
                                                    ResDescription = r.ResDescription,
                                                    BoqItem = b.BoqItem,
-                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName
+                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
+                                                   BoqBillQty = b.BoqBillQty,
+                                                   BoqQty = b.BoqQty,
+                                                   BoqScopeQty = b.BoqQtyScope
                                                });
 
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
@@ -191,14 +193,16 @@ namespace AccApi.Repository.Managers
                                                    BoqResSeq = b.BoqResSeq,
                                                    BoqItem = b.BoqItem,
                                                    BoqCtg = b.BoqCtg,
-                                                   BoqUnitMesure = b.BoqUnitMesure,
-                                                   BoqQty = b.BoqQty,
+                                                   BoqUnitMesure = b.BoqUnitMesure,                                               
                                                    BoqUprice = b.BoqUprice,
                                                    BoqDiv = b.BoqDiv,
                                                    BoqPackage = b.BoqPackage,
                                                    BoqScope = b.BoqScope,
                                                    ResDescription = r.ResDescription,
-                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName
+                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
+                                                   BoqQty = b.BoqQty,
+                                                   BoqBillQty = b.BoqBillQty,
+                                                   BoqScopeQty=b.BoqQtyScope
                                                });
 
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
@@ -753,7 +757,7 @@ namespace AccApi.Repository.Managers
         public bool updateBoqResQty(BoqModel res)
         {
             var result = _context.TblBoqs.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
-            result.QtyScope = res.BoqScopeQty;
+            result.BoqQtyScope = res.BoqScopeQty;
 
             if (result != null)
             {

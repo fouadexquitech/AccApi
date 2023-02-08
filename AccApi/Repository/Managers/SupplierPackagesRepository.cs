@@ -116,7 +116,7 @@ namespace AccApi.Repository.Managers
                                item = o.ItemO,
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
-                               qty = (double)o.QtyO,
+                               qty = (double)o.QtyScope,
                                exportedToSupplier = (byte)o.ExportedToSupplier
                            };
                 return pack.ToList();
@@ -145,7 +145,7 @@ namespace AccApi.Repository.Managers
                                item = o.ItemO,
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
-                               qty = (double)o.QtyO,
+                               qty = (double)o.QtyScope,
                                resType = b.BoqCtg,
                                resCode = b.BoqPackage,
                                resDesc = r.ResDescription,
@@ -350,11 +350,14 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
                         worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
+                        worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
 
                         if (byBoq == 1)
                         {
                             worksheet.Cells[i, 8].Formula = "= (F" + i +") - (F" + i + "*" + "G" + i +"/100)";
+                            worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
+                            worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[i, 6].Style.Locked = false;
                             worksheet.Cells[i, 7].Style.Locked = false;
                             worksheet.Cells[i, 10].Style.Locked = false;
@@ -370,8 +373,11 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                         worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
-                        worksheet.Cells[i, 13].Formula = "= (J" + i +") - (J" + i + "*" + "K" + i + "/100)";
-                        worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "L" + i;
+                        worksheet.Cells[i, 10].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 13].Formula = "= (K" + i +") - (K" + i + "*" + "L" + i + "/100)";
+                        worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
+                        worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 11].Style.Locked = false;
                         worksheet.Cells[i, 12].Style.Locked = false;
                         worksheet.Cells[i, 15].Style.Locked = false;
