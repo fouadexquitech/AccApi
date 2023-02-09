@@ -12,6 +12,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace AccApi.Repository.Managers
 {
@@ -44,6 +46,24 @@ namespace AccApi.Repository.Managers
             //                   && ((input.FromRow != null && input.ToRow != null) || (b.RowNumber >= int.Parse(input.FromRow) && b.RowNumber <= int.Parse(input.ToRow)))
             //              orderby b.RowNumber
             //              select b;
+
+            bool blankInput=true;  
+            if (input.BOQDiv.Length > 0) blankInput=false;
+            if (!string.IsNullOrEmpty(input.BOQItem)) blankInput = false;
+            if (!string.IsNullOrEmpty(input.BOQDesc)) blankInput = false;
+            if (!string.IsNullOrEmpty(input.SheetDesc)) blankInput = false;
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) blankInput = false;
+            if (input.Package > 0) blankInput = false;
+            if (input.RESDiv.Length > 0) blankInput = false;
+            if (input.RESType.Length > 0) blankInput = false;
+            if (!string.IsNullOrEmpty(input.RESPackage)) blankInput = false;
+            if (!string.IsNullOrEmpty(input.RESDesc)) blankInput = false;
+            if (input.Package > 0) blankInput = false;
+            if (input.boqLevel2.Length > 0) blankInput = false;
+            if (!string.IsNullOrEmpty(input.boqLevel3)) blankInput = false;
+
+            if (blankInput)
+                return null;
 
             var lstPackages = (from p in _context.PackagesNetworks
                                select new packagesList
@@ -112,15 +132,15 @@ namespace AccApi.Repository.Managers
                     DescriptionO = p.DescriptionO,
                     UnitO = p.UnitO,                
                     UnitRate = p.UnitRate,
-                    Scope = p.Scope,
+                    //Scope = p.Scope,
                     AssignedPackage = p.AssignedPackage,
                     BillQtyO = p.BillQtyO,
                     QtyO = p.QtyO,
                     ScopeQtyO = p.ScopeQtyO
-                })
+                }).OrderBy(w => w.RowNumber)
                 .ToList();
 
-            return resutl.OrderBy(w => w.RowNumber).ToList();
+            return resutl;
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
         }
         private string GetPackageName(int id)

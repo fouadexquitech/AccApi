@@ -23,6 +23,7 @@ namespace AccApi.Controllers
             _logger = logger;
             _packageRepository = packageRepository;
             _comparisonGroupRepository = comparisonGroupRepository;
+            _comparisonGroupRepository = comparisonGroupRepository;
         }
 
         [HttpPost("GetOriginalBoqList")]
