@@ -9,14 +9,32 @@ namespace AccApi.Repository
 {
     public partial class AccDbContext : DbContext
     {
-        public AccDbContext()
+        private readonly string _connectionString;
+
+        public AccDbContext(string connectionString)
         {
+            _connectionString = connectionString;
         }
 
         public AccDbContext(DbContextOptions<AccDbContext> options)
             : base(options)
         {
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(_connectionString);
+        }
+
+        //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //        {
+        //            if (!optionsBuilder.IsConfigured)
+        //            {
+        //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        //                optionsBuilder.UseSqlServer("Data Source=ABEDHIJAZI;Initial Catalog=CiteMinistrielle_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+        //            }
+        //        }
+
 
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
@@ -144,6 +162,8 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
+
+
 
         public AccDbContext CreateConnectionFromOut(string connectionString)
         {
@@ -1102,6 +1122,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.ObPriceCode).IsUnicode(false);
 
                 entity.Property(e => e.ObSkipWbsqty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ObTradeDesc).IsUnicode(false);
 
                 entity.Property(e => e.Prefix).IsUnicode(false);
 

@@ -9,5 +9,6 @@ namespace AccApi.Repository.View_Models
     {
         public int Seq { get; set; }
         public string PrjCostDatabase { get; set; }
+        public string projectName { get; set; }
     }
 }

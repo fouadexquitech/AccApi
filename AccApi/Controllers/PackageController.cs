@@ -96,6 +96,7 @@ namespace AccApi.Controllers
             }
         }
 
+        
         [HttpPost("ExportBoqExcel")]
         public JsonResult ExportBoqExcel(AssignPackages input)
         {
@@ -258,6 +259,20 @@ namespace AccApi.Controllers
             try
             {
                 return this._packageRepository.updateBoqResQty(res);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("updateBoqTradeDesc")]
+        public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList)
+        {
+            try
+            {
+                return this._packageRepository.updateBoqTradeDesc(tradeDesc, origBoqList);
             }
             catch (Exception ex)
             {

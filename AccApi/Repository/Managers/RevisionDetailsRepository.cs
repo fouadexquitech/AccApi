@@ -2019,8 +2019,8 @@ namespace AccApi.Repository.Managers
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6, m,6,m+2].Merge = true;
-                        m = m + 3;
+                        worksheet.Cells[6, m,6,m+4].Merge = true;
+                        m = m + 5;
                         if (!suppliers.Contains(l.SupplierName))
                             suppliers.Add(l.SupplierName.ToString());
 
@@ -2077,7 +2077,9 @@ namespace AccApi.Repository.Managers
                             {
                                 worksheet.Cells[7, 9 + col].Value = "Assigned Qty";
                                 worksheet.Cells[7, 10 + col].Value = "Price U.";
-                                worksheet.Cells[7, 11 + col].Value = "Price T.";
+                                worksheet.Cells[7, 11 + col].Value = "Disc %";
+                                worksheet.Cells[7, 12 + col].Value = "Final P.U.";
+                                worksheet.Cells[7, 13 + col].Value = "Price T.";
                             }
 
                             var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName==suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();                                                                           
@@ -2087,10 +2089,13 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
                                 worksheet.Cells[row, 10+col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                                 worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[row, 11+col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
-                                worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
+                                worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[row, 13 +col].Value = (supReply.TotalPrice) == null ? "" : supReply.Qty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
                             }                               
-                            col=col+3;
+                            col=col+5;
                         }
                     }
                     row++;
@@ -2749,8 +2754,8 @@ namespace AccApi.Repository.Managers
                         worksheet.Columns[m].Style.WrapText = true;
                         worksheet.Column(m).AutoFit();
                         worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                        worksheet.Cells[6,m,6,m+2].Merge = true;
-                        m = m + 3;
+                        worksheet.Cells[6,m,6,m+4].Merge = true;
+                        m = m + 5;
                         if (!suppliers.Contains(supplier.SupplierName))
                             suppliers.Add(supplier.SupplierName.ToString());
 
@@ -2808,7 +2813,9 @@ namespace AccApi.Repository.Managers
                             {
                                 worksheet.Cells[7, 9 + col].Value = "Assigned Qty";
                                 worksheet.Cells[7, 10 + col].Value = "P.U.";
-                                worksheet.Cells[7, 11 + col].Value = "P.T.";
+                                worksheet.Cells[7, 11 + col].Value = "Disc %";
+                                worksheet.Cells[7, 12 + col].Value = "Final P.U.";
+                                worksheet.Cells[7, 13 + col].Value = "P.T.";
                             }
 
                             var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
@@ -2818,10 +2825,13 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
                                 worksheet.Cells[row, 10 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                                 worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[row, 11 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
-                                worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
+                                worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[row, 13 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
                             }
-                            col = col + 3;
+                            col = col + 5;
                         }
                     }
                     row++;

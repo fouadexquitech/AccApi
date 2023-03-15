@@ -18,6 +18,6 @@ namespace AccApi.Repository.View_Models.Request
         public string itemO { get; set; }
         public string[] boqLevel2 { get; set; }
         public string boqLevel3 { get; set; }
-
+        public string obTradeDesc { get; set; }
     }
 }

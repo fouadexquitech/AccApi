@@ -15,5 +15,6 @@ namespace AccApi.Repository.Interfaces
         string ExportBoqExcel(AssignPackages input);
         public bool updateOriginalBoqQty(OriginalBoqModel boq);
         public bool updateBoqResQty(BoqModel res);
+        public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList);
     }
 }

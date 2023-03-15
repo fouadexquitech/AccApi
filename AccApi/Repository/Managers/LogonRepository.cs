@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AccApi.Repository.Managers
 {
@@ -56,7 +55,8 @@ namespace AccApi.Repository.Managers
                          select new Project
                          {
                              Seq = b.Seq,
-                             PrjCostDatabase = b.PrjCostDatabase
+                             PrjCostDatabase = b.PrjCostDatabase,
+                             projectName=b.PrjName
                          };
             return result.ToList();
         }
@@ -94,6 +94,13 @@ namespace AccApi.Repository.Managers
             if (!connectToProject(projSeq))
                 usr = null; 
             
+            if (usr != null)
+            {
+                var prj = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+                if(prj != null)
+                  usr.UsrLoggedProjectName = prj.PrjName;
+            }
+
             return usr;
         }
 
@@ -111,6 +118,9 @@ namespace AccApi.Repository.Managers
               
                 string conName = connection.ConnectionString.ToString();
                 var db = _dbcontext.CreateConnectionFromOut(conName);
+
+
+
 
                 return true;
             }
@@ -173,6 +183,7 @@ namespace AccApi.Repository.Managers
                         where u.UpUserId == username &&
                          p.Seq== projSeq
                         select u;
+
             return query.FirstOrDefault() != null;
         }
 

@@ -4,7 +4,9 @@ using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
 using OfficeOpenXml.DataValidation;
 using System;
@@ -23,15 +25,30 @@ namespace AccApi.Repository.Managers
         private readonly MasterDbContext _mcontext;
         private readonly IMapper _mapper;
 
-        public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper)
+        //public IConfiguration Configuration { get; }
+
+        //private readonly AccDbContext _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(@"Server=10.10.2.123;Database=CiteDefence_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=false").Options);
+
+
+    public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper )
         {
             _context = context;
             _mcontext = mcontext;
             _mapper = mapper;
+            
         }
 
         public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
         {
+            //string connectionString = Configuration.GetConnectionString("DefaultConnection");
+            //string costDb = "CiteDefence_CostData";
+            //var connection = new SqlConnectionStringBuilder(connectionString);
+            //connection.InitialCatalog = costDb;
+
+            //string conName = connection.ConnectionString.ToString();
+            //var _costDBbContext = _context.CreateConnectionFromOut(conName);
+
+
             //var results = from b in _context.TblOriginalBoqs
             //              where (input.BOQDiv != null && b.SectionO == input.BOQDiv)
             //              where (input.SheetDesc != null && b.ObSheetDesc == input.SheetDesc)
@@ -61,6 +78,7 @@ namespace AccApi.Repository.Managers
             if (input.Package > 0) blankInput = false;
             if (input.boqLevel2.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.boqLevel3)) blankInput = false;
+            if (!string.IsNullOrEmpty(input.obTradeDesc)) blankInput = false;
 
             if (blankInput)
                 return null;
@@ -102,7 +120,8 @@ namespace AccApi.Repository.Managers
                                                             ScopeQtyO = o.QtyScope,
                                                             BoqBillQty =b.BoqBillQty,
                                                             BoqQty = b.BoqQty,
-                                                            BoqScopeQty =b.BoqQtyScope
+                                                            BoqScopeQty =b.BoqQtyScope,
+                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc)
                                                             //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
                                                             //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
                                                         });
@@ -120,6 +139,7 @@ namespace AccApi.Repository.Managers
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
             if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
             if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
 
             var resutl = condQuery
                 .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
@@ -136,7 +156,8 @@ namespace AccApi.Repository.Managers
                     AssignedPackage = p.AssignedPackage,
                     BillQtyO = p.BillQtyO,
                     QtyO = p.QtyO,
-                    ScopeQtyO = p.ScopeQtyO
+                    ScopeQtyO = p.ScopeQtyO,
+                    ObTradeDesc=p.ObTradeDesc
                 }).OrderBy(w => w.RowNumber)
                 .ToList();
 
@@ -757,8 +778,6 @@ namespace AccApi.Repository.Managers
             }
             return excelName;
         }
-
-
         public bool updateOriginalBoqQty(OriginalBoqModel boq)
         {
             var result = _context.TblOriginalBoqs.Where(x => x.ItemO == boq.ItemO).FirstOrDefault();
@@ -773,7 +792,6 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
-
         public bool updateBoqResQty(BoqModel res)
         {
             var result = _context.TblBoqs.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
@@ -788,7 +806,32 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+        public bool updateBoqTradeDesc(string tradeDesc,List<OriginalBoqModel> origBoqList)
+        {
+            if (origBoqList != null)
+            {
+                //foreach (var item in input.AssignOriginalBoqList)
+                //{
+                //    var data = _context.TblOriginalBoqs.Where(x => x.RowNumber == item.RowNumber).FirstOrDefault();
+                //    data.Scope = item.Scope;
 
+                //    _context.TblOriginalBoqs.Update(data);               
+                //}
+                //_context.SaveChanges();
+
+                var lstBoqo = (from a in origBoqList
+                               join b in _context.TblOriginalBoqs on a.RowNumber equals b.RowNumber
+                               select b).ToList();
+
+                foreach (var item in origBoqList)
+                {
+                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().ObTradeDesc = tradeDesc;
+                }
+                _context.TblOriginalBoqs.UpdateRange(lstBoqo);
+                _context.SaveChanges();
+            }
+            return true;
+        }
 
     }
 }

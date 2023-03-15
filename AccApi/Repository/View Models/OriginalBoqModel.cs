@@ -15,7 +15,7 @@ namespace AccApi.Repository.View_Models
         public string Package { get; set; }
         public double? ScopeQtyO { get; set; }
         public double? BillQtyO { get; set; }
-
-
+        public string ObTradeDesc { get; set; }
+        
     }
 }

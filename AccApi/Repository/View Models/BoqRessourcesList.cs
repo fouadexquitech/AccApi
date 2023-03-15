@@ -18,6 +18,7 @@ namespace AccApi.Repository.View_Models
         public double? UnitRate { get; set; }
         public int? Scope { get; set; }
         public string ObSheetDesc { get; set; }
+        public string ObTradeDesc { get; set; }
 
         public int? GroupId { get; set; }
         public string? GroupName { get; set; }

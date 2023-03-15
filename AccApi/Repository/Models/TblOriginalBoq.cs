@@ -182,5 +182,8 @@ namespace AccApi.Repository.Models
         [Column("obBackUpDate", TypeName = "datetime")]
         public DateTime? ObBackUpDate { get; set; }
         public byte? ExportedToSupplier { get; set; }
+        [Column("obTradeDesc")]
+        [StringLength(500)]
+        public string ObTradeDesc { get; set; }
     }
 }
