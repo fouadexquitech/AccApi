@@ -1,6 +1,7 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,12 +13,16 @@ namespace AccApi.Repository.Managers
     {
         private readonly AccDbContext _context;
         private readonly MasterDbContext _masterDbContext;
+        private readonly GlobalLists _globalLists;
 
-        public SupplierPackagesRevRepository(AccDbContext context, MasterDbContext masterDbContext)
+        public SupplierPackagesRevRepository(AccDbContext context, MasterDbContext masterDbContext, GlobalLists globalLists)
         {
-            _context = context;
             _masterDbContext = masterDbContext;
+            _globalLists = globalLists;
+            _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
         }
+
+
         public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
         {
 

@@ -6,6 +6,23 @@ namespace AccApi.Repository.View_Models
 {
     public class BoqModel
     {
+        public short? RowNumber { get; set; }
+        public string SectionO { get; set; }
+        public string ItemO { get; set; }
+        public string DescriptionO { get; set; }
+        public string UnitO { get; set; }
+        public double? QtyO { get; set; }
+        public double? BillQtyO { get; set; }
+        public double? ScopeQtyO { get; set; }
+        public double? UnitRate { get; set; }
+        public int? Scope { get; set; }
+        public string ObSheetDesc { get; set; }
+        public string ObTradeDesc { get; set; }
+        public string L2 { get; set; }
+        public string L3 { get; set; }
+        public string L4 { get; set; }
+
+
         public int BoqSeq { get; set; }
         public string BoqCtg { get; set; }
         public string BoqUnitMesure { get; set; }

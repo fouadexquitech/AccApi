@@ -18,14 +18,17 @@ namespace AccApi.Repository.Managers
     {
         private readonly AccDbContext _dbcontext;
         private readonly PolicyDbContext _pdbcontext;
+        private readonly IlogonRepository _logonRepository;
+        private readonly GlobalLists _globalLists;
 
-        MasterDbContext mdbcontext;
-        IConfiguration configuration;
 
-        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext)
+        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, IlogonRepository logonRepository, GlobalLists globalLists)
         {
-            _dbcontext = Context;
+            /*_dbcontext = Context;*/
             _pdbcontext = pdbcontext;
+            _logonRepository=logonRepository;
+            _globalLists = globalLists;
+            _dbcontext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
         }
 
         public SupplierPackagesList GetSupplierPackage(int spId)
@@ -117,7 +120,7 @@ namespace AccApi.Repository.Managers
                                boqDesc = o.DescriptionO,
                                unit = o.UnitO,
                                qty = (double)o.QtyScope,
-                               exportedToSupplier = (byte)o.ExportedToSupplier
+                               exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
                            };
                 return pack.ToList();
             }
@@ -151,8 +154,8 @@ namespace AccApi.Repository.Managers
                                resDesc = r.ResDescription,
                                ResUnit = b.BoqUnitMesure,
                                boqQtyScope = (double)b.BoqQtyScope,
-                               exportedToSupplier = (byte)b.ExportedToSupplier
-                           };
+                               exportedToSupplier = (byte) ((o.ExportedToSupplier == null) ? 0 :  o.ExportedToSupplier)
+            };
                 return pack.ToList();
             }
         }
@@ -165,9 +168,10 @@ namespace AccApi.Repository.Managers
             //AH0702
 
             var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+            if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq).Where(x=>x.exportedToSupplier == 0);
+            var result = boqPackageList(packId, byBoq).Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -428,7 +432,7 @@ namespace AccApi.Repository.Managers
             //Get User Email Signature
             //LogonRepository logonRepository=new LogonRepository();
             //User user= logonRepository.GetUser(UserName);
-            User user = new LogonRepository(mdbcontext, _pdbcontext, _dbcontext, configuration).GetUser(UserName);
+            User user = _logonRepository.GetUser(UserName);
             string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
 

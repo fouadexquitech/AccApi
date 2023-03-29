@@ -17,7 +17,9 @@ namespace AccApi.Repository.View_Models.Request
         public string SheetDesc { get; set; }
         public string itemO { get; set; }
         public string[] boqLevel2 { get; set; }
-        public string boqLevel3 { get; set; }
+        //public string boqLevel3 { get; set; }
+        public string[] boqLevel3 { get; set; }
+        public string[] boqLevel4 { get; set; }
         public string obTradeDesc { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -14,18 +15,20 @@ namespace AccApi.Repository.Managers
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
         private readonly AccDbContext _dbcontext;
+        private GlobalLists _globalLists;
         public IConfiguration Configuration { get; }
 
         private static PolicyDbContext pdb;
 
-        public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration)
+        public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration, GlobalLists globalLists)
         {
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
-            _dbcontext = dbcontext;
-            Configuration = configuration;
+             Configuration = configuration;
+            _globalLists = globalLists;
+            _dbcontext = dbcontext ;
         }
-       
+
         public List<ProjectCountries> GetProjectCountries()
         {
             var result = from b in _mdbcontext.TblDataBases
@@ -76,38 +79,66 @@ namespace AccApi.Repository.Managers
         }
 
         //fouad
-        public User GetLogin(string user, string pass, int projSeq)
+        public User GetLogin(string username, string pass, int projSeq)
         {
+            
+            //usr = checkCredentials(user, pass);
+
+            var result = pdb.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();
+
             User usr = new User();
-            usr = checkCredentials(user, pass);
+            if (result != null) {
+                usr.UsrId = result.UsrId;
+                usr.UsrDesc = result.UsrDesc;
+                usr.UsrPwd = result.UsrPwd;
+                usr.UsrAdmin = result.UsrAdmin;
+                usr.UsrEmail = result.UsrEmail;
+                usr.UsrEmailSignature = result.EmailSignature;
+            }
+            else
+            {
+                usr = null;
+                return usr;
+            }
 
             bool isAdmin = (bool)(usr.UsrAdmin);
             if (!isAdmin)
             {
-                if (!checkAccessProject(user, projSeq))
+                var query = pdb.TblUsersProjects.Where(x=>x.UpUserId == username && x.UpProject==projSeq).FirstOrDefault();
+                if (query==null)
                 {
                     usr = null;
                     return usr;
                 }
+                //if (!checkAccessProject(username, projSeq))
+                //{
+                //    usr = null;
+                //    return usr;
+                //}
             }
 
-            if (!connectToProject(projSeq))
+            string connString = connectToProject(projSeq);
+
+            if (connString=="")
                 usr = null; 
             
             if (usr != null)
             {
                 var prj = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
                 if(prj != null)
+                {
                   usr.UsrLoggedProjectName = prj.PrjName;
+                  usr.usrLoggedConnString = connString;
+                } 
             }
 
             return usr;
         }
 
-        private Boolean connectToProject(int projSeq)
+        private string  connectToProject(int projSeq)
         {
             var result = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
-            string costDb = result.PrjCostDatabase;
+            string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase ;
 
             if ((costDb != "") && (costDb != null))
             {
@@ -119,13 +150,23 @@ namespace AccApi.Repository.Managers
                 string conName = connection.ConnectionString.ToString();
                 var db = _dbcontext.CreateConnectionFromOut(conName);
 
+                _globalLists.SetAccDbConnectionString(conName);
 
-
-
-                return true;
+                return conName;
             }
             else
-                return false;
+                return "";
+        }
+
+        public bool ConnectToDB(string connString)
+        {
+            //var connection = new SqlConnectionStringBuilder(connString);
+
+            //string conName = connection.ConnectionString.ToString();
+            //var db = _dbcontext.CreateConnectionFromOut(conName);
+
+            _globalLists.SetAccDbConnectionString(connString);
+            return true;
         }
 
         private static void ChangeSqlDatabase(string connectionString)

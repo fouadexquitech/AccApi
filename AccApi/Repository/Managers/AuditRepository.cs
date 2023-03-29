@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,13 @@ namespace AccApi.Repository.Managers
     public class AuditRepository : IAuditRepository
     {
         private readonly AccDbContext _accDbContext;
-        public AuditRepository(AccDbContext accDbContext)
+        private readonly GlobalLists _globalLists;
+
+
+        public AuditRepository(AccDbContext accDbContext, GlobalLists globalLists)
         {
-            _accDbContext = accDbContext;
+            _globalLists = globalLists;
+            _accDbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
         }
 
         public bool SetAuditLog(string tablename, string userid, DateTime dateTime, string action, string primarykeyvalue)

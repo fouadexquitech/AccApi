@@ -24,18 +24,20 @@ namespace AccApi.Repository.Managers
         private readonly AccDbContext _context;
         private readonly MasterDbContext _mcontext;
         private readonly IMapper _mapper;
+        private readonly GlobalLists _globalLists;
 
         //public IConfiguration Configuration { get; }
 
         //private readonly AccDbContext _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(@"Server=10.10.2.123;Database=CiteDefence_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=false").Options);
 
 
-    public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper )
-        {
-            _context = context;
+        public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper, GlobalLists globalLists)
+        {           
             _mcontext = mcontext;
             _mapper = mapper;
-            
+            _globalLists = globalLists;
+            _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            //_context =context;
         }
 
         public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
@@ -77,7 +79,9 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) blankInput = false;
             if (input.Package > 0) blankInput = false;
             if (input.boqLevel2.Length > 0) blankInput = false;
-            if (!string.IsNullOrEmpty(input.boqLevel3)) blankInput = false;
+            if (input.boqLevel3.Length > 0) blankInput = false;
+            //if (!string.IsNullOrEmpty(input.boqLevel3)) blankInput = false;
+            if (input.boqLevel4.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.obTradeDesc)) blankInput = false;
 
             if (blankInput)
@@ -86,7 +90,7 @@ namespace AccApi.Repository.Managers
             var lstPackages = (from p in _context.PackagesNetworks
                                select new packagesList
                                {
-                                   id = p.IdPkge,
+                                   id = (int)p.IdPkge,
                                    name = p.PkgeName
                                }).ToList();
 
@@ -114,6 +118,7 @@ namespace AccApi.Repository.Managers
                                                             ResDescription = r.ResDescription,
                                                             L2 = ((o.L2 == null) ? "" : o.L2),
                                                             L3 = ((o.L3 == null) ? "" : o.L3),
+                                                            L4 = ((o.L4 == null) ? "" : o.L4),
                                                             AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
                                                             BillQtyO = o.ObBillQty,
                                                             QtyO = o.QtyO,                                                        
@@ -121,7 +126,8 @@ namespace AccApi.Repository.Managers
                                                             BoqBillQty =b.BoqBillQty,
                                                             BoqQty = b.BoqQty,
                                                             BoqScopeQty =b.BoqQtyScope,
-                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc)
+                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc)
                                                             //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
                                                             //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
                                                         });
@@ -138,7 +144,9 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
             if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
-            if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
+            //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
 
             var resutl = condQuery
@@ -188,7 +196,8 @@ namespace AccApi.Repository.Managers
             //               }).ToList();
             //return results;
 
-            IEnumerable<BoqModel> condQuery = (from b in _context.TblBoqs
+            IEnumerable<BoqModel> condQuery = (from o in _context.TblOriginalBoqs
+                                               join b in _context.TblBoqs on o.ItemO equals b.BoqItem
                                                where b.BoqItem == ItemO
                                                join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
                                                join p in _context.PackagesNetworks on b.BoqScope equals p.IdPkge into gj
@@ -196,6 +205,15 @@ namespace AccApi.Repository.Managers
 
                                                select new BoqModel()
                                                {
+                                                   RowNumber = o.RowNumber,
+                                                   SectionO = o.SectionO,
+                                                   ItemO = o.ItemO,
+                                                   DescriptionO = o.DescriptionO,
+                                                   UnitO = o.UnitO,
+                                                   UnitRate = o.UnitRate,
+                                                   Scope = o.Scope,
+                                                   ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+                                                   ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
                                                    BoqSeq = b.BoqSeq,
                                                    BoqResSeq = b.BoqResSeq,
                                                    BoqCtg = b.BoqCtg,
@@ -209,14 +227,29 @@ namespace AccApi.Repository.Managers
                                                    AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
                                                    BoqBillQty = b.BoqBillQty,
                                                    BoqQty = b.BoqQty,
-                                                   BoqScopeQty = b.BoqQtyScope
+                                                   BoqScopeQty = b.BoqQtyScope,
+                                                   L2 = ((o.L2 == null) ? "" : o.L2),
+                                                   L3 = ((o.L3 == null) ? "" : o.L3),
+                                                   L4 = ((o.L4 == null) ? "" : o.L4)
                                                });
 
+
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
+            if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
+            //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
+            if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
 
             var results = condQuery.ToList();
 
@@ -224,12 +257,22 @@ namespace AccApi.Repository.Managers
         }
         public List<BoqModel> GetAllBoqList(SearchInput input)
         {
-            IEnumerable<BoqModel> condQuery = (from b in _context.TblBoqs
+            IEnumerable<BoqModel> condQuery = (from o in _context.TblOriginalBoqs
+                                               join b in _context.TblBoqs on o.ItemO equals b.BoqItem
                                                join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
                                                join p in _context.PackagesNetworks on b.BoqScope equals p.IdPkge into gj
                                                from pk in gj.DefaultIfEmpty()
                                                select new BoqModel()
                                                {
+                                                   RowNumber = o.RowNumber,
+                                                   SectionO = o.SectionO,
+                                                   ItemO = o.ItemO,
+                                                   DescriptionO = o.DescriptionO,
+                                                   UnitO = o.UnitO,
+                                                   UnitRate = o.UnitRate,
+                                                   Scope = o.Scope,
+                                                   ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+                                                   ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
                                                    BoqSeq = b.BoqSeq,
                                                    BoqResSeq = b.BoqResSeq,
                                                    BoqItem = b.BoqItem,
@@ -243,14 +286,28 @@ namespace AccApi.Repository.Managers
                                                    AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
                                                    BoqQty = b.BoqQty,
                                                    BoqBillQty = b.BoqBillQty,
-                                                   BoqScopeQty=b.BoqQtyScope
+                                                   BoqScopeQty=b.BoqQtyScope,
+                                                   L2 = ((o.L2 == null) ? "" : o.L2),
+                                                   L3 = ((o.L3 == null) ? "" : o.L3),
+                                                   L4 = ((o.L4 == null) ? "" : o.L4)
                                                });
 
+            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
             if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
+            if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
+            //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
+            if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
 
             var results = condQuery.ToList();
 
@@ -414,8 +471,7 @@ namespace AccApi.Repository.Managers
                                 if (!string.IsNullOrEmpty(input.BOQDesc)) revDtlQry = revDtlQry.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
                                 if (!string.IsNullOrEmpty(input.SheetDesc)) revDtlQry = revDtlQry.Where(w => w.ObSheetDesc == input.SheetDesc);
                                 if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) revDtlQry = revDtlQry.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-                                if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);
-                                if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.ResDiv));
+                                if (input.Package > 0) revDtlQry = revDtlQry.Where(w => w.Scope == input.Package);                                if (input.RESDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESDiv.Contains(w.ResDiv));
                                 if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.ResCtg));
                                 if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
                                 if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));

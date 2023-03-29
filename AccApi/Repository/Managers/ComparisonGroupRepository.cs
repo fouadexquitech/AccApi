@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using AutoMapper;
 using System.Linq;
 using AccApi.Repository.View_Models.Request;
+using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Managers
 {
@@ -13,10 +14,13 @@ namespace AccApi.Repository.Managers
     {
         private readonly AccDbContext _dbContext;
         private readonly IMapper _mapper;
-        public ComparisonGroupRepository(AccDbContext dbContext, IMapper mapper)
-        {
-            _dbContext = dbContext;
+        private readonly GlobalLists _globalLists;
+
+        public ComparisonGroupRepository(AccDbContext dbContext, IMapper mapper, GlobalLists globalLists)
+        { 
             _mapper = mapper;
+            _globalLists = globalLists;
+            _dbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);   
         }
         public bool AddGroup(ComparisonPackageGroupModel ComparisonPackageGroup)
         {

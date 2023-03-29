@@ -1,5 +1,4 @@
 using AccApi.Repository;
-using AccApi.Repository.GlobalServise;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.Managers;
 using Microsoft.AspNetCore.Builder;
@@ -39,9 +38,11 @@ namespace AccApi
             services.AddControllers();
 
 
-            //services.AddDbContext<AccDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AccDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDbContext<MasterDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("MasterConnection")));
             services.AddDbContext<PolicyDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("PolicyConnection")));
+
+            services.AddSingleton<GlobalLists>();
 
             services.AddTransient<ISearchRepository, SearchRepository>();
             services.AddTransient<IPackageRepository, PackageRepository>();
@@ -54,8 +55,7 @@ namespace AccApi
             services.AddTransient<IComparisonGroupRepository, ComparisonGroupRepository>();
             services.AddTransient<ICurrencyConverterRepository, CurrencyConverterRepository>();
 
-            services.AddSingleton<GlobalLists>();
-
+           
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
 
 

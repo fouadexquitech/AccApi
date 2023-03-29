@@ -180,5 +180,19 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpGet("ConnectToDB")]
+        public bool ConnectToDB(string connString)
+        {
+            try
+            {
+                return this._logonRepository.ConnectToDB(connString);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }

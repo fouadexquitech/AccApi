@@ -34,6 +34,8 @@ namespace AccApi.Repository.View_Models
         public string ResDescription { get; set; }
         public string L2 { get; set; }
         public string L3 { get; set; }
+        public string L4 { get; set; }
+
         public string? AssignedPackage { get; set; }
         public double? BoqQty { get; set; }
         public double? BoqBillQty { get; set; }

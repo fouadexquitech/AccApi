@@ -4,6 +4,7 @@ using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
 using System;
@@ -21,16 +22,21 @@ namespace AccApi.Repository.Managers
         private AccDbContext _dbContext;
         private PolicyDbContext _pdbContext;
         private MasterDbContext _mdbContext;
+        private readonly IlogonRepository _logonRepository;
+        private readonly GlobalLists _globalLists;
 
         MasterDbContext mdbcontext;
         IConfiguration configuration;
 
 
-        public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext, MasterDbContext mdbContext)
+        public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext, MasterDbContext mdbContext, IlogonRepository logonRepository, GlobalLists globalLists)
         {
-            _dbContext = dbContext;
+            //_dbContext = dbContext;
             _pdbContext = pdbContext;
             _mdbContext = mdbContext;
+            _logonRepository = logonRepository;
+            _globalLists = globalLists;
+            _dbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
         }
 
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
@@ -1048,7 +1054,9 @@ namespace AccApi.Repository.Managers
                 //BCC
                 List<string> mylistBCC = new List<string>();
                 //mylistBCC = null;
-                User user = new LogonRepository(mdbcontext, _pdbContext, _dbContext, configuration).GetUser(UserName);
+                //User user = new LogonRepository(mdbcontext, _pdbContext, _dbContext, configuration).GetUser(UserName);
+                User user = _logonRepository.GetUser(UserName);
+
                 if (user.UsrEmail != "")
                     mylistBCC.Add(user.UsrEmail);
                

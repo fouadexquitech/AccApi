@@ -21,5 +21,7 @@ namespace AccApi.Repository.Interfaces
         bool DeleteManagementEmail(int id);
         User GetUser(string username);
 
+        bool ConnectToDB(string connString);
+
     }
 }

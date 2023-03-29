@@ -21,14 +21,22 @@ namespace AccApi.Repository.Managers
         private readonly MasterDbContext _mdbcontext;
         private readonly PolicyDbContext _pdbcontext;
         private readonly AccDbContext _dbcontext;
+        private readonly GlobalLists _globalLists;
+
+        private readonly IlogonRepository _logonRepository;
+
         IConfiguration configuration;
 
-        public ConditionsRepository(AccDbContext Context, MasterDbContext mdbcontext, PolicyDbContext pdbcontext)
+        public ConditionsRepository(AccDbContext Context, MasterDbContext mdbcontext, PolicyDbContext pdbcontext, IlogonRepository logonRepository, GlobalLists globalLists)
         {
-            _dbcontext = Context;
             _mdbcontext = mdbcontext;
             _pdbcontext = pdbcontext;
+            _logonRepository = logonRepository;
+            _globalLists = globalLists;
+            _dbcontext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
         }
+
+
         public List<ComConditions> GetComConditions()
         {
             var result = from b in _mdbcontext.TblComConds
@@ -268,7 +276,7 @@ namespace AccApi.Repository.Managers
                         //BCC
                         List<string> mylistBCC = new List<string>();
                         //mylistBCC = null;
-                        User user = new LogonRepository(_mdbcontext, _pdbcontext, _dbcontext, configuration).GetUser(UserName);
+                        User user = _logonRepository.GetUser(UserName);
                         if (user.UsrEmail != "")
                             mylistBCC.Add(user.UsrEmail);
 
