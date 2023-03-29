@@ -18,7 +18,7 @@ namespace AccApi.Repository.Managers
         public SupplierRepository(AccDbContext context, GlobalLists globalLists)
         {
             _globalLists = globalLists;
-            _context = _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
 

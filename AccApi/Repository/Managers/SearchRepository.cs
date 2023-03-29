@@ -16,7 +16,7 @@ namespace AccApi.Repository.Managers
         public SearchRepository(AccDbContext context, GlobalLists globalLists)
         {
             _globalLists = globalLists;
-            _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
         public List<BOQDivList> GetBOQDivList()

@@ -36,7 +36,7 @@ namespace AccApi.Repository.Managers
             _mdbContext = mdbContext;
             _logonRepository = logonRepository;
             _globalLists = globalLists;
-            _dbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _dbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
         public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)

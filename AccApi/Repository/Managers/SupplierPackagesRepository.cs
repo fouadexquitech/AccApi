@@ -28,7 +28,7 @@ namespace AccApi.Repository.Managers
             _pdbcontext = pdbcontext;
             _logonRepository=logonRepository;
             _globalLists = globalLists;
-            _dbcontext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
         public SupplierPackagesList GetSupplierPackage(int spId)

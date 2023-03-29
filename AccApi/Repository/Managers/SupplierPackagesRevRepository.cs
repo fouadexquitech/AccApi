@@ -19,7 +19,7 @@ namespace AccApi.Repository.Managers
         {
             _masterDbContext = masterDbContext;
             _globalLists = globalLists;
-            _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
 

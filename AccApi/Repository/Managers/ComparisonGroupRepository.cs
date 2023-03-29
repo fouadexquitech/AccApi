@@ -20,7 +20,7 @@ namespace AccApi.Repository.Managers
         { 
             _mapper = mapper;
             _globalLists = globalLists;
-            _dbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);   
+            _dbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());   
         }
         public bool AddGroup(ComparisonPackageGroupModel ComparisonPackageGroup)
         {

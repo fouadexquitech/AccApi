@@ -17,7 +17,7 @@ namespace AccApi.Repository.Managers
         public AuditRepository(AccDbContext accDbContext, GlobalLists globalLists)
         {
             _globalLists = globalLists;
-            _accDbContext = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(_globalLists.GetAccDbconnectionString()).Options);
+            _accDbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
         public bool SetAuditLog(string tablename, string userid, DateTime dateTime, string action, string primarykeyvalue)
