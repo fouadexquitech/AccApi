@@ -19,6 +19,7 @@ namespace AccApi.Repository.Managers
         public IConfiguration Configuration { get; }
 
         private static PolicyDbContext pdb;
+        //private static AccDbContext costDB;
 
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration, GlobalLists globalLists)
         {
@@ -26,7 +27,7 @@ namespace AccApi.Repository.Managers
             _pdbcontext = pdbcontext;
              Configuration = configuration;
             _globalLists = globalLists;
-            _dbcontext = dbcontext ;
+            _dbcontext = dbcontext;
         }
 
         public List<ProjectCountries> GetProjectCountries()
@@ -64,18 +65,40 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public ProjectCurrency GetProjectCurrency()
+        public ProjectCurrency GetProjectCurrency(int projSeq)
         {
-            var result = from a in _dbcontext.TblParameters
-                         join b in _dbcontext.TblCurrencies
-                         on a.EstimatedCur equals b.CurId
-                         select new ProjectCurrency
-                         {
-                             curId = (int)a.EstimatedCur,
-                             curCode = b.CudCode
-                         };
+            var result = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+            string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase;
 
-            return result.FirstOrDefault();
+            if ((costDb != "") && (costDb != null))
+            {
+                string connectionString = Configuration.GetConnectionString("DefaultConnection");
+                costDb = costDb + "_CostData";
+                var connection = new SqlConnectionStringBuilder(connectionString);
+                connection.InitialCatalog = costDb;
+
+                string conName = connection.ConnectionString.ToString();
+                //costDB = _dbcontext.CreateConnectionFromOut(conName);
+
+                _globalLists.SetAccDbConnectionString(conName);
+
+                AccDbContext _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
+
+                var curList = (from b in _mdbcontext.TblCurrencies
+                               select b).ToList();
+
+                int EstimCurrID =(int)_context.TblParameters.FirstOrDefault().EstimatedCur;
+
+                var cur = curList.Where(x => x.CurId == EstimCurrID).FirstOrDefault();
+
+                ProjectCurrency projCur = new ProjectCurrency();
+                projCur.curId = cur.CurId;
+                projCur.curCode = cur.CurCode;  
+                    
+                return projCur;
+            }
+            else
+                return null;
         }
 
         //fouad

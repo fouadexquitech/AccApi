@@ -12,7 +12,7 @@ namespace AccApi.Repository.Interfaces
         List<ProjectCountries> GetProjectCountries();
         List<Project> GetProjects(int dbSeq);
         User GetLogin(string user, string pass, int projSeq);
-        ProjectCurrency GetProjectCurrency();
+        ProjectCurrency GetProjectCurrency(int projSeq);
         EmailTemplate GetSuppliersEmailTemplate(string Lang);
         bool SaveEmailTemplate(int id, string emailbody);
         List<TopManagement> GetManagementEmail(string filter);

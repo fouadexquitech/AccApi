@@ -83,11 +83,11 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetProjectCurrency")]
-        public ProjectCurrency GetProjectCurrency()
+        public ProjectCurrency GetProjectCurrency(int projSeq)
         {
             try
             {
-                return this._logonRepository.GetProjectCurrency();
+                return this._logonRepository.GetProjectCurrency(projSeq);
             }
             catch (Exception ex)
             {

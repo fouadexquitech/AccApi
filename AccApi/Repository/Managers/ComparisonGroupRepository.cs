@@ -254,7 +254,7 @@ namespace AccApi.Repository.Managers
            var lst = _dbContext.ComparisonPackageGroups.Where(x=>x.PackageId == packageId).Select(x => new ComparisonPackageGroupModel { 
             Id = x.Id,
             Name = x.Name,
-            Package = new PackageList { IDPkge = packageId }
+            Package = new Package { IDPkge = packageId }
            } ).ToList();
 
             return lst;

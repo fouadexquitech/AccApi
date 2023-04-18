@@ -5,6 +5,11 @@ namespace AccApi.Repository.Interfaces
 {
     public interface ISupplierRepository
     {
-        List<SupplierList> SupplierList(int packID);
+        List<Supplier> SupplierList(int packID);
+        List<Supplier> GetSuppliers(string filter);
+
+        bool AddSupplier(List<Supplier> sups);
+        bool UpdateSupplier(Supplier sup);
+        bool DeleteSupplier(int id);
     }
 }

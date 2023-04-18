@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.MasterModels
 {
     [Table("tblTempReportsDMS_PBI")]
+    [Index(nameof(SdhForm), Name = "IX_tblTempReportsDMS_PBI")]
+    [Index(nameof(Validity), Name = "IX_tblTempReportsDMS_PBI_1")]
     public partial class TblTempReportsDmsPbi
     {
         [Key]
@@ -93,8 +95,10 @@ namespace AccApi.Repository.Models.MasterModels
         public string SsdEcc { get; set; }
         public short? DelayDays { get; set; }
         public double? Diff { get; set; }
-        public int? SecEng { get; set; }
-        public int? SiteEng { get; set; }
+        [StringLength(300)]
+        public string SecEng { get; set; }
+        [StringLength(300)]
+        public string SiteEng { get; set; }
         [StringLength(12)]
         public string Foreman { get; set; }
         [Column("forQualStatus")]
@@ -158,5 +162,25 @@ namespace AccApi.Repository.Models.MasterModels
         public string DisciplineSubGrp { get; set; }
         [StringLength(1000)]
         public string FormDesc { get; set; }
+        [StringLength(500)]
+        public string LocationDetails { get; set; }
+        [Column("Villa Type")]
+        [StringLength(500)]
+        public string VillaType1 { get; set; }
+        [Column("ssdReturnDateCPA", TypeName = "datetime")]
+        public DateTime? SsdReturnDateCpa { get; set; }
+        [Column("ssdReplyStatusCPA")]
+        [StringLength(150)]
+        public string SsdReplyStatusCpa { get; set; }
+        [Column("ssdSubmDateCPA", TypeName = "datetime")]
+        public DateTime? SsdSubmDateCpa { get; set; }
+        [Column("ReplyStatusCPA")]
+        [StringLength(150)]
+        public string ReplyStatusCpa { get; set; }
+        [Column("sdhDate", TypeName = "datetime")]
+        public DateTime? SdhDate { get; set; }
+        [Column("ProjectDB")]
+        [StringLength(100)]
+        public string ProjectDb { get; set; }
     }
 }

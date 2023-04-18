@@ -25,5 +25,11 @@ namespace AccApi.Repository.Models.MasterModels
         [StringLength(150)]
         public string Id4 { get; set; }
         public double? DayFee { get; set; }
+        [Column("ZoneID")]
+        [StringLength(150)]
+        public string ZoneId { get; set; }
+        [Column("VillaTypeID")]
+        [StringLength(150)]
+        public string VillaTypeId { get; set; }
     }
 }

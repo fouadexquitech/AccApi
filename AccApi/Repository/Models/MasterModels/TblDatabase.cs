@@ -11,13 +11,14 @@ namespace AccApi.Repository.Models.MasterModels
     [Table("tblDataBases")]
     public partial class TblDatabase
     {
+        [Key]
         [Column("dbSeq")]
         public int DbSeq { get; set; }
-        [Key]
+        [Required]
         [Column("dbName")]
         [StringLength(50)]
         public string DbName { get; set; }
-        [Key]
+        [Required]
         [Column("dbDescription")]
         [StringLength(50)]
         public string DbDescription { get; set; }

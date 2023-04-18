@@ -79,11 +79,11 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<PackageList> PackageList()
+        public List<Package> PackageList()
         {
             var results = (from b in _context.PackagesNetworks
                           orderby b.PkgeName
-                          select new PackageList { 
+                          select new Package { 
                               IDPkge = b.IdPkge ,
                               PkgeName = b.PkgeName
                           }).ToList();

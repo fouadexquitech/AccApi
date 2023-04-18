@@ -15,29 +15,27 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("mlrReqSeq")]
         public long MlrReqSeq { get; set; }
         [Column("mlrProjCode")]
-        [StringLength(50)]
+        [StringLength(350)]
         public string MlrProjCode { get; set; }
         [Column("mlrMailType")]
-        [StringLength(20)]
+        [StringLength(350)]
         public string MlrMailType { get; set; }
         [Column("mlrCode")]
-        [StringLength(30)]
+        [StringLength(350)]
         public string MlrCode { get; set; }
         [Column("mlrReqBy")]
-        [StringLength(50)]
+        [StringLength(350)]
         public string MlrReqBy { get; set; }
         [Column("mlrRequesterMail")]
-        [StringLength(50)]
+        [StringLength(350)]
         public string MlrRequesterMail { get; set; }
         [Column("mlrAttachment")]
-        [StringLength(100)]
         public string MlrAttachment { get; set; }
         [Column("mlrSent")]
         public bool? MlrSent { get; set; }
         [Column("mlrSentOn", TypeName = "datetime")]
         public DateTime? MlrSentOn { get; set; }
         [Column("mlrSubject")]
-        [StringLength(300)]
         public string MlrSubject { get; set; }
         [Column("mlrBody", TypeName = "ntext")]
         public string MlrBody { get; set; }
@@ -48,7 +46,6 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("mlrQueryOfTable", TypeName = "ntext")]
         public string MlrQueryOfTable { get; set; }
         [Column("mlrMailTo")]
-        [StringLength(50)]
         public string MlrMailTo { get; set; }
     }
 }

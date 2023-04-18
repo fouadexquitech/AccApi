@@ -38,18 +38,33 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("msPBI_Report")]
         [StringLength(50)]
         public string MsPbiReport { get; set; }
-        [Column("msDCname")]
-        [StringLength(200)]
-        public string MsDcname { get; set; }
-        [Column("msDCemail")]
-        [StringLength(200)]
-        public string MsDcemail { get; set; }
         public int? NewProject { get; set; }
-        [Column("msCMname")]
-        [StringLength(200)]
-        public string MsCmname { get; set; }
-        [Column("msCMemail")]
-        [StringLength(200)]
-        public string MsCmemail { get; set; }
+        [Column("msReportsPortal")]
+        [StringLength(50)]
+        public string MsReportsPortal { get; set; }
+        [Column("msIsEMS")]
+        public bool? MsIsEms { get; set; }
+        [Column("msEMasPM")]
+        public bool? MsEmasPm { get; set; }
+        [Column("msPlannedStartDate", TypeName = "date")]
+        public DateTime? MsPlannedStartDate { get; set; }
+        [Column("msPlannedEndDate", TypeName = "date")]
+        public DateTime? MsPlannedEndDate { get; set; }
+        [Column("msPlannedDuration")]
+        public int? MsPlannedDuration { get; set; }
+        [Column("msActualStartDate", TypeName = "date")]
+        public DateTime? MsActualStartDate { get; set; }
+        [Column("msActualEndDate", TypeName = "date")]
+        public DateTime? MsActualEndDate { get; set; }
+        [Column("msActualDuration")]
+        public int? MsActualDuration { get; set; }
+        [Column("msEngEndDate", TypeName = "date")]
+        public DateTime? MsEngEndDate { get; set; }
+        [Column("msIsFreeze")]
+        public bool? MsIsFreeze { get; set; }
+        [Column("msFreezeDate", TypeName = "date")]
+        public DateTime? MsFreezeDate { get; set; }
+        [Column("msUnFreezeDate", TypeName = "date")]
+        public DateTime? MsUnFreezeDate { get; set; }
     }
 }

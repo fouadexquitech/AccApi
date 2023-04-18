@@ -12,7 +12,7 @@ namespace AccApi.Repository.Interfaces
         List<BOQLevelList> GetBOQLevel4List();
         List<RESDivList> RESDivList();
         List<RESTypeList> RESTypeList();
-        List<PackageList> PackageList();
+        List<Package> PackageList();
         List<RESPackageList> RESPackageList();
         List<SheetDescList> SheetDescList();
     }

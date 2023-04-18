@@ -102,11 +102,10 @@ namespace AccApi.Controllers
                 _logger.LogError(ex.Message);
                 return null;
             }
-
         }
 
         [HttpGet("PackageList")]
-        public List<PackageList> GetPackageList()
+        public List<Package> GetPackageList()
         {
             try
             {

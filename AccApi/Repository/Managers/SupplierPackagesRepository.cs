@@ -71,7 +71,7 @@ namespace AccApi.Repository.Managers
         {
             if (byboq == 1)
             {
-                var pack = from o in _dbcontext.TblOriginalBoqs
+                var pack = (from o in _dbcontext.TblOriginalBoqs
                            where o.Scope == packId 
                            orderby o.RowNumber
                            select new boqPackageList
@@ -121,8 +121,9 @@ namespace AccApi.Repository.Managers
                                unit = o.UnitO,
                                qty = (double)o.QtyScope,
                                exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
-                           };
-                return pack.ToList();
+                           }).ToList();
+
+                return pack;
             }
             else
             {
@@ -171,7 +172,7 @@ namespace AccApi.Repository.Managers
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq).Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
+            var result = boqPackageList(packId, byBoq);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -404,8 +405,6 @@ namespace AccApi.Repository.Managers
                     _dbcontext.SaveChanges();
                 }
 
-
-
                 xlPackage.Save();
                 stream.Position = 0;
                 string excelName = $"Package-{PackageName}.xlsx";
@@ -418,6 +417,7 @@ namespace AccApi.Repository.Managers
                 package.FilePath = excelName;
                 _dbcontext.SaveChanges();
 
+                //excelName = "Package-Aluminum Doors and Windows.xlsx";
                 return excelName;
             }
         }

@@ -64,7 +64,9 @@ namespace AccApi.Controllers
         {
             try
             {
-                return new JsonResult(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId, byBoq));
+                var res=(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId, byBoq));
+                return new JsonResult(res);
+
             }
             catch (Exception ex)
             {

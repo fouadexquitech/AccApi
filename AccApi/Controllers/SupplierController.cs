@@ -21,7 +21,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierList")]
-        public List<SupplierList> GetSupplierList(int packID)
+        public List<Supplier> GetSupplierList(int packID)
         {
             try
             {
@@ -31,6 +31,62 @@ namespace AccApi.Controllers
             {
                 _logger.LogError(ex.Message);
                 return null;
+            }
+        }
+
+        [HttpGet("GetSuppliers")]
+        public List<Supplier> GetSuppliers(string filter)
+        {
+            try
+            {
+                return this._supplierRepository.GetSuppliers(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("AddSupplier")]
+        public bool AddSupplier(List<Supplier> sups)
+        {
+            try
+            {
+                return this._supplierRepository.AddSupplier(sups);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdateSupplier")]
+        public bool UpdateSupplier(Supplier sup)
+        {
+            try
+            {
+                return this._supplierRepository.UpdateSupplier(sup);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DeleteSupplier")]
+        public bool DeleteSupplier(int id)
+        {
+            try
+            {
+                return this._supplierRepository.DeleteSupplier(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
             }
         }
     }
