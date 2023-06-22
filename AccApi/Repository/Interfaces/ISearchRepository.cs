@@ -15,5 +15,6 @@ namespace AccApi.Repository.Interfaces
         List<Package> PackageList();
         List<RESPackageList> RESPackageList();
         List<SheetDescList> SheetDescList();
+        List<RessourceList> GetRessourcesList();
     }
 }

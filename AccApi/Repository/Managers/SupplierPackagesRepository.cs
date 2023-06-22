@@ -18,23 +18,27 @@ namespace AccApi.Repository.Managers
     {
         private readonly AccDbContext _dbcontext;
         private readonly PolicyDbContext _pdbcontext;
+        private MasterDbContext _mdbContext;
         private readonly IlogonRepository _logonRepository;
         private readonly GlobalLists _globalLists;
 
-
-        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, IlogonRepository logonRepository, GlobalLists globalLists)
+        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, MasterDbContext mdbContext, IlogonRepository logonRepository, GlobalLists globalLists)
         {
             /*_dbcontext = Context;*/
             _pdbcontext = pdbcontext;
-            _logonRepository=logonRepository;
+            _mdbContext = mdbContext;
+            _logonRepository = logonRepository;
             _globalLists = globalLists;
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
         public SupplierPackagesList GetSupplierPackage(int spId)
         {
+            var supList = (from b in _mdbContext.TblSuppliers
+                           select b).ToList();
+
             var results = from b in _dbcontext.TblSupplierPackages
-                          join c in _dbcontext.TblSuppliers on b.SpSupplierId equals c.SupCode
+                          join c in supList on b.SpSupplierId equals c.SupCode
                           where b.SpPackSuppId == spId
                           orderby b.SpPackSuppId
                           select new SupplierPackagesList
@@ -51,8 +55,11 @@ namespace AccApi.Repository.Managers
 
         public List<SupplierPackagesList> SupplierPackagesList(int packageid)
         {
+            var supList = (from b in _mdbContext.TblSuppliers
+                           select b).ToList();
+
             var results = from b in _dbcontext.TblSupplierPackages
-                          join c in _dbcontext.TblSuppliers on b.SpSupplierId equals c.SupCode
+                          join c in supList on b.SpSupplierId equals c.SupCode
                           where b.SpPackageId == packageid
                           orderby b.SpPackSuppId
                           select new SupplierPackagesList
@@ -127,7 +134,7 @@ namespace AccApi.Repository.Managers
             }
             else
             {
-                var pack = from o in _dbcontext.TblOriginalBoqs
+                var pack = (from o in _dbcontext.TblOriginalBoqs
                            join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
                            join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                            where b.BoqScope == packId
@@ -154,10 +161,13 @@ namespace AccApi.Repository.Managers
                                resCode = b.BoqPackage,
                                resDesc = r.ResDescription,
                                ResUnit = b.BoqUnitMesure,
-                               boqQtyScope = (double)b.BoqQtyScope,
+                               boqBillQty = b.BoqBillQty,
+                               boqQty = b.BoqQty,
+                               boqScopeQty = b.BoqQtyScope,
                                exportedToSupplier = (byte) ((o.ExportedToSupplier == null) ? 0 :  o.ExportedToSupplier)
-            };
-                return pack.ToList();
+            }).ToList();
+
+               return pack;
             }
         }
 
@@ -168,7 +178,7 @@ namespace AccApi.Repository.Managers
             //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
             //AH0702
 
-            var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+            var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
@@ -218,10 +228,13 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 8].Value = "Ressouce Description";
                     worksheet.Cells[i, 9].Value = "Ressouce Unit";
                     worksheet.Cells[i, 10].Value = "Ressouce Qty";
+                    worksheet.Column(10).AutoFit();
                     worksheet.Cells[i, 11].Value = "Unit Price";
                     worksheet.Cells[i, 12].Value = "Discount %";
                     worksheet.Cells[i, 13].Value = "Unit Price After Disc.";
+                    worksheet.Column(13).AutoFit();
                     worksheet.Cells[i, 14].Value = "Total Price";
+                    worksheet.Column(14).AutoFit();
                     worksheet.Cells[i, 15].Value = "Comments";
                     worksheet.Column(15).Width = 50;
                     worksheet.Columns[15].Style.WrapText = true;
@@ -377,7 +390,7 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
                         worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
-                        worksheet.Cells[i, 10].Value = (x.boqQtyScope == null) ? "" : x.boqQtyScope;
+                        worksheet.Cells[i, 10].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
                         worksheet.Cells[i, 10].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 13].Formula = "= (K" + i +") - (K" + i + "*" + "L" + i + "/100)";
                         worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
@@ -471,7 +484,7 @@ namespace AccApi.Repository.Managers
                     _dbcontext.SaveChanges();
 
                     //send email
-                    string SupEmail = (from r in _dbcontext.TblSuppliers
+                    string SupEmail = (from r in _mdbContext.TblSuppliers
                                        where r.SupCode == supplier.supID
                                        select r.SupEmail).First<string>();
 
@@ -531,12 +544,13 @@ namespace AccApi.Repository.Managers
 
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
         {
-            var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+            var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
             var p = _dbcontext.TblParameters.FirstOrDefault();
-            var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
-            string ProjectName = proj.PrjName;
+            //var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            //string ProjectName = proj.PrjName;
+            string ProjectName = p.Project;
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;

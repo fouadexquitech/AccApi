@@ -146,5 +146,20 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpGet("GetRessourcesList")]
+        public List<RessourceList> GetRessourcesList()
+        {
+            try
+            {
+                return this._searchRepository.GetRessourcesList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
     }
 }

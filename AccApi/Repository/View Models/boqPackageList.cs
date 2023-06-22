@@ -60,7 +60,9 @@ namespace AccApi.Repository.View_Models
         public string resCode { get; set; }
         public string resDesc { get; set; }
         public string ResUnit { get; set; }
-        public double boqQtyScope { get; set; }
+        public double? boqQty { get; set; }
+        public double? boqBillQty { get; set; }
+        public double? boqScopeQty { get; set; }
         public byte exportedToSupplier { get; set; }
     }
 }

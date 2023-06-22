@@ -177,12 +177,13 @@ namespace AccApi.Repository.Managers
 
         public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName)
         {
-            var package = _dbcontext.PackagesNetworks.Where(x => x.IdPkge == packId).FirstOrDefault();
+            var package = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
             var p = _dbcontext.TblParameters.FirstOrDefault();
-            var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
-            string ProjectName = proj.PrjName;
+            //var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+            //string ProjectName = proj.PrjName;
+            string ProjectName = p.Project;
 
             //var result =  _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
 
@@ -257,7 +258,7 @@ namespace AccApi.Repository.Managers
 
                 foreach (var sp in SupPack)
                 {
-                    string SupEmail = (from r in _dbcontext.TblSuppliers
+                    string SupEmail = (from r in _mdbcontext.TblSuppliers
                                        where r.SupCode == sp.SpSupplierId
                                        select r.SupEmail).First<string>();
 

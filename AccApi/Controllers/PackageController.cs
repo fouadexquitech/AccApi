@@ -1,6 +1,5 @@
 ﻿
 using AccApi.Repository.Interfaces;
-using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +44,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._packageRepository.GetBoqList(ItemO ,input);
+                return this._packageRepository.GetBoqList(ItemO, input);
             }
             catch (Exception ex)
             {
@@ -68,35 +67,7 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetPackageById")]
-        public PackageDetailsModel GetPackageById(int IdPkge)
-        {
-            try
-            {
-                return this._packageRepository.GetPackageById(IdPkge);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return null;
-            }
-        }
-
-        [HttpPost("AssignPackages")]
-        public bool AssignPackages(AssignPackages input)
-        {
-            try
-            {
-                return this._packageRepository.AssignPackages(input);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return false;
-            }
-        }
-
-        
+    
         [HttpPost("ExportBoqExcel")]
         public JsonResult ExportBoqExcel(AssignPackages input)
         {
@@ -111,20 +82,7 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpPost("GetPackageSuppliersPrice")]
-        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
-        {
-            try
-            {
-                return this._packageRepository.GetPackageSuppliersPrice(IdPkge,input);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return null;
-            }
-        }
-
+      
         [HttpPost("GetGroupBoqList")]
         public List<GroupingBoqModel> GetGroupBoqList(int packageId, int groupId, SearchInput input)
         {
@@ -282,5 +240,105 @@ namespace AccApi.Controllers
         }
 
 
+        #region Packages 
+        [HttpGet("GetPackageById")]
+        public PackageDetailsModel GetPackageById(int IdPkge)
+        {
+            try
+            {
+                return this._packageRepository.GetPackageById(IdPkge);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("AssignPackages")]
+        public bool AssignPackages(AssignPackages input)
+        {
+            try
+            {
+                return this._packageRepository.AssignPackages(input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("GetPackageSuppliersPrice")]
+        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
+        {
+            try
+            {
+                return this._packageRepository.GetPackageSuppliersPrice(IdPkge, input);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+
+        [HttpGet("GetPackages")]
+        public List<Package> GetPackages(string filter)
+        {
+            try
+            {
+                return this._packageRepository.GetPackages(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("AddPackage")]
+        public bool AddPackage(List<Package> packs)
+        {
+            try
+            {
+                return this._packageRepository.AddPackage(packs);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("UpdatePackage")]
+        public bool UpdatePackage(Package pack)
+        {
+            try
+            {
+                return this._packageRepository.UpdatePackage(pack);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("DeletePackage")]
+        public bool DeletePackage(int id)
+        {
+            try
+            {
+                return this._packageRepository.DeletePackage(id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+        #endregion
     }
 }

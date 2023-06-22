@@ -11,11 +11,13 @@ namespace AccApi.Repository.Managers
     public class SearchRepository: ISearchRepository
     {
         private readonly AccDbContext _context;
+        private MasterDbContext _mdbContext;
         private readonly GlobalLists _globalLists;
 
-        public SearchRepository(AccDbContext context, GlobalLists globalLists)
+        public SearchRepository(AccDbContext context, MasterDbContext mdbContext, GlobalLists globalLists)
         {
             _globalLists = globalLists;
+            _mdbContext = mdbContext;
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
@@ -81,12 +83,13 @@ namespace AccApi.Repository.Managers
 
         public List<Package> PackageList()
         {
-            var results = (from b in _context.PackagesNetworks
-                          orderby b.PkgeName
-                          select new Package { 
-                              IDPkge = b.IdPkge ,
-                              PkgeName = b.PkgeName
-                          }).ToList();
+            var results = (from b in _mdbContext.TblPackages
+                           orderby b.PkgeName
+                           select new Package
+                           {
+                               IDPkge = b.PkgeId,
+                               PkgeName = b.PkgeName
+                           }).ToList();
 
             return results;
         }
@@ -107,6 +110,27 @@ namespace AccApi.Repository.Managers
                           group b by b.ObSheetDesc into g
                           orderby g.Key
                           select new SheetDescList { obSheetDesc = g.Key }).ToList();
+
+            return results;
+        }
+
+        public List<RessourceList> GetRessourcesList()
+        {
+            var boqResList = (from b in _context.TblBoqs
+                                            group b by b.BoqResSeq into g
+                                            orderby g.Key
+                                            select new Ressource
+                                            { seq= g.Key }).ToList();
+
+            var results = (from b in boqResList 
+                           join c in _context.TblResources
+                           on b.seq equals c.ResSeq
+                           orderby c.ResDescription
+                           select new RessourceList
+                           {
+                               resSeq = c.ResSeq,
+                               resDesc = c.ResDescription
+                           }).ToList();
 
             return results;
         }

@@ -22,7 +22,7 @@ namespace AccApi.Repository.Managers
     public class PackageRepository : IPackageRepository
     {
         private readonly AccDbContext _context;
-        private readonly MasterDbContext _mcontext;
+        private readonly MasterDbContext _mdbcontext;
         private readonly IMapper _mapper;
         private readonly GlobalLists _globalLists;
 
@@ -31,8 +31,8 @@ namespace AccApi.Repository.Managers
         //private readonly AccDbContext _context = new AccDbContext(new DbContextOptionsBuilder<AccDbContext>().UseSqlServer(@"Server=10.10.2.123;Database=CiteDefence_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=false").Options);
 
         public PackageRepository(AccDbContext context, MasterDbContext mcontext, IMapper mapper, GlobalLists globalLists)
-        {           
-            _mcontext = mcontext;
+        {
+            _mdbcontext = mcontext;
             _mapper = mapper;
             _globalLists = globalLists;
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
@@ -76,29 +76,33 @@ namespace AccApi.Repository.Managers
             if (input.RESType.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.RESPackage)) blankInput = false;
             if (!string.IsNullOrEmpty(input.RESDesc)) blankInput = false;
-            if (input.Package > 0) blankInput = false;
             if (input.boqLevel2.Length > 0) blankInput = false;
             if (input.boqLevel3.Length > 0) blankInput = false;
-            //if (!string.IsNullOrEmpty(input.boqLevel3)) blankInput = false;
             if (input.boqLevel4.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.obTradeDesc)) blankInput = false;
+            if (input.isItemsAssigned > 0) blankInput = false;
+            if (input.boqResourceSeq.Length > 0) blankInput = false;
 
             if (blankInput)
                 return null;
 
-            var lstPackages = (from p in _context.PackagesNetworks
+            var packList = (from p in _mdbcontext.TblPackages
                                select new packagesList
                                {
-                                   id = (int)p.IdPkge,
-                                   name = p.PkgeName
+                                   PkgeId = (int)p.PkgeId,
+                                   PkgeName = p.PkgeName
                                }).ToList();
 
+            //IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
+            //                 join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+            //                 join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+            //                 join p in packList on o.Scope equals p.PkgeId into gj
+            //                 from pk in gj.DefaultIfEmpty()
+
             IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
-                                                        join b in _context.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        join p in _context.PackagesNetworks on o.Scope equals p.IdPkge into gj
-                                                        from pk in gj.DefaultIfEmpty()
-                                                        select new BoqRessourcesList
+                             join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+                             join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                             select new BoqRessourcesList
                                                         {
                                                             RowNumber = o.RowNumber,
                                                             SectionO = o.SectionO,
@@ -117,8 +121,7 @@ namespace AccApi.Repository.Managers
                                                             ResDescription = r.ResDescription,
                                                             L2 = ((o.L2 == null) ? "" : o.L2),
                                                             L3 = ((o.L3 == null) ? "" : o.L3),
-                                                            L4 = ((o.L4 == null) ? "" : o.L4),
-                                                            AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
+                                                            L4 = ((o.L4 == null) ? "" : o.L4),                                                           
                                                             BillQtyO = o.ObBillQty,
                                                             QtyO = o.QtyO,                                                        
                                                             ScopeQtyO = o.QtyScope,
@@ -126,10 +129,12 @@ namespace AccApi.Repository.Managers
                                                             BoqQty = b.BoqQty,
                                                             BoqScopeQty =b.BoqQtyScope,
                                                             ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
-                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc)
-                                                            //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
-                                                            //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
-                                                        });
+                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
+                                                            AssignedPackage= "",
+                                                            ResSeq=r.ResSeq
+                                 //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
+                                 //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
+                             });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -147,8 +152,34 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.ResSeq == input.boqResourceSeq);
 
-            var resutl = condQuery
+            switch (input.isItemsAssigned)
+            {
+                case 1:
+                    condQuery = condQuery.Where(w => w.Scope >0);
+                    condQuery = condQuery.Where(w => w.BoqScope >0);
+                    break;
+                case 2:
+                    condQuery = condQuery.Where(w => w.Scope == null || w.Scope == 0);
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    break;
+
+                default:
+                    break;
+            }
+
+
+            //Update Package Name
+            var qry = condQuery.ToList();
+            foreach (var x in qry.Where(i=>i.Scope>0))
+            {
+                 x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            }
+
+
+
+            var resutl = qry
                 .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
                 .Select(p => p.FirstOrDefault())
                 .Select(p => new BoqRessourcesList
@@ -171,11 +202,13 @@ namespace AccApi.Repository.Managers
             return resutl;
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
         }
+
         private string GetPackageName(int id)
         {
-            var result = _context.PackagesNetworks.Where(x => x.IdPkge == id).FirstOrDefault();
+            var result = _mdbcontext.TblPackages.Where(x => x.PkgeId == id).FirstOrDefault();
             return result.PkgeName;
         }
+
         public List<BoqModel> GetBoqList(string ItemO, SearchInput input)
         {
             //var results = (from b in _context.TblBoqs
@@ -195,13 +228,15 @@ namespace AccApi.Repository.Managers
             //               }).ToList();
             //return results;
 
+            var packList = (from b in _mdbcontext.TblPackages
+                            select b).ToList();
+
             IEnumerable<BoqModel> condQuery = (from o in _context.TblOriginalBoqs
                                                join b in _context.TblBoqs on o.ItemO equals b.BoqItem
                                                where b.BoqItem == ItemO
                                                join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                                               join p in _context.PackagesNetworks on b.BoqScope equals p.IdPkge into gj
-                                               from pk in gj.DefaultIfEmpty()
-
+                                               //join p in packList on b.BoqScope equals p.PkgeId into gj
+                                               //from pk in gj.DefaultIfEmpty()
                                                select new BoqModel()
                                                {
                                                    RowNumber = o.RowNumber,
@@ -222,14 +257,14 @@ namespace AccApi.Repository.Managers
                                                    BoqPackage = b.BoqPackage,
                                                    BoqScope = b.BoqScope,
                                                    ResDescription = r.ResDescription,
-                                                   BoqItem = b.BoqItem,
-                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
+                                                   BoqItem = b.BoqItem,                                                  
                                                    BoqBillQty = b.BoqBillQty,
                                                    BoqQty = b.BoqQty,
                                                    BoqScopeQty = b.BoqQtyScope,
                                                    L2 = ((o.L2 == null) ? "" : o.L2),
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
-                                                   L4 = ((o.L4 == null) ? "" : o.L4)
+                                                   L4 = ((o.L4 == null) ? "" : o.L4),
+                                                   AssignedPackage = ""
                                                });
 
 
@@ -249,18 +284,28 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.BoqResSeq == input.boqResourceSeq);
 
+            //Update Package Name
             var results = condQuery.ToList();
+            foreach (var x in results.Where(i => i.Scope > 0))
+            {
+                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            }
 
             return results;
         }
+
         public List<BoqModel> GetAllBoqList(SearchInput input)
         {
+            var packList = (from b in _mdbcontext.TblPackages
+                            select b).ToList();
+
             IEnumerable<BoqModel> condQuery = (from o in _context.TblOriginalBoqs
                                                join b in _context.TblBoqs on o.ItemO equals b.BoqItem
                                                join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                                               join p in _context.PackagesNetworks on b.BoqScope equals p.IdPkge into gj
-                                               from pk in gj.DefaultIfEmpty()
+                                               //join p in packList on b.BoqScope equals p.PkgeId into gj
+                                               //from pk in gj.DefaultIfEmpty()
                                                select new BoqModel()
                                                {
                                                    RowNumber = o.RowNumber,
@@ -282,13 +327,13 @@ namespace AccApi.Repository.Managers
                                                    BoqPackage = b.BoqPackage,
                                                    BoqScope = b.BoqScope,
                                                    ResDescription = r.ResDescription,
-                                                   AssignedPackage = (pk.PkgeName == null) ? "" : pk.PkgeName,
                                                    BoqQty = b.BoqQty,
                                                    BoqBillQty = b.BoqBillQty,
                                                    BoqScopeQty=b.BoqQtyScope,
                                                    L2 = ((o.L2 == null) ? "" : o.L2),
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
-                                                   L4 = ((o.L4 == null) ? "" : o.L4)
+                                                   L4 = ((o.L4 == null) ? "" : o.L4),
+                                                   AssignedPackage = ""
                                                });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -307,15 +352,20 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.BoqResSeq == input.boqResourceSeq);
 
+            //Update Package Name
             var results = condQuery.ToList();
-
+            foreach (var x in results.Where(i => i.Scope > 0))
+            {
+                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            }
             return results;
         }
         public PackageDetailsModel GetPackageById(int IdPkge)
         {
-            var query = from b in _context.PackagesNetworks
-                        where b.IdPkge == IdPkge
+            var query = from b in _mdbcontext.TblPackages
+                        where b.PkgeId == IdPkge
                         select new PackageDetailsModel
                         {
                             PackageName = b.PkgeName,
@@ -375,7 +425,7 @@ namespace AccApi.Repository.Managers
         public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input)
         {
             //get Exchange Rate Now
-            var curList = (from b in _mcontext.TblCurrencies
+            var curList = (from b in _mdbcontext.TblCurrencies
                            select b).ToList();
 
             var usedCur = from cur in curList
@@ -399,16 +449,19 @@ namespace AccApi.Repository.Managers
             List<RevisionDetails> revisionDetails = new List<RevisionDetails>();
             List<FieldList> fieldLists = new List<FieldList>();
 
-            var query = (from a in _context.TblSupplierPackages
-                         join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
-                         join rev in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals rev.PrPackSuppId
-                         where (a.SpPackageId == pckgID && rev.PrRevNo == 0)
+            var supList = (from b in _mdbcontext.TblSuppliers
+                           select b).ToList();
+
+            var query = (from sup in supList
+                         join b in _context.TblSupplierPackages on sup.SupCode equals b.SpSupplierId
+                         join rev in _context.TblSupplierPackageRevisions on b.SpPackSuppId equals rev.PrPackSuppId
+                         where (b.SpPackageId == pckgID && rev.PrRevNo == 0)
                          select new PackageSuppliersPrice
                          {
-                             SupplierId = a.SpSupplierId,
+                             SupplierId = b.SpSupplierId,
                              SupplierName = sup.SupName,
                              LastRevisionDate = rev.PrRevDate,
-                             ByBoq = (byte)((a.SpByBoq == null) ? 0 : a.SpByBoq)
+                             ByBoq = (byte)((b.SpByBoq == null) ? 0 : b.SpByBoq)
                          }).ToList();
 
             if (query.Count > 0)
@@ -432,7 +485,6 @@ namespace AccApi.Repository.Managers
                         IEnumerable<RevisionDetails> revDtlQryIdeal;
 
                         if (item.SupplierName == "Ideal")
-
                         {
                             if (byboq == 1)
                             {
@@ -441,9 +493,8 @@ namespace AccApi.Repository.Managers
                                              join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                              join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                              join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
-                                             join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0)
-
                                              select new RevisionDetails
                                              {
                                                  ItemO = o.ItemO,
@@ -499,7 +550,7 @@ namespace AccApi.Repository.Managers
                                              join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
                                              join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
                                              join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
-                                             join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                              select new RevisionDetails
@@ -573,7 +624,7 @@ namespace AccApi.Repository.Managers
                                              join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                              join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                              join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
-                                             join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                              select new RevisionDetails
@@ -618,7 +669,7 @@ namespace AccApi.Repository.Managers
                                              join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
                                              join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
                                              join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
-                                             join sup in _context.TblSuppliers on a.SpSupplierId equals sup.SupCode
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
 
                                              select new RevisionDetails
@@ -847,6 +898,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
         public bool updateBoqResQty(BoqModel res)
         {
             var result = _context.TblBoqs.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
@@ -861,6 +913,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
         public bool updateBoqTradeDesc(string tradeDesc,List<OriginalBoqModel> origBoqList)
         {
             if (origBoqList != null)
@@ -887,6 +940,77 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
+
+
+        #region Packages
+        public List<Package> GetPackages(string filter)
+        {
+            var result = (from b in _mdbcontext.TblPackages
+                          orderby b.PkgeName
+                          select new Package
+                          {
+                              IDPkge = b.PkgeId,
+                              PkgeName = b.PkgeName,
+                              Division = b.Division
+                          }).ToList();
+
+            //return result.ToList();
+
+            if (filter != null)
+            {
+                result = result.Where(x => string.Concat(x.PkgeName.ToUpper()).Contains(filter.ToUpper())).ToList();
+            }
+            return result.ToList();
+        }
+
+
+        public bool AddPackage(List<Package> packs)
+        {
+            foreach (var item in packs)
+            {
+                var result = new Models.MasterModels.TblPackage { PkgeName = item.PkgeName, Division = item.Division };
+                _mdbcontext.Add<Models.MasterModels.TblPackage>(result);
+                _mdbcontext.SaveChanges();
+            }
+
+            return true;
+        }
+
+        public bool UpdatePackage(Package pack)
+        {
+            var result = _mdbcontext.TblPackages.Where(x => x.PkgeId == pack.IDPkge).FirstOrDefault();
+            result.PkgeName = pack.PkgeName;
+            result.Division = pack.Division;
+
+            if (result != null)
+            {
+                _mdbcontext.TblPackages.Update(result);
+                _mdbcontext.SaveChanges();
+                return true;
+            }
+            else
+                return false;
+        }
+
+        public bool DeletePackage(int id)
+        {
+            var pack = _context.TblSupplierPackages.Where(x => x.SpPackageId == id).FirstOrDefault();
+            if (pack == null)
+            {
+                var result = _mdbcontext.TblPackages.Where(x => x.PkgeId == id).FirstOrDefault();
+                if (result != null)
+                {
+                    _mdbcontext.TblPackages.Remove(result);
+                    _mdbcontext.SaveChanges();
+                    return true;
+                }
+                else
+                    return false;
+            }
+            else
+                return false;
+        }
+        #endregion
 
     }
 }

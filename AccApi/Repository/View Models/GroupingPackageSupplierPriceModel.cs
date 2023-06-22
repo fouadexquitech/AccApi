@@ -35,6 +35,7 @@ namespace AccApi.Repository.View_Models
         public double? Discount { get; set; }
         public double? UPriceAfterDiscount { get; set; }
 
+        public byte byBoq { get; set; }
     }
 
     public class LiveExchange

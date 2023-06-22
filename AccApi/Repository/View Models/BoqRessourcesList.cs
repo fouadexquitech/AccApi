@@ -44,7 +44,7 @@ namespace AccApi.Repository.View_Models
 
     public class packagesList
     {
-        public int? id { get; set; }
-        public string? name { get; set; }
+        public int? PkgeId { get; set; }
+        public string? PkgeName { get; set; }
     }
 }

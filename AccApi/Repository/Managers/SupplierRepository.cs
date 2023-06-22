@@ -29,17 +29,26 @@ namespace AccApi.Repository.Managers
             where p.PkgeId == packID
             select p).First();
 
-            var results=from b in _mdbcontext.TblSuppliers
-                       join d in _mdbcontext.TblSupplierDivs
-                       on b.SupCode  equals d.SupCode
-                       where d.SupDiv == package.Division
-                        orderby b.SupName
-                       select new Supplier
-                       {
-                           SupID = b.SupCode,
-                           SupName = b.SupName,
-                           SupEmail=b.SupEmail
-                       };
+            //var results=from b in _mdbcontext.TblSuppliers
+            //           join d in _mdbcontext.TblSupplierDivs
+            //           on b.SupCode  equals d.SupCode
+            //           where d.SupDiv == package.Division
+            //            orderby b.SupName
+            //           select new Supplier
+            //           {
+            //               SupID = b.SupCode,
+            //               SupName = b.SupName,
+            //               SupEmail=b.SupEmail
+            //           };
+
+            var results = from b in _mdbcontext.TblSuppliers
+                          orderby b.SupName
+                          select new Supplier
+                          {
+                              SupID = b.SupCode,
+                              SupName = b.SupName,
+                              SupEmail = b.SupEmail
+                          };
 
             return results.ToList();
         }

@@ -94,4 +94,9 @@ namespace AccApi.Repository.View_Models
         public List<ressourceItem> supplierResItemList { get; set; }
 
     }
+
+    public class Ressource
+    {
+        public string seq { get; set; }
+    }
 }

@@ -124,7 +124,8 @@ namespace AccApi.Repository.Managers
                 return usr;
             }
 
-            bool isAdmin = (bool)(usr.UsrAdmin);
+
+            bool isAdmin = (bool)(usr.UsrAdmin==null ? false : usr.UsrAdmin);
             if (!isAdmin)
             {
                 var query = pdb.TblUsersProjects.Where(x=>x.UpUserId == username && x.UpProject==projSeq).FirstOrDefault();
