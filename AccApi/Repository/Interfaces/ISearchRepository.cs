@@ -16,5 +16,7 @@ namespace AccApi.Repository.Interfaces
         List<RESPackageList> RESPackageList();
         List<SheetDescList> SheetDescList();
         List<RessourceList> GetRessourcesList();
+
+        List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter);
     }
 }

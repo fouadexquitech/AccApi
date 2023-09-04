@@ -135,5 +135,76 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
+        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
+        {
+            
+            IQueryable<RessourceList> query = null;
+            
+            
+            List<RessourceList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+
+            if ((Level2 == null || Level2.Count == 0) && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
+            {
+                query = (from b in _context.TblBoqs
+                         join c in _context.TblResources
+                         on b.BoqResSeq equals c.ResSeq
+                         join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                         orderby c.ResDescription
+                         select new RessourceList
+                         {
+                             resSeq = c.ResSeq,
+                             resDesc = c.ResDescription
+                         }).Distinct();
+            }
+            else if (Level2 != null && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
+            {
+                query = (from b in _context.TblBoqs
+                         join c in _context.TblResources
+                         on b.BoqResSeq equals c.ResSeq
+                         join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                         where Level2.Contains(i.L2)
+                         orderby c.ResDescription
+                         select new RessourceList
+                         {
+                             resSeq = c.ResSeq,
+                             resDesc = c.ResDescription
+                         }).Distinct();
+            }
+            else if (Level3 != null && (Level4 == null || Level4.Count == 0))
+            {
+                query = (from b in _context.TblBoqs
+                         join c in _context.TblResources
+                         on b.BoqResSeq equals c.ResSeq
+                         join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                         where Level3.Contains(i.L3)
+                         orderby c.ResDescription
+                         select new RessourceList
+                         {
+                             resSeq = c.ResSeq,
+                             resDesc = c.ResDescription
+                         }).Distinct();
+            }
+            else if (Level4 != null)
+            {
+                query = (from b in _context.TblBoqs
+                         join c in _context.TblResources
+                         on b.BoqResSeq equals c.ResSeq
+                         join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                         where Level4.Contains(i.L4)
+                         orderby c.ResDescription
+                         select new RessourceList
+                         {
+                             resSeq = c.ResSeq,
+                             resDesc = c.ResDescription
+                         }).Distinct();
+            }
+
+            return query.ToList();
+        }
+
     }
 }

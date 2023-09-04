@@ -98,5 +98,16 @@ namespace AccApi.Repository.View_Models
     public class Ressource
     {
         public string seq { get; set; }
+
+        public string ItemO { get; set; }
+    }
+
+    public class RessourceLevelsFilter
+    {
+        public List<string> Level2 { get; set; }
+
+        public List<string> Level3 { get; set; }
+
+        public List<string> Level4 { get; set; }
     }
 }

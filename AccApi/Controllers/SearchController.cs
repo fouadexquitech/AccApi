@@ -161,5 +161,19 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("GetRessourcesListByLevels")]
+        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
+        {
+            try
+            {
+                return this._searchRepository.GetRessourcesListByLevels(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
     }
 }
