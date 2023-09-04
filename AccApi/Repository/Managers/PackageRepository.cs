@@ -152,7 +152,7 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
-            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.ResSeq == input.boqResourceSeq);
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.ResSeq));
 
             switch (input.isItemsAssigned)
             {
@@ -284,7 +284,7 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
-            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.BoqResSeq == input.boqResourceSeq);
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
 
             //Update Package Name
             var results = condQuery.ToList();
@@ -352,7 +352,7 @@ namespace AccApi.Repository.Managers
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
-            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => w.BoqResSeq == input.boqResourceSeq);
+            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
 
             //Update Package Name
             var results = condQuery.ToList();
@@ -941,6 +941,87 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
+        public string ExportExcelPackagesCost()
+        {
+            string excelName = "";
+
+            var packList = (from p in _mdbcontext.TblPackages
+                            select new packagesList
+                            {
+                                PkgeId = (int)p.PkgeId,
+                                PkgeName = p.PkgeName
+                            }).ToList();
+
+            //var pckgesCost = _context.TblBoqs.Where(x=>x.BoqScope>0)
+            //    .GroupBy(x => new { x.BoqScope})
+            //    .Select(p => new packagesList
+            //    {
+            //        PkgeId = p.First().GroupId.HasValue ? p.First().GroupId.Value : 0,
+            //        TotalBudget = p.Sum(c => c.BoqQty * c.BoqUprice)
+            //    }).ToList();
+
+
+            var pckgesCost = from e in _context.TblBoqs.Where(x => x.BoqScope > 0)
+                         group e by e.BoqScope into g
+            select new packagesList
+            {
+                PkgeId = g.Key,
+                TotalBudget = g.Sum(x => x.BoqQty * x.BoqUprice)
+            };
+
+            var packgesCost = (from a in packList
+                               join b in pckgesCost on a.PkgeId equals b.PkgeId
+                               select new packagesList
+                               {
+                                   PkgeId = (int)a.PkgeId,
+                                   PkgeName = a.PkgeName,
+                                   TotalBudget = b.TotalBudget
+                               }).ToList();
+
+
+            var stream = new MemoryStream();
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using (var xlPackage = new ExcelPackage(stream))
+            {
+                var worksheet = xlPackage.Workbook.Worksheets.Add("Packages");
+                worksheet.Columns.AutoFit();
+                worksheet.Protection.IsProtected = false;
+
+                int i, j;
+
+                i = 1;
+                worksheet.Cells[i, 1].Value = "Assigned Package";
+                worksheet.Column(1).Width = 100;
+                worksheet.Columns[1].Style.WrapText = true;
+                worksheet.Cells[1, 1].Style.Font.Bold = true;
+                worksheet.Cells[1, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[i, 2].Value = "Estimated Dry cost";
+                worksheet.Cells[1,2].Style.Font.Bold = true;
+                worksheet.Column(2).Width = 20;      
+                worksheet.Columns[2].Style.WrapText = true;
+
+                i = 2;
+                foreach (var x in packgesCost)
+                {
+                    worksheet.Cells[i, 1].Value = (x.PkgeName == null) ? "" : x.PkgeName;
+                    worksheet.Cells[i, 2].Value = (x.TotalBudget == null) ? 0 : x.TotalBudget;
+                    worksheet.Cells[i,2].Style.Numberformat.Format = "#,##0.0";
+                    i++;
+                }
+
+                xlPackage.Save();
+                stream.Position = 0;
+                excelName = $"Packages Dry Cost.xlsx";
+
+                if (File.Exists(excelName))
+                    File.Delete(excelName);
+
+                xlPackage.SaveAs(excelName);
+            }
+
+            return excelName;
+        }
 
         #region Packages
         public List<Package> GetPackages(string filter)

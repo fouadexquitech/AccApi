@@ -22,7 +22,7 @@ namespace AccApi.Repository.View_Models.Request
         public string[] boqLevel4 { get; set; }
         public string obTradeDesc { get; set; }
         public int isItemsAssigned { get; set; }
-        public string boqResourceSeq { get; set; }
+        public string[] boqResourceSeq { get; set; }
 
     }
 }

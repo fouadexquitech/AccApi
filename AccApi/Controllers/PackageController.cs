@@ -82,7 +82,20 @@ namespace AccApi.Controllers
             }
         }
 
-      
+        [HttpGet("ExportExcelPackagesCost")]
+        public JsonResult ExportExcelPackagesCost()
+        {
+            try
+            {
+                return new JsonResult(this._packageRepository.ExportExcelPackagesCost());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetGroupBoqList")]
         public List<GroupingBoqModel> GetGroupBoqList(int packageId, int groupId, SearchInput input)
         {

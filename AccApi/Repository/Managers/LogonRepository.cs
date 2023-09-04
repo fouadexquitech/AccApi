@@ -340,5 +340,18 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
+       public bool hasPermission(string user, string functionId)
+        {  
+            var result = _pdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId).FirstOrDefault();
+            if (result != null)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+
+
     }
 }

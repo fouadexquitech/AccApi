@@ -22,6 +22,7 @@ namespace AccApi.Repository.Interfaces
         User GetUser(string username);
 
         bool ConnectToDB(string connString);
+        bool hasPermission(string user, string functionId);
 
     }
 }

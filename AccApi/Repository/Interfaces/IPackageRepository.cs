@@ -21,5 +21,7 @@ namespace AccApi.Repository.Interfaces
         bool AddPackage(List<Package> packs);
         bool UpdatePackage(Package pack);
         bool DeletePackage(int id);
+
+        string ExportExcelPackagesCost();
     }
 }

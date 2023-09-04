@@ -194,5 +194,21 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+
+        [HttpGet("hasPermission")]
+        public bool hasPermission(string user,string functionId)
+        {
+            try
+            {
+                return this._logonRepository.hasPermission(user,  functionId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
     }
 }

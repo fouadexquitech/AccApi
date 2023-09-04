@@ -58,18 +58,18 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            var results = from b in _dbcontext.TblSupplierPackages
-                          join c in supList on b.SpSupplierId equals c.SupCode
-                          where b.SpPackageId == packageid
-                          orderby b.SpPackSuppId
+            var results = from b in supList 
+                          join c in _dbcontext.TblSupplierPackages on b.SupCode  equals c.SpSupplierId
+                          where c.SpPackageId == packageid
+                          orderby c.SpPackSuppId
                           select new SupplierPackagesList
                           {
-                              PsId = b.SpPackSuppId,
-                              PsPackId = b.SpPackageId,
-                              PsSuppId = b.SpSupplierId,
-                              PsSupName = c.SupName,
-                              PsByBoq = b.SpByBoq,
-                              TecCondSent = b.TecCondSent
+                              PsId = c.SpPackSuppId,
+                              PsPackId = c.SpPackageId,
+                              PsSuppId = c.SpSupplierId,
+                              PsSupName = b.SupName,
+                              PsByBoq = c.SpByBoq,
+                              TecCondSent = c.TecCondSent
                           };
             return results.ToList();
         }
@@ -448,7 +448,6 @@ namespace AccApi.Repository.Managers
             User user = _logonRepository.GetUser(UserName);
             string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
-
             foreach (var item in supInputList)
             {
                 AttachmentList.Clear();
@@ -482,7 +481,7 @@ namespace AccApi.Repository.Managers
                     var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
                     _dbcontext.Add<TblSupplierPackage>(spack);
                     _dbcontext.SaveChanges();
-
+                }
                     //send email
                     string SupEmail = (from r in _mdbContext.TblSuppliers
                                        where r.SupCode == supplier.supID
@@ -538,7 +537,7 @@ namespace AccApi.Repository.Managers
                         sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
                     }
                 }
-            }
+            
             return (sent == "sent");
         }
 
