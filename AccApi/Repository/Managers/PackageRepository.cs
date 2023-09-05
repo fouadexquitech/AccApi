@@ -82,7 +82,8 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.obTradeDesc)) blankInput = false;
             if (input.isItemsAssigned > 0) blankInput = false;
             if (input.boqResourceSeq.Length > 0) blankInput = false;
-
+            if (input.isRessourcesAssigned > 0) blankInput = false;
+            
             if (blankInput)
                 return null;
 
@@ -158,13 +159,23 @@ namespace AccApi.Repository.Managers
             {
                 case 1:
                     condQuery = condQuery.Where(w => w.Scope >0);
-                    condQuery = condQuery.Where(w => w.BoqScope >0);
                     break;
                 case 2:
                     condQuery = condQuery.Where(w => w.Scope == null || w.Scope == 0);
+                    break;
+                default:
+                    break;
+            }
+
+
+            switch (input.isRessourcesAssigned)
+            {
+                case 1:            
+                    condQuery = condQuery.Where(w => w.BoqScope > 0);
+                    break;
+                case 2:
                     condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
                     break;
-
                 default:
                     break;
             }
