@@ -135,9 +135,66 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter)
         {
+            IQueryable<BOQLevelList> query = null;
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+
+            if (Level2.Count>0)
+            {
+                query = (from b in _context.TblOriginalBoqs
+                         where Level2.Contains(b.L2)
+                         group b.L3 by b.L3 into g
+                         orderby g.Key
+                         select new BOQLevelList { Level = g.Key }).Distinct();
+            }
+            else
+                query = (from b in _context.TblOriginalBoqs                                        
+                         group b.L3 by b.L3 into g
+                         orderby g.Key
+                         select new BOQLevelList { Level = g.Key }).Distinct();
+
+            return query.ToList();
+        }
+
+        public List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter)
+        {
+            IQueryable<BOQLevelList> query = null;
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+
+            if (Level2.Count > 0)           
+                query = (from b in _context.TblOriginalBoqs
+                         where Level2.Contains(b.L2)
+                         group b.L4 by b.L4 into g
+                         orderby g.Key
+                         select new BOQLevelList { Level = g.Key }).Distinct();
             
+            else if (Level3.Count > 0)
+                query = (from b in _context.TblOriginalBoqs
+                         where Level3.Contains(b.L3)
+                         group b.L4 by b.L4 into g
+                         orderby g.Key
+                         select new BOQLevelList { Level = g.Key }).Distinct();
+
+            else
+                query = (from b in _context.TblOriginalBoqs
+                           group b.L4 by b.L4 into g
+                           orderby g.Key
+                           select new BOQLevelList { Level = g.Key }).Distinct();
+
+            return query.ToList();
+        }
+
+        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
+        {            
             IQueryable<RessourceList> query = null;
             
             

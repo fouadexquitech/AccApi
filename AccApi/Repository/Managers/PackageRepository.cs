@@ -85,7 +85,10 @@ namespace AccApi.Repository.Managers
             if (input.isRessourcesAssigned > 0) blankInput = false;
             
             if (blankInput)
+            {
+                //List<BoqRessourcesList> res = new List<BoqRessourcesList>();
                 return null;
+            }
 
             var packList = (from p in _mdbcontext.TblPackages
                                select new packagesList
@@ -187,7 +190,6 @@ namespace AccApi.Repository.Managers
             {
                  x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
             }
-
 
 
             var resutl = qry
@@ -299,12 +301,12 @@ namespace AccApi.Repository.Managers
 
             //Update Package Name
             var results = condQuery.ToList();
-            foreach (var x in results.Where(i => i.Scope > 0))
+            foreach (var x in results.Where(i => i.BoqScope > 0))
             {
-                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.BoqScope).PkgeName;
             }
 
-            return results;
+            return results.OrderBy(x=>x.BoqCtg).ToList();
         }
 
         public List<BoqModel> GetAllBoqList(SearchInput input)

@@ -76,6 +76,35 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpPost("GetBOQLevel3ListByLevel2")]
+        public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel3ListByLevel2(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("GetBOQLevel4ListByLevel3")]
+        public List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel4ListByLevel3(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpGet("GetRESDivList")]
         public List<RESDivList> GetRESDivList()
         {
