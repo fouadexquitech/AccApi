@@ -369,9 +369,9 @@ namespace AccApi.Repository.Managers
 
             //Update Package Name
             var results = condQuery.ToList();
-            foreach (var x in results.Where(i => i.Scope > 0))
+            foreach (var x in results.Where(i => i.BoqScope > 0))
             {
-                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+                    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.BoqScope).PkgeName;
             }
             return results;
         }
