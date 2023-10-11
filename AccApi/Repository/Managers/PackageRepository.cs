@@ -104,17 +104,25 @@ namespace AccApi.Repository.Managers
             //                 from pk in gj.DefaultIfEmpty()
 
             IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
-                             join b in _context.TblBoqs on o.ItemO equals b.BoqItem
-                             join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                             select new BoqRessourcesList
+                                                        join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        select new BoqRessourcesList
                                                         {
                                                             RowNumber = o.RowNumber,
                                                             SectionO = o.SectionO,
                                                             ItemO = o.ItemO,
                                                             DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,                                                           
+                                                            UnitO = o.UnitO,
                                                             UnitRate = o.UnitRate,
                                                             Scope = o.Scope,
+                                                            L2 = ((o.L2 == null) ? "" : o.L2),
+                                                            L3 = ((o.L3 == null) ? "" : o.L3),
+                                                            L4 = ((o.L4 == null) ? "" : o.L4),
+                                                            BillQtyO = o.ObBillQty,
+                                                            QtyO = o.QtyO,
+                                                            ScopeQtyO = o.QtyScope,
+                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
                                                             BoqSeq = b.BoqSeq,
                                                             BoqCtg = b.BoqCtg,
                                                             BoqUnitMesure = b.BoqUnitMesure,
@@ -123,22 +131,12 @@ namespace AccApi.Repository.Managers
                                                             BoqPackage = b.BoqPackage,
                                                             BoqScope = b.BoqScope,
                                                             ResDescription = r.ResDescription,
-                                                            L2 = ((o.L2 == null) ? "" : o.L2),
-                                                            L3 = ((o.L3 == null) ? "" : o.L3),
-                                                            L4 = ((o.L4 == null) ? "" : o.L4),                                                           
-                                                            BillQtyO = o.ObBillQty,
-                                                            QtyO = o.QtyO,                                                        
-                                                            ScopeQtyO = o.QtyScope,
-                                                            BoqBillQty =b.BoqBillQty,
+                                                            BoqBillQty = b.BoqBillQty,
                                                             BoqQty = b.BoqQty,
-                                                            BoqScopeQty =b.BoqQtyScope,
-                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
-                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
-                                                            AssignedPackage= "",
-                                                            ResSeq=r.ResSeq
-                                 //packageName = (o.Scope == null) ? "" : lstPackages.Where(x => x.id == o.Scope).FirstOrDefault().name
-                                 //boqPackageName = (b.BoqScope == null) ? "" : lstPackages.Find(x => x.IdPkge == b.BoqScope).PkgeName
-                             });
+                                                            BoqScopeQty = b.BoqQtyScope,
+                                                            AssignedPackage = "",
+                                                            ResSeq = r.ResSeq
+                                                        });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -169,7 +167,6 @@ namespace AccApi.Repository.Managers
                 default:
                     break;
             }
-
 
             switch (input.isRessourcesAssigned)
             {
@@ -211,6 +208,40 @@ namespace AccApi.Repository.Managers
                     ObTradeDesc=p.ObTradeDesc
                 }).OrderBy(w => w.RowNumber)
                 .ToList();
+
+            int status , oldstatus;
+            List<string> stsList = new List<string>();
+            foreach (var boq in resutl)
+            {
+               status = oldstatus= 0;
+               stsList.Clear();
+               var resList = condQuery.Where(x => x.ItemO == boq.ItemO).ToList();
+               foreach(var res in resList)
+                {
+                    if (res.BoqScope>0)
+                    {
+                        status = (int) res.BoqScope;
+                        stsList.Add("Assigned");
+                    }
+                    else
+                    {
+                        stsList.Add("Not Assigned");
+                    }
+                 
+                    if ((oldstatus!=status)  && (oldstatus>0) && (status > 0))
+                        stsList.Add("Mix");
+
+                    if (oldstatus != status) oldstatus = status;
+
+                }
+
+                if (stsList.Contains("Assigned") && stsList.Contains("Not Assigned"))
+                    boq.BoqStatus = "Missing";
+                else if (stsList.Contains("Assigned") && (!stsList.Contains("Mix")))
+                    boq.BoqStatus = "Assigned";
+                else if (stsList.Contains("Mix"))
+                    boq.BoqStatus = "Mix";
+            }
 
             return resutl;
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
@@ -375,6 +406,7 @@ namespace AccApi.Repository.Managers
             }
             return results;
         }
+
         public PackageDetailsModel GetPackageById(int IdPkge)
         {
             var query = from b in _mdbcontext.TblPackages
@@ -386,6 +418,7 @@ namespace AccApi.Repository.Managers
                         };
             return query.FirstOrDefault();
         }
+
         public bool AssignPackages(AssignPackages input)
         {
             if (input.AssignOriginalBoqList != null)

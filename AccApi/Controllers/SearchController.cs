@@ -177,7 +177,7 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetRessourcesList")]
-        public List<RessourceList> GetRessourcesList()
+        public List<RessourceList> GetRessourcesList(string resType)
         {
             try
             {

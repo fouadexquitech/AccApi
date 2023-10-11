@@ -5,6 +5,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
 
 namespace AccApi.Repository.Managers
 {
@@ -195,14 +197,13 @@ namespace AccApi.Repository.Managers
 
         public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
         {            
-            IQueryable<RessourceList> query = null;
-            
-            
+            IQueryable<RessourceList> query = null;               
             List<RessourceList> results = null;
 
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var resType = filter.resType;
 
             if ((Level2 == null || Level2.Count == 0) && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
             {
@@ -214,7 +215,8 @@ namespace AccApi.Repository.Managers
                          select new RessourceList
                          {
                              resSeq = c.ResSeq,
-                             resDesc = c.ResDescription
+                             resDesc = c.ResDescription,
+                             resType = b.BoqCtg
                          }).Distinct();
             }
             else if (Level2 != null && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
@@ -228,7 +230,8 @@ namespace AccApi.Repository.Managers
                          select new RessourceList
                          {
                              resSeq = c.ResSeq,
-                             resDesc = c.ResDescription
+                             resDesc = c.ResDescription,
+                             resType = b.BoqCtg
                          }).Distinct();
             }
             else if (Level3 != null && (Level4 == null || Level4.Count == 0))
@@ -242,7 +245,8 @@ namespace AccApi.Repository.Managers
                          select new RessourceList
                          {
                              resSeq = c.ResSeq,
-                             resDesc = c.ResDescription
+                             resDesc = c.ResDescription,
+                             resType = b.BoqCtg
                          }).Distinct();
             }
             else if (Level4 != null)
@@ -256,9 +260,20 @@ namespace AccApi.Repository.Managers
                          select new RessourceList
                          {
                              resSeq = c.ResSeq,
-                             resDesc = c.ResDescription
+                             resDesc = c.ResDescription,
+                             resType=b.BoqCtg
                          }).Distinct();
             }
+
+
+            //if (resType!=null)
+            //    List<RessourceList> customers = query.Where(x => filter.resType.Contains(x.resType)).ToList();
+            if (resType.Count>0) {
+                query = from item in query
+                        where resType.Contains(item.resType)
+                        select item;
+            }
+
 
             return query.ToList();
         }

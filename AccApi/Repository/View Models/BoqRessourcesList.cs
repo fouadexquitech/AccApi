@@ -40,6 +40,7 @@ namespace AccApi.Repository.View_Models
         public double? BoqQty { get; set; }
         public double? BoqBillQty { get; set; }
         public double? BoqScopeQty { get; set; }
+        public string BoqStatus { get; set; }
     }
 
     public class packagesList
