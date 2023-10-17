@@ -330,6 +330,18 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
             if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
 
+            switch (input.isRessourcesAssigned)
+            {
+                case 1:
+                    condQuery = condQuery.Where(w => w.BoqScope > 0);
+                    break;
+                case 2:
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    break;
+                default:
+                    break;
+            }
+
             //Update Package Name
             var results = condQuery.ToList();
             foreach (var x in results.Where(i => i.BoqScope > 0))
