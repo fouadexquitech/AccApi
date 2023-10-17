@@ -232,7 +232,6 @@ namespace AccApi.Repository.Managers
                         stsList.Add("Mix");
 
                     if (oldstatus != status) oldstatus = status;
-
                 }
 
                 if (stsList.Contains("Assigned") && stsList.Contains("Not Assigned"))
@@ -409,6 +408,18 @@ namespace AccApi.Repository.Managers
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
             if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
+
+            switch (input.isRessourcesAssigned)
+            {
+                case 1:
+                    condQuery = condQuery.Where(w => w.BoqScope > 0);
+                    break;
+                case 2:
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    break;
+                default:
+                    break;
+            }
 
             //Update Package Name
             var results = condQuery.ToList();
