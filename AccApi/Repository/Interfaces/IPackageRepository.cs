@@ -6,8 +6,8 @@ namespace AccApi.Repository.Interfaces
 {
     public interface IPackageRepository
     {
-        List<BoqRessourcesList> GetOriginalBoqList(SearchInput input);
-        List<BoqModel> GetBoqList(string ItemO, SearchInput input);
+        List<BoqRessourcesList> GetOriginalBoqList(SearchInput input, string costDB);
+        List<BoqModel> GetBoqList(string ItemO, SearchInput input); 
         List<BoqModel> GetAllBoqList(SearchInput input);
         string ExportBoqExcel(AssignPackages input);
         public bool updateOriginalBoqQty(OriginalBoqModel boq);

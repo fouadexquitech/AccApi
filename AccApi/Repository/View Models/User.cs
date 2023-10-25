@@ -15,6 +15,7 @@ namespace AccApi.Repository.View_Models
         public string UsrEmailSignature { get; set; }
         public string? UsrLoggedProjectName { get; set; }
         public string? usrLoggedConnString { get; set; }
+        public string? usrLoggedCostDB { get; set; }
 
     }
 }

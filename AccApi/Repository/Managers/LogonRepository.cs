@@ -153,9 +153,9 @@ namespace AccApi.Repository.Managers
                 {
                   usr.UsrLoggedProjectName = prj.PrjName;
                   usr.usrLoggedConnString = connString;
+                  usr.usrLoggedCostDB = prj.PrjCostDatabase;
                 } 
             }
-
             return usr;
         }
 

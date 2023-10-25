@@ -39,7 +39,7 @@ namespace AccApi.Repository.Managers
             //_context =context;
         }
 
-        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input)
+        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input,string costDB)
         {
             //string connectionString = Configuration.GetConnectionString("DefaultConnection");
             //string costDb = "CiteDefence_CostData";
@@ -183,13 +183,13 @@ namespace AccApi.Repository.Managers
 
             //Update Package Name
             var qry = condQuery.ToList();
-            foreach (var x in qry.Where(i=>i.Scope>0))
-            {
-                 x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
-            }
+            //foreach (var x in qry.Where(i=>i.Scope>0))
+            //{
+            //     x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            //}
+            int s = condQuery.Count();
 
-
-            var resutl = qry
+            var resutl = condQuery
                 .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
                 .Select(p => p.FirstOrDefault())
                 .Select(p => new BoqRessourcesList
