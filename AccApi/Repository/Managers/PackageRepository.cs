@@ -1,12 +1,14 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Nancy;
 using OfficeOpenXml;
 using OfficeOpenXml.DataValidation;
 using System;
@@ -16,6 +18,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 
 namespace AccApi.Repository.Managers
 {
@@ -1162,5 +1165,89 @@ namespace AccApi.Repository.Managers
         }
         #endregion
 
+        public async Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(DataTablesRequest dtRequest)
+        {
+            var input = dtRequest.input;
+            var condQuery = (from o in _context.TblOriginalBoqs
+                                               join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+                                               join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                             where dtRequest.BoqItems.Contains(b.BoqItem)
+                                             select new BoqModel()
+                                               {
+                                                   RowNumber = o.RowNumber,
+                                                   SectionO = o.SectionO,
+                                                   ItemO = o.ItemO,
+                                                   DescriptionO = o.DescriptionO,
+                                                   UnitO = o.UnitO,
+                                                   UnitRate = o.UnitRate,
+                                                   Scope = o.Scope,
+                                                   ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+                                                   ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
+                                                   BoqSeq = b.BoqSeq,
+                                                   BoqResSeq = b.BoqResSeq,
+                                                   BoqCtg = b.BoqCtg,
+                                                   BoqUnitMesure = b.BoqUnitMesure,
+                                                   BoqUprice = b.BoqUprice,
+                                                   BoqDiv = b.BoqDiv,
+                                                   BoqPackage = b.BoqPackage,
+                                                   BoqScope = b.BoqScope,
+                                                   ResDescription = r.ResDescription,
+                                                   BoqItem = b.BoqItem,
+                                                   BoqBillQty = b.BoqBillQty,
+                                                   BoqQty = b.BoqQty,
+                                                   BoqScopeQty = b.BoqQtyScope,
+                                                   L2 = ((o.L2 == null) ? "" : o.L2),
+                                                   L3 = ((o.L3 == null) ? "" : o.L3),
+                                                   L4 = ((o.L4 == null) ? "" : o.L4),
+                                                   AssignedPackage = ""
+                                               });
+
+
+
+            var total = condQuery.Count();
+
+            //if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            //if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            //if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            //if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            //if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            //if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            //if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            //if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
+            //if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            //if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
+            //if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
+            //if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
+            //if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
+            //if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
+
+            switch (input.isRessourcesAssigned)
+            {
+                case 1:
+                    condQuery = condQuery.Where(w => w.BoqScope > 0);
+                    break;
+                case 2:
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    break;
+                default:
+                    break;
+            }
+            var filtered = condQuery.Count();
+            var list = await condQuery.Skip(dtRequest.Start).Take(dtRequest.Length).OrderBy(x=>x.BoqItem).ToListAsync();
+            
+            var response = new DataTablesResponse<BoqModel>
+            {
+                Data = list,
+                RecordsFiltered = filtered,
+                RecordsTotal = total
+            };
+
+            return response;
+        }
+
     }
+
+    
 }

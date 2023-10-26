@@ -2,10 +2,19 @@
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using static System.Reflection.Metadata.BlobBuilder;
+using System.Reflection;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using AccApi.Repository.View_Models.Common;
+using System.Linq;
 
 namespace AccApi.Controllers
 {
@@ -353,5 +362,46 @@ namespace AccApi.Controllers
             }
         }
         #endregion
+
+
+
+        [HttpPost]
+        [Route("GetBoqResourceRecords")]
+        public async Task<IActionResult> GetBoqResourceRecords(dynamic dataTablesParameters)
+        {
+            try
+            {
+                JObject rest = JsonConvert.DeserializeObject(Convert.ToString(dataTablesParameters));
+                int draw = (int)rest["draw"];
+                int start = (int)rest["start"];
+                int length = (int)rest["length"];
+                //int colIndex = (int)rest["order"][0]["column"];
+                //string sortCol = (string)rest["columns"][colIndex]["name"];
+                //string sortColDir = (string)rest["order"][0]["dir"];
+                string searchVal = (string)rest["search"]["value"];
+                string? boqIds = (string)rest["boqIds"];
+
+                var request = new DataTablesRequest { 
+                    BoqItems = boqIds.Split(",").ToList(),
+                    Length = length,
+                    SearchVal = searchVal,
+                    //SortCol = sortCol,
+                    //SortDirVal = sortColDir,
+                    Start = start
+                };
+
+                var response = await _packageRepository.GetBoqResourceRecords(request);
+                response.Draw = draw;
+                return Ok(response);
+
+               
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Ok("false");
+            }
+
+        }
     }
 }

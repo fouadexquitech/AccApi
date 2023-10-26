@@ -1,6 +1,8 @@
 ﻿using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AccApi.Repository.Interfaces
 {
@@ -23,5 +25,7 @@ namespace AccApi.Repository.Interfaces
         bool DeletePackage(int id);
 
         string ExportExcelPackagesCost();
+
+        Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(DataTablesRequest dtRequest);
     }
 }
