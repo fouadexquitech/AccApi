@@ -380,11 +380,13 @@ namespace AccApi.Controllers
                 //string sortColDir = (string)rest["order"][0]["dir"];
                 string searchVal = (string)rest["search"]["value"];
                 string? boqIds = (string)rest["boqIds"];
+                string? selectedBoqIds = (string)rest["selectedBoqIds"];
 
                 var request = new DataTablesRequest { 
                     BoqItems = boqIds.Split(",").ToList(),
                     Length = length,
                     SearchVal = searchVal,
+                    SelectedBoqItems = selectedBoqIds.Split(",").ToList(),
                     //SortCol = sortCol,
                     //SortDirVal = sortColDir,
                     Start = start

@@ -39,5 +39,7 @@ namespace AccApi.Repository.View_Models
         public double? BoqBillQty { get; set; }
         public double? BoqScopeQty { get; set; }
 
+        public bool IsSelected { get; set; }
+
     }
 }

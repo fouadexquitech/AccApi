@@ -17,6 +17,8 @@ namespace AccApi.Repository.View_Models.Common
 
         public List<string> BoqItems { get; set; }
 
+        public List<string> SelectedBoqItems { get; set; }
+
         public SearchInput input { get; set; } = new SearchInput();
 
 

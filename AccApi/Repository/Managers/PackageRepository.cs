@@ -1236,6 +1236,11 @@ namespace AccApi.Repository.Managers
             }
             var filtered = condQuery.Count();
             var list = await condQuery.Skip(dtRequest.Start).Take(dtRequest.Length).OrderBy(x=>x.BoqItem).ToListAsync();
+
+            foreach (var item in list)
+            {
+                item.IsSelected = dtRequest.SelectedBoqItems.Contains(item.BoqItem);
+            }
             
             var response = new DataTablesResponse<BoqModel>
             {
