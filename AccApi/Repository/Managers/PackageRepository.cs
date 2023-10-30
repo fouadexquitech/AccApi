@@ -464,7 +464,7 @@ namespace AccApi.Repository.Managers
 
                 foreach (var item in input.AssignOriginalBoqList)
                 {
-                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = item.Scope;
+                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = input.PackageId;
                 }
                 _context.TblOriginalBoqs.UpdateRange(lstBoqo);
                 _context.SaveChanges();
@@ -481,13 +481,11 @@ namespace AccApi.Repository.Managers
                 //}
                 //_context.SaveChanges();
 
-                var lstBoq = (from a in input.AssignBoqList
-                              join b in _context.TblBoqs on a.BoqSeq equals b.BoqSeq
-                              select b).ToList();
+                var lstBoq = _context.TblBoqs.Where(x => input.BoqSeqs.Contains(x.BoqSeq)).ToList();
 
-                foreach (var item in input.AssignBoqList)
+                foreach (var item in lstBoq)
                 {
-                    lstBoq.Where(d => d.BoqSeq == item.BoqSeq).First().BoqScope = item.BoqScope;
+                    item.BoqScope = input.PackageId;
                 }
                 _context.TblBoqs.UpdateRange(lstBoq);
                 _context.SaveChanges();
@@ -1206,6 +1204,9 @@ namespace AccApi.Repository.Managers
 
             var total = condQuery.Count();
 
+            double FinalTotalPrice = 0;
+            double FinalUnitPrice = 0;
+
             //if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             //if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
             //if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
@@ -1235,18 +1236,32 @@ namespace AccApi.Repository.Managers
                     break;
             }
             var filtered = condQuery.Count();
+
+
+            var BoqSeqs = condQuery.Where(x => dtRequest.SelectedBoqItems.Contains(x.BoqItem)).Select(x => x.BoqSeq).ToList();
+
             var list = await condQuery.Skip(dtRequest.Start).Take(dtRequest.Length).OrderBy(x=>x.BoqItem).ToListAsync();
 
+
+            
             foreach (var item in list)
             {
                 item.IsSelected = dtRequest.SelectedBoqItems.Contains(item.BoqItem);
+
             }
-            
+
+            //Final Totals
+            FinalTotalPrice = condQuery.Where(x=> dtRequest.SelectedBoqItems.Contains(x.BoqItem)).Sum(y=>y.BoqScopeQty.Value *  y.BoqUprice.Value);
+
+
             var response = new DataTablesResponse<BoqModel>
             {
                 Data = list,
                 RecordsFiltered = filtered,
-                RecordsTotal = total
+                RecordsTotal = total,
+                FinalTotalPrice = FinalTotalPrice,
+                FinalUnitPrice = FinalUnitPrice,
+                BoqSeqs = BoqSeqs
             };
 
             return response;

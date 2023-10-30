@@ -12,8 +12,10 @@ namespace AccApi.Repository.View_Models.Common
 
         public int RecordsTotal { get; set; }
 
-        public double? FinalTotalPrice { get; set; }
+        public double? FinalTotalPrice { get; set; } = 0;
 
-        public double? FinalUnitPrice { get; set; }
+        public double? FinalUnitPrice { get; set; } = 0;
+
+        public List<int> BoqSeqs { get; set; }
     }
 }
