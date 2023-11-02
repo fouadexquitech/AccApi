@@ -464,7 +464,7 @@ namespace AccApi.Repository.Managers
 
                 foreach (var item in input.AssignOriginalBoqList)
                 {
-                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = input.PackageId;
+                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = item.Scope;
                 }
                 _context.TblOriginalBoqs.UpdateRange(lstBoqo);
                 _context.SaveChanges();
@@ -481,11 +481,13 @@ namespace AccApi.Repository.Managers
                 //}
                 //_context.SaveChanges();
 
-                var lstBoq = _context.TblBoqs.Where(x => input.BoqSeqs.Contains(x.BoqSeq)).ToList();
+                var lstBoq = (from a in input.AssignBoqList
+                              join b in _context.TblBoqs on a.BoqSeq equals b.BoqSeq
+                              select b).ToList();
 
-                foreach (var item in lstBoq)
+                foreach (var item in input.AssignBoqList)
                 {
-                    item.BoqScope = input.PackageId;
+                    lstBoq.Where(d => d.BoqSeq == item.BoqSeq).First().BoqScope = item.BoqScope;
                 }
                 _context.TblBoqs.UpdateRange(lstBoq);
                 _context.SaveChanges();
