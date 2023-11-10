@@ -19,7 +19,7 @@ namespace AccApi.Repository.Interfaces
         PackageDetailsModel GetPackageById(int IdPkge);
         bool AssignPackages(AssignPackages input);
         List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input);
-        List<Package> GetPackages(string filter);
+        DataTablesResponse<Package> GetPackages(DataTablesRequest Request);
         bool AddPackage(List<Package> packs);
         bool UpdatePackage(Package pack);
         bool DeletePackage(int id);

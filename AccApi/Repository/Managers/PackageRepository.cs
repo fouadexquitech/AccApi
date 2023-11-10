@@ -16,6 +16,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Data;
+using System.Linq.Dynamic.Core;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
@@ -1096,24 +1098,36 @@ namespace AccApi.Repository.Managers
         }
 
         #region Packages
-        public List<Package> GetPackages(string filter)
+        public DataTablesResponse<Package> GetPackages(DataTablesRequest dtRequest)
         {
+            var sortColumnName = dtRequest.SortCol;
+            var sortDirection = dtRequest.SortDirVal;
+            var skip = dtRequest.Start;
+            var take = dtRequest.Length;
+
             var result = (from b in _mdbcontext.TblPackages
-                          orderby b.PkgeName
-                          select new Package
+                         select new Package
                           {
                               IDPkge = b.PkgeId,
                               PkgeName = b.PkgeName,
                               Division = b.Division
                           }).ToList();
 
-            //return result.ToList();
+            var totalRecords = result.Count;
 
-            if (filter != null)
+            if (dtRequest.SearchVal != null)
             {
-                result = result.Where(x => string.Concat(x.PkgeName.ToUpper()).Contains(filter.ToUpper())).ToList();
+                result = result.Where(x => string.Concat(x.PkgeName.ToUpper()).Contains(dtRequest.SearchVal.ToUpper())).ToList();
             }
-            return result.ToList();
+
+            var list = result.AsQueryable().OrderBy($"{sortColumnName} {sortDirection}").Skip(skip).Take(take);
+
+            return new DataTablesResponse<Package>
+            {
+                Data = list.ToList(),
+                RecordsTotal = totalRecords,
+                RecordsFiltered = result.Count
+            };
         }
 
 

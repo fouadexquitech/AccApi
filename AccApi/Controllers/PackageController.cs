@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AccApi.Repository.View_Models.Common;
 using System.Linq;
+using AccApi.Repository.Managers;
 
 namespace AccApi.Controllers
 {
@@ -306,12 +307,32 @@ namespace AccApi.Controllers
         }
 
 
-        [HttpGet("GetPackages")]
-        public List<Package> GetPackages(string filter)
+        [HttpPost("GetPackages")]
+        public IActionResult GetPackages(dynamic dataTablesParameters)
         {
             try
             {
-                return this._packageRepository.GetPackages(filter);
+                JObject rest = JsonConvert.DeserializeObject(Convert.ToString(dataTablesParameters));
+                int draw = (int)rest["draw"];
+                int start = (int)rest["start"];
+                int length = (int)rest["length"];
+                int colIndex = (int)rest["order"][0]["column"];
+                string sortCol = (string)rest["columns"][colIndex]["name"];
+                string sortColDir = (string)rest["order"][0]["dir"];
+                string searchVal = (string)rest["search"]["value"];
+                var request = new DataTablesRequest
+                {
+                    Length = length,
+                    SearchVal = searchVal,
+                    SortCol = sortCol,
+                    SortDirVal = sortColDir,
+                    Start = start
+                };
+
+                var response = _packageRepository.GetPackages(request);
+                response.Draw = draw;
+                return Ok(response);
+
             }
             catch (Exception ex)
             {
