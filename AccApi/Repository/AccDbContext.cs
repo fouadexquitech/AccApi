@@ -26,6 +26,7 @@ namespace AccApi.Repository
             optionsBuilder.UseSqlServer(_connectionString);
         }
 
+
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //        {
         //            if (!optionsBuilder.IsConfigured)
@@ -35,8 +36,17 @@ namespace AccApi.Repository
         //            }
         //        }
 
+        public AccDbContext CreateConnectionFromOut(string connectionString)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+            var context = new AccDbContext(optionsBuilder.Options);
+            return context;
+        }
+
 
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
+        public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
         public virtual DbSet<Boq> Boqs { get; set; }
         public virtual DbSet<ComparisonPackageGroup> ComparisonPackageGroups { get; set; }
@@ -48,8 +58,12 @@ namespace AccApi.Repository
         public virtual DbSet<Mark> Marks { get; set; }
         public virtual DbSet<MaterialCostCenter> MaterialCostCenters { get; set; }
         public virtual DbSet<Missing> Missings { get; set; }
+        public virtual DbSet<NewItem> NewItems { get; set; }
+        public virtual DbSet<NewItemResource> NewItemResources { get; set; }
         public virtual DbSet<PackagesNetwork> PackagesNetworks { get; set; }
         public virtual DbSet<Parameter> Parameters { get; set; }
+        public virtual DbSet<RevisionAcceptanceComment> RevisionAcceptanceComments { get; set; }
+        public virtual DbSet<RevisionStatus> RevisionStatuses { get; set; }
         public virtual DbSet<SendToExcel> SendToExcels { get; set; }
         public virtual DbSet<TargetRatio> TargetRatios { get; set; }
         public virtual DbSet<TblAcmClass> TblAcmClasses { get; set; }
@@ -164,15 +178,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
 
-
-        public AccDbContext CreateConnectionFromOut(string connectionString)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
-            var context = new AccDbContext(optionsBuilder.Options);
-            return context;
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1256_CI_AS");
@@ -184,6 +189,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqUnitMesure).IsUnicode(false);
 
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<AcceptanceComment>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<AccountingCostCode>(entity =>
@@ -323,9 +333,81 @@ namespace AccApi.Repository
                 entity.Property(e => e.DisLab).IsUnicode(false);
             });
 
+            modelBuilder.Entity<NewItem>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.C1).IsUnicode(false);
+
+                entity.Property(e => e.C10).IsUnicode(false);
+
+                entity.Property(e => e.C11).IsUnicode(false);
+
+                entity.Property(e => e.C12).IsUnicode(false);
+
+                entity.Property(e => e.C13).IsUnicode(false);
+
+                entity.Property(e => e.C14).IsUnicode(false);
+
+                entity.Property(e => e.C15).IsUnicode(false);
+
+                entity.Property(e => e.C2).IsUnicode(false);
+
+                entity.Property(e => e.C3).IsUnicode(false);
+
+                entity.Property(e => e.C4).IsUnicode(false);
+
+                entity.Property(e => e.C5).IsUnicode(false);
+
+                entity.Property(e => e.C6).IsUnicode(false);
+
+                entity.Property(e => e.C7).IsUnicode(false);
+
+                entity.Property(e => e.C8).IsUnicode(false);
+
+                entity.Property(e => e.C9).IsUnicode(false);
+
+                entity.Property(e => e.ItemDescription).IsUnicode(false);
+
+                entity.Property(e => e.L1).IsUnicode(false);
+
+                entity.Property(e => e.L10).IsUnicode(false);
+
+                entity.Property(e => e.L2).IsUnicode(false);
+
+                entity.Property(e => e.L3).IsUnicode(false);
+
+                entity.Property(e => e.L4).IsUnicode(false);
+
+                entity.Property(e => e.L5).IsUnicode(false);
+
+                entity.Property(e => e.L6).IsUnicode(false);
+
+                entity.Property(e => e.L7).IsUnicode(false);
+
+                entity.Property(e => e.L8).IsUnicode(false);
+
+                entity.Property(e => e.L9).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<NewItemResource>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+            });
+
             modelBuilder.Entity<PackagesNetwork>(entity =>
             {
                 entity.Property(e => e.FilePath).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<RevisionAcceptanceComment>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
+            });
+
+            modelBuilder.Entity<RevisionStatus>(entity =>
+            {
+                entity.Property(e => e.Id).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<SendToExcel>(entity =>
@@ -518,6 +600,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
 
                 entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
 
@@ -1067,6 +1151,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.L1).IsUnicode(false);
 
                 entity.Property(e => e.L10).IsUnicode(false);
@@ -1122,6 +1208,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.ObPriceCode).IsUnicode(false);
 
                 entity.Property(e => e.ObSkipWbsqty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ObStatus).IsUnicode(false);
 
                 entity.Property(e => e.ObTradeDesc).IsUnicode(false);
 
@@ -1382,6 +1470,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ResSeq).IsUnicode(false);
 
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.ResDescription).IsUnicode(false);
 
                 entity.Property(e => e.ResDiv).IsUnicode(false);
@@ -1633,6 +1723,12 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.IsAlternative).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsNew).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.RdAddedItem).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedPerc).HasDefaultValueSql("((0))");
@@ -1782,6 +1878,8 @@ namespace AccApi.Repository
                 entity.HasKey(e => e.SpPackSuppId)
                     .HasName("PK_tbSupplierPackages");
 
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.SpByBoq).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TecCondSent).HasDefaultValueSql("((0))");
@@ -1789,6 +1887,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSupplierPackageRevision>(entity =>
             {
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.PrExchRate).HasDefaultValueSql("((0))");
             });
 

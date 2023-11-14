@@ -23,5 +23,6 @@ namespace AccApi.Repository.Models.MasterModels
         public short? Trade { get; set; }
         [StringLength(200)]
         public string FilePath { get; set; }
+        public bool? IsSynched { get; set; }
     }
 }

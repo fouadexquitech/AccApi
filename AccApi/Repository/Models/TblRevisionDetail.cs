@@ -50,5 +50,10 @@ namespace AccApi.Repository.Models
         public DateTime? InsertedDate { get; set; }
         [Column("rdAddedItemOn", TypeName = "datetime")]
         public DateTime? RdAddedItemOn { get; set; }
+        public bool? IsSynched { get; set; }
+        public bool? IsAlternative { get; set; }
+        public bool? IsNew { get; set; }
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
     }
 }

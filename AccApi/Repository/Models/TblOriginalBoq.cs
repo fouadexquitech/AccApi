@@ -185,5 +185,9 @@ namespace AccApi.Repository.Models
         [Column("obTradeDesc")]
         [StringLength(500)]
         public string ObTradeDesc { get; set; }
+        public bool? IsSynched { get; set; }
+        [Column("obStatus")]
+        [StringLength(50)]
+        public string ObStatus { get; set; }
     }
 }

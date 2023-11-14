@@ -32,6 +32,7 @@ namespace AccApi.Repository.View_Models
         public int? BoqScope { get; set; }
         public string ResSeq { get; set; }
         public string ResDescription { get; set; }
+        public string L1 { get; set; }
         public string L2 { get; set; }
         public string L3 { get; set; }
         public string L4 { get; set; }
@@ -41,6 +42,7 @@ namespace AccApi.Repository.View_Models
         public double? BoqBillQty { get; set; }
         public double? BoqScopeQty { get; set; }
         public string BoqStatus { get; set; }
+        public double? BoqTotalPrice { get; set; }
     }
 
     public class packagesList

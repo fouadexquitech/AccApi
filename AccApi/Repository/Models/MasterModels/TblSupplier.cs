@@ -74,5 +74,6 @@ namespace AccApi.Repository.Models.MasterModels
         public string SupAccPreson { get; set; }
         [Column("supPayTerm")]
         public short? SupPayTerm { get; set; }
+        public bool? IsSynched { get; set; }
     }
 }

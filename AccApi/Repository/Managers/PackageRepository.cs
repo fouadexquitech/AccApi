@@ -1,11 +1,13 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Nancy;
@@ -14,6 +16,7 @@ using OfficeOpenXml.DataValidation;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -42,34 +45,10 @@ namespace AccApi.Repository.Managers
             //_context =context;
         }
 
-        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input,string costDB)
+        public List<BoqRessourcesList> GetBoqWithRessources(SearchInput input, string costDB)
         {
-            //string connectionString = Configuration.GetConnectionString("DefaultConnection");
-            //string costDb = "CiteDefence_CostData";
-            //var connection = new SqlConnectionStringBuilder(connectionString);
-            //connection.InitialCatalog = costDb;
-
-            //string conName = connection.ConnectionString.ToString();
-            //var _costDBbContext = _context.CreateConnectionFromOut(conName);
-
-
-            //var results = from b in _context.TblOriginalBoqs
-            //              where (input.BOQDiv != null && b.SectionO == input.BOQDiv)
-            //              where (input.SheetDesc != null && b.ObSheetDesc == input.SheetDesc)
-            //              where (input.FromRow != null && input.ToRow != null && b.RowNumber <= int.Parse(input.FromRow) && b.RowNumber >= int.Parse(input.ToRow))
-            //              orderby b.RowNumber
-            //              select b;
-
-
-            //var results = from b in _context.TblOriginalBoqs
-            //              where (input.BOQDiv != null || b.SectionO == input.BOQDiv)
-            //                   && (input.SheetDesc != null || b.ObSheetDesc == input.SheetDesc)
-            //                   && ((input.FromRow != null && input.ToRow != null) || (b.RowNumber >= int.Parse(input.FromRow) && b.RowNumber <= int.Parse(input.ToRow)))
-            //              orderby b.RowNumber
-            //              select b;
-
-            bool blankInput=true;  
-            if (input.BOQDiv.Length > 0) blankInput=false;
+            bool blankInput = true;
+            if (input.BOQDiv.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.BOQItem)) blankInput = false;
             if (!string.IsNullOrEmpty(input.BOQDesc)) blankInput = false;
             if (!string.IsNullOrEmpty(input.SheetDesc)) blankInput = false;
@@ -86,19 +65,93 @@ namespace AccApi.Repository.Managers
             if (input.isItemsAssigned > 0) blankInput = false;
             if (input.boqResourceSeq.Length > 0) blankInput = false;
             if (input.isRessourcesAssigned > 0) blankInput = false;
-            
+
             if (blankInput)
             {
                 //List<BoqRessourcesList> res = new List<BoqRessourcesList>();
                 return null;
             }
 
+            //Div_List
+            var dtDiv = new DataTable();
+            dtDiv.Columns.Add("Div", typeof(string));
+            foreach (var val in input.BOQDiv)
+            dtDiv.Rows.Add(val.ToString());
+            //DivRes_List
+            var dtDivRes = new DataTable();
+            dtDivRes.Columns.Add("DivRes", typeof(string));
+            foreach (var val in input.RESDiv)
+            dtDivRes.Rows.Add(val.ToString());
+            //L2_List
+            var dtL2 = new DataTable();
+            dtL2.Columns.Add("L2", typeof(string));
+            foreach (var val in input.boqLevel2)
+            dtL2.Rows.Add(val.ToString());
+            //L3_List
+            var dtL3 = new DataTable();
+            dtL3.Columns.Add("L3", typeof(string));
+            foreach (var val in input.boqLevel3)
+            dtL3.Rows.Add(val.ToString());
+            //L4_List
+            var dtL4 = new DataTable();
+            dtL4.Columns.Add("L4", typeof(string));
+            foreach (var val in input.boqLevel4)
+            dtL4.Rows.Add(val.ToString());
+            //Resources_List
+            var dtRes = new DataTable();
+            dtRes.Columns.Add("Resources", typeof(string));
+            foreach (var val in input.boqResourceSeq)
+            dtRes.Rows.Add(val.ToString());
+            //ResType_List
+            var dtResType = new DataTable();
+            dtResType.Columns.Add("ResType", typeof(string));
+            foreach (var val in input.BOQDiv)
+            dtResType.Rows.Add(val.ToString());
+
+            var p1 = new SqlParameter("@DB", costDB);
+            var p2 = new SqlParameter("@BOQDivList", SqlDbType.Structured); 
+            p2.TypeName = "[dbo].[Div_List]"; p2.SqlValue = dtDiv;
+
+            var p3 = new SqlParameter("@ResDivList", SqlDbType.Structured);
+            p3.TypeName = "[dbo].[ResDiv_List]"; p3.SqlValue = dtDivRes;
+
+            var p4 = new SqlParameter("@L2_List", SqlDbType.Structured);
+            p4.TypeName = "[dbo].[L2_List]"; p4.SqlValue = dtL2;
+
+            var p5 = new SqlParameter("@L3_List", SqlDbType.Structured);
+            p5.TypeName = "[dbo].[L3_List]"; p4.SqlValue = dtL3;
+
+            var p6 = new SqlParameter("@L4_List", SqlDbType.Structured);
+            p6.TypeName = "[dbo].[L4_List]"; p6.SqlValue = dtL4;
+
+            var p7 = new SqlParameter("@BoqResList", SqlDbType.Structured);
+            p7.TypeName = "[dbo].[Resources_List]"; p7.SqlValue = dtRes;
+
+            var p8 = new SqlParameter("@ResTypeList", SqlDbType.Structured);
+            p8.TypeName = "[dbo].[ResType_List]"; p8.SqlValue = dtResType;
+
+            var p9 = new SqlParameter("@BOQItem", (input.BOQItem == null) ? "" : input.BOQItem);
+            var p10 = new SqlParameter("@BOQDesc", (input.BOQDesc == null) ? "" : input.BOQDesc);
+            var p11 = new SqlParameter("@SheetDesc", (input.SheetDesc == null) ? "" : input.SheetDesc);
+            var p12 = new SqlParameter("@FromRow", (input.FromRow == null) ? 0 : input.FromRow);
+            var p13 = new SqlParameter("@ToRow", (input.ToRow == null) ? 0 : input.ToRow);
+            var p14 = new SqlParameter("@Package", (input.Package == null) ? 0 : input.Package);
+            var p15 = new SqlParameter("@ResDesc", (input.RESDesc == null) ? "" : input.RESDesc);
+            var p16 = new SqlParameter("@isItemsAssigned", (input.isRessourcesAssigned == null) ? 0 : input.isRessourcesAssigned);
+            var p17 = new SqlParameter("@isRessourcesAssigned", (input.isRessourcesAssigned == null) ? 0 : input.isRessourcesAssigned);
+            var p18 = new SqlParameter("@boqStatus", (input.boqStatus == null) ? "" : input.boqStatus);
+
+            List<TmpBoqRessource> list = _mdbcontext
+                        .TmpBoqRessources
+                        .FromSqlRaw("exec sp_GetOriginalBoqList @DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", p1, p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18)
+                        .ToList();
+
             var packList = (from p in _mdbcontext.TblPackages
-                               select new packagesList
-                               {
-                                   PkgeId = (int)p.PkgeId,
-                                   PkgeName = p.PkgeName
-                               }).ToList();
+                            select new packagesList
+                            {
+                                PkgeId = (int)p.PkgeId,
+                                PkgeName = p.PkgeName
+                            }).ToList();
 
             //IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
             //                 join b in _context.TblBoqs on o.ItemO equals b.BoqItem
@@ -162,7 +215,7 @@ namespace AccApi.Repository.Managers
             switch (input.isItemsAssigned)
             {
                 case 1:
-                    condQuery = condQuery.Where(w => w.Scope >0);
+                    condQuery = condQuery.Where(w => w.Scope > 0);
                     break;
                 case 2:
                     condQuery = condQuery.Where(w => w.Scope == null || w.Scope == 0);
@@ -173,7 +226,7 @@ namespace AccApi.Repository.Managers
 
             switch (input.isRessourcesAssigned)
             {
-                case 1:            
+                case 1:
                     condQuery = condQuery.Where(w => w.BoqScope > 0);
                     break;
                 case 2:
@@ -183,13 +236,12 @@ namespace AccApi.Repository.Managers
                     break;
             }
 
-
             //Update Package Name
             var qry = condQuery.ToList();
-            //foreach (var x in qry.Where(i=>i.Scope>0))
-            //{
-            //     x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
-            //}
+            foreach (var x in qry.Where(i => i.Scope > 0))
+            {
+                x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            }
             int s = condQuery.Count();
 
             var resutl = condQuery
@@ -201,37 +253,38 @@ namespace AccApi.Repository.Managers
                     SectionO = p.SectionO,
                     ItemO = p.ItemO,
                     DescriptionO = p.DescriptionO,
-                    UnitO = p.UnitO,                
+                    UnitO = p.UnitO,
                     UnitRate = p.UnitRate,
                     //Scope = p.Scope,
                     AssignedPackage = p.AssignedPackage,
                     BillQtyO = p.BillQtyO,
                     QtyO = p.QtyO,
                     ScopeQtyO = p.ScopeQtyO,
-                    ObTradeDesc=p.ObTradeDesc
+                    ObTradeDesc = p.ObTradeDesc
                 }).OrderBy(w => w.RowNumber)
                 .ToList();
 
-            int status , oldstatus;
+
+            int status, oldstatus;
             List<string> stsList = new List<string>();
             foreach (var boq in resutl)
             {
-               status = oldstatus= 0;
-               stsList.Clear();
-               var resList = condQuery.Where(x => x.ItemO == boq.ItemO).ToList();
-               foreach(var res in resList)
+                status = oldstatus = 0;
+                stsList.Clear();
+                var resList = condQuery.Where(x => x.ItemO == boq.ItemO).ToList();
+                foreach (var res in resList)
                 {
-                    if (res.BoqScope>0)
+                    if (res.BoqScope > 0)
                     {
-                        status = (int) res.BoqScope;
+                        status = (int)res.BoqScope;
                         stsList.Add("Assigned");
                     }
                     else
                     {
                         stsList.Add("Not Assigned");
                     }
-                 
-                    if ((oldstatus!=status)  && (oldstatus>0) && (status > 0))
+
+                    if ((oldstatus != status) && (oldstatus > 0) && (status > 0))
                         stsList.Add("Mix");
 
                     if (oldstatus != status) oldstatus = status;
@@ -244,6 +297,37 @@ namespace AccApi.Repository.Managers
                 else if (stsList.Contains("Mix"))
                     boq.BoqStatus = "Mix";
             }
+
+            return resutl;
+        }
+
+        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input,string costDB)
+        {
+            //string connectionString = Configuration.GetConnectionString("DefaultConnection");
+            //string costDb = "CiteDefence_CostData";
+            //var connection = new SqlConnectionStringBuilder(connectionString);
+            //connection.InitialCatalog = costDb;
+
+            //string conName = connection.ConnectionString.ToString();
+            //var _costDBbContext = _context.CreateConnectionFromOut(conName);
+
+
+            //var results = from b in _context.TblOriginalBoqs
+            //              where (input.BOQDiv != null && b.SectionO == input.BOQDiv)
+            //              where (input.SheetDesc != null && b.ObSheetDesc == input.SheetDesc)
+            //              where (input.FromRow != null && input.ToRow != null && b.RowNumber <= int.Parse(input.FromRow) && b.RowNumber >= int.Parse(input.ToRow))
+            //              orderby b.RowNumber
+            //              select b;
+
+
+            //var results = from b in _context.TblOriginalBoqs
+            //              where (input.BOQDiv != null || b.SectionO == input.BOQDiv)
+            //                   && (input.SheetDesc != null || b.ObSheetDesc == input.SheetDesc)
+            //                   && ((input.FromRow != null && input.ToRow != null) || (b.RowNumber >= int.Parse(input.FromRow) && b.RowNumber <= int.Parse(input.ToRow)))
+            //              orderby b.RowNumber
+            //              select b;
+
+            var resutl = GetBoqWithRessources(input,  costDB);
 
             return resutl;
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
@@ -858,51 +942,35 @@ namespace AccApi.Repository.Managers
             CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
             return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
         }
-        public string ExportBoqExcel(AssignPackages input)
+        public string ExportBoqExcel(SearchInput input, string costDB)
         {
-            //if (input.AssignOriginalBoqList != null)
-            //{
-
-            //    var lstBoqo = (from a in input.AssignOriginalBoqList
-            //                   join b in _context.TblOriginalBoqs on a.RowNumber equals b.RowNumber
-            //                   select b).ToList();
-
-            //    foreach (var item in input.AssignOriginalBoqList)
-            //    {
-            //        lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = item.Scope;
-            //    }
-            //    _context.TblOriginalBoqs.UpdateRange(lstBoqo);
-            //    _context.SaveChanges();
-            //}
+            
+            var lstBoq = GetBoqWithRessources(input, costDB);
 
             string excelName = "";
 
-            if (input.AssignBoqList != null)
+            if (lstBoq != null)
             {
 
-                var lstBoq = (from a in input.AssignBoqList
-                              join b in _context.TblBoqs on a.BoqSeq equals b.BoqSeq
-                              join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                              select new BoqModel()
-                              {
-                                  BoqSeq = b.BoqSeq,
-                                  BoqResSeq = b.BoqResSeq,
-                                  BoqCtg = b.BoqCtg,
-                                  BoqUnitMesure = b.BoqUnitMesure,
-                                  BoqQty = b.BoqQty,
-                                  BoqUprice = b.BoqUprice,
-                                  BoqDiv = b.BoqDiv,
-                                  BoqPackage = b.BoqPackage,
-                                  BoqScope = b.BoqScope,
-                                  ResDescription = r.ResDescription,
-                                  BoqItem = b.BoqItem,
-                                  BoqTotalPrice = b.BoqUprice * b.BoqQty
-                              }).ToList();
+                //var lstBoq = (from a in input.AssignBoqList
+                //              join b in _context.TblBoqs on a.BoqSeq equals b.BoqSeq
+                //              join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                //              select new BoqModel()
+                //              {
+                //                  BoqSeq = b.BoqSeq,
+                //                  BoqResSeq = b.BoqResSeq,
+                //                  BoqCtg = b.BoqCtg,
+                //                  BoqUnitMesure = b.BoqUnitMesure,
+                //                  BoqQty = b.BoqQty,
+                //                  BoqUprice = b.BoqUprice,
+                //                  BoqDiv = b.BoqDiv,
+                //                  BoqPackage = b.BoqPackage,
+                //                  BoqScope = b.BoqScope,
+                //                  ResDescription = r.ResDescription,
+                //                  BoqItem = b.BoqItem,
+                //                  BoqTotalPrice = b.BoqUprice * b.BoqQty
+                //              }).ToList();
 
-                //foreach (var item in input.AssignBoqList)
-                //{
-                //    lstBoq.Where(d => d.BoqSeq == item.BoqSeq).First().BoqScope = item.BoqScope;
-                //}
 
                 var stream = new MemoryStream();
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -916,11 +984,11 @@ namespace AccApi.Repository.Managers
                     int i, j;
 
                     i = 1;
+                    worksheet.Row(i).Style.Font.Bold = true;
                     worksheet.Cells[i, 1].Value = "Item";
                     worksheet.Column(1).Width = 20;
                     worksheet.Cells[i, 2].Value = "Description";
                     worksheet.Column(2).Width = 50;
-                    worksheet.Columns[2].Style.WrapText = true;
                     worksheet.Columns[2].Style.WrapText = true;
                     worksheet.Column(2).AutoFit();
                     worksheet.Cells[i, 3].Value = "Unit";
@@ -928,19 +996,28 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 5].Value = "Qty";
                     worksheet.Cells[i, 6].Value = "Unit Price";
                     worksheet.Cells[i, 7].Value = "Total Price";
-
-                    worksheet.Row(i).Style.Font.Bold = true;
+                    worksheet.Cells[i, 8].Value = "Div";
+                    worksheet.Cells[i, 9].Value = "Level 1";
+                    worksheet.Column(9).Width = 30;
+                    worksheet.Cells[i, 10].Value = "Level 2";
+                    worksheet.Column(10).Width = 30;
+                    worksheet.Cells[i, 11].Value = "Level 3";
+                    worksheet.Column(11).Width = 30;
 
                     i = 4;
                     foreach (var x in lstBoq)
                     {
-                        worksheet.Cells[i, 1].Value = (x.BoqItem == null) ? "" : x.BoqItem;
+                        worksheet.Cells[i, 1].Value = (x.ItemO == null) ? "" : x.ItemO;
                         worksheet.Cells[i, 2].Value = (x.ResDescription == null) ? "" : x.ResDescription;
                         worksheet.Cells[i, 3].Value = (x.BoqUnitMesure == null) ? "" : x.BoqUnitMesure;
                         worksheet.Cells[i, 4].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
                         worksheet.Cells[i, 5].Value = (x.BoqQty == null) ? "" : x.BoqQty;
                         worksheet.Cells[i, 6].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
                         worksheet.Cells[i, 7].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
+                        worksheet.Cells[i, 8].Value = (x.BoqDiv == null) ? "" : x.BoqDiv;
+                        worksheet.Cells[i, 9].Value = (x.L1 == null) ? "" : x.L1;
+                        worksheet.Cells[i, 10].Value = (x.L2 == null) ? "" : x.L2;
+                        worksheet.Cells[i, 11].Value = (x.L3 == null) ? "" : x.L3;
                         i++;
                     }
 

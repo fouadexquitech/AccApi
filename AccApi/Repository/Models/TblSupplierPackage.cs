@@ -21,5 +21,6 @@ namespace AccApi.Repository.Models
         [Column("spByBoq")]
         public byte? SpByBoq { get; set; }
         public bool? TecCondSent { get; set; }
+        public bool? IsSynched { get; set; }
     }
 }

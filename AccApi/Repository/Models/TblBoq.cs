@@ -119,5 +119,6 @@ namespace AccApi.Repository.Models
         public double? BoqBillQty { get; set; }
         public int? GroupId { get; set; }
         public byte? ExportedToSupplier { get; set; }
+        public bool? IsSynched { get; set; }
     }
 }

@@ -26,5 +26,7 @@ namespace AccApi.Repository.Models
         public int? PrCurrency { get; set; }
         [Column("prExchRate")]
         public double? PrExchRate { get; set; }
+        public bool? IsSynched { get; set; }
+        public int? StatusId { get; set; }
     }
 }

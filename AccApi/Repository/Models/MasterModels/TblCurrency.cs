@@ -22,5 +22,6 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("curDesc")]
         [StringLength(50)]
         public string CurDesc { get; set; }
+        public bool? IsSynched { get; set; }
     }
 }

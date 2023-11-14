@@ -78,11 +78,11 @@ namespace AccApi.Controllers
 
     
         [HttpPost("ExportBoqExcel")]
-        public JsonResult ExportBoqExcel(AssignPackages input)
+        public JsonResult ExportBoqExcel(SearchInput input, string costDB)
         {
             try
             {
-                return new JsonResult(this._packageRepository.ExportBoqExcel(input));
+                return new JsonResult(this._packageRepository.ExportBoqExcel(input,  costDB));
             }
             catch (Exception ex)
             {

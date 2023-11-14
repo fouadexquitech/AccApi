@@ -18,8 +18,19 @@ namespace AccApi.Repository
         {
         }
 
+        public virtual DbSet<AggregatedCounter> AggregatedCounters { get; set; }
         public virtual DbSet<AtsArea> AtsAreas { get; set; }
         public virtual DbSet<BemArea> BemAreas { get; set; }
+        public virtual DbSet<Counter> Counters { get; set; }
+        public virtual DbSet<Hash> Hashes { get; set; }
+        public virtual DbSet<Job> Jobs { get; set; }
+        public virtual DbSet<JobParameter> JobParameters { get; set; }
+        public virtual DbSet<JobQueue> JobQueues { get; set; }
+        public virtual DbSet<List> Lists { get; set; }
+        public virtual DbSet<Schema> Schemas { get; set; }
+        public virtual DbSet<Server> Servers { get; set; }
+        public virtual DbSet<Set> Sets { get; set; }
+        public virtual DbSet<State> States { get; set; }
         public virtual DbSet<TblComCond> TblComConds { get; set; }
         public virtual DbSet<TblCompany> TblCompanies { get; set; }
         public virtual DbSet<TblCompanyCode> TblCompanyCodes { get; set; }
@@ -55,6 +66,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblSubTrade> TblSubTrades { get; set; }
         public virtual DbSet<TblSupplier> TblSuppliers { get; set; }
         public virtual DbSet<TblSupplierDiv> TblSupplierDivs { get; set; }
+        public virtual DbSet<TblSuppliersContact> TblSuppliersContacts { get; set; }
         public virtual DbSet<TblTechCond> TblTechConds { get; set; }
         public virtual DbSet<TblTempCount> TblTempCounts { get; set; }
         public virtual DbSet<TblTempReportsAdmin> TblTempReportsAdmins { get; set; }
@@ -64,21 +76,32 @@ namespace AccApi.Repository
         public virtual DbSet<TblUsersProject> TblUsersProjects { get; set; }
         public virtual DbSet<TempLabor> TempLabors { get; set; }
         public virtual DbSet<Tmp> Tmps { get; set; }
+        public virtual DbSet<Tmp1> Tmp1s { get; set; }
+        public virtual DbSet<TmpBoqRessource> TmpBoqRessources { get; set; }
         public virtual DbSet<TmpStaffCost> TmpStaffCosts { get; set; }
         public virtual DbSet<TmpUnitCost> TmpUnitCosts { get; set; }
 
-//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//        {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//                optionsBuilder.UseSqlServer("Data Source=ABEDHIJAZI;Initial Catalog=MasterProjects;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-//            }
-//        }
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+                optionsBuilder.UseSqlServer("Data Source=ABEDHIJAZI;Initial Catalog=MasterProjects;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1256_CI_AS");
+
+            modelBuilder.Entity<AggregatedCounter>(entity =>
+            {
+                entity.HasKey(e => e.Key)
+                    .HasName("PK_HangFire_CounterAggregated");
+
+                entity.HasIndex(e => e.ExpireAt, "IX_HangFire_AggregatedCounter_ExpireAt")
+                    .HasFilter("([ExpireAt] IS NOT NULL)");
+            });
 
             modelBuilder.Entity<AtsArea>(entity =>
             {
@@ -92,6 +115,92 @@ namespace AccApi.Repository
                 entity.Property(e => e.New).IsUnicode(false);
 
                 entity.Property(e => e.Old).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Counter>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Id })
+                    .HasName("PK_HangFire_Counter");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<Hash>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Field })
+                    .HasName("PK_HangFire_Hash");
+
+                entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Hash_ExpireAt")
+                    .HasFilter("([ExpireAt] IS NOT NULL)");
+            });
+
+            modelBuilder.Entity<Job>(entity =>
+            {
+                entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Job_ExpireAt")
+                    .HasFilter("([ExpireAt] IS NOT NULL)");
+
+                entity.HasIndex(e => e.StateName, "IX_HangFire_Job_StateName")
+                    .HasFilter("([StateName] IS NOT NULL)");
+            });
+
+            modelBuilder.Entity<JobParameter>(entity =>
+            {
+                entity.HasKey(e => new { e.JobId, e.Name })
+                    .HasName("PK_HangFire_JobParameter");
+
+                entity.HasOne(d => d.Job)
+                    .WithMany(p => p.JobParameters)
+                    .HasForeignKey(d => d.JobId)
+                    .HasConstraintName("FK_HangFire_JobParameter_Job");
+            });
+
+            modelBuilder.Entity<JobQueue>(entity =>
+            {
+                entity.HasKey(e => new { e.Queue, e.Id })
+                    .HasName("PK_HangFire_JobQueue");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<List>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Id })
+                    .HasName("PK_HangFire_List");
+
+                entity.HasIndex(e => e.ExpireAt, "IX_HangFire_List_ExpireAt")
+                    .HasFilter("([ExpireAt] IS NOT NULL)");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<Schema>(entity =>
+            {
+                entity.HasKey(e => e.Version)
+                    .HasName("PK_HangFire_Schema");
+
+                entity.Property(e => e.Version).ValueGeneratedNever();
+            });
+
+            modelBuilder.Entity<Set>(entity =>
+            {
+                entity.HasKey(e => new { e.Key, e.Value })
+                    .HasName("PK_HangFire_Set");
+
+                entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Set_ExpireAt")
+                    .HasFilter("([ExpireAt] IS NOT NULL)");
+            });
+
+            modelBuilder.Entity<State>(entity =>
+            {
+                entity.HasKey(e => new { e.JobId, e.Id })
+                    .HasName("PK_HangFire_State");
+
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+                entity.HasOne(d => d.Job)
+                    .WithMany(p => p.States)
+                    .HasForeignKey(d => d.JobId)
+                    .HasConstraintName("FK_HangFire_State_Job");
             });
 
             modelBuilder.Entity<TblComCond>(entity =>
@@ -128,6 +237,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.CurCode).IsUnicode(false);
 
                 entity.Property(e => e.CurDesc).IsUnicode(false);
+
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblDailyStat>(entity =>
@@ -398,6 +509,8 @@ namespace AccApi.Repository
                     .HasName("PK_Packages-Network");
 
                 entity.Property(e => e.FilePath).IsUnicode(false);
+
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblPaycheck>(entity =>
@@ -530,6 +643,8 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => e.SupCode)
                     .HasName("PK__tblSuppl__8599381D70BBA62A");
+
+                entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TblSupplierDiv>(entity =>
@@ -537,6 +652,15 @@ namespace AccApi.Repository
                 entity.HasKey(e => new { e.SupCode, e.SupDiv });
 
                 entity.Property(e => e.SupDiv).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblSuppliersContact>(entity =>
+            {
+                entity.HasKey(e => new { e.SupId, e.SupEmail });
+
+                entity.Property(e => e.SupContactName).IsUnicode(false);
+
+                entity.Property(e => e.SupDepartment).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblTechCond>(entity =>
@@ -826,6 +950,70 @@ namespace AccApi.Repository
                 entity.Property(e => e.VillaTypeId).IsUnicode(false);
 
                 entity.Property(e => e.ZoneId).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Tmp1>(entity =>
+            {
+                entity.Property(e => e.T1).IsUnicode(false);
+
+                entity.Property(e => e.T11).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TmpBoqRessource>(entity =>
+            {
+                entity.Property(e => e.AssignedPackage).IsUnicode(false);
+
+                entity.Property(e => e.BillQtyO).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqBillQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqCtg).IsUnicode(false);
+
+                entity.Property(e => e.BoqDiv).IsUnicode(false);
+
+                entity.Property(e => e.BoqQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqScope).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqScopeQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqStatus).IsUnicode(false);
+
+                entity.Property(e => e.BoqTotalPrice).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqUnitMesure).IsUnicode(false);
+
+                entity.Property(e => e.BoqUprice).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.DescriptionO).IsUnicode(false);
+
+                entity.Property(e => e.ItemO).IsUnicode(false);
+
+                entity.Property(e => e.L1).IsUnicode(false);
+
+                entity.Property(e => e.L2).IsUnicode(false);
+
+                entity.Property(e => e.L3).IsUnicode(false);
+
+                entity.Property(e => e.L4).IsUnicode(false);
+
+                entity.Property(e => e.L5).IsUnicode(false);
+
+                entity.Property(e => e.ObSheetDesc).IsUnicode(false);
+
+                entity.Property(e => e.ObTradeDesc).IsUnicode(false);
+
+                entity.Property(e => e.QtyO).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ResDescription).IsUnicode(false);
+
+                entity.Property(e => e.ScopeQtyO).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SectionO).IsUnicode(false);
+
+                entity.Property(e => e.UnitO).IsUnicode(false);
+
+                entity.Property(e => e.UnitRate).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<TmpStaffCost>(entity =>
