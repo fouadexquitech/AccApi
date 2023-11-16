@@ -19,4 +19,5 @@ namespace AccApi.Data_Layer
         public List<string> mailAttachments { get; set; }
     }
 
+
 }

@@ -1,26 +1,18 @@
 ﻿using AccApi.Repository.Interfaces;
-using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
+using AccApi.Data_Layer;
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
-using Microsoft.Data.SqlClient.Server;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Nancy;
 using OfficeOpenXml;
-using OfficeOpenXml.DataValidation;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace AccApi.Repository.Managers
@@ -45,7 +37,7 @@ namespace AccApi.Repository.Managers
             //_context =context;
         }
 
-        public List<BoqRessourcesList> GetBoqWithRessources(SearchInput input, string costDB)
+        public async Task<List<BoqRessourcesList>> GetBoqWithRessourcesAsync(SearchInput input, string costDB,int type)
         {
             bool blankInput = true;
             if (input.BOQDiv.Length > 0) blankInput = false;
@@ -105,9 +97,10 @@ namespace AccApi.Repository.Managers
             //ResType_List
             var dtResType = new DataTable();
             dtResType.Columns.Add("ResType", typeof(string));
-            foreach (var val in input.BOQDiv)
+            foreach (var val in input.RESDiv)
             dtResType.Rows.Add(val.ToString());
 
+            var p0= new SqlParameter("@Type", type);
             var p1 = new SqlParameter("@DB", costDB);
             var p2 = new SqlParameter("@BOQDivList", SqlDbType.Structured); 
             p2.TypeName = "[dbo].[Div_List]"; p2.SqlValue = dtDiv;
@@ -119,7 +112,7 @@ namespace AccApi.Repository.Managers
             p4.TypeName = "[dbo].[L2_List]"; p4.SqlValue = dtL2;
 
             var p5 = new SqlParameter("@L3_List", SqlDbType.Structured);
-            p5.TypeName = "[dbo].[L3_List]"; p4.SqlValue = dtL3;
+            p5.TypeName = "[dbo].[L3_List]"; p5.SqlValue = dtL3;
 
             var p6 = new SqlParameter("@L4_List", SqlDbType.Structured);
             p6.TypeName = "[dbo].[L4_List]"; p6.SqlValue = dtL4;
@@ -137,171 +130,267 @@ namespace AccApi.Repository.Managers
             var p13 = new SqlParameter("@ToRow", (input.ToRow == null) ? 0 : input.ToRow);
             var p14 = new SqlParameter("@Package", (input.Package == null) ? 0 : input.Package);
             var p15 = new SqlParameter("@ResDesc", (input.RESDesc == null) ? "" : input.RESDesc);
-            var p16 = new SqlParameter("@isItemsAssigned", (input.isRessourcesAssigned == null) ? 0 : input.isRessourcesAssigned);
+            var p16 = new SqlParameter("@isItemsAssigned", (input.isItemsAssigned == null) ? 0 : input.isItemsAssigned);
             var p17 = new SqlParameter("@isRessourcesAssigned", (input.isRessourcesAssigned == null) ? 0 : input.isRessourcesAssigned);
-            var p18 = new SqlParameter("@boqStatus", (input.boqStatus == null) ? "" : input.boqStatus);
+            var p18 = new SqlParameter("@boqStatus", (input.boqStatus == "") ? "" : input.boqStatus);
 
-            List<TmpBoqRessource> list = _mdbcontext
-                        .TmpBoqRessources
-                        .FromSqlRaw("exec sp_GetOriginalBoqList @DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", p1, p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18)
-                        .ToList();
+            //////////////////
+            /////methode SP 1
+            List<SqlParameter> parameters = new List<SqlParameter>();
+            parameters.Add(p0);
+            parameters.Add(p1);
+            parameters.Add(p2);
+            parameters.Add(p3);
+            parameters.Add(p4);
+            parameters.Add(p5);
+            parameters.Add(p6);
+            parameters.Add(p7);
+            parameters.Add(p8);
+            parameters.Add(p9);
+            parameters.Add(p10);
+            parameters.Add(p11);
+            parameters.Add(p12);
+            parameters.Add(p13);
+            parameters.Add(p14);
+            parameters.Add(p15);
+            parameters.Add(p16);
+            parameters.Add(p17);
+            parameters.Add(p18);
 
-            var packList = (from p in _mdbcontext.TblPackages
-                            select new packagesList
-                            {
-                                PkgeId = (int)p.PkgeId,
-                                PkgeName = p.PkgeName
-                            }).ToList();
+            ExecuteRawSP executeRawSP = new ExecuteRawSP();
+            List< BoqRessourcesList> result= new List< BoqRessourcesList>();
+
+
+            switch (type)
+            {
+                case 1:
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
+                        x => new BoqRessourcesList
+                        {
+                            RowNumber = (int)x["RowNumber"],
+                            SectionO = x["SectionO"] == null ? "" : (string)x["SectionO"],
+                            ItemO = (string)x["ItemO"],
+                            DescriptionO = (string)x["DescriptionO"],
+                            UnitO = (string)x["UnitO"],
+                            UnitRateO = (double)x["UnitRate"],
+                            AssignedPackage = (string)x["AssignedPackage"],
+                            BillQtyO = (double)x["BillQtyO"],
+                            QtyO = (double)x["QtyO"],
+                            ScopeQtyO = (double)x["ScopeQtyO"],
+                            //ObTradeDesc = x["ObTradeDesc"] != DBNull.Value ? (string)x["ObTradeDesc"] : null,
+                            BoqStatus = x["BoqStatus"] != DBNull.Value ? (string)x["BoqStatus"] : null
+                        });
+                    break;
+
+                case 2: case 3:
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
+                      x => new BoqRessourcesList
+                      {
+                        ItemO = (string)x["ItemO"],
+                        DescriptionO =  (string)x["DescriptionO"],
+                        UnitO =  (string)x["UnitO"],
+                        QtyO = (double)x["QtyO"],
+                        UnitRateO = (double)x["UnitRate"],
+                        TotalPriceO= (double)x["totalPrice"],
+                        BoqSeq = (int)x["BoqSeq"],
+                        //BoqResSeq = (string)x["BoqResSeq"],
+                        BoqCtg = (string)x["BoqCtg"],
+                        BoqUnitMesure = (string)x["BoqUnitMesure"],
+                        BoqQty = (double)x["BoqQty"],
+                        BoqUprice = (double)x["BoqUprice"],
+                        BoqDiv = (string)x["BoqDiv"],
+                        ResDescription =(string)x["ResDescription"],
+                        BoqTotalPrice = (double)x["BoqTotalPrice"],
+                        l1 = x["L1"] != DBNull.Value ? (string)x["L1"] : null,
+                        l2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
+                        l3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
+                        resCode= (string)x["BoqPackage"]
+                      });
+
+                    break;
+
+                default:
+                    // code block
+                    break;
+            }
+
+            /////////////////
+
+            //methode SP 2
+            //List<TmpBoqRessource> list = _mdbcontext
+            //            .TmpBoqRessources
+            //            .FromSqlRaw("exec sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus",P0, p1, p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18)
+            //            .ToList();
+
+            //var result = list.Select(x => new BoqRessourcesList
+            //{
+            //    RowNumber = x.RowNumber,
+            //    SectionO = x.SectionO,
+            //    ItemO = x.ItemO,
+            //    DescriptionO = x.DescriptionO,
+            //    UnitO = x.UnitO,
+            //    UnitRate = x.UnitRate,
+            //    //Scope = p.Scope,
+            //    AssignedPackage = x.AssignedPackage,
+            //    BillQtyO = x.BillQtyO,
+            //    QtyO = x.QtyO,
+            //    ScopeQtyO = x.ScopeQtyO,
+            //    ObTradeDesc = x.ObTradeDesc
+            //}).OrderBy(w => w.RowNumber)
+            //.ToList();
+
+            return result;
+
+
+            //var packList = (from p in _mdbcontext.TblPackages
+            //                select new packagesList
+            //                {
+            //                    PkgeId = (int)p.PkgeId,
+            //                    PkgeName = p.PkgeName
+            //                }).ToList();
 
             //IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
-            //                 join b in _context.TblBoqs on o.ItemO equals b.BoqItem
-            //                 join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-            //                 join p in packList on o.Scope equals p.PkgeId into gj
-            //                 from pk in gj.DefaultIfEmpty()
+            //                                            join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+            //                                            join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+            //                                            select new BoqRessourcesList
+            //                                            {
+            //                                                RowNumber = o.RowNumber,
+            //                                                SectionO = o.SectionO,
+            //                                                ItemO = o.ItemO,
+            //                                                DescriptionO = o.DescriptionO,
+            //                                                UnitO = o.UnitO,
+            //                                                UnitRate = o.UnitRate,
+            //                                                Scope = o.Scope,
+            //                                                L2 = ((o.L2 == null) ? "" : o.L2),
+            //                                                L3 = ((o.L3 == null) ? "" : o.L3),
+            //                                                L4 = ((o.L4 == null) ? "" : o.L4),
+            //                                                BillQtyO = o.ObBillQty,
+            //                                                QtyO = o.QtyO,
+            //                                                ScopeQtyO = o.QtyScope,
+            //                                                ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
+            //                                                ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
+            //                                                BoqSeq = b.BoqSeq,
+            //                                                BoqCtg = b.BoqCtg,
+            //                                                BoqUnitMesure = b.BoqUnitMesure,
+            //                                                BoqUprice = b.BoqUprice,
+            //                                                BoqDiv = b.BoqDiv,
+            //                                                BoqPackage = b.BoqPackage,
+            //                                                BoqScope = b.BoqScope,
+            //                                                ResDescription = r.ResDescription,
+            //                                                BoqBillQty = b.BoqBillQty,
+            //                                                BoqQty = b.BoqQty,
+            //                                                BoqScopeQty = b.BoqQtyScope,
+            //                                                AssignedPackage = "",
+            //                                                ResSeq = r.ResSeq
+            //                                            });
 
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqs
-                                                        join b in _context.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = o.SectionO,
-                                                            ItemO = o.ItemO,
-                                                            DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
-                                                            L2 = ((o.L2 == null) ? "" : o.L2),
-                                                            L3 = ((o.L3 == null) ? "" : o.L3),
-                                                            L4 = ((o.L4 == null) ? "" : o.L4),
-                                                            BillQtyO = o.ObBillQty,
-                                                            QtyO = o.QtyO,
-                                                            ScopeQtyO = o.QtyScope,
-                                                            ObTradeDesc = ((o.ObTradeDesc == null) ? "" : o.ObTradeDesc),
-                                                            ObSheetDesc = ((o.ObSheetDesc == null) ? "" : o.ObSheetDesc),
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = b.BoqCtg,
-                                                            BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqUprice = b.BoqUprice,
-                                                            BoqDiv = b.BoqDiv,
-                                                            BoqPackage = b.BoqPackage,
-                                                            BoqScope = b.BoqScope,
-                                                            ResDescription = r.ResDescription,
-                                                            BoqBillQty = b.BoqBillQty,
-                                                            BoqQty = b.BoqQty,
-                                                            BoqScopeQty = b.BoqQtyScope,
-                                                            AssignedPackage = "",
-                                                            ResSeq = r.ResSeq
-                                                        });
+            //if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
+            //if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            //if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            //if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
+            //if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            //if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            //if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
+            //if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
+            //if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            //if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
+            //if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
+            ////if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
+            //if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
+            //if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
+            //if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.ResSeq));
 
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
-            if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
-            if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
-            //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
-            if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
-            if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
-            if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.ResSeq));
+            //switch (input.isItemsAssigned)
+            //{
+            //    case 1:
+            //        condQuery = condQuery.Where(w => w.Scope > 0);
+            //        break;
+            //    case 2:
+            //        condQuery = condQuery.Where(w => w.Scope == null || w.Scope == 0);
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            switch (input.isItemsAssigned)
-            {
-                case 1:
-                    condQuery = condQuery.Where(w => w.Scope > 0);
-                    break;
-                case 2:
-                    condQuery = condQuery.Where(w => w.Scope == null || w.Scope == 0);
-                    break;
-                default:
-                    break;
-            }
+            //switch (input.isRessourcesAssigned)
+            //{
+            //    case 1:
+            //        condQuery = condQuery.Where(w => w.BoqScope > 0);
+            //        break;
+            //    case 2:
+            //        condQuery = condQuery.Where(w => w.BoqScope == null || w.BoqScope == 0);
+            //        break;
+            //    default:
+            //        break;
+            //}
 
-            switch (input.isRessourcesAssigned)
-            {
-                case 1:
-                    condQuery = condQuery.Where(w => w.BoqScope > 0);
-                    break;
-                case 2:
-                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
-                    break;
-                default:
-                    break;
-            }
+            ////Update Package Name
+            //var qry = condQuery.ToList();
+            //foreach (var x in qry.Where(i => i.Scope > 0))
+            //{
+            //    x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
+            //}
+            //int s = condQuery.Count();
 
-            //Update Package Name
-            var qry = condQuery.ToList();
-            foreach (var x in qry.Where(i => i.Scope > 0))
-            {
-                x.AssignedPackage = packList.FirstOrDefault(d => d.PkgeId == x.Scope).PkgeName;
-            }
-            int s = condQuery.Count();
-
-            var resutl = condQuery
-                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
-                .Select(p => p.FirstOrDefault())
-                .Select(p => new BoqRessourcesList
-                {
-                    RowNumber = p.RowNumber,
-                    SectionO = p.SectionO,
-                    ItemO = p.ItemO,
-                    DescriptionO = p.DescriptionO,
-                    UnitO = p.UnitO,
-                    UnitRate = p.UnitRate,
-                    //Scope = p.Scope,
-                    AssignedPackage = p.AssignedPackage,
-                    BillQtyO = p.BillQtyO,
-                    QtyO = p.QtyO,
-                    ScopeQtyO = p.ScopeQtyO,
-                    ObTradeDesc = p.ObTradeDesc
-                }).OrderBy(w => w.RowNumber)
-                .ToList();
+            //var resutl = condQuery
+            //    .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
+            //    .Select(p => p.FirstOrDefault())
+            //    .Select(p => new BoqRessourcesList
+            //    {
+            //        RowNumber = p.RowNumber,
+            //        SectionO = p.SectionO,
+            //        ItemO = p.ItemO,
+            //        DescriptionO = p.DescriptionO,
+            //        UnitO = p.UnitO,
+            //        UnitRate = p.UnitRate,
+            //        //Scope = p.Scope,
+            //        AssignedPackage = p.AssignedPackage,
+            //        BillQtyO = p.BillQtyO,
+            //        QtyO = p.QtyO,
+            //        ScopeQtyO = p.ScopeQtyO,
+            //        ObTradeDesc = p.ObTradeDesc
+            //    }).OrderBy(w => w.RowNumber)
+            //    .ToList();
 
 
-            int status, oldstatus;
-            List<string> stsList = new List<string>();
-            foreach (var boq in resutl)
-            {
-                status = oldstatus = 0;
-                stsList.Clear();
-                var resList = condQuery.Where(x => x.ItemO == boq.ItemO).ToList();
-                foreach (var res in resList)
-                {
-                    if (res.BoqScope > 0)
-                    {
-                        status = (int)res.BoqScope;
-                        stsList.Add("Assigned");
-                    }
-                    else
-                    {
-                        stsList.Add("Not Assigned");
-                    }
+            //int status, oldstatus;
+            //List<string> stsList = new List<string>();
+            //foreach (var boq in resutl)
+            //{
+            //    status = oldstatus = 0;
+            //    stsList.Clear();
+            //    var resList = condQuery.Where(x => x.ItemO == boq.ItemO).ToList();
+            //    foreach (var res in resList)
+            //    {
+            //        if (res.BoqScope > 0)
+            //        {
+            //            status = (int)res.BoqScope;
+            //            stsList.Add("Assigned");
+            //        }
+            //        else
+            //        {
+            //            stsList.Add("Not Assigned");
+            //        }
 
-                    if ((oldstatus != status) && (oldstatus > 0) && (status > 0))
-                        stsList.Add("Mix");
+            //        if ((oldstatus != status) && (oldstatus > 0) && (status > 0))
+            //            stsList.Add("Mix");
 
-                    if (oldstatus != status) oldstatus = status;
-                }
+            //        if (oldstatus != status) oldstatus = status;
+            //    }
 
-                if (stsList.Contains("Assigned") && stsList.Contains("Not Assigned"))
-                    boq.BoqStatus = "Missing";
-                else if (stsList.Contains("Assigned") && (!stsList.Contains("Mix")))
-                    boq.BoqStatus = "Assigned";
-                else if (stsList.Contains("Mix"))
-                    boq.BoqStatus = "Mix";
-            }
-
-            return resutl;
+            //    if (stsList.Contains("Assigned") && stsList.Contains("Not Assigned"))
+            //        boq.BoqStatus = "Missing";
+            //    else if (stsList.Contains("Assigned") && (!stsList.Contains("Mix")))
+            //        boq.BoqStatus = "Assigned";
+            //    else if (stsList.Contains("Mix"))
+            //        boq.BoqStatus = "Mix";
+            //}           
         }
 
-        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input,string costDB)
+
+        public async Task<List<BoqRessourcesList>> GetOriginalBoqList(SearchInput input,string costDB)
         {
             //string connectionString = Configuration.GetConnectionString("DefaultConnection");
             //string costDb = "CiteDefence_CostData";
@@ -327,7 +416,7 @@ namespace AccApi.Repository.Managers
             //              orderby b.RowNumber
             //              select b;
 
-            var resutl = GetBoqWithRessources(input,  costDB);
+            var resutl =await GetBoqWithRessourcesAsync(input,  costDB,1);
 
             return resutl;
             //return _mapper.Map<List<TblOriginalBoq>, List<OriginalBoqModel>>(results);
@@ -394,7 +483,8 @@ namespace AccApi.Repository.Managers
                                                    L2 = ((o.L2 == null) ? "" : o.L2),
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
-                                                   AssignedPackage = ""
+                                                   AssignedPackage = "",
+                                                   TotalUnitPrice= (b.BoqUprice * b.BoqQty)/ o.UnitRate
                                                });
 
 
@@ -422,7 +512,7 @@ namespace AccApi.Repository.Managers
                     condQuery = condQuery.Where(w => w.BoqScope > 0);
                     break;
                 case 2:
-                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.BoqScope == 0);
                     break;
                 default:
                     break;
@@ -502,7 +592,7 @@ namespace AccApi.Repository.Managers
                     condQuery = condQuery.Where(w => w.BoqScope > 0);
                     break;
                 case 2:
-                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.BoqScope == 0);
                     break;
                 default:
                     break;
@@ -942,10 +1032,10 @@ namespace AccApi.Repository.Managers
             CurrencyConverterRepository currencyConverterRepository = new CurrencyConverterRepository();
             return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
         }
-        public string ExportBoqExcel(SearchInput input, string costDB)
+        public async Task<string> ExportBoqExcel(SearchInput input, string costDB)
         {
             
-            var lstBoq = GetBoqWithRessources(input, costDB);
+            var lstBoq =await GetBoqWithRessourcesAsync(input, costDB,2);
 
             string excelName = "";
 
@@ -989,8 +1079,8 @@ namespace AccApi.Repository.Managers
                     worksheet.Column(1).Width = 20;
                     worksheet.Cells[i, 2].Value = "Description";
                     worksheet.Column(2).Width = 50;
-                    worksheet.Columns[2].Style.WrapText = true;
-                    worksheet.Column(2).AutoFit();
+                    //worksheet.Columns[2].Style.WrapText = true;
+                    //worksheet.Column(2).AutoFit();
                     worksheet.Cells[i, 3].Value = "Unit";
                     worksheet.Cells[i, 4].Value = "Type";
                     worksheet.Cells[i, 5].Value = "Qty";
@@ -1013,11 +1103,13 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 4].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
                         worksheet.Cells[i, 5].Value = (x.BoqQty == null) ? "" : x.BoqQty;
                         worksheet.Cells[i, 6].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
+                        worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 7].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
+                        worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 8].Value = (x.BoqDiv == null) ? "" : x.BoqDiv;
-                        worksheet.Cells[i, 9].Value = (x.L1 == null) ? "" : x.L1;
-                        worksheet.Cells[i, 10].Value = (x.L2 == null) ? "" : x.L2;
-                        worksheet.Cells[i, 11].Value = (x.L3 == null) ? "" : x.L3;
+                        worksheet.Cells[i, 9].Value = (x.l1 == null) ? "" : x.l1;
+                        worksheet.Cells[i, 10].Value = (x.l2 == null) ? "" : x.l2;
+                        worksheet.Cells[i, 11].Value = (x.l3 == null) ? "" : x.l3;
                         i++;
                     }
 
@@ -1033,6 +1125,246 @@ namespace AccApi.Repository.Managers
             }
             return excelName;
         }
+
+        public async Task<string> ExportNotAssigned(SearchInput input, string costDB)
+        {
+            string excelName = "";
+            int byBoq = 0;
+
+            var lstBoq = await GetBoqWithRessourcesAsync(input, costDB, 3);
+
+            if (lstBoq != null)
+            {
+                var stream = new MemoryStream();
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                using (var xlPackage = new ExcelPackage(stream))
+                {
+                    var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
+                    worksheet.Columns.AutoFit();
+                    //worksheet.Protection.IsProtected = true;
+
+                    int i, j;
+                    string Boq = "", OldBoq = "", C = "", OldC = "", l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
+
+                    i = 1;
+                    worksheet.Cells[i, 1].Value = "Item";
+                    worksheet.Column(1).Width = 40;
+                    worksheet.Cells[i, 2].Value = "Level";
+                    worksheet.Column(3).Width = 50;
+                    worksheet.Columns[3].Style.WrapText = true;
+                    worksheet.Column(3).AutoFit();
+                    worksheet.Cells[i, 3].Value = "Bill Description";
+                    worksheet.Cells[i, 4].Value = "Unit";
+                    worksheet.Cells[i, 5].Value = "Qty";
+                    worksheet.Cells[i, 6].Value = "Unit Price";
+                    worksheet.Cells[i, 7].Value = "Total Price";
+
+                    if (byBoq == 1)
+                    {
+                    }
+                    else
+                    {
+                        worksheet.Cells[i, 8].Value = "Ressouce Type";
+                        worksheet.Cells[i, 9].Value = "Ressouce Code";
+                        worksheet.Column(10).Width = 50;
+                        worksheet.Columns[10].Style.WrapText = true;
+                        worksheet.Column(10).AutoFit();
+                        worksheet.Cells[i, 10].Value = "Ressouce Description";
+                        worksheet.Cells[i, 11].Value = "Ressouce Unit";
+                        worksheet.Cells[i, 12].Value = "Ressouce Qty";
+                        worksheet.Column(12).AutoFit();
+                        worksheet.Cells[i, 13].Value = "Unit Price";
+                        worksheet.Column(13).AutoFit();
+                        worksheet.Cells[i, 14].Value = "Total Price";
+                        worksheet.Column(14).AutoFit();
+                        worksheet.Cells[i, 15].Value = "Comments";
+                        worksheet.Column(15).Width = 50;
+                        worksheet.Columns[15].Style.WrapText = true;
+                        //worksheet.Column(12).AutoFit();                   
+                    }
+                    worksheet.Row(i).Style.Font.Bold = true;
+
+                    i = 4;
+                    foreach (var x in lstBoq)
+                    {
+                        Boq = x.ItemO;
+                        C = x.c1;
+                        l1 = (x.l1 == null) ? "" : x.l1;
+                        l2 = (x.l2 == null) ? "" : x.l2;
+                        l3 = (x.l3 == null) ? "" : x.l3;
+                        l4 = (x.l4 == null) ? "" : x.l4;
+                        l5 = (x.l5 == null) ? "" : x.l5;
+                        l6 = (x.l6 == null) ? "" : x.l6;
+
+                        if ((Boq != OldBoq) || (OldBoq == ""))
+                        {
+                            if ((l1 != "") && (l1 != oldl1))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref;
+                                worksheet.Cells[i, 2].Value = "1";
+                                worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl1 = x.l1;
+                                i = i + 2;
+                            }
+                            if ((l2 != "") && (l2 != oldl2))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
+                                worksheet.Cells[i, 2].Value = "2";
+                                worksheet.Cells[i, 3].Value = (x.l2 == null) ? "" : x.l2;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl2 = x.l2;
+                                i = i + 2;
+                            }
+                            if ((l3 != "") && (l3 != oldl3))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
+                                worksheet.Cells[i, 2].Value = "3";
+                                worksheet.Cells[i, 3].Value = (x.l3 == null) ? "" : x.l3;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl3 = x.l3;
+                                i = i + 2;
+                            }
+                            if ((l4 != "") && (l4 != oldl4))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
+                                worksheet.Cells[i, 2].Value = "4";
+                                worksheet.Cells[i, 3].Value = (x.l4 == null) ? "" : x.l4;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl4 = x.l4;
+                                i = i + 2;
+                            }
+                            if ((l5 != "") && (l5 != oldl5))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
+                                worksheet.Cells[i, 2].Value = "5";
+                                worksheet.Cells[i, 3].Value = (x.l5 == null) ? "" : x.l5;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl5 = x.l5;
+                                i = i + 2;
+                            }
+                            if ((l6 != "") && (l6 != oldl6))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
+                                worksheet.Cells[i, 2].Value = "6";
+                                worksheet.Cells[i, 3].Value = (x.l6 == null) ? "" : x.l6;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl6 = x.l6;
+                                i = i + 2;
+                            }
+
+                            if ((C != OldC) | (OldC == ""))
+                            {
+                                if (((x.c1 == null) ? "" : x.c1) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c1 == null) ? "" : x.c1;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                    OldC = C;
+                                }
+                                if (((x.c2 == null) ? "" : x.c2) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c2 == null) ? "" : x.c2;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c3 == null) ? "" : x.c3) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c3 == null) ? "" : x.c3;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c4 == null) ? "" : x.c4) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c4 == null) ? "" : x.c4;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c5 == null) ? "" : x.c5) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c6 == null) ? "" : x.c6) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                            }
+
+                            worksheet.Cells[i, 1].Value = (x.ItemO == null) ? "" : x.ItemO;
+                            worksheet.Cells[i, 3].Value = (x.DescriptionO == null) ? "" : x.DescriptionO;
+                            worksheet.Cells[i, 4].Value = (x.UnitO == null) ? "" : x.UnitO;
+                            worksheet.Cells[i, 5].Value = (x.QtyO == null) ? "" : x.QtyO;
+                            worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
+                            worksheet.Cells[i, 6].Value = (x.UnitRateO == null) ? "" : x.UnitRateO;
+                            worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
+                            worksheet.Cells[i, 7].Value = (x.TotalPriceO == null) ? "" : x.TotalPriceO;
+                            worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
+
+                            if (byBoq == 1)
+                            {
+                                worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
+                                worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
+                                worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[i, 6].Style.Locked = false;
+                                worksheet.Cells[i, 7].Style.Locked = false;
+                                worksheet.Cells[i, 10].Style.Locked = false;
+                            }
+                            i = i + 1;
+                            OldBoq = Boq;
+                        }
+
+                        if (byBoq != 1)
+                        {
+                            worksheet.Cells[i, 8].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
+                            worksheet.Cells[i, 9].Value = (x.resCode == null) ? "" : x.resCode;
+                            worksheet.Cells[i, 10].Value = (x.ResDescription == null) ? "" : x.ResDescription;
+                            worksheet.Cells[i, 11].Value = (x.BoqUnitMesure == null) ? "" : x.BoqUnitMesure;
+                            worksheet.Cells[i, 12].Value = (x.BoqQty == null) ? "" : x.BoqQty;
+                            worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.0";
+                            worksheet.Cells[i, 13].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
+                            worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
+                            //worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
+                            worksheet.Cells[i, 14].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
+                            worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
+                        }
+                        i++;
+                    }
+
+                    xlPackage.Save();
+                    stream.Position = 0;
+                    excelName = $"Items Not Assigned.xlsx";
+
+                    if (File.Exists(excelName))
+                        File.Delete(excelName);
+
+                    xlPackage.SaveAs(excelName);
+
+                    //excelName = "Package-Aluminum Doors and Windows.xlsx";
+                    
+                }
+
+            }
+            return excelName;
+        }
+
         public bool updateOriginalBoqQty(OriginalBoqModel boq)
         {
             var result = _context.TblOriginalBoqs.Where(x => x.ItemO == boq.ItemO).FirstOrDefault();
@@ -1111,12 +1443,12 @@ namespace AccApi.Repository.Managers
 
 
             var pckgesCost = from e in _context.TblBoqs.Where(x => x.BoqScope > 0)
-                         group e by e.BoqScope into g
-            select new packagesList
-            {
-                PkgeId = g.Key,
-                TotalBudget = g.Sum(x => x.BoqQty * x.BoqUprice)
-            };
+                             group e by e.BoqScope into g
+                             select new packagesList
+                             {
+                                PkgeId = g.Key,
+                                TotalBudget = g.Sum(x => x.BoqQty * x.BoqUprice)
+                             };
 
             var packgesCost = (from a in packList
                                join b in pckgesCost on a.PkgeId equals b.PkgeId
@@ -1309,7 +1641,7 @@ namespace AccApi.Repository.Managers
                     condQuery = condQuery.Where(w => w.BoqScope > 0);
                     break;
                 case 2:
-                    condQuery = condQuery.Where(w => w.BoqScope == null || w.Scope == 0);
+                    condQuery = condQuery.Where(w => w.BoqScope == null || w.BoqScope == 0);
                     break;
                 default:
                     break;

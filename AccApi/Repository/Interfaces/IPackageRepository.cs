@@ -8,10 +8,11 @@ namespace AccApi.Repository.Interfaces
 {
     public interface IPackageRepository
     {
-        List<BoqRessourcesList> GetOriginalBoqList(SearchInput input, string costDB);
+        Task<List<BoqRessourcesList>> GetOriginalBoqList(SearchInput input, string costDB);
         List<BoqModel> GetBoqList(string ItemO, SearchInput input); 
         List<BoqModel> GetAllBoqList(SearchInput input);
-        string ExportBoqExcel(SearchInput input, string costDB);
+        Task<string> ExportBoqExcel(SearchInput input, string costDB);
+        Task<string> ExportNotAssigned(SearchInput input, string costDB);
         public bool updateOriginalBoqQty(OriginalBoqModel boq);
         public bool updateBoqResQty(BoqModel res);
         public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList);

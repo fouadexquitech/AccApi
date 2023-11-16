@@ -35,11 +35,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetOriginalBoqList")]
-        public List<BoqRessourcesList> GetOriginalBoqList(SearchInput input,string costDB)
+        public async Task<List<BoqRessourcesList>> GetOriginalBoqList(SearchInput input,string costDB)
         {
             try
             {
-                return this._packageRepository.GetOriginalBoqList(input,costDB);
+                return await this._packageRepository.GetOriginalBoqList(input,costDB);
             }
             catch (Exception ex)
             {
@@ -78,11 +78,25 @@ namespace AccApi.Controllers
 
     
         [HttpPost("ExportBoqExcel")]
-        public JsonResult ExportBoqExcel(SearchInput input, string costDB)
+        public async Task<JsonResult>  ExportBoqExcel(SearchInput input, string costDB)
         {
             try
             {
-                return new JsonResult(this._packageRepository.ExportBoqExcel(input,  costDB));
+                return new JsonResult(await this._packageRepository.ExportBoqExcel(input,  costDB));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpPost("ExportNotAssigned")]
+        public async Task<JsonResult> ExportNotAssigned(SearchInput input, string costDB)
+        {
+            try
+            {
+                return new JsonResult(await this._packageRepository.ExportNotAssigned(input, costDB));
             }
             catch (Exception ex)
             {

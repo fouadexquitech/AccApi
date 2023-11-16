@@ -52,8 +52,8 @@ namespace AccApi.Repository.Managers
                                                             DescriptionO = o.DescriptionO,
                                                             UnitO = o.UnitO,
                                                             QtyO = o.QtyO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
+                                                            UnitRateO = o.UnitRate,
+                                                            ScopeO = o.Scope,
                                                             BoqSeq = b.BoqSeq,
                                                             BoqCtg = b.BoqCtg,
                                                             BoqUnitMesure = b.BoqUnitMesure,
@@ -71,7 +71,7 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.ScopeO == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
@@ -129,8 +129,8 @@ namespace AccApi.Repository.Managers
                                                             DescriptionO = o.DescriptionO,
                                                             UnitO = o.UnitO,
                                                             QtyO = o.QtyO,
-                                                            UnitRate = o.UnitRate,
-                                                            Scope = o.Scope,
+                                                            UnitRateO = o.UnitRate,
+                                                            ScopeO = o.Scope,
                                                             BoqSeq = b.BoqSeq,
                                                             BoqCtg = b.BoqCtg,
                                                             BoqUnitMesure = b.BoqUnitMesure,
@@ -148,7 +148,7 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.ScopeO == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));

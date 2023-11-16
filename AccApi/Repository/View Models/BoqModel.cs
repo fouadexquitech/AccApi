@@ -41,5 +41,8 @@ namespace AccApi.Repository.View_Models
 
         public bool IsSelected { get; set; }
 
+        public double? TotalUnitPrice { get; set; }
+        
+
     }
 }
