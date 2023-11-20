@@ -33,12 +33,13 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetBOQLevel2List")]
-        public List<BOQLevelList> GetBOQLevel2List()
+
+        [HttpPost("GetBOQLevel2List")]
+        public List<BOQLevelList> GetBOQLevel2List(RessourceLevelsFilter filter)
         {
             try
             {
-                return this._searchRepository.GetBOQLevel2List();
+                return this._searchRepository.GetBOQLevel2List(filter);
             }
             catch (Exception ex)
             {
@@ -48,12 +49,28 @@ namespace AccApi.Controllers
         }
 
 
-        [HttpGet("GetBOQLevel3List")]
-        public List<BOQLevelList> GetBOQLevel3List()
+        //[HttpPost("GetBOQLevel2ListBy")]
+        //public List<BOQLevelList> GetBOQLevel2ListBy(RessourceLevelsFilter filter)
+        //{
+        //    try
+        //    {
+        //        return this._searchRepository.GetBOQLevel2ListBy(filter);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        return null;
+        //    }
+        //}
+
+
+
+        [HttpPost("GetBOQLevel3List")]
+        public List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter)
         {
             try
             {
-                return this._searchRepository.GetBOQLevel3List();
+                return this._searchRepository.GetBOQLevel3List(filter);
             }
             catch (Exception ex)
             {
@@ -62,12 +79,12 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetBOQLevel4List")]
-        public List<BOQLevelList> GetBOQLevel4List()
+        [HttpPost("GetBOQLevel4List")]
+        public List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter)
         {
             try
             {
-                return this._searchRepository.GetBOQLevel4List();
+                return this._searchRepository.GetBOQLevel4List(filter);
             }
             catch (Exception ex)
             {
@@ -105,6 +122,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpPost("GetResTypeList")]
+        public List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter)
+        {
+            try
+            {
+                return this._searchRepository.GetResTypeList(filter);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpGet("GetRESDivList")]
         public List<RESDivList> GetRESDivList()
         {
@@ -119,19 +150,7 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetRESTypeList")]
-        public List<RESTypeList> GetRESTypeList()
-        {
-            try
-            {
-                return this._searchRepository.RESTypeList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return null;
-            }
-        }
+
 
         [HttpGet("PackageList")]
         public List<Package> GetPackageList()
@@ -176,12 +195,12 @@ namespace AccApi.Controllers
         }
 
 
-        [HttpGet("GetRessourcesList")]
-        public List<RessourceList> GetRessourcesList(string resType)
+        [HttpPost("GetRessourcesList")]
+        public List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter)
         {
             try
             {
-                return this._searchRepository.GetRessourcesList();
+                return this._searchRepository.GetRessourcesList(filter);
             }
             catch (Exception ex)
             {

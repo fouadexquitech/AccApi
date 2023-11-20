@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -33,32 +34,178 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel2List()
+        public List<BOQLevelList> GetBOQLevel2List(RessourceLevelsFilter filter)
         {
-            var results = (from b in _context.TblOriginalBoqs
-                          group b.L2 by b.L2 into g
-                          orderby g.Key
-                          select new BOQLevelList { Level = g.Key }).ToList();
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var resType = filter.resType;
+
+            List<resourcesType> resTypeList=new List<resourcesType>();
+            foreach (var item in resType)
+            {
+                resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
+            }
+              
+
+            if (resTypeList.Count > 0)
+            {
+                results =( from l in resTypeList
+                           join b in _context.TblBoqs on l.resourceType equals b.BoqCtg
+                           join o in _context.TblOriginalBoqs on b.BoqItem  equals o.ItemO
+                           group o.L2 by o.L2 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+
+            }
+            else
+                results = (from b in _context.TblOriginalBoqs
+                           group b.L2 by b.L2 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+
 
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel3List()
+        //public List<BOQLevelList> GetBOQLevel2List()
+        //{
+        //  var  results = (from b in _context.TblOriginalBoqs
+        //                   group b.L2 by b.L2 into g
+        //                   orderby g.Key
+        //                   select new BOQLevelList
+        //                   {
+        //                       Level = g.Key
+        //                   }).ToList();
+
+        //    return results;
+        //}
+
+        public List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter)
         {
-            var results = (from b in _context.TblOriginalBoqs
-                          group b.L3 by b.L3 into g
-                          orderby g.Key
-                          select new BOQLevelList { Level = g.Key }).ToList();
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var resType = filter.resType;
+
+            List<resourcesType> resTypeList = new List<resourcesType>();
+            foreach (var item in resType)
+            {
+                resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
+            }
+
+
+            if (resTypeList.Count > 0)
+            {
+                results = (from l in resTypeList
+                           join b in _context.TblBoqs on l.resourceType equals b.BoqCtg
+                           join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                           group o.L3 by o.L3 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                              Level = g.Key
+                           }).ToList();
+
+            }
+            else
+                 results = (from b in _context.TblOriginalBoqs
+                            group b.L3 by b.L3 into g
+                            orderby g.Key
+                            select new BOQLevelList
+                            { Level = g.Key }).ToList();
+
 
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel4List()
+        public List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter)
         {
-            var results = (from b in _context.TblOriginalBoqs
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var resType = filter.resType;
+
+            List<resourcesType> resTypeList = new List<resourcesType>();
+            foreach (var item in resType)
+            {
+                resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
+            }
+
+
+            if (resTypeList.Count > 0)
+            {
+                results = (from l in resTypeList
+                           join b in _context.TblBoqs on l.resourceType equals b.BoqCtg
+                           join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                           group o.L4 by o.L4 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+
+            }
+            else
+                 results = (from b in _context.TblOriginalBoqs
                           group b.L4 by b.L4 into g
                           orderby g.Key
                           select new BOQLevelList { Level = g.Key }).ToList();
+
+
+            return results;
+        }
+        public List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter)
+        {
+            List<RESTypeList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var resType = filter.resType;
+
+            if (Level4.Count > 0)
+                results = (from b in _context.TblBoqs
+                           join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                           where Level4.Contains(i.L4)
+                           group b by b.BoqCtg into g
+                           orderby g.Key
+                           select new RESTypeList { BoqCtg = g.Key }).ToList();
+
+            else if (Level3.Count > 0)
+                results = (from b in _context.TblBoqs
+                           join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                           where Level3.Contains(i.L3)
+                           group b by b.BoqCtg into g
+                           orderby g.Key
+                           select new RESTypeList { BoqCtg = g.Key }).ToList();
+
+            else if (Level2.Count > 0)
+                results = (from b in _context.TblBoqs
+                           join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                           where Level2.Contains(i.L2)
+                           group b by b.BoqCtg into g
+                           orderby g.Key
+                           select new RESTypeList { BoqCtg = g.Key }).ToList();
+
+            else
+                results =( from b in _context.TblBoqs
+                          group b by b.BoqCtg into g
+                          orderby g.Key
+                          select new RESTypeList { BoqCtg = g.Key }).ToList();
+
 
             return results;
         }
@@ -73,15 +220,6 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RESTypeList> RESTypeList()
-        {
-            var results =( from b in _context.TblBoqs
-                          group b by b.BoqCtg into g
-                          orderby g.Key
-                          select new RESTypeList { BoqCtg = g.Key }).ToList();
-
-            return results;
-        }
 
         public List<Package> PackageList()
         {
@@ -116,23 +254,93 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RessourceList> GetRessourcesList()
+        public List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter)
         {
-            var boqResList = (from b in _context.TblBoqs
-                                            group b by b.BoqResSeq into g
-                                            orderby g.Key
-                                            select new Ressource
-                                            { seq= g.Key }).ToList();
+            List<Ressource> resList = null;
+            List<Ressource> boqResList = null;
+            List<RessourceList> results = null;
 
-            var results = (from b in boqResList 
-                           join c in _context.TblResources
-                           on b.seq equals c.ResSeq
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var resType = filter.resType;
+
+            List<resourcesType> resTypeList = new List<resourcesType>();
+            foreach (var item in resType)
+            {
+                resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
+            }
+
+            if (resTypeList.Count > 0)
+                resList = (from l in resTypeList
+                           join b in _context.TblBoqs on l.resourceType equals b.BoqCtg
+                           group b by b.BoqResSeq into g
+                           orderby g.Key
+                           select new Ressource
+                           {
+                               ResId = g.Key
+                           }).ToList();
+
+
+            if (Level4.Count > 0)
+                boqResList = (from b in _context.TblBoqs
+                              join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                              where Level4.Contains(i.L4)
+                              group b by b.BoqResSeq into g
+                              orderby g.Key
+                              select new Ressource
+                              { ResId = g.Key }).ToList();
+
+            else if (Level3.Count > 0)
+                boqResList = (from b in _context.TblBoqs
+                              join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                              where Level3.Contains(i.L3)
+                              group b by b.BoqResSeq into g
+                              orderby g.Key
+                              select new Ressource
+                              { ResId = g.Key }).ToList();
+
+            else if (Level2.Count > 0)
+                boqResList = (from b in _context.TblBoqs
+                              join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                              where Level2.Contains(i.L2)
+                              group b by b.BoqResSeq into g
+                              orderby g.Key
+                              select new Ressource
+                              { ResId = g.Key }).ToList();
+
+            else
+                boqResList = (from b in _context.TblBoqs
+                              group b by b.BoqResSeq into g
+                              orderby g.Key
+                              select new Ressource
+                              { ResId = g.Key }).ToList();
+
+
+
+
+            if (resList!=null)
+                results = (from r in resList
+                           join b in boqResList on r.ResId equals b.ResId
+                           join c in _context.TblResources on b.ResId equals c.ResSeq
                            orderby c.ResDescription
                            select new RessourceList
                            {
                                resSeq = c.ResSeq,
                                resDesc = c.ResDescription
                            }).ToList();
+            else
+                results = (from b in boqResList 
+                           join c in _context.TblResources
+                           on b.ResId equals c.ResSeq
+                           orderby c.ResDescription
+                           select new RessourceList
+                           {
+                               resSeq = c.ResSeq,
+                               resDesc = c.ResDescription
+                           }).ToList();
+
+
 
             return results;
         }
@@ -166,7 +374,6 @@ namespace AccApi.Repository.Managers
         public List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter)
         {
             IQueryable<BOQLevelList> query = null;
-            List<BOQLevelList> results = null;
 
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
