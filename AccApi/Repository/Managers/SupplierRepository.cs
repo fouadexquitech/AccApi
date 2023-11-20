@@ -2,11 +2,16 @@
 using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Nancy;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
+using System.Linq.Dynamic.Core;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AccApi.Repository.Managers
 {
@@ -53,10 +58,15 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<Supplier> GetSuppliers(string filter)
+        public DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest)
         {
+
+            var sortColumnName = dtRequest.SortCol;
+            var sortDirection = dtRequest.SortDirVal;
+            var skip = dtRequest.Start;
+            var take = dtRequest.Length;
+
             var result = (from b in _mdbcontext.TblSuppliers
-                          orderby b.SupName
                           select new Supplier
                           {
                               SupID = b.SupCode,
@@ -64,13 +74,21 @@ namespace AccApi.Repository.Managers
                               SupEmail = b.SupEmail
                           }).ToList();
 
-            //return result.ToList();
+            var totalRecords = result.Count;
 
-            if (filter != null)
+            if (dtRequest.SearchVal != null)
             {
-                result = result.Where(x => string.Concat(x.SupName.ToUpper()).Contains(filter.ToUpper())).ToList();
+                result = result.Where(x => string.Concat(x.SupName.ToUpper()).Contains(dtRequest.SearchVal.ToUpper())).ToList();
             }
-            return result.ToList();
+           
+
+            var list = result.AsQueryable().OrderBy($"{sortColumnName} {sortDirection}").Skip(skip).Take(take);
+
+            return new DataTablesResponse<Supplier> { 
+                Data = list.ToList(),
+                RecordsTotal = totalRecords,
+                RecordsFiltered = result.Count
+            };
         }
 
 

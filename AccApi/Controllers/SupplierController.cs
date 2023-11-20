@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace AccApi.Controllers
 {
@@ -34,12 +37,31 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("GetSuppliers")]
-        public List<Supplier> GetSuppliers(string filter)
+        [HttpPost("GetSuppliers")]
+        public IActionResult GetSuppliers(dynamic dataTablesParameters)
         {
             try
             {
-                return this._supplierRepository.GetSuppliers(filter);
+                JObject rest = JsonConvert.DeserializeObject(Convert.ToString(dataTablesParameters));
+                int draw = (int)rest["draw"];
+                int start = (int)rest["start"];
+                int length = (int)rest["length"];
+                int colIndex = (int)rest["order"][0]["column"];
+                string sortCol = (string)rest["columns"][colIndex]["name"];
+                string sortColDir = (string)rest["order"][0]["dir"];
+                string searchVal = (string)rest["search"]["value"];
+                var request = new DataTablesRequest { 
+                    Length = length,
+                    SearchVal = searchVal,
+                    SortCol = sortCol,
+                    SortDirVal = sortColDir,
+                    Start = start
+                };
+
+                var response = _supplierRepository.GetSuppliers(request);
+                response.Draw = draw;
+                return Ok(response);
+                
             }
             catch (Exception ex)
             {
