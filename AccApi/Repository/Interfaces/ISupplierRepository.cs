@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using System.Collections.Generic;
 
 namespace AccApi.Repository.Interfaces
@@ -6,7 +7,7 @@ namespace AccApi.Repository.Interfaces
     public interface ISupplierRepository
     {
         List<Supplier> SupplierList(int packID);
-        List<Supplier> GetSuppliers(string filter);
+        DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest);
 
         bool AddSupplier(List<Supplier> sups);
         bool UpdateSupplier(Supplier sup);

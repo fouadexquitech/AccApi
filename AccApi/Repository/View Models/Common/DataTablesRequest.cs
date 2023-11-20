@@ -21,6 +21,5 @@ namespace AccApi.Repository.View_Models.Common
 
         public SearchInput input { get; set; } = new SearchInput();
 
-
     }
 }
