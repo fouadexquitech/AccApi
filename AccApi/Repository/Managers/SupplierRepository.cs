@@ -71,7 +71,8 @@ namespace AccApi.Repository.Managers
                           {
                               SupID = b.SupCode,
                               SupName = b.SupName,
-                              SupEmail = b.SupEmail
+                              SupEmail = b.SupEmail,
+                              IsAccountCreated = (b.IsAccountCreated == null) ? false : b.IsAccountCreated
                           }).ToList();
 
             var totalRecords = result.Count;

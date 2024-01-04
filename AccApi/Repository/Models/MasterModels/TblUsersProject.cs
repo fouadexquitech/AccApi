@@ -18,5 +18,11 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("usrID")]
         [StringLength(20)]
         public string UsrId { get; set; }
+        [Column("isActualEM")]
+        public bool? IsActualEm { get; set; }
+        [Column("EMSType")]
+        [StringLength(50)]
+        public string Emstype { get; set; }
+        public float? Hrs { get; set; }
     }
 }

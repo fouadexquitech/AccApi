@@ -6,11 +6,8 @@ using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using System.IO;
 using OfficeOpenXml;
-using AccApi.Data_Layer;
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Managers
 {
@@ -437,108 +434,268 @@ namespace AccApi.Repository.Managers
 
         public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments)
         {
-            string sent = "";
-            string ComCondAttch = "";
+            //string sent = "";
+            //string ComCondAttch = "";
 
             var AttachmentList = new List<string>();
 
             //Get User Email Signature
-            //LogonRepository logonRepository=new LogonRepository();
-            //User user= logonRepository.GetUser(UserName);
-            User user = _logonRepository.GetUser(UserName);
-            string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+            //User user = _logonRepository.GetUser(UserName);
+            //string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+
+            int PackageSupplierId = 0;
 
             foreach (var item in supInputList)
             {
-                AttachmentList.Clear();
-                AttachmentList.Add(item.FilePath);
-
-                var itemToRemove = attachments.SingleOrDefault(r => r.FileName == item.FilePath);
-                if (itemToRemove != null)
-                    attachments.Remove(itemToRemove);
-
-
-                if (item.mailAttachments != null)
-                {
-                    foreach (var attach in item.mailAttachments)
-                    {
-                        AttachmentList.Add(attach);
-                    }
-                }
-
-                if (item.comercialCondList.Count > 0)
-                {
-                    if (ComCondAttch == "")
-                        ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
-
-                    AttachmentList.Add(ComCondAttch);
-                }
-
+                //1.Add PackageSupplier
                 SupplierInput supplier = item.supplierInput;
-
                 if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                 {
                     var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
                     _dbcontext.Add<TblSupplierPackage>(spack);
                     _dbcontext.SaveChanges();
+
+                    PackageSupplierId = spack.SpPackSuppId;
                 }
-                    //send email
-                    string SupEmail = (from r in _mdbContext.TblSuppliers
-                                       where r.SupCode == supplier.supID
-                                       select r.SupEmail).First<string>();
+                else
+                {
+                    var supPack = _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefault();
+                    PackageSupplierId = supPack.SpPackSuppId;
+                }    
 
-                    if (SupEmail != "")
+                //2.Add Revision
+                int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+                if (LastRevNo != -1)
+                {
+                    int i = LastRevNo;
+                    do
                     {
-                        List<string> mylistTo = new List<string>();
-                        mylistTo.Add(SupEmail);
-
-                        List<string> mylistCC = new List<string>();
-                        if (item.mailCC != null)
+                        var res = _dbcontext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
+                        if (res != null)
                         {
-                            foreach (var ccMail in item.mailCC)
+                            res.PrRevNo = i + 1;
+                            _dbcontext.SaveChanges();
+                        }
+                        i--;
+                    }
+                    while (i >= 0);
+                }
+
+                int prjCurrency = (int)_dbcontext.TblParameters.FirstOrDefault().EstimatedCur;
+
+                var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now,PrCurrency= prjCurrency };
+                _dbcontext.Add<TblSupplierPackageRevision>(result);
+                _dbcontext.SaveChanges();
+
+
+                //Get inserted Revison ID
+                var Rev0 = _dbcontext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
+                int revId = Rev0.PrRevId;
+
+                var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
+                byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
+
+                InsertRevisionDetail(revId, packId, byBoq);
+                //if (!InsertRevisionDetail(revId, byBoq))
+                //    return false;
+                //else
+                //{
+                //    UpdateTotalPrice(revId);
+                //    return true;
+                //}
+
+
+
+
+                //AttachmentList.Clear();
+                //AttachmentList.Add(item.FilePath);
+
+                //var itemToRemove = attachments.SingleOrDefault(r => r.FileName == item.FilePath);
+                //if (itemToRemove != null)
+                //    attachments.Remove(itemToRemove);
+
+
+                //if (item.mailAttachments != null)
+                //{
+                //    foreach (var attach in item.mailAttachments)
+                //    {
+                //        AttachmentList.Add(attach);
+                //    }
+                //}
+
+                //if (item.comercialCondList.Count > 0)
+                //{
+                //    if (ComCondAttch == "")
+                //        ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
+
+                //    AttachmentList.Add(ComCondAttch);
+                //}
+
+                //    //send email
+                //    string SupEmail = (from r in _mdbContext.TblSuppliers
+                //                       where r.SupCode == supplier.supID
+                //                       select r.SupEmail).First<string>();
+
+                //    if (SupEmail != "")
+                //    {
+                //        List<string> mylistTo = new List<string>();
+                //        mylistTo.Add(SupEmail);
+
+                //        List<string> mylistCC = new List<string>();
+                //        if (item.mailCC != null)
+                //        {
+                //            foreach (var ccMail in item.mailCC)
+                //            {
+                //                mylistCC.Add(ccMail);
+                //            }
+                //        }
+
+                //        List<string> mylistBCC = new List<string>();
+                //        if (user.UsrEmail != "")
+                //            mylistBCC.Add(user.UsrEmail);
+
+
+                //        string Subject = "Procurement";
+                //        string MailBody;
+
+                //        if (item.EmailTemplate != "")
+                //        {
+                //            MailBody = item.EmailTemplate;
+                //        }
+                //        else
+                //        {
+                //            MailBody = "Dear Sir,";
+                //            MailBody += Environment.NewLine;
+                //            MailBody += Environment.NewLine;
+                //            MailBody += "Please find attached , and fill the price ";
+                //            MailBody += Environment.NewLine;
+                //            MailBody += Environment.NewLine;
+                //            MailBody += Environment.NewLine;
+                //            MailBody += Environment.NewLine;
+                //            MailBody += "Best regards";
+                //        }
+
+                //        if (userSignature != "")
+                //        {
+                //            MailBody += @"<br><br>";
+                //            MailBody += userSignature;
+                //        }
+
+                //        Mail m = new Mail();
+                //        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+                //}
+            }
+            
+            return true;
+        }
+
+        private bool InsertRevisionDetail(int revId, int packId, byte byBoq)
+        {
+            try
+            {
+                List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
+                List<TblMissingPrice> LstMissingPrice = new List<TblMissingPrice>();
+                List<BoqRessourcesList> result = new List<BoqRessourcesList>();
+
+                double discount = 0;
+
+                if (byBoq == 1)
+                {
+                    result = (from o in _dbcontext.TblOriginalBoqs
+                              where o.Scope == packId
+                              select new BoqRessourcesList
+                              {
+                                  RowNumber = o.RowNumber,
+                                  SectionO = o.SectionO,
+                                  ItemO = o.ItemO,
+                                  DescriptionO = o.DescriptionO,
+                                  UnitO = o.UnitO,
+                                  QtyO = o.QtyO,
+                                  UnitRateO = o.UnitRate,
+                                  ScopeO = o.Scope
+                              }).ToList();
+
+                    foreach (var row in result)
+                    {
+                        if ((row.ItemO != "") && (row.QtyO > 0))
+                        {
+                            var revdtl = new TblRevisionDetail()
                             {
-                                mylistCC.Add(ccMail);
-                            }
+                                RdRevisionId = revId,
+                                RdResourceSeq = 0,
+                                RdBoqItem = row.ItemO,
+                                RdPrice = 0,
+                                RdPriceOrigCurrency = 0,
+                                RdQty = row.QtyO,
+                                RdComment = "",
+                                RdMissedPrice = 0,
+                                RdDiscount = discount,
+                                RdAddedItem = 0
+                            };
+                            LstRevDetails.Add(revdtl);
                         }
+                    }
 
-                        List<string> mylistBCC = new List<string>();
-                        if (user.UsrEmail != "")
-                            mylistBCC.Add(user.UsrEmail);
+                }
+                else
+                {
+                    result = (from b in _dbcontext.TblBoqs
+                              where b.BoqScope == packId
+                              select new BoqRessourcesList
+                              {
+                                  RowNumber = 0,
+                                  BoqItem = b.BoqItem,
+                                  BoqSeq = b.BoqSeq,
+                                  BoqCtg = b.BoqCtg,
+                                  BoqUnitMesure = b.BoqUnitMesure,
+                                  BoqQty = b.BoqQty,
+                                  BoqUprice = b.BoqUprice,
+                                  BoqDiv = b.BoqDiv,
+                                  BoqPackage = b.BoqPackage,
+                                  BoqScope = b.BoqScope
+                              }).ToList();
 
-
-                        string Subject = "Procurement";
-
-                        string MailBody;
-
-                        if (item.EmailTemplate != "")
+                    foreach (var row in result)
+                    {
+                        if ((row.BoqPackage != "") && (row.BoqQty > 0))
                         {
-                            MailBody = item.EmailTemplate;
+                            var revdtl = new TblRevisionDetail()
+                            {
+                                RdRevisionId = revId,
+                                RdResourceSeq = row.BoqSeq,
+                                RdBoqItem = row.BoqItem,
+                                RdPrice = 0,
+                                RdQty = row.BoqQty,
+                                RdComment = "",
+                                RdPriceOrigCurrency = 0,
+                                RdMissedPrice = 0,
+                                RdDiscount = discount,
+                                RdAddedItem = 0
+                            };
+                            LstRevDetails.Add(revdtl);
                         }
-                        else
-                        {
-                            MailBody = "Dear Sir,";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Please find attached , and fill the price ";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Best regards";
-                        }
-
-                        if (userSignature != "")
-                        {
-                            MailBody += @"<br><br>";
-                            MailBody += userSignature;
-                        }
-
-                        Mail m = new Mail();
-                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
                     }
                 }
-            
-            return (sent == "sent");
+
+                if (LstRevDetails.Count() > 0)
+                {
+                    _dbcontext.AddRange(LstRevDetails);
+                    _dbcontext.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            return true;
+        }
+
+        public int GetMaxRevisionNumber(int PackageSupplierId)
+        {
+            var query = _dbcontext.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
+            var MaxRevisionNumber = query.Any() ? query.Max(x => x.PrRevNo) : -1;
+            return (int)MaxRevisionNumber;
         }
 
         public string SendComercialConditions(int packId, List<ComercialCond> comCondList)

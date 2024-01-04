@@ -6,7 +6,7 @@ namespace AccApi.Repository.View_Models
 {
     public class BoqModel
     {
-        public short? RowNumber { get; set; }
+        public int? RowNumber { get; set; }
         public string SectionO { get; set; }
         public string ItemO { get; set; }
         public string DescriptionO { get; set; }

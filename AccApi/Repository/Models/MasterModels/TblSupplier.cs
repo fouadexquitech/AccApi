@@ -75,5 +75,7 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("supPayTerm")]
         public short? SupPayTerm { get; set; }
         public bool? IsSynched { get; set; }
+        [Column("isAccountCreated")]
+        public bool? IsAccountCreated { get; set; }
     }
 }

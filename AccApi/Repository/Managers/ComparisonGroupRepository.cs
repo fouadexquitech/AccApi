@@ -76,7 +76,6 @@ namespace AccApi.Repository.Managers
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
-
             var items = condQuery
                 .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO })
                 .Select(p => p.FirstOrDefault())
@@ -112,7 +111,6 @@ namespace AccApi.Repository.Managers
             }
 
             return items;
-
         }
 
         public List<GroupingBoqModel> GetBoqListOnly(int packageId, int groupId, SearchInput input)

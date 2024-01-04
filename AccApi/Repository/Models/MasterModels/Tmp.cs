@@ -13,7 +13,7 @@ namespace AccApi.Repository.Models.MasterModels
     public partial class Tmp
     {
         [Column("TK_ID")]
-        [StringLength(1500)]
+        [StringLength(150)]
         public string TkId { get; set; }
         [Column("TS_ID")]
         [StringLength(150)]

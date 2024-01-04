@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models.MasterModels;
+using AccApi.Repository.Models.PolicyModels;
 using AccApi.Repository.View_Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,7 @@ namespace AccApi.Repository.Managers
         public List<ProjectCountries> GetProjectCountries()
         {
             var result = from b in _mdbcontext.TblDataBases
-                         where b.DbActive == 1
+                         where b.DbActive == 1 && b.DbLocation !=""
                          select new ProjectCountries
                          {
                           dbSeq = b.DbSeq,
@@ -124,15 +125,18 @@ namespace AccApi.Repository.Managers
                 return usr;
             }
 
-
             bool isAdmin = (bool)(usr.UsrAdmin==null ? false : usr.UsrAdmin);
             if (!isAdmin)
             {
-                var query = pdb.TblUsersProjects.Where(x=>x.UpUserId == username && x.UpProject==projSeq).FirstOrDefault();
-                if (query==null)
+                var accAllProjects = pdb.TblPermGrpUsrs.Where(x => x.PrmUser == username && x.PrmFuncId == "AccessAllProjects" && x.MinOfprmRead == 1).FirstOrDefault();
+                if (accAllProjects == null)
                 {
-                    usr = null;
-                    return usr;
+                    var query = pdb.TblUsersProjects.Where(x => x.UpUserId == username && x.UpProject == projSeq).FirstOrDefault();
+                    if (query == null)
+                    {
+                        usr = null;
+                        return usr;
+                    }
                 }
                 //if (!checkAccessProject(username, projSeq))
                 //{

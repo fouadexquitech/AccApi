@@ -12,7 +12,7 @@ namespace AccApi.Repository.Models.MasterModels
     [Table("tmpBoqRessources")]
     public partial class TmpBoqRessource
     {
-        public short? RowNumber { get; set; }
+        public int? RowNumber { get; set; }
         [StringLength(50)]
         public string SectionO { get; set; }
         [StringLength(50)]

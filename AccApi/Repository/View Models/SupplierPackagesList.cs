@@ -14,4 +14,5 @@ namespace AccApi.Repository.View_Models
         public string? PsSupName { get; set; }
         public bool? TecCondSent { get; set; }
     }
+
 }

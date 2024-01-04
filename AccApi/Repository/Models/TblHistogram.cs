@@ -112,6 +112,6 @@ namespace AccApi.Repository.Models
         public double? Qty44 { get; set; }
         public double? Qty45 { get; set; }
         public double? TotaQty { get; set; }
-        public short? RowNumber { get; set; }
+        public int? RowNumber { get; set; }
     }
 }

@@ -24,8 +24,6 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("supDepartment")]
         [StringLength(200)]
         public string SupDepartment { get; set; }
-        [Column("supPassword")]
-        [StringLength(50)]
-        public string SupPassword { get; set; }
+        public bool? PortalAccountCreated { get; set; }
     }
 }

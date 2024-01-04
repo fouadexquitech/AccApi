@@ -22,29 +22,25 @@ namespace AccApi.Repository.Managers
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-
         public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
         {
-
-
             var curList = (from b in _masterDbContext.TblCurrencies
                            select b).ToList();
 
             var results = (from cur in curList
-                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                          where b.PrPackSuppId==PackageSupplierId
-                          orderby b.PrRevNo
-                          select new SupplierPackagesRevList
-                          {
-                              PrRevId= b.PrRevId,
-                              PrRevNo = b.PrRevNo,
-                              PrRevDate = b.PrRevDate,
-                              PrTotPrice = b.PrTotPrice,
-                              PrCurrency=b.PrCurrency,
-                              PrExchRate=b.PrExchRate,
-                              Currency=cur.CurCode
-                          }).ToList();
-
+                           join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                           where b.PrPackSuppId == PackageSupplierId
+                           orderby b.PrRevNo
+                           select new SupplierPackagesRevList
+                           {
+                               PrRevId = b.PrRevId,
+                               PrRevNo = b.PrRevNo,
+                               PrRevDate = b.PrRevDate,
+                               PrTotPrice = b.PrTotPrice,
+                               PrCurrency = b.PrCurrency,
+                               PrExchRate = b.PrExchRate,
+                               Currency = cur.CurCode
+                           }).ToList();
 
             // Check If Fields Exists
             foreach (var SupplierPackageRev in results)

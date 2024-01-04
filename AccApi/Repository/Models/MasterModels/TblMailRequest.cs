@@ -47,5 +47,7 @@ namespace AccApi.Repository.Models.MasterModels
         public string MlrQueryOfTable { get; set; }
         [Column("mlrMailTo")]
         public string MlrMailTo { get; set; }
+        [StringLength(50)]
+        public string InsertBy { get; set; }
     }
 }

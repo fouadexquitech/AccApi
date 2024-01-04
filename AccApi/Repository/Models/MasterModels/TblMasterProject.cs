@@ -25,6 +25,9 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("msServer")]
         [StringLength(15)]
         public string MsServer { get; set; }
+        [Column("msFileServer")]
+        [StringLength(30)]
+        public string MsFileServer { get; set; }
         [Column("msActive")]
         public int MsActive { get; set; }
         [Column("msSelect")]
@@ -46,6 +49,8 @@ namespace AccApi.Repository.Models.MasterModels
         public bool? MsIsEms { get; set; }
         [Column("msEMasPM")]
         public bool? MsEmasPm { get; set; }
+        [Column("msSendAllEmailsToEM")]
+        public bool? MsSendAllEmailsToEm { get; set; }
         [Column("msPlannedStartDate", TypeName = "date")]
         public DateTime? MsPlannedStartDate { get; set; }
         [Column("msPlannedEndDate", TypeName = "date")]
@@ -66,5 +71,29 @@ namespace AccApi.Repository.Models.MasterModels
         public DateTime? MsFreezeDate { get; set; }
         [Column("msUnFreezeDate", TypeName = "date")]
         public DateTime? MsUnFreezeDate { get; set; }
+        [Column("msIsNotAvailable")]
+        public bool? MsIsNotAvailable { get; set; }
+        [Column("fileServer")]
+        [StringLength(50)]
+        public string FileServer { get; set; }
+        [Column("fileServerLocalUserId")]
+        [StringLength(50)]
+        public string FileServerLocalUserId { get; set; }
+        [Column("fileServerLocalUserPwd")]
+        [StringLength(50)]
+        public string FileServerLocalUserPwd { get; set; }
+        [Column("fileServerName")]
+        [StringLength(50)]
+        public string FileServerName { get; set; }
+        [StringLength(500)]
+        public string MapNetwork { get; set; }
+        [Column("DMS_Alert")]
+        public byte? DmsAlert { get; set; }
+        [Column("AllowableSD_Hrs")]
+        public float? AllowableSdHrs { get; set; }
+        [Column("AllowableReEngSD_Hrs")]
+        public float? AllowableReEngSdHrs { get; set; }
+        [Column("msBypassCM")]
+        public bool? MsBypassCm { get; set; }
     }
 }
