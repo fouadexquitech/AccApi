@@ -7,6 +7,7 @@ using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace AccApi.Controllers
 {
@@ -111,5 +112,20 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+        [HttpPost("UpdatePortalAccountFlag")]
+        public async Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model)
+        {
+            try
+            {
+                return await this._supplierRepository.UpdatePortalAccountFlag(model);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
     }
 }

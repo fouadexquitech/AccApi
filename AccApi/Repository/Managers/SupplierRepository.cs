@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AccApi.Repository.Managers
@@ -72,6 +73,7 @@ namespace AccApi.Repository.Managers
                               SupID = b.SupCode,
                               SupName = b.SupName,
                               SupEmail = b.SupEmail,
+                              PhoneNumber = b.SupPhone,
                               IsAccountCreated = (b.IsAccountCreated == null) ? false : b.IsAccountCreated
                           }).ToList();
 
@@ -138,6 +140,20 @@ namespace AccApi.Repository.Managers
             }
             else
                 return false;
+        }
+
+        public async Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model)
+        { 
+            var suppliers = await _mdbcontext.TblSuppliers.Where(x => model.Suppliers.Contains(x.SupCode)).ToListAsync();
+            foreach (var sup in suppliers)
+            {
+                sup.IsAccountCreated = model.AccountCreated;
+            }
+
+            _mdbcontext.TblSuppliers.UpdateRange(suppliers);
+            await _mdbcontext.SaveChangesAsync();
+            return true;
+
         }
     }
 }
