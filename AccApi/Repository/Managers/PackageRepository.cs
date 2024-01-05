@@ -1426,7 +1426,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public string ExportExcelPackagesCost()
+        public string ExportExcelPackagesCost(int withBoq)
         {
             string excelName = "";
 

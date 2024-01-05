@@ -24,9 +24,7 @@ namespace AccApi.Repository.Interfaces
         bool AddPackage(List<Package> packs);
         bool UpdatePackage(Package pack);
         bool DeletePackage(int id);
-
-        string ExportExcelPackagesCost();
-
+        string ExportExcelPackagesCost(int withBoq);
         Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(DataTablesRequest dtRequest);
     }
 }

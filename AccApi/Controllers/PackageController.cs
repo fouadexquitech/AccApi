@@ -107,11 +107,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("ExportExcelPackagesCost")]
-        public JsonResult ExportExcelPackagesCost()
+        public JsonResult ExportExcelPackagesCost(int withBoq)
         {
             try
             {
-                return new JsonResult(this._packageRepository.ExportExcelPackagesCost());
+                return new JsonResult(this._packageRepository.ExportExcelPackagesCost(withBoq));
             }
             catch (Exception ex)
             {
