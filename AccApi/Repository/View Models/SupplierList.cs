@@ -10,6 +10,7 @@ namespace AccApi.Repository.View_Models
         public int SupID { get; set; }
         public string SupName { get; set; }
         public string SupEmail { get; set; }
+        public string PhoneNumber { get; set; }
         public bool? IsAccountCreated { get; set; }
     }
 
