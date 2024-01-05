@@ -1,6 +1,7 @@
 ﻿using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace AccApi.Repository.Interfaces
 {
@@ -12,5 +13,7 @@ namespace AccApi.Repository.Interfaces
         bool AddSupplier(List<Supplier> sups);
         bool UpdateSupplier(Supplier sup);
         bool DeleteSupplier(int id);
+
+        Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model);
     }
 }
