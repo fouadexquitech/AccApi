@@ -8,6 +8,9 @@ using System.IO;
 using OfficeOpenXml;
 using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AccApi.Repository.Managers
 {
@@ -55,8 +58,8 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            var results = from b in supList 
-                          join c in _dbcontext.TblSupplierPackages on b.SupCode  equals c.SpSupplierId
+            var results = from b in supList
+                          join c in _dbcontext.TblSupplierPackages on b.SupCode equals c.SpSupplierId
                           where c.SpPackageId == packageid
                           orderby c.SpPackSuppId
                           select new SupplierPackagesList
@@ -76,95 +79,95 @@ namespace AccApi.Repository.Managers
             if (byboq == 1)
             {
                 var pack = (from o in _dbcontext.TblOriginalBoqs
-                           where o.Scope == packId 
-                           orderby o.RowNumber
-                           select new boqPackageList
-                           {
-                               l1 = o.L1,
-                               l2 = o.L2,
-                               l3 = o.L3,
-                               l4 = o.L4,
-                               l5 = o.L5,
-                               l6 = o.L6,
-                               l7 = o.L7,
-                               l8 = o.L8,
-                               l9 = o.L9,
-                               l10 = o.L10,
-                               l1Ref = o.L1ref,
-                               l2Ref = o.L2ref,
-                               l3Ref = o.L3ref,
-                               l4Ref = o.L4ref,
-                               l5Ref = o.L5ref,
-                               l6Ref = o.L6ref,
-                               l7Ref = o.L7ref,
-                               l8Ref = o.L8ref,
-                               l9Ref = o.L9ref,
-                               l10Ref = o.L10ref,
-                               c1 = o.C1,
-                               c2 = o.C2,
-                               c3 = o.C3,
-                               c4 = o.C4,
-                               c5 = o.C5,
-                               c6 = o.C6,
-                               c7 = o.C7,
-                               c8 = o.C8,
-                               c9 = o.C9,
-                               c10 = o.C10,
-                               c1Ref = o.C1ref,
-                               c2Ref = o.C2ref,
-                               c3Ref = o.C3ref,
-                               c4Ref = o.C4ref,
-                               c5Ref = o.C5ref,
-                               c6Ref = o.C6ref,
-                               c7Ref = o.C7ref,
-                               c8Ref = o.C8ref,
-                               c9Ref = o.C9ref,
-                               c10Ref = o.C10ref,
-                               item = o.ItemO,
-                               boqDesc = o.DescriptionO,
-                               unit = o.UnitO,
-                               qty = (double)o.QtyScope,
-                               exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
-                           }).ToList();
+                            where o.Scope == packId
+                            orderby o.RowNumber
+                            select new boqPackageList
+                            {
+                                l1 = o.L1,
+                                l2 = o.L2,
+                                l3 = o.L3,
+                                l4 = o.L4,
+                                l5 = o.L5,
+                                l6 = o.L6,
+                                l7 = o.L7,
+                                l8 = o.L8,
+                                l9 = o.L9,
+                                l10 = o.L10,
+                                l1Ref = o.L1ref,
+                                l2Ref = o.L2ref,
+                                l3Ref = o.L3ref,
+                                l4Ref = o.L4ref,
+                                l5Ref = o.L5ref,
+                                l6Ref = o.L6ref,
+                                l7Ref = o.L7ref,
+                                l8Ref = o.L8ref,
+                                l9Ref = o.L9ref,
+                                l10Ref = o.L10ref,
+                                c1 = o.C1,
+                                c2 = o.C2,
+                                c3 = o.C3,
+                                c4 = o.C4,
+                                c5 = o.C5,
+                                c6 = o.C6,
+                                c7 = o.C7,
+                                c8 = o.C8,
+                                c9 = o.C9,
+                                c10 = o.C10,
+                                c1Ref = o.C1ref,
+                                c2Ref = o.C2ref,
+                                c3Ref = o.C3ref,
+                                c4Ref = o.C4ref,
+                                c5Ref = o.C5ref,
+                                c6Ref = o.C6ref,
+                                c7Ref = o.C7ref,
+                                c8Ref = o.C8ref,
+                                c9Ref = o.C9ref,
+                                c10Ref = o.C10ref,
+                                item = o.ItemO,
+                                boqDesc = o.DescriptionO,
+                                unit = o.UnitO,
+                                qty = (double)o.QtyScope,
+                                exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
+                            }).ToList();
 
                 return pack;
             }
             else
             {
                 var pack = (from o in _dbcontext.TblOriginalBoqs
-                           join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
-                           join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
-                           where b.BoqScope == packId
-                           orderby o.RowNumber
-                           select new boqPackageList
-                           {
-                               l1 = o.L1,
-                               l2 = o.L2,
-                               l3 = o.L3,
-                               l4 = o.L4,
-                               l5 = o.L5,
-                               l6 = o.L6,
-                               c1 = o.C1,
-                               c2 = o.C2,
-                               c3 = o.C3,
-                               c4 = o.C4,
-                               c5 = o.C5,
-                               c6 = o.C6,
-                               item = o.ItemO,
-                               boqDesc = o.DescriptionO,
-                               unit = o.UnitO,
-                               qty = (double)o.QtyScope,
-                               resType = b.BoqCtg,
-                               resCode = b.BoqPackage,
-                               resDesc = r.ResDescription,
-                               ResUnit = b.BoqUnitMesure,
-                               boqBillQty = b.BoqBillQty,
-                               boqQty = b.BoqQty,
-                               boqScopeQty = b.BoqQtyScope,
-                               exportedToSupplier = (byte) ((o.ExportedToSupplier == null) ? 0 :  o.ExportedToSupplier)
-            }).ToList();
+                            join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                            join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
+                            where b.BoqScope == packId
+                            orderby o.RowNumber
+                            select new boqPackageList
+                            {
+                                l1 = o.L1,
+                                l2 = o.L2,
+                                l3 = o.L3,
+                                l4 = o.L4,
+                                l5 = o.L5,
+                                l6 = o.L6,
+                                c1 = o.C1,
+                                c2 = o.C2,
+                                c3 = o.C3,
+                                c4 = o.C4,
+                                c5 = o.C5,
+                                c6 = o.C6,
+                                item = o.ItemO,
+                                boqDesc = o.DescriptionO,
+                                unit = o.UnitO,
+                                qty = (double)o.QtyScope,
+                                resType = b.BoqCtg,
+                                resCode = b.BoqPackage,
+                                resDesc = r.ResDescription,
+                                ResUnit = b.BoqUnitMesure,
+                                boqBillQty = b.BoqBillQty,
+                                boqQty = b.BoqQty,
+                                boqScopeQty = b.BoqQtyScope,
+                                exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
+                            }).ToList();
 
-               return pack;
+                return pack;
             }
         }
 
@@ -369,7 +372,7 @@ namespace AccApi.Repository.Managers
 
                         if (byBoq == 1)
                         {
-                            worksheet.Cells[i, 8].Formula = "= (F" + i +") - (F" + i + "*" + "G" + i +"/100)";
+                            worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
                             worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
                             worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
@@ -389,7 +392,7 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
                         worksheet.Cells[i, 10].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
                         worksheet.Cells[i, 10].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 13].Formula = "= (K" + i +") - (K" + i + "*" + "L" + i + "/100)";
+                        worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
                         worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
                         worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
@@ -439,16 +442,25 @@ namespace AccApi.Repository.Managers
 
             var AttachmentList = new List<string>();
 
+            var p = _dbcontext.TblParameters.FirstOrDefault();
+            var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
+
             //Get User Email Signature
             //User user = _logonRepository.GetUser(UserName);
             //string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
             int PackageSupplierId = 0;
 
+            List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
+            List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
+            AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
+
             foreach (var item in supInputList)
             {
                 //1.Add PackageSupplier
                 SupplierInput supplier = item.supplierInput;
+                
+
                 if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                 {
                     var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
@@ -456,12 +468,24 @@ namespace AccApi.Repository.Managers
                     _dbcontext.SaveChanges();
 
                     PackageSupplierId = spack.SpPackSuppId;
+
+                    //1.1 Add AddSupplierPackageModel
+                    supplierPackageModelList.Add(new AddSupplierPackageModel
+                    {
+                        SpPackSuppId = spack.SpPackSuppId,
+                        SpPackageId = spack.SpPackageId,
+                        SpSupplierId = spack.SpSupplierId,
+                        SpByBoq = ByBoq,
+                        ProjectCode = proj.PrjCode,
+                        ProjectName = proj.PrjName,
+                    });
+
                 }
                 else
                 {
                     var supPack = _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefault();
                     PackageSupplierId = supPack.SpPackSuppId;
-                }    
+                }
 
                 //2.Add Revision
                 int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
@@ -483,8 +507,8 @@ namespace AccApi.Repository.Managers
 
                 int prjCurrency = (int)_dbcontext.TblParameters.FirstOrDefault().EstimatedCur;
 
-                var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now,PrCurrency= prjCurrency };
-                _dbcontext.Add<TblSupplierPackageRevision>(result);
+                var supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
                 _dbcontext.SaveChanges();
 
 
@@ -495,7 +519,41 @@ namespace AccApi.Repository.Managers
                 var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
                 byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-                InsertRevisionDetail(revId, packId, byBoq);
+                List<TblRevisionDetail> LstRevDetails = InsertRevisionDetail(revId, packId, byBoq);
+
+
+                //2.2 Add RevisionModel
+                
+                revisionModelList.Add(new AddRevisionModel
+                {
+                    PrRevId = Rev0.PrRevId,
+                    PrRevNo = Rev0.PrRevNo,
+                    PrRevDate = Rev0.PrRevDate,
+                    PrTotPrice = Rev0.PrTotPrice,
+                    PrPackSuppId = Rev0.PrPackSuppId,
+                    PrCurrency = Rev0.PrCurrency,
+                    PrExchRate = 1,
+                    StatusId = 1,
+                    ProjectCode = proj.PrjCode,
+                    IsSynched = false,
+                    RevisionDetails = (from d in LstRevDetails
+                                       select new AddRevisionDetailModel
+                                       {
+                                           BoqResourceSeq = d.RdResourceSeq,
+                                           ResourceDescription = "",
+                                           ItemO = d.RdBoqItem,
+                                           ItemDescription = "",
+                                           Quantity = d.RdQty,
+                                           UnitPrice = d.RdPrice,
+                                           TotalPrice = (d.RdQty) * (d.RdPrice),
+                                           DiscountPerc = 0,
+                                           Comments = "",
+                                           CreatedOn = DateTime.Now,
+                                           IsSynched = false,
+                                           ProjectCode = proj.PrjCode
+                                       }).ToList()
+                });
+             
                 //if (!InsertRevisionDetail(revId, byBoq))
                 //    return false;
                 //else
@@ -503,9 +561,6 @@ namespace AccApi.Repository.Managers
                 //    UpdateTotalPrice(revId);
                 //    return true;
                 //}
-
-
-
 
                 //AttachmentList.Clear();
                 //AttachmentList.Add(item.FilePath);
@@ -585,16 +640,19 @@ namespace AccApi.Repository.Managers
                 //        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
                 //}
             }
-            
+
+            supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
+            supplierPackageRevisionModel.RevisionModels = revisionModelList;
+
             return true;
         }
 
-        private bool InsertRevisionDetail(int revId, int packId, byte byBoq)
+        private List<TblRevisionDetail> InsertRevisionDetail(int revId, int packId, byte byBoq)
         {
+            List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
+
             try
-            {
-                List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
-                List<TblMissingPrice> LstMissingPrice = new List<TblMissingPrice>();
+            {               
                 List<BoqRessourcesList> result = new List<BoqRessourcesList>();
 
                 double discount = 0;
@@ -635,7 +693,6 @@ namespace AccApi.Repository.Managers
                             LstRevDetails.Add(revdtl);
                         }
                     }
-
                 }
                 else
                 {
@@ -681,14 +738,14 @@ namespace AccApi.Repository.Managers
                 {
                     _dbcontext.AddRange(LstRevDetails);
                     _dbcontext.SaveChanges();
-                }
+                }               
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
 
-            return true;
+            return LstRevDetails;
         }
 
         public int GetMaxRevisionNumber(int PackageSupplierId)
