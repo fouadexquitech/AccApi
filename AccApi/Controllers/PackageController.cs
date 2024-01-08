@@ -106,12 +106,12 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpGet("ExportExcelPackagesCost")]
-        public JsonResult ExportExcelPackagesCost(int withBoq)
+        [HttpPost("ExportExcelPackagesCost")]
+        public async Task<JsonResult> ExportExcelPackagesCost(string costDB,int withBoq, SearchInput input)
         {
             try
             {
-                return new JsonResult(this._packageRepository.ExportExcelPackagesCost(withBoq));
+                return new JsonResult(await this._packageRepository.ExportExcelPackagesCost(withBoq, costDB, input));
             }
             catch (Exception ex)
             {
