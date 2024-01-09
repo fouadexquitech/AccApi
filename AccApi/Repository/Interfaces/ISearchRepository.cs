@@ -6,7 +6,7 @@ namespace AccApi.Repository.Interfaces
     public interface ISearchRepository
     {
       
-        List<BOQDivList> GetBOQDivList();
+        List<BOQDivList> GetBOQDivList(RessourceLevelsFilter filter);
         List<BOQLevelList> GetBOQLevel2List(RessourceLevelsFilter filter);
         //List<BOQLevelList> GetBOQLevel2ListBy(RessourceLevelsFilter filter);
         List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter);
