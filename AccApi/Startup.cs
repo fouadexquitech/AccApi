@@ -36,6 +36,7 @@ namespace AccApi
                     });
             });
             services.AddControllers();
+            services.AddHttpClient();
 
 
             services.AddDbContext<AccDbContext>(opts => opts.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
