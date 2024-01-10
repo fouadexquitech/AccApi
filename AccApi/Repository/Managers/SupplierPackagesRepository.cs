@@ -557,7 +557,7 @@ namespace AccApi.Repository.Managers
                                        select new AddRevisionDetailModel
                                        {
                                            BoqResourceSeq = d.RdResourceSeq,
-                                           ResourceDescription = GetRessourceDescription(d.RdResourceSeq),
+                                           ResourceDescription = ByBoq == 1 ? null : GetRessourceDescription(d.RdResourceSeq),
                                            ItemO = d.RdBoqItem,
                                            ItemDescription =o.DescriptionO,
                                            Quantity = d.RdQty,
