@@ -12,6 +12,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Dynamic.Core;
+using System.Net.Http;
+using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using System.Text;
+using System.Threading.Tasks;
+
 
 namespace AccApi.Repository.Managers
 {
@@ -22,8 +30,11 @@ namespace AccApi.Repository.Managers
         private MasterDbContext _mdbContext;
         private readonly IlogonRepository _logonRepository;
         private readonly GlobalLists _globalLists;
+        private readonly HttpClient _httpClient;
+        private IConfiguration _configuration { get; }
 
-        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, MasterDbContext mdbContext, IlogonRepository logonRepository, GlobalLists globalLists)
+        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, MasterDbContext mdbContext, 
+            IlogonRepository logonRepository, GlobalLists globalLists, HttpClient httpClient, IConfiguration configuration)
         {
             /*_dbcontext = Context;*/
             _pdbcontext = pdbcontext;
@@ -31,6 +42,8 @@ namespace AccApi.Repository.Managers
             _logonRepository = logonRepository;
             _globalLists = globalLists;
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _httpClient = httpClient;
+            _configuration = configuration;
         }
 
         public SupplierPackagesList GetSupplierPackage(int spId)
@@ -436,96 +449,99 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public bool AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments)
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments)
         {
-            //string sent = "";
-            //string ComCondAttch = "";
-
-            var AttachmentList = new List<string>();
-
-            var p = _dbcontext.TblParameters.FirstOrDefault();
-            var proj = _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
-
-            //Get User Email Signature
-            //User user = _logonRepository.GetUser(UserName);
-            //string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
-
-            int PackageSupplierId = 0;
-
-            List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
-            List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
-            AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
-
-            foreach (var item in supInputList)
+            var t = await _dbcontext.Database.BeginTransactionAsync();
+            try
             {
-                //1.Add PackageSupplier
-                SupplierInput supplier = item.supplierInput;
-                
+                //string sent = "";
+                //string ComCondAttch = "";
 
-                if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+                var AttachmentList = new List<string>();
+
+                var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
+                var proj = await _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
+
+                //Get User Email Signature
+                //User user = _logonRepository.GetUser(UserName);
+                //string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+
+                int PackageSupplierId = 0;
+
+                List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
+                List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
+                AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
+
+                foreach (var item in supInputList)
                 {
-                    var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
-                    _dbcontext.Add<TblSupplierPackage>(spack);
+                    //1.Add PackageSupplier
+                    SupplierInput supplier = item.supplierInput;
+
+
+                    if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+                    {
+                        var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
+                        _dbcontext.Add<TblSupplierPackage>(spack);
+                        _dbcontext.SaveChanges();
+
+                        PackageSupplierId = spack.SpPackSuppId;
+
+                        //1.1 Add AddSupplierPackageModel
+                        supplierPackageModelList.Add(new AddSupplierPackageModel
+                        {
+                            SpPackSuppId = spack.SpPackSuppId,
+                            SpPackageId = spack.SpPackageId,
+                            SpSupplierId = spack.SpSupplierId,
+                            SpByBoq = ByBoq,
+                            ProjectCode = proj.PrjCode,
+                            ProjectName = proj.PrjName,
+                        });
+
+                    }
+                    else
+                    {
+                        var supPack = await _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefaultAsync();
+                        PackageSupplierId = supPack.SpPackSuppId;
+                    }
+
+                    //2.Add Revision
+                    int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+                    if (LastRevNo != -1)
+                    {
+                        int i = LastRevNo;
+                        do
+                        {
+                            var res = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
+                            if (res != null)
+                            {
+                                res.PrRevNo = i + 1;
+                                await _dbcontext.SaveChangesAsync();
+                            }
+                            i--;
+                        }
+                        while (i >= 0);
+                    }
+
+                    int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
+
+                    var supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                    _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
                     _dbcontext.SaveChanges();
 
-                    PackageSupplierId = spack.SpPackSuppId;
 
-                    //1.1 Add AddSupplierPackageModel
-                    supplierPackageModelList.Add(new AddSupplierPackageModel
-                    {
-                        SpPackSuppId = spack.SpPackSuppId,
-                        SpPackageId = spack.SpPackageId,
-                        SpSupplierId = spack.SpSupplierId,
-                        SpByBoq = ByBoq,
-                        ProjectCode = proj.PrjCode,
-                        ProjectName = proj.PrjName,
-                    });
+                    //Get inserted Revison ID
+                    var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
+                    int revId = Rev0.PrRevId;
 
-                }
-                else
-                {
-                    var supPack = _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefault();
-                    PackageSupplierId = supPack.SpPackSuppId;
-                }
+                    var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
+                    byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-                //2.Add Revision
-                int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
-                if (LastRevNo != -1)
-                {
-                    int i = LastRevNo;
-                    do
-                    {
-                        var res = _dbcontext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
-                        if (res != null)
-                        {
-                            res.PrRevNo = i + 1;
-                            _dbcontext.SaveChanges();
-                        }
-                        i--;
-                    }
-                    while (i >= 0);
-                }
-
-                int prjCurrency = (int)_dbcontext.TblParameters.FirstOrDefault().EstimatedCur;
-
-                var supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
-                _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
-                _dbcontext.SaveChanges();
+                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(revId, packId, byBoq);
 
 
-                //Get inserted Revison ID
-                var Rev0 = _dbcontext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
-                int revId = Rev0.PrRevId;
-
-                var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
-                byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
-
-                List<TblRevisionDetail> LstRevDetails = InsertRevisionDetail(revId, packId, byBoq);
-
-
-                //2.2 Add RevisionModel    
-                revisionModelList.Add(new AddRevisionModel
-                {
+                  //2.2 Add RevisionModel    
+                  revisionModelList.Add(new AddRevisionModel
+                  {
                     PrRevId = Rev0.PrRevId,
                     PrRevNo = Rev0.PrRevNo,
                     PrRevDate = Rev0.PrRevDate,
@@ -554,101 +570,40 @@ namespace AccApi.Repository.Managers
                                            ProjectCode = proj.PrjCode
                                        }).ToList()
                 });
-             
-                //if (!InsertRevisionDetail(revId, byBoq))
-                //    return false;
-                //else
-                //{
-                //    UpdateTotalPrice(revId);
-                //    return true;
-                //}
 
-                //AttachmentList.Clear();
-                //AttachmentList.Add(item.FilePath);
+                    
+                }
 
-                //var itemToRemove = attachments.SingleOrDefault(r => r.FileName == item.FilePath);
-                //if (itemToRemove != null)
-                //    attachments.Remove(itemToRemove);
+                supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
+                supplierPackageRevisionModel.RevisionModels = revisionModelList;
 
+                //Post the portal API (Create supplier package and revision on portal)
+                var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
+                var portalApiPath = _configuration["PortalApiPath"];
+                var key = _configuration["External:Key"];
+                var requestContent = new StringContent(body, Encoding.UTF8, "application/json");
+                _httpClient.DefaultRequestHeaders.Add("Authorization", key);
+                var response = await _httpClient.PostAsync(portalApiPath + "External/AddSupplierRevisionInPortal", requestContent);
+                response.EnsureSuccessStatusCode();
 
-                //if (item.mailAttachments != null)
-                //{
-                //    foreach (var attach in item.mailAttachments)
-                //    {
-                //        AttachmentList.Add(attach);
-                //    }
-                //}
-
-                //if (item.comercialCondList.Count > 0)
-                //{
-                //    if (ComCondAttch == "")
-                //        ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
-
-                //    AttachmentList.Add(ComCondAttch);
-                //}
-
-                //    //send email
-                //    string SupEmail = (from r in _mdbContext.TblSuppliers
-                //                       where r.SupCode == supplier.supID
-                //                       select r.SupEmail).First<string>();
-
-                //    if (SupEmail != "")
-                //    {
-                //        List<string> mylistTo = new List<string>();
-                //        mylistTo.Add(SupEmail);
-
-                //        List<string> mylistCC = new List<string>();
-                //        if (item.mailCC != null)
-                //        {
-                //            foreach (var ccMail in item.mailCC)
-                //            {
-                //                mylistCC.Add(ccMail);
-                //            }
-                //        }
-
-                //        List<string> mylistBCC = new List<string>();
-                //        if (user.UsrEmail != "")
-                //            mylistBCC.Add(user.UsrEmail);
-
-
-                //        string Subject = "Procurement";
-                //        string MailBody;
-
-                //        if (item.EmailTemplate != "")
-                //        {
-                //            MailBody = item.EmailTemplate;
-                //        }
-                //        else
-                //        {
-                //            MailBody = "Dear Sir,";
-                //            MailBody += Environment.NewLine;
-                //            MailBody += Environment.NewLine;
-                //            MailBody += "Please find attached , and fill the price ";
-                //            MailBody += Environment.NewLine;
-                //            MailBody += Environment.NewLine;
-                //            MailBody += Environment.NewLine;
-                //            MailBody += Environment.NewLine;
-                //            MailBody += "Best regards";
-                //        }
-
-                //        if (userSignature != "")
-                //        {
-                //            MailBody += @"<br><br>";
-                //            MailBody += userSignature;
-                //        }
-
-                //        Mail m = new Mail();
-                //        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
-                //}
+                var content = await response.Content.ReadAsStringAsync();
+                if (content == "true")
+                {
+                    await t.CommitAsync();
+                    return true;
+                }
+                else {
+                    throw new Exception("An error occured on the Portal API");
+                }
             }
-
-            supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
-            supplierPackageRevisionModel.RevisionModels = revisionModelList;
-
-            return true;
+            catch (Exception ex)
+            {
+                await t.RollbackAsync();
+                throw;
+            }
         }
 
-          private string GetRessourceDescription(int boqSeq)
+        private string GetRessourceDescription(int boqSeq)
         {
             var result = from a in _dbcontext.TblBoqs
                          join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
@@ -661,8 +616,8 @@ namespace AccApi.Repository.Managers
 
             return result.FirstOrDefault().resDesc;
         }
-
-        private List<TblRevisionDetail> InsertRevisionDetail(int revId, int packId, byte byBoq)
+        
+        private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq)
         {
             List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
 
@@ -751,8 +706,8 @@ namespace AccApi.Repository.Managers
 
                 if (LstRevDetails.Count() > 0)
                 {
-                    _dbcontext.AddRange(LstRevDetails);
-                    _dbcontext.SaveChanges();
+                    await _dbcontext.AddRangeAsync(LstRevDetails);
+                    await _dbcontext.SaveChangesAsync();
                 }               
             }
             catch (Exception ex)
