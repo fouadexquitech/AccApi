@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Linq.Dynamic.Core;
 
 namespace AccApi.Repository.Managers
 {
@@ -522,8 +523,7 @@ namespace AccApi.Repository.Managers
                 List<TblRevisionDetail> LstRevDetails = InsertRevisionDetail(revId, packId, byBoq);
 
 
-                //2.2 Add RevisionModel
-                
+                //2.2 Add RevisionModel    
                 revisionModelList.Add(new AddRevisionModel
                 {
                     PrRevId = Rev0.PrRevId,
@@ -537,12 +537,13 @@ namespace AccApi.Repository.Managers
                     ProjectCode = proj.PrjCode,
                     IsSynched = false,
                     RevisionDetails = (from d in LstRevDetails
+                                       join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
                                        select new AddRevisionDetailModel
                                        {
                                            BoqResourceSeq = d.RdResourceSeq,
-                                           ResourceDescription = "",
+                                           ResourceDescription = GetRessourceDescription(d.RdResourceSeq),
                                            ItemO = d.RdBoqItem,
-                                           ItemDescription = "",
+                                           ItemDescription =o.DescriptionO,
                                            Quantity = d.RdQty,
                                            UnitPrice = d.RdPrice,
                                            TotalPrice = (d.RdQty) * (d.RdPrice),
@@ -645,6 +646,20 @@ namespace AccApi.Repository.Managers
             supplierPackageRevisionModel.RevisionModels = revisionModelList;
 
             return true;
+        }
+
+          private string GetRessourceDescription(int boqSeq)
+        {
+            var result = from a in _dbcontext.TblBoqs
+                         join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
+                         where a.BoqSeq == boqSeq
+                         select new RessourceList
+                         {
+                             resSeq=a.BoqResSeq,
+                             resDesc=b.ResDescription
+                         };
+
+            return result.FirstOrDefault().resDesc;
         }
 
         private List<TblRevisionDetail> InsertRevisionDetail(int revId, int packId, byte byBoq)
