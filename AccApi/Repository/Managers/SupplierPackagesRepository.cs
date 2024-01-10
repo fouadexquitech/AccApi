@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Xml.Linq;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Linq.Dynamic.Core;
 using System.Net.Http;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +19,7 @@ using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace AccApi.Repository.Managers
 {
@@ -537,123 +539,39 @@ namespace AccApi.Repository.Managers
                     List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(revId, packId, byBoq);
 
 
-                    //2.2 Add RevisionModel
+                  //2.2 Add RevisionModel    
+                  revisionModelList.Add(new AddRevisionModel
+                  {
+                    PrRevId = Rev0.PrRevId,
+                    PrRevNo = Rev0.PrRevNo,
+                    PrRevDate = Rev0.PrRevDate,
+                    PrTotPrice = Rev0.PrTotPrice,
+                    PrPackSuppId = Rev0.PrPackSuppId,
+                    PrCurrency = Rev0.PrCurrency,
+                    PrExchRate = 1,
+                    StatusId = 1,
+                    ProjectCode = proj.PrjCode,
+                    IsSynched = false,
+                    RevisionDetails = (from d in LstRevDetails
+                                       join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
+                                       select new AddRevisionDetailModel
+                                       {
+                                           BoqResourceSeq = d.RdResourceSeq,
+                                           ResourceDescription = GetRessourceDescription(d.RdResourceSeq),
+                                           ItemO = d.RdBoqItem,
+                                           ItemDescription =o.DescriptionO,
+                                           Quantity = d.RdQty,
+                                           UnitPrice = d.RdPrice,
+                                           TotalPrice = (d.RdQty) * (d.RdPrice),
+                                           DiscountPerc = 0,
+                                           Comments = "",
+                                           CreatedOn = DateTime.Now,
+                                           IsSynched = false,
+                                           ProjectCode = proj.PrjCode
+                                       }).ToList()
+                });
 
-                    revisionModelList.Add(new AddRevisionModel
-                    {
-                        PrRevId = Rev0.PrRevId,
-                        PrRevNo = Rev0.PrRevNo,
-                        PrRevDate = Rev0.PrRevDate,
-                        PrTotPrice = Rev0.PrTotPrice,
-                        PrPackSuppId = Rev0.PrPackSuppId,
-                        PrCurrency = Rev0.PrCurrency,
-                        PrExchRate = 1,
-                        StatusId = 1,
-                        ProjectCode = proj.PrjCode,
-                        IsSynched = false,
-                        RevisionDetails = (from d in LstRevDetails
-                                           select new AddRevisionDetailModel
-                                           {
-                                               BoqResourceSeq = d.RdResourceSeq,
-                                               ResourceDescription = "",
-                                               ItemO = d.RdBoqItem,
-                                               ItemDescription = "",
-                                               Quantity = d.RdQty,
-                                               UnitPrice = d.RdPrice,
-                                               TotalPrice = (d.RdQty) * (d.RdPrice),
-                                               DiscountPerc = 0,
-                                               Comments = "",
-                                               CreatedOn = DateTime.Now,
-                                               IsSynched = false,
-                                               ProjectCode = proj.PrjCode
-                                           }).ToList()
-                    });
-
-                    //if (!InsertRevisionDetail(revId, byBoq))
-                    //    return false;
-                    //else
-                    //{
-                    //    UpdateTotalPrice(revId);
-                    //    return true;
-                    //}
-
-                    //AttachmentList.Clear();
-                    //AttachmentList.Add(item.FilePath);
-
-                    //var itemToRemove = attachments.SingleOrDefault(r => r.FileName == item.FilePath);
-                    //if (itemToRemove != null)
-                    //    attachments.Remove(itemToRemove);
-
-
-                    //if (item.mailAttachments != null)
-                    //{
-                    //    foreach (var attach in item.mailAttachments)
-                    //    {
-                    //        AttachmentList.Add(attach);
-                    //    }
-                    //}
-
-                    //if (item.comercialCondList.Count > 0)
-                    //{
-                    //    if (ComCondAttch == "")
-                    //        ComCondAttch = SendComercialConditions(packId, item.comercialCondList);
-
-                    //    AttachmentList.Add(ComCondAttch);
-                    //}
-
-                    //    //send email
-                    //    string SupEmail = (from r in _mdbContext.TblSuppliers
-                    //                       where r.SupCode == supplier.supID
-                    //                       select r.SupEmail).First<string>();
-
-                    //    if (SupEmail != "")
-                    //    {
-                    //        List<string> mylistTo = new List<string>();
-                    //        mylistTo.Add(SupEmail);
-
-                    //        List<string> mylistCC = new List<string>();
-                    //        if (item.mailCC != null)
-                    //        {
-                    //            foreach (var ccMail in item.mailCC)
-                    //            {
-                    //                mylistCC.Add(ccMail);
-                    //            }
-                    //        }
-
-                    //        List<string> mylistBCC = new List<string>();
-                    //        if (user.UsrEmail != "")
-                    //            mylistBCC.Add(user.UsrEmail);
-
-
-                    //        string Subject = "Procurement";
-                    //        string MailBody;
-
-                    //        if (item.EmailTemplate != "")
-                    //        {
-                    //            MailBody = item.EmailTemplate;
-                    //        }
-                    //        else
-                    //        {
-                    //            MailBody = "Dear Sir,";
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += "Please find attached , and fill the price ";
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += Environment.NewLine;
-                    //            MailBody += "Best regards";
-                    //        }
-
-                    //        if (userSignature != "")
-                    //        {
-                    //            MailBody += @"<br><br>";
-                    //            MailBody += userSignature;
-                    //        }
-
-                    //        Mail m = new Mail();
-                    //        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
-                    //}
+                    
                 }
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
@@ -685,6 +603,20 @@ namespace AccApi.Repository.Managers
             }
         }
 
+        private string GetRessourceDescription(int boqSeq)
+        {
+            var result = from a in _dbcontext.TblBoqs
+                         join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
+                         where a.BoqSeq == boqSeq
+                         select new RessourceList
+                         {
+                             resSeq=a.BoqResSeq,
+                             resDesc=b.ResDescription
+                         };
+
+            return result.FirstOrDefault().resDesc;
+        }
+        
         private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq)
         {
             List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();

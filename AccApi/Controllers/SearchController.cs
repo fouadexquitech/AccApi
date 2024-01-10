@@ -19,12 +19,12 @@ namespace AccApi.Controllers
             _searchRepository = searchRepository;
         }
 
-        [HttpGet("GetBOQDivList")]
-        public List<BOQDivList> GetBOQDivList()
+        [HttpPost("GetBOQDivList")]
+        public List<BOQDivList> GetBOQDivList(RessourceLevelsFilter filter)
         {
             try
             {
-                return this._searchRepository.GetBOQDivList();
+                return this._searchRepository.GetBOQDivList(filter);
             }
             catch (Exception ex)
             {
