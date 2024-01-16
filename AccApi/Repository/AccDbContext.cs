@@ -9,6 +9,7 @@ namespace AccApi.Repository
 {
     public partial class AccDbContext : DbContext
     {
+
         private readonly string _connectionString;
 
         public AccDbContext(string connectionString)
@@ -177,6 +178,7 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -397,6 +399,56 @@ namespace AccApi.Repository
             modelBuilder.Entity<NewItemResource>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
+
+                entity.Property(e => e.C1).IsUnicode(false);
+
+                entity.Property(e => e.C10).IsUnicode(false);
+
+                entity.Property(e => e.C11).IsUnicode(false);
+
+                entity.Property(e => e.C12).IsUnicode(false);
+
+                entity.Property(e => e.C13).IsUnicode(false);
+
+                entity.Property(e => e.C14).IsUnicode(false);
+
+                entity.Property(e => e.C15).IsUnicode(false);
+
+                entity.Property(e => e.C2).IsUnicode(false);
+
+                entity.Property(e => e.C3).IsUnicode(false);
+
+                entity.Property(e => e.C4).IsUnicode(false);
+
+                entity.Property(e => e.C5).IsUnicode(false);
+
+                entity.Property(e => e.C6).IsUnicode(false);
+
+                entity.Property(e => e.C7).IsUnicode(false);
+
+                entity.Property(e => e.C8).IsUnicode(false);
+
+                entity.Property(e => e.C9).IsUnicode(false);
+
+                entity.Property(e => e.L1).IsUnicode(false);
+
+                entity.Property(e => e.L10).IsUnicode(false);
+
+                entity.Property(e => e.L2).IsUnicode(false);
+
+                entity.Property(e => e.L3).IsUnicode(false);
+
+                entity.Property(e => e.L4).IsUnicode(false);
+
+                entity.Property(e => e.L5).IsUnicode(false);
+
+                entity.Property(e => e.L6).IsUnicode(false);
+
+                entity.Property(e => e.L7).IsUnicode(false);
+
+                entity.Property(e => e.L8).IsUnicode(false);
+
+                entity.Property(e => e.L9).IsUnicode(false);
             });
 
             modelBuilder.Entity<PackagesNetwork>(entity =>
