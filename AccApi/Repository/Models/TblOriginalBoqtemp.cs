@@ -50,7 +50,7 @@ namespace AccApi.Repository.Models
         [Column("obSheetDesc")]
         [StringLength(50)]
         public string ObSheetDesc { get; set; }
-        public int? RowNumber { get; set; }
+        public short? RowNumber { get; set; }
         [StringLength(50)]
         public string RefNumber { get; set; }
         public double? UnitRate { get; set; }
@@ -169,6 +169,22 @@ namespace AccApi.Repository.Models
         public string L8 { get; set; }
         public string L9 { get; set; }
         public string L10 { get; set; }
+        public string C11 { get; set; }
+        public string C12 { get; set; }
+        public string C13 { get; set; }
+        public string C14 { get; set; }
+        public string C15 { get; set; }
+        public double? QtyScope { get; set; }
+        [Column("obExchangeTo")]
+        [StringLength(20)]
+        public string ObExchangeTo { get; set; }
+        [Column("obExchangeRate")]
+        public double? ObExchangeRate { get; set; }
+        [Column("insertedBy")]
+        [StringLength(20)]
+        public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
 
         [InverseProperty(nameof(TblBoqtemp.BoqItemNavigation))]
         public virtual ICollection<TblBoqtemp> TblBoqtemps { get; set; }

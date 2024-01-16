@@ -60,5 +60,14 @@ namespace AccApi.Repository.Models
         public double? BwpMaterialExecQty { get; set; }
         [Column("bwpMatQtySource")]
         public byte? BwpMatQtySource { get; set; }
+        [Column("LUser")]
+        [StringLength(50)]
+        public string Luser { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? InsertDate { get; set; }
+        [Column("bwpExecQty_Add")]
+        public double? BwpExecQtyAdd { get; set; }
+        [Column("bwpSubcExecQty_Add")]
+        public double? BwpSubcExecQtyAdd { get; set; }
     }
 }

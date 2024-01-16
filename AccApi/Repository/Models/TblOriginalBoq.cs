@@ -185,6 +185,16 @@ namespace AccApi.Repository.Models
         [Column("obTradeDesc")]
         [StringLength(500)]
         public string ObTradeDesc { get; set; }
+        [Column("obExchangeTo")]
+        [StringLength(20)]
+        public string ObExchangeTo { get; set; }
+        [Column("obExchangeRate")]
+        public double? ObExchangeRate { get; set; }
+        [Column("insertedBy")]
+        [StringLength(20)]
+        public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
         public bool? IsSynched { get; set; }
         [Column("obStatus")]
         [StringLength(50)]

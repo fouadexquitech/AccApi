@@ -19,6 +19,8 @@ using System.Text.Json;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using System.Text;
 using System.Threading.Tasks;
+using AccApi.Repository.Models.MasterModels;
+using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 
 
 namespace AccApi.Repository.Managers
@@ -477,7 +479,6 @@ namespace AccApi.Repository.Managers
                     //1.Add PackageSupplier
                     SupplierInput supplier = item.supplierInput;
 
-
                     if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                     {
                         var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
@@ -496,7 +497,6 @@ namespace AccApi.Repository.Managers
                             ProjectCode = proj.PrjCode,
                             ProjectName = proj.PrjName,
                         });
-
                     }
                     else
                     {
@@ -522,21 +522,33 @@ namespace AccApi.Repository.Managers
                         while (i >= 0);
                     }
 
-                    int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
+                    var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
+                    var supPackRev= new TblSupplierPackageRevision();
+                    int rev1Id=0;
 
-                    var supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                    if  (Rev1 != null)
+                    {
+                       supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency,PrExchRate= Rev1.PrExchRate };
+                       rev1Id = Rev1.PrRevId;
+                    }
+                    else 
+                    { 
+                       int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
+                       supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                       rev1Id = 0;
+                    }
                     _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
                     _dbcontext.SaveChanges();
 
 
                     //Get inserted Revison ID
                     var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
-                    int revId = Rev0.PrRevId;
+                    int rev0Id = Rev0.PrRevId;
 
                     var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
                     byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(revId, packId, byBoq);
+                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id);
 
 
                   //2.2 Add RevisionModel    
@@ -567,11 +579,11 @@ namespace AccApi.Repository.Managers
                                            Comments = "",
                                            CreatedOn = DateTime.Now,
                                            IsSynched = false,
-                                           ProjectCode = proj.PrjCode
+                                           ProjectCode = proj.PrjCode,
+                                           ParentItemO = d.ParentItemO,
+                                           ParentResourceId = d.ParentResourceId
                                        }).ToList()
-                });
-
-                    
+                  });                  
                 }
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
@@ -592,7 +604,8 @@ namespace AccApi.Repository.Managers
                     await t.CommitAsync();
                     return true;
                 }
-                else {
+                else
+                {
                     throw new Exception("An error occured on the Portal API");
                 }
             }
@@ -617,14 +630,43 @@ namespace AccApi.Repository.Managers
             return result.FirstOrDefault().resDesc;
         }
         
-        private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq)
+        private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq, int rev1Id)
         {
             List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
 
-            try
-            {               
+            if (rev1Id>0)  //In case of previous revision exists , so you have to insert new details from pervious
+            {
+                var oldRevDtl = _dbcontext.TblRevisionDetails.Where(x => x.RdRevisionId == rev1Id).ToList();
+                if (oldRevDtl != null)
+                {
+                    foreach (var row in oldRevDtl)
+                    {
+                        var revdtl = new TblRevisionDetail()
+                        {
+                            RdRevisionId = revId,
+                            RdResourceSeq = row.RdResourceSeq,
+                            RdBoqItem = row.RdBoqItem,
+                            RdPrice = row.RdPrice,
+                            RdPriceOrigCurrency = row.RdPriceOrigCurrency,
+                            RdQty = row.RdQty,
+                            RdComment = row.RdComment,
+                            RdMissedPrice = row.RdMissedPrice,
+                            RdDiscount = row.RdDiscount,
+                            RdAddedItem = row.RdAddedItem,
+                            IsAlternative = row.IsAlternative,
+                            IsNew=row.IsNew,
+                            NewItemId=row.NewItemId,
+                            NewItemResourceId=row.NewItemResourceId,
+                            ParentItemO = row.ParentItemO,
+                            ParentResourceId = row.ParentResourceId
+                        };
+                        LstRevDetails.Add(revdtl);
+                    }                  
+                }
+            }
+            else
+            { 
                 List<BoqRessourcesList> result = new List<BoqRessourcesList>();
-
                 double discount = 0;
 
                 if (byBoq == 1)
@@ -658,7 +700,9 @@ namespace AccApi.Repository.Managers
                                 RdComment = "",
                                 RdMissedPrice = 0,
                                 RdDiscount = discount,
-                                RdAddedItem = 0
+                                RdAddedItem = 0,
+                                ParentItemO="",
+                                ParentResourceId=0
                             };
                             LstRevDetails.Add(revdtl);
                         }
@@ -697,23 +741,21 @@ namespace AccApi.Repository.Managers
                                 RdPriceOrigCurrency = 0,
                                 RdMissedPrice = 0,
                                 RdDiscount = discount,
-                                RdAddedItem = 0
+                                RdAddedItem = 0,
+                                ParentItemO = "",
+                                ParentResourceId = 0
                             };
                             LstRevDetails.Add(revdtl);
                         }
                     }
                 }
+            }
 
-                if (LstRevDetails.Count() > 0)
+            if (LstRevDetails.Count() > 0)
                 {
                     await _dbcontext.AddRangeAsync(LstRevDetails);
                     await _dbcontext.SaveChangesAsync();
                 }               
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
 
             return LstRevDetails;
         }

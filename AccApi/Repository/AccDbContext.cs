@@ -26,7 +26,6 @@ namespace AccApi.Repository
             optionsBuilder.UseSqlServer(_connectionString);
         }
 
-
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //        {
         //            if (!optionsBuilder.IsConfigured)
@@ -109,6 +108,8 @@ namespace AccApi.Repository
         public virtual DbSet<TblMissingItemsList> TblMissingItemsLists { get; set; }
         public virtual DbSet<TblMissingPrice> TblMissingPrices { get; set; }
         public virtual DbSet<TblOriginalBoq> TblOriginalBoqs { get; set; }
+        public virtual DbSet<TblOriginalBoqSub> TblOriginalBoqSubs { get; set; }
+        public virtual DbSet<TblOriginalBoqSubTemp> TblOriginalBoqSubTemps { get; set; }
         public virtual DbSet<TblOriginalBoqtemp> TblOriginalBoqtemps { get; set; }
         public virtual DbSet<TblParameter> TblParameters { get; set; }
         public virtual DbSet<TblPayment> TblPayments { get; set; }
@@ -176,7 +177,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -319,6 +319,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.TblBoq).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TblOriginalBoq).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<MaterialCostCenter>(entity =>
@@ -398,6 +402,75 @@ namespace AccApi.Repository
             modelBuilder.Entity<PackagesNetwork>(entity =>
             {
                 entity.Property(e => e.FilePath).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Parameter>(entity =>
+            {
+                entity.Property(e => e.TxtAffairActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtAffairEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtAffairEstimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtAllowActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtAllowEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtAllowEstimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtBudDeprecRent).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtBudFuel).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtBudOd).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtBudOperator).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtDepActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtDepEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFinActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFinEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFuelActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFuelEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFwActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFwestimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtFwestimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtMedActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtMedEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtMedEstimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtOperatorActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtOperatorEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtPlactual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtPlestimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtPlestimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtSalActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtSalEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtSalEstimatedTot).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtVisaActual).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtVisaEstimated).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TxtVisaEstimatedTot).HasDefaultValueSql("((0))");
             });
 
             modelBuilder.Entity<RevisionAcceptanceComment>(entity =>
@@ -537,6 +610,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.BwpExecQty).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.BwpExecQtyAdd).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.BwpMatQtySource).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpMaterialExecQty).HasDefaultValueSql("((0))");
@@ -547,6 +622,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.BwpSubcExecQty).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.BwpSubcExecQtyAdd).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.BwpSubcQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpTotAmnt).HasDefaultValueSql("((0))");
@@ -556,6 +633,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.BwpUnitPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BwpWbsdesc).IsUnicode(false);
+
+                entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.Luser).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblBcwpWbsProgBoq>(entity =>
@@ -601,6 +682,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
@@ -635,6 +720,12 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqUnitMesure).IsUnicode(false);
 
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.QtyScope).HasDefaultValueSql("((0))");
 
                 entity.HasOne(d => d.BoqItemNavigation)
                     .WithMany(p => p.TblBoqtemps)
@@ -1151,6 +1242,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ExportedToSupplier).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.L1).IsUnicode(false);
@@ -1201,6 +1296,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ObBoqsellTotPrice).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.ObExchangeRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ObExchangeTo).IsUnicode(false);
+
                 entity.Property(e => e.ObItemCode).IsUnicode(false);
 
                 entity.Property(e => e.ObLevel).IsUnicode(false);
@@ -1222,6 +1321,30 @@ namespace AccApi.Repository
                 entity.Property(e => e.Zone).IsUnicode(false);
             });
 
+            modelBuilder.Entity<TblOriginalBoqSub>(entity =>
+            {
+                entity.HasKey(e => new { e.SubBoqItem, e.SubItem })
+                    .HasName("PK_tblOriginalBOQSub");
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.SubDescription).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<TblOriginalBoqSubTemp>(entity =>
+            {
+                entity.HasKey(e => new { e.SubBoqItem, e.SubItem })
+                    .HasName("PK_tblOriginalBOQSubTemp");
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.SubDescription).IsUnicode(false);
+            });
+
             modelBuilder.Entity<TblOriginalBoqtemp>(entity =>
             {
                 entity.Property(e => e.C1).IsUnicode(false);
@@ -1229,6 +1352,16 @@ namespace AccApi.Repository
                 entity.Property(e => e.C10).IsUnicode(false);
 
                 entity.Property(e => e.C10ref).IsUnicode(false);
+
+                entity.Property(e => e.C11).IsUnicode(false);
+
+                entity.Property(e => e.C12).IsUnicode(false);
+
+                entity.Property(e => e.C13).IsUnicode(false);
+
+                entity.Property(e => e.C14).IsUnicode(false);
+
+                entity.Property(e => e.C15).IsUnicode(false);
 
                 entity.Property(e => e.C1ref).IsUnicode(false);
 
@@ -1267,6 +1400,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.CandyTemplate).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.DescriptionO).IsUnicode(false);
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.L1).IsUnicode(false);
 
@@ -1312,6 +1449,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ObBoqsellTotPrice).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.ObExchangeRate).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ObExchangeTo).IsUnicode(false);
+
                 entity.Property(e => e.ObItemCode).IsUnicode(false);
 
                 entity.Property(e => e.ObLevel).IsUnicode(false);
@@ -1319,6 +1460,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.ObPriceCode).IsUnicode(false);
 
                 entity.Property(e => e.ObSeq).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.QtyScope).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RefNumber).IsUnicode(false);
 
@@ -1547,6 +1690,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.RinRent).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.RinSeparatFuelAmt).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RinSeparatOperatAmt).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.RinSpareQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RinSubDiv).IsUnicode(false);
@@ -1629,6 +1776,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RiiGrp).IsUnicode(false);
 
                 entity.Property(e => e.RiiProductiveLab).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RiiSeparatItem).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RiiSort).HasDefaultValueSql("((0))");
 
@@ -1728,6 +1877,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.IsNew).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.ParentItemO).IsUnicode(false);
+
+                entity.Property(e => e.ParentResourceId).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAddedItem).HasDefaultValueSql("((0))");
 
@@ -1972,7 +2125,11 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.TaAbv).IsUnicode(false);
 
+                entity.Property(e => e.TaAddTotBudget).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TaDiv).IsUnicode(false);
+
+                entity.Property(e => e.TaSkipTotPayment).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TaSubDiv).IsUnicode(false);
 
@@ -2022,6 +2179,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.WbsCost).IsUnicode(false);
 
                 entity.Property(e => e.WbsTk).IsUnicode(false);
+
+                entity.Property(e => e.IsStaff).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Used).HasDefaultValueSql("((0))");
 

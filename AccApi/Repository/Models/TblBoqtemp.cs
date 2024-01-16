@@ -105,6 +105,15 @@ namespace AccApi.Repository.Models
         public string BoqPackage { get; set; }
         [Column("boqBillQty")]
         public double? BoqBillQty { get; set; }
+        public double? QtyScope { get; set; }
+        [Column("insertedBy")]
+        [StringLength(20)]
+        public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
+        [Column("subBoq")]
+        [StringLength(25)]
+        public string SubBoq { get; set; }
 
         [ForeignKey(nameof(BoqItem))]
         [InverseProperty(nameof(TblOriginalBoqtemp.TblBoqtemps))]

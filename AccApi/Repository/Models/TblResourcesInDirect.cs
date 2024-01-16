@@ -215,6 +215,10 @@ namespace AccApi.Repository.Models
         [Column("rinSubTrade")]
         [StringLength(50)]
         public string RinSubTrade { get; set; }
+        [Column("rinSeparatFuelAmt")]
+        public bool? RinSeparatFuelAmt { get; set; }
+        [Column("rinSeparatOperatAmt")]
+        public bool? RinSeparatOperatAmt { get; set; }
 
         [ForeignKey(nameof(RinHdrSeq))]
         [InverseProperty(nameof(TblResourcesInDirectIndex.TblResourcesInDirects))]

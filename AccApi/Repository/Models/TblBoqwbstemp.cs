@@ -46,5 +46,8 @@ namespace AccApi.Repository.Models
         [Column("boqWProj")]
         [StringLength(50)]
         public string BoqWproj { get; set; }
+        [Column("subwBoq")]
+        [StringLength(25)]
+        public string SubwBoq { get; set; }
     }
 }

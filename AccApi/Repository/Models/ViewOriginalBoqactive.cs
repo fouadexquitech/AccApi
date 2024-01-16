@@ -46,7 +46,7 @@ namespace AccApi.Repository.Models
         [Column("obSheetDesc")]
         [StringLength(50)]
         public string ObSheetDesc { get; set; }
-        public int? RowNumber { get; set; }
+        public short? RowNumber { get; set; }
         [StringLength(10)]
         public string RefNumber { get; set; }
         [StringLength(12)]

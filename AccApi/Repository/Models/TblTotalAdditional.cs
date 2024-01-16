@@ -62,5 +62,9 @@ namespace AccApi.Repository.Models
         [Column("taTrade")]
         [StringLength(5)]
         public string TaTrade { get; set; }
+        [Column("taSkipTotPayment")]
+        public int? TaSkipTotPayment { get; set; }
+        [Column("taAddTotBudget")]
+        public bool? TaAddTotBudget { get; set; }
     }
 }

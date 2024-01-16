@@ -134,5 +134,9 @@ namespace AccApi.Repository.Models
         public int? LcOtherLabors { get; set; }
         [Column("lcPlasterer")]
         public int? LcPlasterer { get; set; }
+        [Column("tblOriginalBOQ")]
+        public byte? TblOriginalBoq { get; set; }
+        [Column("tblBOQ")]
+        public byte? TblBoq { get; set; }
     }
 }

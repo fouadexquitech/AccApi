@@ -55,5 +55,10 @@ namespace AccApi.Repository.Models
         public bool? IsNew { get; set; }
         public int? NewItemId { get; set; }
         public int? NewItemResourceId { get; set; }
+        [Column("parentItemO")]
+        [StringLength(25)]
+        public string ParentItemO { get; set; }
+        [Column("parentResourceId")]
+        public int? ParentResourceId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AccApi.Repository.View_Models
 {
@@ -16,5 +17,7 @@ namespace AccApi.Repository.View_Models
         public DateTime? CreatedOn { get; set; }
         public bool? IsSynched { get; set; } = false;
         public string? ProjectCode { get; set; }
+        public string ParentItemO { get; set; }
+        public int? ParentResourceId { get; set; }
     }
 }

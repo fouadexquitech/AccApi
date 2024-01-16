@@ -22,5 +22,7 @@ namespace AccApi.Repository.Models
         [StringLength(200)]
         public string WbsTkDesc { get; set; }
         public byte? Used { get; set; }
+        [Column("isStaff")]
+        public byte? IsStaff { get; set; }
     }
 }
