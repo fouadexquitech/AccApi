@@ -93,11 +93,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("ExportNotAssigned")]
-        public async Task<JsonResult> ExportNotAssigned(SearchInput input, string costDB)
+        public async Task<JsonResult> ExportNotAssigned(string costDB)
         {
             try
             {
-                return new JsonResult(await this._packageRepository.ExportNotAssigned(input, costDB));
+                return new JsonResult(await this._packageRepository.ExportNotAssigned(costDB));
             }
             catch (Exception ex)
             {
@@ -107,11 +107,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("ExportExcelPackagesCost")]
-        public async Task<JsonResult> ExportExcelPackagesCost(string costDB,int withBoq, SearchInput input)
+        public async Task<JsonResult> ExportExcelPackagesCost(string costDB,int withBoq)
         {
             try
             {
-                return new JsonResult(await this._packageRepository.ExportExcelPackagesCost(withBoq, costDB, input));
+                return new JsonResult(await this._packageRepository.ExportExcelPackagesCost(withBoq, costDB));
             }
             catch (Exception ex)
             {
