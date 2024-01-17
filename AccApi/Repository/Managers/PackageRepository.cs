@@ -21,6 +21,7 @@ using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 using System.Drawing;
 using File = System.IO.File;
+using AccApi.Repository.Models;
 
 namespace AccApi.Repository.Managers
 {
@@ -1535,10 +1536,24 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[r, 2].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
 
                     if (withBoq == 1)
-                    {                       
-                        input.Package = (int)x.PkgeId;
-
-                        var lstBoq = await GetBoqWithRessourcesAsync(input, costDB, 2);
+                    {
+                        var arr = new string[] { };
+                        SearchInput input1 = new SearchInput() { Package = (int)x.PkgeId, BOQDiv=arr, RESDiv =arr, RESType = arr, boqLevel2=arr, boqLevel3 = arr,
+                            boqLevel4 = arr, boqResourceSeq=arr, BOQItem ="",
+                            BOQDesc="",
+                            RESDesc="",
+                            RESPackage="",
+                            FromRow="",
+                            ToRow="",
+                            SheetDesc="",
+                            itemO="",
+                            obTradeDesc="",
+                            isItemsAssigned=0,
+                            isRessourcesAssigned=0,
+                            boqStatus=""
+                        };
+                      
+        var lstBoq = await GetBoqWithRessourcesAsync(input1, costDB, 2);
 
                         if (lstBoq != null)
                         {
