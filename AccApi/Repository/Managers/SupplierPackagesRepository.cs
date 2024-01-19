@@ -581,7 +581,8 @@ namespace AccApi.Repository.Managers
                                            IsSynched = false,
                                            ProjectCode = proj.PrjCode,
                                            ParentItemO = d.ParentItemO,
-                                           ParentResourceId = d.ParentResourceId
+                                           ParentResourceId = d.ParentResourceId,
+                                           NewItemResourceId=d.NewItemResourceId
                                        }).ToList()
                   });                  
                 }

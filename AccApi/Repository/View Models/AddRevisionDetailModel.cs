@@ -17,7 +17,11 @@ namespace AccApi.Repository.View_Models
         public DateTime? CreatedOn { get; set; }
         public bool? IsSynched { get; set; } = false;
         public string? ProjectCode { get; set; }
-        public string ParentItemO { get; set; }
+        public bool IsAlternative { get; set; }
+        public bool IsNewItem { get; set; }
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
+        public string? ParentItemO { get; set; }
         public int? ParentResourceId { get; set; }
     }
 }
