@@ -9,7 +9,6 @@ namespace AccApi.Repository
 {
     public partial class AccDbContext : DbContext
     {
-
         private readonly string _connectionString;
 
         public AccDbContext(string connectionString)
@@ -43,7 +42,6 @@ namespace AccApi.Repository
             var context = new AccDbContext(optionsBuilder.Options);
             return context;
         }
-
 
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
@@ -178,7 +176,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -777,8 +774,6 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
-                entity.Property(e => e.QtyScope).HasDefaultValueSql("((0))");
-
                 entity.HasOne(d => d.BoqItemNavigation)
                     .WithMany(p => p.TblBoqtemps)
                     .HasForeignKey(d => d.BoqItem)
@@ -881,6 +876,11 @@ namespace AccApi.Repository
                 entity.Property(e => e.CntRef).IsUnicode(false);
 
                 entity.Property(e => e.CntSeq).ValueGeneratedOnAdd();
+            });
+
+            modelBuilder.Entity<TblCurrency>(entity =>
+            {
+                entity.Property(e => e.CurId).ValueGeneratedNever();
             });
 
             modelBuilder.Entity<TblDivisionPercent>(entity =>
@@ -1513,8 +1513,6 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ObSeq).ValueGeneratedOnAdd();
 
-                entity.Property(e => e.QtyScope).HasDefaultValueSql("((0))");
-
                 entity.Property(e => e.RefNumber).IsUnicode(false);
 
                 entity.Property(e => e.Zone).IsUnicode(false);
@@ -2054,12 +2052,12 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSuppComCondReply>(entity =>
             {
-                entity.HasKey(e => new { e.CdPackageSupliersId, e.CdComConId });
+                entity.HasKey(e => new { e.CdRevisionId, e.CdComConId });
             });
 
             modelBuilder.Entity<TblSuppTechCondReply>(entity =>
             {
-                entity.HasKey(e => new { e.TcPackageSupliersId, e.TcComConId })
+                entity.HasKey(e => new { e.TcRevisionId, e.TcComConId })
                     .HasName("PK_tblSuppTechConReply");
             });
 

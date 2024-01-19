@@ -71,6 +71,7 @@ namespace AccApi.Repository.Models
         [Column("supEmail")]
         public string SupEmail { get; set; }
         [Column("supAccPreson")]
+        [StringLength(40)]
         public string SupAccPreson { get; set; }
         [Column("supPayTerm")]
         public short? SupPayTerm { get; set; }

@@ -12,8 +12,8 @@ namespace AccApi.Repository.Models
     public partial class TblSuppTechCondReply
     {
         [Key]
-        [Column("tcPackageSupliersID")]
-        public int TcPackageSupliersId { get; set; }
+        [Column("tcRevisionId")]
+        public int TcRevisionId { get; set; }
         [Key]
         [Column("tcComConID")]
         public int TcComConId { get; set; }

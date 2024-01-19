@@ -292,11 +292,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("UpdateCommercialConditions")]
-        public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile)
         {
             try
             {
-                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersID, ExcelFile);
+                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersRevisionID, ExcelFile);
             }
             catch (Exception ex)
             {
@@ -306,11 +306,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("UpdateTechnicalConditions")]
-        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile)
         {
             try
             {
-                return this._conditionsRepository.UpdateTechnicalConditions(packageId, PackageSupliersID, ExcelFile);
+                return this._conditionsRepository.UpdateTechnicalConditions(packageId, PackageSupliersRevisionID, ExcelFile);
             }
             catch (Exception ex)
             {

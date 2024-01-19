@@ -28,7 +28,6 @@ namespace AccApi.Repository.Managers
         MasterDbContext mdbcontext;
         IConfiguration configuration;
 
-
         public RevisionDetailsRepository(AccDbContext dbContext, PolicyDbContext pdbContext, MasterDbContext mdbContext, IlogonRepository logonRepository, GlobalLists globalLists)
         {
             //_dbContext = dbContext;
@@ -59,7 +58,7 @@ namespace AccApi.Repository.Managers
                              join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                             join c in _dbContext.TblOriginalBoqs on b.RdBoqItem equals c.ItemO
+                             join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
                              where b.RdRevisionId == RevisionId
 
                              select new RevisionDetailsList
@@ -68,10 +67,10 @@ namespace AccApi.Repository.Managers
                                  RdPrice = b.RdPrice,
                                  RdMissedPrice = b.RdMissedPrice,
                                  RdBoqItem = b.RdBoqItem,
-                                 RdItemDescription = c.DescriptionO,
+                                 RdItemDescription = o.DescriptionO,
                                  RdQty=b.RdQty,
-                                 RdUnitRate=c.UnitRate,
-                                 RdTotalBudget=c.Submitted,
+                                 RdUnitRate=o.UnitRate,
+                                 RdTotalBudget=o.Submitted,
                                  ExchangeRate=bb.PrExchRate,
                                  RdOriginalPrice=b.RdPriceOrigCurrency,
                                  TotalSupplierPrice=b.RdAssignedPrice,
@@ -81,7 +80,25 @@ namespace AccApi.Repository.Managers
                                  RdPriceAfterDiscount = Math.Round((double)(b.RdPrice -  (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
                                  RdTotalPrice = Math.Round((double) ((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty) ,3),
                                  RdAddedItem = b.RdAddedItem,
-                                 RdAddedItemOn=b.RdAddedItemOn
+                                 RdAddedItemOn=b.RdAddedItemOn,
+                                 IsAlternative = b.IsAlternative,
+                                 IsNew = b.IsNew,
+                                 NewItemId = b.NewItemId,
+                                 NewItemResourceId = b.NewItemResourceId,
+                                 ParentItemO = b.ParentItemO,
+                                 ParentResourceId = b.ParentResourceId,
+                                 L1 =o.L1,
+                                 L2 = o.L2,
+                                 L3 = o.L3,
+                                 L4 = o.L4,
+                                 L5 = o.L5,
+                                 L6 = o.L6,
+                                 C1 = o.C1,
+                                 C2 = o.C2,
+                                 C3 = o.C3,
+                                 C4 = o.C4,
+                                 C5 = o.C5,
+                                 C6 = o.C6
                              }).ToList();
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));

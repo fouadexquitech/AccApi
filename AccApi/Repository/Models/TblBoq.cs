@@ -118,12 +118,12 @@ namespace AccApi.Repository.Models
         [Column("boqBillQty")]
         public double? BoqBillQty { get; set; }
         public int? GroupId { get; set; }
-        public byte? ExportedToSupplier { get; set; }
         [Column("insertedBy")]
         [StringLength(20)]
         public string InsertedBy { get; set; }
         [Column("insertedDate", TypeName = "datetime")]
         public DateTime? InsertedDate { get; set; }
+        public byte? ExportedToSupplier { get; set; }
         [Column("subBoq")]
         [StringLength(25)]
         public string SubBoq { get; set; }
