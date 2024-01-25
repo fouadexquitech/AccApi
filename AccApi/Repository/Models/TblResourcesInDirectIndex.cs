@@ -33,6 +33,7 @@ namespace AccApi.Repository.Models
         [StringLength(5)]
         public string RiiSubDiv { get; set; }
         [Column("riiDesc")]
+        [StringLength(255)]
         public string RiiDesc { get; set; }
         [Column("riiOrder")]
         public short? RiiOrder { get; set; }

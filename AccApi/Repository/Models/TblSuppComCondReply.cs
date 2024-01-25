@@ -19,5 +19,7 @@ namespace AccApi.Repository.Models
         public int CdComConId { get; set; }
         [Column("cdSuppReply")]
         public string CdSuppReply { get; set; }
+        [Column("cdAccCond")]
+        public string CdAccCond { get; set; }
     }
 }

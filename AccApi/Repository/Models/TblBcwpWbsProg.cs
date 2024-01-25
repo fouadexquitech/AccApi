@@ -28,7 +28,7 @@ namespace AccApi.Repository.Models
         public string BwpLevel { get; set; }
         [Key]
         [Column("bwpUnit")]
-        [StringLength(50)]
+        [StringLength(5)]
         public string BwpUnit { get; set; }
         [Key]
         [Column("BOQ")]
