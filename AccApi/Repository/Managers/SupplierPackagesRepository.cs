@@ -550,43 +550,6 @@ namespace AccApi.Repository.Managers
                     //Insert ComConditions Revision
                     List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,supInput.technicalCondList);
 
-<<<<<<< HEAD
-                  //2.2 Add RevisionModel    
-                  revisionModelList.Add(new AddRevisionModel
-                  {
-                    PrRevId = Rev0.PrRevId,
-                    PrRevNo = Rev0.PrRevNo,
-                    PrRevDate = Rev0.PrRevDate,
-                    PrTotPrice = Rev0.PrTotPrice,
-                    PrPackSuppId = Rev0.PrPackSuppId,
-                    PrCurrency = Rev0.PrCurrency,
-                    PrExchRate = 1,
-                    StatusId = 1,
-                    ProjectCode = proj.PrjCode,
-                    IsSynched = false,
-                    RevisionDetails = (from d in LstRevDetails
-                                       join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
-                                       select new AddRevisionDetailModel
-                                       {
-                                           BoqResourceSeq = d.RdResourceSeq,
-                                           ResourceDescription = ByBoq == 1 ? null : GetRessourceDescription(d.RdResourceSeq),
-                                           ItemO = d.RdBoqItem,
-                                           ItemDescription =o.DescriptionO,
-                                           Quantity = d.RdQty,
-                                           UnitPrice = d.RdPrice,
-                                           TotalPrice = (d.RdQty) * (d.RdPrice),
-                                           DiscountPerc = 0,
-                                           Comments = "",
-                                           CreatedOn = DateTime.Now,
-                                           IsSynched = false,
-                                           ProjectCode = proj.PrjCode,
-                                           ParentItemO = d.ParentItemO,
-                                           ParentResourceId = d.ParentResourceId,
-                                           NewItemResourceId=d.NewItemResourceId
-                                       }).ToList()
-                  });                  
-=======
-
                     //2.2 Add RevisionModel    
                     revisionModelList.Add(new AddRevisionModel
                     {
@@ -702,7 +665,6 @@ namespace AccApi.Repository.Managers
                         Mail m = new Mail();
                         sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
                     }
->>>>>>> fa2f835fd22ae856ee2883cbdf67c27624b08087
                 }
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
