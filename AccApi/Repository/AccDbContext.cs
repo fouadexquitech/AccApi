@@ -43,7 +43,6 @@ namespace AccApi.Repository
             return context;
         }
 
-
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
@@ -2057,7 +2056,7 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSuppTechCondReply>(entity =>
             {
-                entity.HasKey(e => new { e.TcRevisionId, e.TcComConId })
+                entity.HasKey(e => new { e.TcRevisionId, e.TcTechConId })
                     .HasName("PK_tblSuppTechConReply");
             });
 

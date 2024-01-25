@@ -423,14 +423,14 @@ namespace AccApi.Repository.Managers
 
                                         if (condId > 0)
                                         {
-                                            var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcRevisionId == PackageSupliersRevisionID).FirstOrDefault();
+                                            var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcTechConId == condId && x.TcRevisionId == PackageSupliersRevisionID).FirstOrDefault();
                                             bool comcondIdExist = (comCondExist != null);
 
                                             if (!comcondIdExist)
                                             {
                                                 var SuppCom = new TblSuppTechCondReply()
                                                 {
-                                                    TcComConId = condId,
+                                                    TcTechConId = condId,
                                                     TcRevisionId = PackageSupliersRevisionID,
                                                     TcSuppReply = reply,
                                                     TcAccCond = AccCond

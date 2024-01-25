@@ -596,7 +596,7 @@ namespace AccApi.Repository.Managers
                         TechnicalConditions = (from d in LstTechCondReply
                                                select new AddCondModel
                                                 {
-                                                    Id = d.TcComConId,
+                                                    Id = d.TcTechConId,
                                                     CondValue = d.TcSuppReply,
                                                     ACCCondValue = d.TcAccCond
                                                }).ToList()
@@ -934,7 +934,7 @@ namespace AccApi.Repository.Managers
                         var ComCondReply = new TblSuppTechCondReply()
                         {
                             TcRevisionId = revId,
-                            TcComConId = row.CdComConId,
+                            TcTechConId = row.CdComConId,
                             TcSuppReply = row.CdSuppReply,
                             TcAccCond = row.CdAccCond
                         };
@@ -947,7 +947,7 @@ namespace AccApi.Repository.Managers
                         var ComCondReply = new TblSuppTechCondReply()
                         {
                             TcRevisionId = revId,
-                            TcComConId = row.id,
+                            TcTechConId = row.id,
                             TcSuppReply = "",
                             TcAccCond = row.ACCCondValue
                         };
@@ -962,7 +962,7 @@ namespace AccApi.Repository.Managers
                     var ComCondReply = new TblSuppTechCondReply()
                     {
                         TcRevisionId = revId,
-                        TcComConId = comCond.id,
+                        TcTechConId = comCond.id,
                         TcSuppReply = "",
                         TcAccCond = comCond.ACCCondValue
                     };

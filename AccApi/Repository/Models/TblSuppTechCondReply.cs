@@ -15,8 +15,8 @@ namespace AccApi.Repository.Models
         [Column("tcRevisionId")]
         public int TcRevisionId { get; set; }
         [Key]
-        [Column("tcComConID")]
-        public int TcComConId { get; set; }
+        [Column("tcTechConID")]
+        public int TcTechConId { get; set; }
         [Column("tcSuppReply")]
         public string TcSuppReply { get; set; }
         [Column("tcAccCond")]
