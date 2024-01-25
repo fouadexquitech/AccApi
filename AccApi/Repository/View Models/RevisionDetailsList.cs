@@ -45,5 +45,25 @@ namespace AccApi.Repository.View_Models
         public DateTime? InsertedDate { get; set; }
         public DateTime? RdAddedItemOn { get; set; }
 
+        public bool? IsAlternative { get; set; }
+        public bool? IsNew { get; set; }
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
+        public string ParentItemO { get; set; }
+        public int? ParentResourceId { get; set; }
+
+        public string L1 { get; set; }
+        public string L2 { get; set; }
+        public string L3 { get; set; }
+        public string L4 { get; set; }
+        public string L5 { get; set; }
+        public string L6 { get; set; }
+        public string C1 { get; set; }
+        public string C2 { get; set; }
+        public string C3 { get; set; }
+        public string C4 { get; set; }
+        public string C5 { get; set; }
+        public string C6 { get; set; }
+
     }
 }

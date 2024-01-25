@@ -10,10 +10,11 @@ namespace AccApi.Repository.View_Models
         public int supID { get; set; }
     }
 
-    public class ComercialCond
+    public class Condition
     {
         public int id { get; set; }
         public string description { get; set; }
+        public string? ACCCondValue { get; set; }
     }
 
     public class SupplierInputList
@@ -21,7 +22,8 @@ namespace AccApi.Repository.View_Models
         public SupplierInput supplierInput { get; set; }
         public string EmailTemplate { get; set; }
         public string FilePath { get; set; }
-        public List<ComercialCond> comercialCondList { get; set; }
+        public List<Condition> comercialCondList { get; set; }
+        public List<Condition> technicalCondList { get; set; }
 
         public List<string> mailCC { get; set; }
         public List<string> mailAttachments { get; set; }

@@ -66,7 +66,7 @@ namespace AccApi.Repository.Managers
             if (input.boqResourceSeq.Length > 0) blankInput = false;
             if (input.isRessourcesAssigned > 0) blankInput = false;
 
-            if (blankInput)
+            if (blankInput && type!=3)
             {
                 //List<BoqRessourcesList> res = new List<BoqRessourcesList>();
                 return null;
@@ -190,7 +190,7 @@ namespace AccApi.Repository.Managers
                         });
                     break;
 
-                case 2: case 3:
+                case 2: case 3: case 4:
                     result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
                       x => new BoqRessourcesList
                       {
@@ -1133,10 +1133,34 @@ namespace AccApi.Repository.Managers
             return excelName;
         }
 
-        public async Task<string> ExportNotAssigned(SearchInput input, string costDB)
+        public async Task<string> ExportNotAssigned(string costDB)
         {
             string excelName = "";
             int byBoq = 0;
+            var arr = new string[] { };
+            SearchInput input = new SearchInput()
+            {
+                Package = 0,
+                BOQDiv = arr,
+                RESDiv = arr,
+                RESType = arr,
+                boqLevel2 = arr,
+                boqLevel3 = arr,
+                boqLevel4 = arr,
+                boqResourceSeq = arr,
+                BOQItem = "",
+                BOQDesc = "",
+                RESDesc = "",
+                RESPackage = "",
+                FromRow = "",
+                ToRow = "",
+                SheetDesc = "",
+                itemO = "",
+                obTradeDesc = "",
+                isItemsAssigned = 0,
+                isRessourcesAssigned = 0,
+                boqStatus = ""
+            };
 
             var lstBoq = await GetBoqWithRessourcesAsync(input, costDB, 3);
 
@@ -1433,7 +1457,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public async Task<string> ExportExcelPackagesCost(int withBoq,string costDB, SearchInput input)
+        public async Task<string> ExportExcelPackagesCost(int withBoq,string costDB)
         {
             string excelName = "";
 
@@ -1519,8 +1543,6 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[r, 16].Value = "Comments";
                     worksheet.Column(16).Width = 50;
                     worksheet.Columns[16].Style.WrapText = true;
-                    //worksheet.Column(12).AutoFit();                   
-
                     worksheet.Row(r).Style.Font.Bold = true;
                 }
 
@@ -1538,7 +1560,7 @@ namespace AccApi.Repository.Managers
                     if (withBoq == 1)
                     {
                         var arr = new string[] { };
-                        SearchInput input1 = new SearchInput() { Package = (int)x.PkgeId, BOQDiv=arr, RESDiv =arr, RESType = arr, boqLevel2=arr, boqLevel3 = arr,
+                        SearchInput input = new SearchInput() { Package = (int)x.PkgeId, BOQDiv=arr, RESDiv =arr, RESType = arr, boqLevel2=arr, boqLevel3 = arr,
                             boqLevel4 = arr, boqResourceSeq=arr, BOQItem ="",
                             BOQDesc="",
                             RESDesc="",
@@ -1553,7 +1575,7 @@ namespace AccApi.Repository.Managers
                             boqStatus=""
                         };
                       
-        var lstBoq = await GetBoqWithRessourcesAsync(input1, costDB, 2);
+                        var lstBoq = await GetBoqWithRessourcesAsync(input, costDB, 4);
 
                         if (lstBoq != null)
                         {
@@ -1718,11 +1740,12 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[r, 15].Value = (y.BoqTotalPrice == null) ? "" : y.BoqTotalPrice;
                                 worksheet.Cells[r, 15].Style.Numberformat.Format = "#,##0.0";
                                 r++;
-                                    //}                               
+                                //}                               
                             }
                         }
                         //////////////
-                    }      
+                    }
+                    r++;
                 }
 
                 xlPackage.Save();
