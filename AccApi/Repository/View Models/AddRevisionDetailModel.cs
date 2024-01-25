@@ -24,4 +24,11 @@ namespace AccApi.Repository.View_Models
         public string? ParentItemO { get; set; }
         public int? ParentResourceId { get; set; }
     }
+
+    public class AddCondModel
+    {
+        public int Id { get; set; }
+        public string? CondValue { get; set; }
+        public string? ACCCondValue { get; set; }
+    }
 }

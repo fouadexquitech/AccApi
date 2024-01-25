@@ -317,7 +317,7 @@ namespace AccApi.Repository.Managers
                 return sent;
             }
         }
-        public bool UpdateCommercialConditions(int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
             {
@@ -349,7 +349,7 @@ namespace AccApi.Repository.Managers
 
                                         if (comcondId > 0)
                                         {
-                                            var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                            var comCondExist = _dbcontext.TblSuppComCondReplies.Where(x => x.CdComConId == comcondId && x.CdRevisionId == PackageSupliersRevisionID).FirstOrDefault();
                                             //int comcondIdExist = comCondExist.CdComConId == null ? 0 : comCondExist.CdComConId;
 
                                             if (comCondExist == null)
@@ -357,7 +357,7 @@ namespace AccApi.Repository.Managers
                                                 var SuppCom = new TblSuppComCondReply()
                                                 {
                                                     CdComConId = comcondId,
-                                                    CdPackageSupliersId = PackageSupliersID,
+                                                    CdRevisionId = PackageSupliersRevisionID,
                                                     CdSuppReply = reply
                                                 };
                                                 LstSuppComCondReply.Add(SuppCom);
@@ -390,7 +390,7 @@ namespace AccApi.Repository.Managers
             return true;
 
         }
-        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
             {
@@ -423,7 +423,7 @@ namespace AccApi.Repository.Managers
 
                                         if (condId > 0)
                                         {
-                                            var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcPackageSupliersId == PackageSupliersID).FirstOrDefault();
+                                            var comCondExist = _dbcontext.TblSuppTechCondReplies.Where(x => x.TcComConId == condId && x.TcRevisionId == PackageSupliersRevisionID).FirstOrDefault();
                                             bool comcondIdExist = (comCondExist != null);
 
                                             if (!comcondIdExist)
@@ -431,7 +431,7 @@ namespace AccApi.Repository.Managers
                                                 var SuppCom = new TblSuppTechCondReply()
                                                 {
                                                     TcComConId = condId,
-                                                    TcPackageSupliersId = PackageSupliersID,
+                                                    TcRevisionId = PackageSupliersRevisionID,
                                                     TcSuppReply = reply,
                                                     TcAccCond = AccCond
                                                 };

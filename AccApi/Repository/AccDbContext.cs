@@ -9,7 +9,6 @@ namespace AccApi.Repository
 {
     public partial class AccDbContext : DbContext
     {
-
         private readonly string _connectionString;
 
         public AccDbContext(string connectionString)
@@ -178,7 +177,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -2054,12 +2052,12 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSuppComCondReply>(entity =>
             {
-                entity.HasKey(e => new { e.CdPackageSupliersId, e.CdComConId });
+                entity.HasKey(e => new { e.CdRevisionId, e.CdComConId });
             });
 
             modelBuilder.Entity<TblSuppTechCondReply>(entity =>
             {
-                entity.HasKey(e => new { e.TcPackageSupliersId, e.TcComConId })
+                entity.HasKey(e => new { e.TcRevisionId, e.TcComConId })
                     .HasName("PK_tblSuppTechConReply");
             });
 

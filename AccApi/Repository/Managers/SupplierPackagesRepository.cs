@@ -21,7 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AccApi.Repository.Models.MasterModels;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
-
+using AccApi.Data_Layer;
 
 namespace AccApi.Repository.Managers
 {
@@ -456,28 +456,26 @@ namespace AccApi.Repository.Managers
             var t = await _dbcontext.Database.BeginTransactionAsync();
             try
             {
-                //string sent = "";
-                //string ComCondAttch = "";
-
+                string sent = "";
+                string ComCondAttch = "";
                 var AttachmentList = new List<string>();
 
                 var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
                 var proj = await _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
 
                 //Get User Email Signature
-                //User user = _logonRepository.GetUser(UserName);
-                //string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+                User user = _logonRepository.GetUser(UserName);
+                string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
                 int PackageSupplierId = 0;
-
                 List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
                 List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
                 AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
 
-                foreach (var item in supInputList)
+                foreach (var supInput in supInputList)
                 {
                     //1.Add PackageSupplier
-                    SupplierInput supplier = item.supplierInput;
+                    SupplierInput supplier = supInput.supplierInput;
 
                     if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                     {
@@ -523,23 +521,22 @@ namespace AccApi.Repository.Managers
                     }
 
                     var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
-                    var supPackRev= new TblSupplierPackageRevision();
-                    int rev1Id=0;
+                    var supPackRev = new TblSupplierPackageRevision();
+                    int rev1Id = 0;
 
-                    if  (Rev1 != null)
+                    if (Rev1 != null)
                     {
-                       supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency,PrExchRate= Rev1.PrExchRate };
-                       rev1Id = Rev1.PrRevId;
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate };
+                        rev1Id = Rev1.PrRevId;
                     }
-                    else 
-                    { 
-                       int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
-                       supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
-                       rev1Id = 0;
+                    else
+                    {
+                        int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                        rev1Id = 0;
                     }
                     _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
                     _dbcontext.SaveChanges();
-
 
                     //Get inserted Revison ID
                     var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
@@ -550,7 +547,10 @@ namespace AccApi.Repository.Managers
 
                     List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id);
 
+                    //Insert ComConditions Revision
+                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,supInput.technicalCondList);
 
+<<<<<<< HEAD
                   //2.2 Add RevisionModel    
                   revisionModelList.Add(new AddRevisionModel
                   {
@@ -585,10 +585,129 @@ namespace AccApi.Repository.Managers
                                            NewItemResourceId=d.NewItemResourceId
                                        }).ToList()
                   });                  
+=======
+
+                    //2.2 Add RevisionModel    
+                    revisionModelList.Add(new AddRevisionModel
+                    {
+                        PrRevId = Rev0.PrRevId,
+                        PrRevNo = Rev0.PrRevNo,
+                        PrRevDate = Rev0.PrRevDate,
+                        PrTotPrice = Rev0.PrTotPrice,
+                        PrPackSuppId = Rev0.PrPackSuppId,
+                        PrCurrency = Rev0.PrCurrency,
+                        PrExchRate = 1,
+                        StatusId = 1,
+                        ProjectCode = proj.PrjCode,
+                        IsSynched = false,
+                        RevisionDetails = (from d in LstRevDetails
+                                           join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
+                                           select new AddRevisionDetailModel
+                                           {
+                                               BoqResourceSeq = d.RdResourceSeq,
+                                               ResourceDescription = ByBoq == 1 ? null : GetRessourceDescription(d.RdResourceSeq),
+                                               ItemO = d.RdBoqItem,
+                                               ItemDescription = o.DescriptionO,
+                                               Quantity = d.RdQty,
+                                               UnitPrice = d.RdPrice,
+                                               TotalPrice = (d.RdQty) * (d.RdPrice),
+                                               DiscountPerc = 0,
+                                               Comments = "",
+                                               CreatedOn = DateTime.Now,
+                                               IsSynched = false,
+                                               ProjectCode = proj.PrjCode,
+                                               ParentItemO = d.ParentItemO,
+                                               ParentResourceId = d.ParentResourceId
+                                           }).ToList(),
+                        CommercialConditions= (from d in LstComCondReply
+                                               select new AddCondModel
+                                               {
+                                                   Id = d.CdComConId,
+                                                   CondValue = d.CdSuppReply,
+                                                   ACCCondValue=d.CdAccCond
+                                               }).ToList()
+                    });
+
+
+                    //Send Email with Attachments to this Supplier
+                    AttachmentList.Clear();
+                    AttachmentList.Add(supInput.FilePath);
+                    if (supInput.mailAttachments != null)
+                    {
+                        foreach (var attach in supInput.mailAttachments)
+                        {
+                            AttachmentList.Add(attach);
+                        }
+                    }
+
+                    //if (supInput.comercialCondList.Count > 0)
+                    //{
+                    //    if (ComCondAttch == "")
+                    //        ComCondAttch = SendComercialConditions(packId, supInput.comercialCondList);
+
+                    //    AttachmentList.Add(ComCondAttch);
+                    //}
+
+
+                    //send email
+                    string SupEmail = (from r in _mdbContext.TblSuppliers
+                                       where r.SupCode == supplier.supID
+                                       select r.SupEmail).First<string>();
+
+                    if (SupEmail != "")
+                    {
+                        List<string> mylistTo = new List<string>();
+                        mylistTo.Add(SupEmail);
+
+                        List<string> mylistCC = new List<string>();
+                        if (supInput.mailCC != null)
+                        {
+                            foreach (var ccMail in supInput.mailCC)
+                            {
+                                mylistCC.Add(ccMail);
+                            }
+                        }
+
+                        List<string> mylistBCC = new List<string>();
+                        if (user.UsrEmail != "")
+                            mylistBCC.Add(user.UsrEmail);
+
+                        string Subject = "Procurement";
+
+                        string MailBody;
+
+                        if (supInput.EmailTemplate != "")
+                        {
+                            MailBody = supInput.EmailTemplate;
+                        }
+                        else
+                        {
+                            MailBody = "Dear Sir,";
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += "Kindly find attachments , and fill the price ";
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += Environment.NewLine;
+                            MailBody += "Best regards";
+                        }
+
+                        if (userSignature != "")
+                        {
+                            MailBody += @"<br><br>";
+                            MailBody += userSignature;
+                        }
+
+                        Mail m = new Mail();
+                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+                    }
+>>>>>>> fa2f835fd22ae856ee2883cbdf67c27624b08087
                 }
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
                 supplierPackageRevisionModel.RevisionModels = revisionModelList;
+
 
                 //Post the portal API (Create supplier package and revision on portal)
                 var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
@@ -702,7 +821,11 @@ namespace AccApi.Repository.Managers
                                 RdMissedPrice = 0,
                                 RdDiscount = discount,
                                 RdAddedItem = 0,
-                                ParentItemO="",
+                                IsAlternative = false,
+                                IsNew = false,
+                                NewItemId = 0,
+                                NewItemResourceId = 0,
+                                ParentItemO ="",
                                 ParentResourceId=0
                             };
                             LstRevDetails.Add(revdtl);
@@ -743,6 +866,10 @@ namespace AccApi.Repository.Managers
                                 RdMissedPrice = 0,
                                 RdDiscount = discount,
                                 RdAddedItem = 0,
+                                IsAlternative = false,
+                                IsNew = false,
+                                NewItemId = 0,
+                                NewItemResourceId = 0,
                                 ParentItemO = "",
                                 ParentResourceId = 0
                             };
@@ -761,6 +888,65 @@ namespace AccApi.Repository.Managers
             return LstRevDetails;
         }
 
+        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList, List<Condition> techCondList)
+        {
+            List<TblSuppComCondReply> LstComCondReply = new List<TblSuppComCondReply>();
+
+            if (rev1Id > 0)  //In case of previous revision exists , so you have to insert new details from pervious
+            {
+                var oldRevDtl = _dbcontext.TblSuppComCondReplies.Where(x => x.CdRevisionId == rev1Id).ToList();
+                if (oldRevDtl != null)
+                {
+                    foreach (var row in oldRevDtl)
+                    {
+                        var ComCondReply = new TblSuppComCondReply()
+                        {
+                            CdRevisionId = revId,
+                            CdComConId = row.CdComConId,
+                            CdSuppReply = row.CdSuppReply,
+                            CdAccCond = row.CdAccCond
+                        };
+                        LstComCondReply.Add(ComCondReply);
+                    }
+
+                    var newConditions = comCondList.Where(s => !oldRevDtl.Where(es => es.CdComConId == s.id).Any());
+                    foreach (var row in newConditions)
+                    {
+                        var ComCondReply = new TblSuppComCondReply()
+                        {
+                            CdRevisionId = revId,
+                            CdComConId = row.id,
+                            CdSuppReply = "",
+                            CdAccCond = row.ACCCondValue
+                        };
+                        LstComCondReply.Add(ComCondReply);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var comCond in comCondList)
+                {
+                    var ComCondReply = new TblSuppComCondReply()
+                    {
+                        CdRevisionId = revId,
+                        CdComConId = comCond.id,
+                        CdSuppReply = "",
+                        CdAccCond = comCond.ACCCondValue
+                    };
+                    LstComCondReply.Add(ComCondReply);
+                }
+            }
+
+            if (LstComCondReply.Count() > 0)
+            {
+                await _dbcontext.AddRangeAsync(LstComCondReply);
+                await _dbcontext.SaveChangesAsync();
+            }
+
+            return LstComCondReply;
+        }
+
         public int GetMaxRevisionNumber(int PackageSupplierId)
         {
             var query = _dbcontext.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
@@ -768,7 +954,7 @@ namespace AccApi.Repository.Managers
             return (int)MaxRevisionNumber;
         }
 
-        public string SendComercialConditions(int packId, List<ComercialCond> comCondList)
+        public string SendComercialConditions(int packId, List<Condition> comCondList)
         {
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = package.PkgeName;

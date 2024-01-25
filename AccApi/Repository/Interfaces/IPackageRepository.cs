@@ -12,7 +12,7 @@ namespace AccApi.Repository.Interfaces
         List<BoqModel> GetBoqList(string ItemO, SearchInput input); 
         List<BoqModel> GetAllBoqList(SearchInput input);
         Task<string> ExportBoqExcel(SearchInput input, string costDB);
-        Task<string> ExportNotAssigned(SearchInput input, string costDB);
+        Task<string> ExportNotAssigned(string costDB);
         public bool updateOriginalBoqQty(OriginalBoqModel boq);
         public bool updateBoqResQty(BoqModel res);
         public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList);
@@ -24,7 +24,7 @@ namespace AccApi.Repository.Interfaces
         bool AddPackage(List<Package> packs);
         bool UpdatePackage(Package pack);
         bool DeletePackage(int id);
-        Task<string> ExportExcelPackagesCost(int withBoq,string costDB, SearchInput input);
+        Task<string> ExportExcelPackagesCost(int withBoq,string costDB);
         Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(DataTablesRequest dtRequest);
     }
 }

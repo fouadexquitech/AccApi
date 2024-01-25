@@ -12,12 +12,14 @@ namespace AccApi.Repository.Models
     public partial class TblSuppComCondReply
     {
         [Key]
-        [Column("cdPackageSupliersID")]
-        public int CdPackageSupliersId { get; set; }
+        [Column("cdRevisionId")]
+        public int CdRevisionId { get; set; }
         [Key]
         [Column("cdComConID")]
         public int CdComConId { get; set; }
         [Column("cdSuppReply")]
         public string CdSuppReply { get; set; }
+        [Column("cdAccCond")]
+        public string CdAccCond { get; set; }
     }
 }
