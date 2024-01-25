@@ -547,8 +547,12 @@ namespace AccApi.Repository.Managers
 
                     List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id);
 
-                    //Insert ComConditions Revision
-                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,supInput.technicalCondList);
+                    //Insert ComConditions Conditions Revision
+                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList);
+
+                    //Insert Technical Conditions Revision
+                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList);
+
 
                     //2.2 Add RevisionModel    
                     revisionModelList.Add(new AddRevisionModel
@@ -588,6 +592,13 @@ namespace AccApi.Repository.Managers
                                                    Id = d.CdComConId,
                                                    CondValue = d.CdSuppReply,
                                                    ACCCondValue=d.CdAccCond
+                                               }).ToList(),
+                        TechnicalConditions = (from d in LstTechCondReply
+                                               select new AddCondModel
+                                                {
+                                                    Id = d.TcComConId,
+                                                    CondValue = d.TcSuppReply,
+                                                    ACCCondValue = d.TcAccCond
                                                }).ToList()
                     });
 
@@ -850,7 +861,7 @@ namespace AccApi.Repository.Managers
             return LstRevDetails;
         }
 
-        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList, List<Condition> techCondList)
+        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList)
         {
             List<TblSuppComCondReply> LstComCondReply = new List<TblSuppComCondReply>();
 
@@ -907,6 +918,65 @@ namespace AccApi.Repository.Managers
             }
 
             return LstComCondReply;
+        }
+
+        private async Task<List<TblSuppTechCondReply>> InsertTechnicalConditions(int revId, int packId, int rev1Id,List<Condition> techCondList)
+        {
+            List<TblSuppTechCondReply> LsttechCondReply = new List<TblSuppTechCondReply>();
+
+            if (rev1Id > 0)  //In case of previous revision exists , so you have to insert new details from pervious
+            {
+                var oldRevDtl = _dbcontext.TblSuppComCondReplies.Where(x => x.CdRevisionId == rev1Id).ToList();
+                if (oldRevDtl != null)
+                {
+                    foreach (var row in oldRevDtl)
+                    {
+                        var ComCondReply = new TblSuppTechCondReply()
+                        {
+                            TcRevisionId = revId,
+                            TcComConId = row.CdComConId,
+                            TcSuppReply = row.CdSuppReply,
+                            TcAccCond = row.CdAccCond
+                        };
+                        LsttechCondReply.Add(ComCondReply);
+                    }
+
+                    var newConditions = techCondList.Where(s => !oldRevDtl.Where(es => es.CdComConId == s.id).Any());
+                    foreach (var row in newConditions)
+                    {
+                        var ComCondReply = new TblSuppTechCondReply()
+                        {
+                            TcRevisionId = revId,
+                            TcComConId = row.id,
+                            TcSuppReply = "",
+                            TcAccCond = row.ACCCondValue
+                        };
+                        LsttechCondReply.Add(ComCondReply);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var comCond in techCondList)
+                {
+                    var ComCondReply = new TblSuppTechCondReply()
+                    {
+                        TcRevisionId = revId,
+                        TcComConId = comCond.id,
+                        TcSuppReply = "",
+                        TcAccCond = comCond.ACCCondValue
+                    };
+                    LsttechCondReply.Add(ComCondReply);
+                }
+            }
+
+            if (LsttechCondReply.Count() > 0)
+            {
+                await _dbcontext.AddRangeAsync(LsttechCondReply);
+                await _dbcontext.SaveChangesAsync();
+            }
+
+            return LsttechCondReply;
         }
 
         public int GetMaxRevisionNumber(int PackageSupplierId)
