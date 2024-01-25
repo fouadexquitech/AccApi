@@ -591,14 +591,16 @@ namespace AccApi.Repository.Managers
                                                {
                                                    Id = d.CdComConId,
                                                    CondValue = d.CdSuppReply,
-                                                   ACCCondValue=d.CdAccCond
+                                                   ACCCondValue=d.CdAccCond,
+                                                   ProjectCode = proj.PrjCode
                                                }).ToList(),
                         TechnicalConditions = (from d in LstTechCondReply
                                                select new AddCondModel
                                                 {
                                                     Id = d.TcTechConId,
                                                     CondValue = d.TcSuppReply,
-                                                    ACCCondValue = d.TcAccCond
+                                                    ACCCondValue = d.TcAccCond,
+                                                    ProjectCode = proj.PrjCode
                                                }).ToList()
                     });
 

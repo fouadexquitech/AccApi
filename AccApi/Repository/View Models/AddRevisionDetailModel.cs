@@ -30,5 +30,6 @@ namespace AccApi.Repository.View_Models
         public int Id { get; set; }
         public string? CondValue { get; set; }
         public string? ACCCondValue { get; set; }
+        public string? ProjectCode { get; set; }
     }
 }
