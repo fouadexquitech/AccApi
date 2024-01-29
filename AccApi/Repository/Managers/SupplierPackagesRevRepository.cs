@@ -152,5 +152,6 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
+
     }
 }

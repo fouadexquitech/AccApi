@@ -589,6 +589,49 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
+
+        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid)
+        {
+            var comcond = (from b in _mdbcontext.TblComConds
+                           select b).ToList();
+
+            var result = (from b in comcond
+                          join a in _dbcontext.TblSuppComCondReplies on b.CmSeq equals a.CdComConId
+                          //join c in _dbcontext.TblSupplierPackageRevisions on a.CdRevisionId equals c.PrRevId
+                          //join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                          where (a.CdRevisionId == revisionid)
+                          select new ConditionsReply
+                          {
+                              condId = a.CdComConId,
+                              condDesc = b.CmDescription,
+                              condReply = a.CdSuppReply,
+                              accCondValue=a.CdAccCond
+                          });
+
+            return result.ToList();
+        }
+
+        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid)
+        {
+            var cond = (from b in _mdbcontext.TblTechConds
+                           select b).ToList();
+
+            var result = (from b in cond
+                          join a in _dbcontext.TblSuppTechCondReplies on b.TcSeq equals a.TcTechConId
+                          //join c in _dbcontext.TblSupplierPackageRevisions on a.CdRevisionId equals c.PrRevId
+                          //join d in _dbcontext.TblSuppliers on c.SpSupplierId equals d.SupCode
+                          where (a.TcRevisionId == revisionid)
+                          select new ConditionsReply
+                          {
+                              condId = a.TcTechConId,
+                              condDesc = b.TcDescription,
+                              condReply = a.TcSuppReply,
+                              accCondValue = a.TcAccCond
+                          });
+
+            return result.ToList();
+        }
+
     }
 }
 

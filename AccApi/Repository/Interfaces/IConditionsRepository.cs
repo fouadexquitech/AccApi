@@ -26,6 +26,7 @@ namespace AccApi.Repository.Interfaces
         bool AddTechConditions(TechConditions techcond);
         bool UpdateTechConditions(TechConditions techcond);
         bool DelTechConditions( int id);
-
+        List<ConditionsReply> GetComCondReplyByRevision(int revisionid);
+        List<ConditionsReply> GetTechCondReplyByRevision(int revisionid);
     }
 }

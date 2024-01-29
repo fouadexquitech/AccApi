@@ -14,7 +14,7 @@ namespace AccApi.Repository.View_Models
         public string condReply { get; set; }
         public int supId { get; set; }
         public string supName { get; set; }
-
+        public string accCondValue { get; set; }
 
     }
 

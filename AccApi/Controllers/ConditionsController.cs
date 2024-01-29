@@ -319,6 +319,33 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpGet("GetComCondReplyByRevision")]
+        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid)
+        {
+            try
+            {
+                return this._conditionsRepository.GetComCondReplyByRevision(revisionid);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        [HttpGet("GetTechCondReplyByRevision")]
+        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid)
+        {
+            try
+            {
+                return this._conditionsRepository.GetTechCondReplyByRevision(revisionid);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
 
     }
 }
