@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using AccApi.Repository.Models.MasterModels;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 using AccApi.Data_Layer;
+using System.Reflection.Emit;
 
 namespace AccApi.Repository.Managers
 {
@@ -626,9 +627,11 @@ namespace AccApi.Repository.Managers
 
 
                     //send email
-                    string SupEmail = (from r in _mdbContext.TblSuppliers
-                                       where r.SupCode == supplier.supID
-                                       select r.SupEmail).First<string>();
+                    string SupEmail = "";
+                    var Sup = _mdbContext.TblSuppliers.Where(s => s.SupCode == supplier.supID).FirstOrDefault();
+
+                    if (Sup != null)
+                        SupEmail = Sup.SupEmail;
 
                     if (SupEmail != "")
                     {

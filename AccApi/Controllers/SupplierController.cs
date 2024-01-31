@@ -38,6 +38,20 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpGet("GetSupplierList_NotAssignetPackage")]
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID)
+        {
+            try
+            {
+                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpPost("GetSuppliers")]
         public IActionResult GetSuppliers(dynamic dataTablesParameters)
         {

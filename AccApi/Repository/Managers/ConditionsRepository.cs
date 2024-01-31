@@ -90,6 +90,21 @@ namespace AccApi.Repository.Managers
 
             return result.ToList();
         }
+
+        public List<TechConditions> GetTechConditionsByPackage(int packId, string? filter)
+        {
+            var techCond = (from b in _mdbcontext.TblTechConds.Where(x=> x.TcPackId==packId).OrderBy(p=>p.TcDescription)
+                            select new TechConditions
+                            {
+                                TcDescription = b.TcDescription,
+                                TcPackId = b.TcPackId,
+                                TcSeq = b.TcSeq
+                            }).ToList();
+
+
+            return techCond;
+        }
+
         public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
         {
             //var comcond = (from b in _mdbcontext.TblComConds

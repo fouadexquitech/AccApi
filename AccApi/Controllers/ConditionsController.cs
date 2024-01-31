@@ -83,8 +83,6 @@ namespace AccApi.Controllers
             }
         }
 
-
-
         [HttpGet("GetTechConditions")]
         public List<TechConditions> GetTechConditions(int packId, string? filter)
         {
@@ -98,6 +96,22 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetTechConditionsByPackage")]
+        public List<TechConditions> GetTechConditionsByPackage(int packId, string? filter)
+        {
+            try
+            {
+                return this._conditionsRepository.GetTechConditionsByPackage(packId, filter);
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        
 
         [HttpPost("AddTechConditions")]
         public bool AddTechConditions(TechConditions techcond)

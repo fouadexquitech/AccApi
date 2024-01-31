@@ -8,6 +8,7 @@ namespace AccApi.Repository.Interfaces
     public interface ISupplierRepository
     {
         List<Supplier> SupplierList(int packID);
+        
         DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest);
 
         bool AddSupplier(List<Supplier> sups);
@@ -15,5 +16,7 @@ namespace AccApi.Repository.Interfaces
         bool DeleteSupplier(int id);
 
         Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model);
+
+        List<Supplier> GetSupplierList_NotAssignetPackage(int packID);
     }
 }

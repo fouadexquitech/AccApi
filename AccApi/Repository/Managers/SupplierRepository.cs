@@ -59,6 +59,44 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID)
+        {
+            //Models.MasterModels.TblPackage package = (from p in _mdbcontext.TblPackages
+            //                                          where p.PkgeId == packID
+            //                                          select p).First();
+
+            //var results=from b in _mdbcontext.TblSuppliers
+            //           join d in _mdbcontext.TblSupplierDivs
+            //           on b.SupCode  equals d.SupCode
+            //           where d.SupDiv == package.Division
+            //            orderby b.SupName
+            //           select new Supplier
+            //           {
+            //               SupID = b.SupCode,
+            //               SupName = b.SupName,
+            //               SupEmail=b.SupEmail
+            //           };
+
+            var supPackageList = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packID).Select(p=> p.SpSupplierId).ToList();
+            //              orderby b.SupName
+            //              select new Supplier
+            //              {
+            //                  SupID = b.SupCode,
+            //                  SupName = b.SupName,
+            //                  SupEmail = b.SupEmail
+            //              };
+
+            var results = (from b in _mdbcontext.TblSuppliers.Where(s => !supPackageList.Contains(s.SupCode)).ToList()                  
+                          select new Supplier
+                          {
+                              SupID = b.SupCode,
+                              SupName = b.SupName,
+                              SupEmail = b.SupEmail
+                          }).ToList(); 
+
+            return results.OrderBy(x=> x.SupName).ToList();
+        }
+
         public DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest)
         {
 
