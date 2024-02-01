@@ -13,7 +13,7 @@ namespace AccApi.Repository.Interfaces
 {
     public interface IRevisionDetailsRepository
     {
-        List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource);
+        List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource);
         bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate, double discount, byte addedItem);
         bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList);
         bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList,bool isPercent);

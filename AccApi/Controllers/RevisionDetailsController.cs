@@ -43,7 +43,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetRevisionDetails")]
-        public List<RevisionDetailsList> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
+        public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
         {
             try
             {
