@@ -54,8 +54,8 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            var results = from b in _dbcontext.TblSupplierPackages
-                          join c in supList on b.SpSupplierId equals c.SupCode
+            var results = from c in supList 
+                          join b in _dbcontext.TblSupplierPackages on c.SupCode equals b.SpSupplierId
                           where b.SpPackSuppId == spId
                           orderby b.SpPackSuppId
                           select new SupplierPackagesList
