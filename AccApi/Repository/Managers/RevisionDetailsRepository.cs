@@ -3561,5 +3561,22 @@ var levels = revDtlQry.Select(x => new LevelModel
             return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
         }
 
+        public List<AcceptComment> GetRevisionAcceptance(int revId)
+        {
+            var result = (from  a in _dbContext.AcceptanceComments
+            join b in _dbContext.RevisionAcceptanceComments on a.Id equals b.AcceptanceCommentId into gr
+            from subpet in gr.DefaultIfEmpty()
+
+            select new AcceptComment
+            {
+              acRevId = revId,
+              acId =  a.Id,         
+              acCaption=a.Caption,
+              acChecked= (subpet.AcceptanceCommentId == null ) ? false : true
+            }).ToList();
+
+            return result;
+        }
+
     }
 }

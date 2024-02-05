@@ -418,5 +418,19 @@ namespace AccApi.Controllers
         //    }
         //}
 
+
+        [HttpPost("GetRevisionAcceptance")]
+        public List<AcceptComment> GetRevisionAcceptance(int revId)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.GetRevisionAcceptance(revId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
     }
 }
