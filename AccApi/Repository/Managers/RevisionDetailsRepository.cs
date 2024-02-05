@@ -205,7 +205,7 @@ namespace AccApi.Repository.Managers
 
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
-        }
+            }
             else
             {
                 revDtlQry = (from cur in curList
@@ -263,7 +263,10 @@ namespace AccApi.Repository.Managers
                                       join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                                       join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                       join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                      join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
+                                      join item in _dbContext.NewItems on b.NewItemId equals item.Id
+                                      join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
+                                      //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
+                                      //join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
                                       where b.RdRevisionId == RevisionId
 
                                       select new RevisionDetailsList
@@ -273,8 +276,8 @@ namespace AccApi.Repository.Managers
                                           RdPrice = b.RdPrice,
                                           RdMissedPrice = b.RdMissedPrice,
                                           RdBoqItem = b.RdBoqItem,
-                                          RdBoqItemDescription = "",
-                                          RdItemDescription = item.ResourceDescription,
+                                          RdBoqItemDescription = b.ItemDescription,
+                                          RdItemDescription = b.ResourceDescription,
                                           RdQty = b.RdQty,
                                           RdUnitRate = b.RdPrice,
                                           RdTotalBudget = (b.RdQty) * (b.RdPrice),
@@ -294,7 +297,7 @@ namespace AccApi.Repository.Managers
                                           NewItemResourceId = b.NewItemResourceId,
                                           ParentItemO = b.ParentItemO,
                                           ParentResourceId = b.ParentResourceId,
-                                          Unit = item.ResourceUnit,
+                                          Unit = newr.ResourceUnit,
                                           Comments = b.RdComment,
                                           L1 = item.L1,
                                           L2 = item.L2,
@@ -312,10 +315,11 @@ namespace AccApi.Repository.Managers
                                                join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                               join d in _dbContext.TblBoqs on b.ParentResourceId equals d.BoqSeq
-                                               join o in _dbContext.TblOriginalBoqs on d.BoqItem equals o.ItemO
-                                               join e in _dbContext.TblResources on d.BoqResSeq equals e.ResSeq
-                                               where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
+                                               join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+                                               join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
+                                               //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
+                                               //join n in _dbContext.NewItems on b.NewItemId equals n.Id
+                                               where b.RdRevisionId == RevisionId
 
                                                select new RevisionDetailsList
                                                {
@@ -324,8 +328,8 @@ namespace AccApi.Repository.Managers
                                                    RdPrice = b.RdPrice,
                                                    RdMissedPrice = b.RdMissedPrice,
                                                    RdBoqItem = b.RdBoqItem,
-                                                   RdBoqItemDescription = "",
-                                                   RdItemDescription = e.ResDescription,
+                                                   RdBoqItemDescription = b.ItemDescription,
+                                                   RdItemDescription = b.ResourceDescription,
                                                    RdQty = b.RdQty,
                                                    RdUnitRate = b.RdPrice,
                                                    RdTotalBudget = (b.RdQty) * (b.RdPrice),
@@ -391,6 +395,7 @@ var levels = revDtlQry.Select(x => new LevelModel
                     {
                         RdRevisionId = x.RdRevisionId,
                         RdBoqItem = x.IsAlternative.HasValue && x.IsAlternative.Value ? (x.RdBoqItem + "-a" + x.RdRevisionId) : x.RdBoqItem,
+                        RdBoqItemDescription=x.RdBoqItemDescription,
                         RdItemDescription = x.RdItemDescription,
                         Unit = x.Unit,
                         RdQty = x.RdQty,

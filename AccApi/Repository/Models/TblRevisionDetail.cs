@@ -60,5 +60,7 @@ namespace AccApi.Repository.Models
         public string ParentItemO { get; set; }
         [Column("parentResourceId")]
         public int? ParentResourceId { get; set; }
+        public string ResourceDescription { get; set; }
+        public string ItemDescription { get; set; }
     }
 }
