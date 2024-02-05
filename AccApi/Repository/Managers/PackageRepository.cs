@@ -1086,37 +1086,40 @@ namespace AccApi.Repository.Managers
                     worksheet.Column(1).Width = 20;
                     worksheet.Cells[i, 2].Value = "Description";
                     worksheet.Column(2).Width = 50;
+                    worksheet.Cells[i, 3].Value = "Ressource";
+                    worksheet.Column(3).Width = 50;
                     //worksheet.Columns[2].Style.WrapText = true;
                     //worksheet.Column(2).AutoFit();
-                    worksheet.Cells[i, 3].Value = "Unit";
-                    worksheet.Cells[i, 4].Value = "Type";
-                    worksheet.Cells[i, 5].Value = "Qty";
-                    worksheet.Cells[i, 6].Value = "Unit Price";
-                    worksheet.Cells[i, 7].Value = "Total Price";
-                    worksheet.Cells[i, 8].Value = "Div";
-                    worksheet.Cells[i, 9].Value = "Level 1";
-                    worksheet.Column(9).Width = 30;
-                    worksheet.Cells[i, 10].Value = "Level 2";
+                    worksheet.Cells[i, 4].Value = "Unit";
+                    worksheet.Cells[i, 5].Value = "Type";
+                    worksheet.Cells[i, 6].Value = "Qty";
+                    worksheet.Cells[i, 7].Value = "Unit Price";
+                    worksheet.Cells[i, 8].Value = "Total Price";
+                    worksheet.Cells[i, 9].Value = "Div";
+                    worksheet.Cells[i, 10].Value = "Level 1";
                     worksheet.Column(10).Width = 30;
-                    worksheet.Cells[i, 11].Value = "Level 3";
+                    worksheet.Cells[i, 11].Value = "Level 2";
                     worksheet.Column(11).Width = 30;
+                    worksheet.Cells[i, 12].Value = "Level 3";
+                    worksheet.Column(12).Width = 30;
 
                     i = 4;
                     foreach (var x in lstBoq)
                     {
                         worksheet.Cells[i, 1].Value = (x.ItemO == null) ? "" : x.ItemO;
-                        worksheet.Cells[i, 2].Value = (x.ResDescription == null) ? "" : x.ResDescription;
-                        worksheet.Cells[i, 3].Value = (x.BoqUnitMesure == null) ? "" : x.BoqUnitMesure;
-                        worksheet.Cells[i, 4].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
-                        worksheet.Cells[i, 5].Value = (x.BoqQty == null) ? "" : x.BoqQty;
-                        worksheet.Cells[i, 6].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
-                        worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 7].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
+                        worksheet.Cells[i, 2].Value = (x.ItemO == null) ? "" : x.DescriptionO;
+                        worksheet.Cells[i, 3].Value = (x.ResDescription == null) ? "" : x.ResDescription;
+                        worksheet.Cells[i, 4].Value = (x.BoqUnitMesure == null) ? "" : x.BoqUnitMesure;
+                        worksheet.Cells[i, 5].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
+                        worksheet.Cells[i, 6].Value = (x.BoqQty == null) ? "" : x.BoqQty;
+                        worksheet.Cells[i, 7].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
                         worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 8].Value = (x.BoqDiv == null) ? "" : x.BoqDiv;
-                        worksheet.Cells[i, 9].Value = (x.l1 == null) ? "" : x.l1;
-                        worksheet.Cells[i, 10].Value = (x.l2 == null) ? "" : x.l2;
-                        worksheet.Cells[i, 11].Value = (x.l3 == null) ? "" : x.l3;
+                        worksheet.Cells[i, 8].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
+                        worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 9].Value = (x.BoqDiv == null) ? "" : x.BoqDiv;
+                        worksheet.Cells[i, 10].Value = (x.l1 == null) ? "" : x.l1;
+                        worksheet.Cells[i, 11].Value = (x.l2 == null) ? "" : x.l2;
+                        worksheet.Cells[i, 12].Value = (x.l3 == null) ? "" : x.l3;
                         i++;
                     }
 
