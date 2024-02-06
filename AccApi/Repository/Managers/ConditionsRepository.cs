@@ -492,7 +492,7 @@ namespace AccApi.Repository.Managers
         {
             foreach (var item in cond)
             {
-                var result = new TblComCond { CmDescription=item.CmDescription,CmSelected=0};
+                var result = new TblComCond { CmDescription=item.cmDescription,CmSelected=0};
                 _mdbcontext.Add<TblComCond>(result);
                 _mdbcontext.SaveChanges();
             }
@@ -501,8 +501,8 @@ namespace AccApi.Repository.Managers
         }
         public bool UpdateComConditions(ComConditions cond)
         {
-            var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == cond.CmSeq).FirstOrDefault();
-            result.CmDescription = cond.CmDescription;
+            var result = _mdbcontext.TblComConds.Where(x => x.CmSeq == cond.cmSeq).FirstOrDefault();
+            result.CmDescription = cond.cmDescription;
             result.CmSelected = 0;
            
             if (result != null)
