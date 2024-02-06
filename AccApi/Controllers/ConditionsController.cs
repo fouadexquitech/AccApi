@@ -28,11 +28,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditions")]
-        public List<ComConditions> GetComConditions()
+        public List<ComConditions> GetComConditions(int revId)
         {
             try
             {
-                return this._conditionsRepository.GetComConditions();
+                return this._conditionsRepository.GetComConditions( revId);
             }
             catch (Exception ex)
             {
@@ -216,10 +216,10 @@ namespace AccApi.Controllers
             try
             {
 
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetComConditions().Select(x => new DisplayCondition
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetComConditions(0).Select(x => new DisplayCondition
                 {
-                    Id = x.CmSeq,
-                    Description = x.CmDescription,
+                    Id = x.cmSeq,
+                    Description = x.cmDescription,
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
