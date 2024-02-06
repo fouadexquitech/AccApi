@@ -640,16 +640,24 @@ namespace AccApi.Repository.Managers
                 //}
                 //_context.SaveChanges();
 
+                //AH06022024
+                //var lstBoqo = (from a in input.AssignOriginalBoqList
+                //               join b in _context.TblOriginalBoqs on a.RowNumber equals b.RowNumber
+                //               select b).ToList();
                 var lstBoqo = (from a in input.AssignOriginalBoqList
-                               join b in _context.TblOriginalBoqs on a.RowNumber equals b.RowNumber
+                               join b in _context.TblOriginalBoqs on a.ItemO equals b.ItemO
                                select b).ToList();
 
-                foreach (var item in input.AssignOriginalBoqList)
+                //AH06022024
+                if (lstBoqo != null)
                 {
-                    lstBoqo.Where(d => d.RowNumber == item.RowNumber).First().Scope = item.Scope;
+                    foreach (var item in input.AssignOriginalBoqList)
+                    {
+                        lstBoqo.Where(d => d.ItemO == item.ItemO).First().Scope = item.Scope;
+                    }
+                    _context.TblOriginalBoqs.UpdateRange(lstBoqo);
+                    _context.SaveChanges();
                 }
-                _context.TblOriginalBoqs.UpdateRange(lstBoqo);
-                _context.SaveChanges();
             }
 
             if (input.AssignBoqList != null)
