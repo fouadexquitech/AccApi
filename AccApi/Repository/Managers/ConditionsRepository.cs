@@ -36,18 +36,24 @@ namespace AccApi.Repository.Managers
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-
-        public List<ComConditions> GetComConditions()
+        public List<ComConditions> GetComConditions(int revId)
         {
             var result = from b in _mdbcontext.TblComConds
                          select new ComConditions
                          {
-                             CmSeq = b.CmSeq,
-                             CmDescription = b.CmDescription
+                             cmSeq = b.CmSeq,
+                             cmDescription = b.CmDescription,
+                             cmAccCondValue=""
                          };
+
+            //if (revId>0)
+            //{
+            //    var comCondReply=_dbcontext.TblSuppComCondReplies.Where()
+            //}
 
             return result.ToList();
         }
+
         public List<TechConditions> GetTechConditions(int packId, string? filter)
         {
             var techCond = (from b in _mdbcontext.TblTechConds
@@ -134,6 +140,7 @@ namespace AccApi.Repository.Managers
 
             return list;
         }
+
         public List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID)
         {        
             var param1 = new SqlParameter("@PackageID", PackageID);
