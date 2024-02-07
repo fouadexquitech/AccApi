@@ -167,7 +167,7 @@ namespace AccApi.Repository.Managers
                                                    RdPrice = b.RdPrice,
                                                    RdMissedPrice = b.RdMissedPrice,
                                                    RdBoqItem = b.RdBoqItem,
-                                                   RdItemDescription = o.DescriptionO,
+                                                   RdItemDescription = b.ItemDescription,
                                                    RdQty = b.RdQty,
                                                    RdUnitRate = o.UnitRate,
                                                    RdTotalBudget = o.Submitted,
@@ -3563,16 +3563,25 @@ var levels = revDtlQry.Select(x => new LevelModel
 
         public List<AcceptComment> GetRevisionAcceptance(int revId)
         {
-            var result = (from  a in _dbContext.AcceptanceComments
-            join b in _dbContext.RevisionAcceptanceComments on a.Id equals b.AcceptanceCommentId into gr
-            from subpet in gr.DefaultIfEmpty()
+            var acceptanceComments = _dbContext.AcceptanceComments.Where(x=>x.Enabled == true).ToList();
+            var revAcceptanceComments = _dbContext.RevisionAcceptanceComments.Where(x => x.RevisionId == revId).ToList();
+            //var result = (from  a in _dbContext.AcceptanceComments
+            //join b in _dbContext.RevisionAcceptanceComments on a.Id equals b.AcceptanceCommentId into gr
+            //from subpet in gr.DefaultIfEmpty()
 
-            select new AcceptComment
-            {
-              acRevId = revId,
-              acId =  a.Id,         
-              acCaption=a.Caption,
-              acChecked= (subpet.AcceptanceCommentId == null ) ? false : true
+            //select new AcceptComment
+            //{
+            //  acRevId = revId,
+            //  acId =  a.Id,         
+            //  acCaption=a.Caption,
+            //  acChecked= (subpet.AcceptanceCommentId == null ) ? false : true
+            //}).ToList();
+
+            var result = acceptanceComments.Select(x => new AcceptComment { 
+                acCaption = x.Caption,
+                acId = x.Id,
+                acRevId = revId,
+                acChecked = revAcceptanceComments.FirstOrDefault(y=>y.AcceptanceCommentId == x.Id) != null? true : false,
             }).ToList();
 
             return result;
