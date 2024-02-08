@@ -28,11 +28,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditions")]
-        public List<ComConditions> GetComConditions(int revId)
+        public List<ComConditions> GetComConditions(int revisionId)
         {
             try
             {
-                return this._conditionsRepository.GetComConditions( revId);
+                return this._conditionsRepository.GetComConditions(revisionId);
             }
             catch (Exception ex)
             {
@@ -98,11 +98,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditionsByPackage")]
-        public List<TechConditions> GetTechConditionsByPackage(int packId, string? filter)
+        public List<TechConditions> GetTechConditionsByPackage(int packId, int revisionId)
         {
             try
             {
-                return this._conditionsRepository.GetTechConditionsByPackage(packId, filter);
+                return this._conditionsRepository.GetTechConditionsByPackage(packId, revisionId);
             }
             catch (Exception ex)
             {
@@ -169,7 +169,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.SupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
                 listPackageSuppliers.ForEach(sp =>
                 {
                     var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId);
@@ -223,7 +223,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.SupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
                 listPackageSuppliers.ForEach(sp =>
                 {
                     var replies = _conditionsRepository.GetComConditionsReply(sp.PsId);

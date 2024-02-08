@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AccApi.Repository.Managers
 {
@@ -38,20 +39,35 @@ namespace AccApi.Repository.Managers
 
         public List<ComConditions> GetComConditions(int revId)
         {
-            var result = from b in _mdbcontext.TblComConds
+            var comCond = (from b in _mdbcontext.TblComConds
                          select new ComConditions
                          {
                              cmSeq = b.CmSeq,
                              cmDescription = b.CmDescription,
                              cmAccCondValue=""
-                         };
+                         }).ToList();
 
-            //if (revId>0)
-            //{
-            //    var comCondReply=_dbcontext.TblSuppComCondReplies.Where()
-            //}
+            if (revId > 0)
+            {
+                var comCondReply = from a in _dbcontext.TblSupplierPackageRevisions
+                                   join r in _dbcontext.TblSuppComCondReplies on a.PrRevId equals r.CdRevisionId
+                                   where a.PrPackSuppId ==revId && a.PrRevNo==0 && r.CdAccCond !=null
+                                   select new ComConditions
+                                   {
+                                       cmSeq = r.CdComConId,
+                                       cmAccCondValue = r.CdAccCond
+                                   };
 
-            return result.ToList();
+                foreach (var cond in comCondReply)
+                {
+                    var accVal = comCond.FirstOrDefault(x => x.cmSeq == cond.cmSeq);
+
+                    if (accVal != null)
+                        accVal.cmAccCondValue = cond.cmAccCondValue;
+                }
+            }
+
+            return comCond.ToList();
         }
 
         public List<TechConditions> GetTechConditions(int packId, string? filter)
@@ -97,16 +113,37 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<TechConditions> GetTechConditionsByPackage(int packId, string? filter)
+        public List<TechConditions> GetTechConditionsByPackage(int packId, int revId)
         {
             var techCond = (from b in _mdbcontext.TblTechConds.Where(x=> x.TcPackId==packId).OrderBy(p=>p.TcDescription)
                             select new TechConditions
                             {
                                 TcDescription = b.TcDescription,
                                 TcPackId = b.TcPackId,
-                                TcSeq = b.TcSeq
+                                TcSeq = b.TcSeq,
+                                TcAccCondValue=""
                             }).ToList();
 
+
+            if (revId > 0)
+            {
+                var techCondReply = from a in _dbcontext.TblSupplierPackageRevisions
+                                   join t in _dbcontext.TblSuppTechCondReplies on a.PrRevId equals t.TcRevisionId
+                                   where a.PrPackSuppId == revId && a.PrRevNo == 0 && t.TcAccCond != null
+                                   select new TechConditions
+                                   {
+                                       TcSeq = t.TcTechConId,
+                                       TcAccCondValue = t.TcAccCond
+                                   };
+
+                foreach (var cond in techCondReply)
+                {
+                    var accVal = techCond.FirstOrDefault(x => x.TcSeq == cond.TcSeq);
+
+                    if (accVal != null)
+                        accVal.TcAccCondValue = cond.TcAccCondValue;
+                }
+            }
 
             return techCond;
         }

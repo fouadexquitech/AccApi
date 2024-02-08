@@ -49,7 +49,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._supplierPackagesRepository.SupplierPackagesList(packageid);
+                return this._supplierPackagesRepository.GetSupplierPackagesList(packageid);
             }
             catch (Exception ex)
             {
