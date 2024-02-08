@@ -9,7 +9,7 @@ namespace AccApi.Repository.Interfaces
 {
     public interface ISupplierPackagesRepository 
     {
-        List<SupplierPackagesList> SupplierPackagesList(int packageid);
+        List<SupplierPackagesList> GetSupplierPackagesList(int packageid);
 
         SupplierPackagesList GetSupplierPackage(int spId);
 

@@ -70,7 +70,7 @@ namespace AccApi.Repository.Managers
             return results.FirstOrDefault();
         }
 
-        public List<SupplierPackagesList> SupplierPackagesList(int packageid)
+        public List<SupplierPackagesList> GetSupplierPackagesList(int packageid)
         {
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
