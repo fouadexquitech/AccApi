@@ -555,56 +555,59 @@ namespace AccApi.Repository.Managers
                     List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList);
 
 
-                    //2.2 Add RevisionModel    
-                    revisionModelList.Add(new AddRevisionModel
-                    {
-                        PrRevId = Rev0.PrRevId,
-                        PrRevNo = Rev0.PrRevNo,
-                        PrRevDate = Rev0.PrRevDate,
-                        PrTotPrice = Rev0.PrTotPrice,
-                        PrPackSuppId = Rev0.PrPackSuppId,
-                        PrCurrency = Rev0.PrCurrency,
-                        PrExchRate = 1,
-                        StatusId = 1,
-                        ProjectCode = proj.PrjCode,
-                        IsSynched = false,
-                        RevisionDetails = (from d in LstRevDetails
-                                           join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
-                                           select new AddRevisionDetailModel
-                                           {
-                                               BoqResourceSeq = d.RdResourceSeq,
-                                               ResourceDescription = ByBoq == 1 ? null : GetRessourceDescription(d.RdResourceSeq),
-                                               ItemO = d.RdBoqItem,
-                                               ItemDescription = o.DescriptionO,
-                                               Quantity = d.RdQty,
-                                               UnitPrice = d.RdPrice,
-                                               TotalPrice = (d.RdQty) * (d.RdPrice),
-                                               DiscountPerc = 0,
-                                               Comments = "",
-                                               CreatedOn = DateTime.Now,
-                                               IsSynched = false,
-                                               ProjectCode = proj.PrjCode,
-                                               ParentItemO = d.ParentItemO,
-                                               ParentResourceId = d.ParentResourceId
-                                           }).ToList(),
-                        CommercialConditions= (from d in LstComCondReply
-                                               select new AddCondModel
+                    //2.2 Add RevisionModel
+                    if (byBoq==1)
+                    { 
+                        revisionModelList.Add(new AddRevisionModel
+                        {
+                            PrRevId = Rev0.PrRevId,
+                            PrRevNo = Rev0.PrRevNo,
+                            PrRevDate = Rev0.PrRevDate,
+                            PrTotPrice = Rev0.PrTotPrice,
+                            PrPackSuppId = Rev0.PrPackSuppId,
+                            PrCurrency = Rev0.PrCurrency,
+                            PrExchRate = 1,
+                            StatusId = 1,
+                            ProjectCode = proj.PrjCode,
+                            IsSynched = false,
+                            RevisionDetails = (from d in LstRevDetails
+                                               join o in _dbcontext.TblOriginalBoqs on d.RdBoqItem equals o.ItemO
+                                               select new AddRevisionDetailModel
                                                {
-                                                   Id = d.CdComConId,
-                                                   CondValue = d.CdSuppReply,
-                                                   ACCCondValue=d.CdAccCond,
-                                                   ProjectCode = proj.PrjCode
+                                                   BoqResourceSeq = d.RdResourceSeq,
+                                                   ResourceDescription = ByBoq == 1 ? null : GetRessourceDescription(d.RdResourceSeq),
+                                                   ItemO = d.RdBoqItem,
+                                                   ItemDescription = o.DescriptionO,
+                                                   Quantity = d.RdQty,
+                                                   UnitPrice = d.RdPrice,
+                                                   TotalPrice = (d.RdQty) * (d.RdPrice),
+                                                   DiscountPerc = 0,
+                                                   Comments = "",
+                                                   CreatedOn = DateTime.Now,
+                                                   IsSynched = false,
+                                                   ProjectCode = proj.PrjCode,
+                                                   ParentItemO = d.ParentItemO,
+                                                   ParentResourceId = d.ParentResourceId
                                                }).ToList(),
-                        TechnicalConditions = (from d in LstTechCondReply
-                                               select new AddCondModel
-                                                {
-                                                    Id = d.TcTechConId,
-                                                    CondValue = d.TcSuppReply,
-                                                    ACCCondValue = d.TcAccCond,
-                                                    ProjectCode = proj.PrjCode
-                                               }).ToList()
-                    });
+                            CommercialConditions= (from d in LstComCondReply
+                                                   select new AddCondModel
+                                                   {
+                                                       Id = d.CdComConId,
+                                                       CondValue = d.CdSuppReply,
+                                                       ACCCondValue=d.CdAccCond,
+                                                       ProjectCode = proj.PrjCode
+                                                   }).ToList(),
+                            TechnicalConditions = (from d in LstTechCondReply
+                                                   select new AddCondModel
+                                                    {
+                                                        Id = d.TcTechConId,
+                                                        CondValue = d.TcSuppReply,
+                                                        ACCCondValue = d.TcAccCond,
+                                                        ProjectCode = proj.PrjCode
+                                                   }).ToList()
+                        });
 
+                    }
 
                     //Send Email with Attachments to this Supplier
                     AttachmentList.Clear();
