@@ -588,7 +588,9 @@ namespace AccApi.Repository.Managers
                                                    ParentItemO = d.ParentItemO,
                                                    ParentResourceId = d.ParentResourceId,
                                                    NewItemId = d.NewItemId,
-                                                   NewItemResourceId = d.NewItemResourceId
+                                                   NewItemResourceId = d.NewItemResourceId,
+                                                   IsNewItem = d.IsNew,
+                                                   IsAlternative = d.IsAlternative
                                                }).ToList(),
                             CommercialConditions= (from d in LstComCondReply
                                                    select new AddCondModel
