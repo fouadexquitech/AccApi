@@ -420,7 +420,7 @@ var levels = revDtlQry.Select(x => new LevelModel
                              (x.C5 != null ? "|C5~" + x.C5 : "") +
                              (x.C6 != null ? "|C6~" + x.C6 : "") 
 
-                    }).Where(x => x.LevelName == level.LevelName).ToList();
+                    }).Where(x => x.LevelName == level.LevelName).OrderBy(a=>a.RdBoqItem).ToList();
                 }
             }
 
