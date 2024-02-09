@@ -574,7 +574,7 @@ namespace AccApi.Repository.Managers
                                                select new AddRevisionDetailModel
                                                {
                                                    BoqResourceSeq = d.RdResourceSeq,
-                                                   ResourceDescription = ByBoq == 1 ? "" : GetRessourceDescription(d.RdResourceSeq),
+                                                   ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative),
                                                    ItemO = d.RdBoqItem,
                                                    ItemDescription = GetBoqItemDescription(d.RdBoqItem),
                                                    Quantity = d.RdQty,
@@ -719,21 +719,30 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private string GetRessourceDescription(int boqSeq)
+        private string GetRessourceDescription(byte ByBoq,int boqSeq, string resourceDescription, bool isAlternative)
         {
-            var result = from a in _dbcontext.TblBoqs
-                         join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
-                         where a.BoqSeq == boqSeq
-                         select new RessourceList
-                         {
-                             resSeq=a.BoqResSeq,
-                             resDesc=b.ResDescription
-                         };
+            string resDesc = "";
 
-            if (result == null)
-                return "";
+            if (resourceDescription!="")
+            {
+                resDesc = resourceDescription;
+            }
             else
-                return result.FirstOrDefault().resDesc;
+            {
+                var result = from a in _dbcontext.TblBoqs
+                             join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
+                             where a.BoqSeq == boqSeq
+                             select new RessourceList
+                             {
+                                 resSeq = a.BoqResSeq,
+                                 resDesc = b.ResDescription
+                             };
+
+                if (result != null)
+                    resDesc = result.FirstOrDefault().resDesc;
+            }
+
+            return resDesc;
         }
 
         private string GetBoqItemDescription(string boqItemO)
