@@ -580,8 +580,8 @@ namespace AccApi.Repository.Managers
                                                    Quantity = d.RdQty,
                                                    UnitPrice = d.RdPrice,
                                                    TotalPrice = (d.RdQty) * (d.RdPrice),
-                                                   DiscountPerc = 0,
-                                                   Comments = "",
+                                                   DiscountPerc = d.RdDiscount,
+                                                   Comments = d.RdComment,
                                                    CreatedOn = DateTime.Now,
                                                    IsSynched = false,
                                                    ProjectCode = proj.PrjCode,
@@ -783,7 +783,9 @@ namespace AccApi.Repository.Managers
                             NewItemId=row.NewItemId,
                             NewItemResourceId=row.NewItemResourceId,
                             ParentItemO = row.ParentItemO,
-                            ParentResourceId = row.ParentResourceId
+                            ParentResourceId = row.ParentResourceId,
+                            ResourceDescription = row.ResourceDescription,
+                            ItemDescription=row.ItemDescription 
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
