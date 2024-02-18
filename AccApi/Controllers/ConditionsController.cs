@@ -28,11 +28,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditions")]
-        public List<ComConditions> GetComConditions(int revisionId)
+        public List<ComConditions> GetComConditions(int packSupId)
         {
             try
             {
-                return this._conditionsRepository.GetComConditions(revisionId);
+                return this._conditionsRepository.GetComConditions(packSupId);
             }
             catch (Exception ex)
             {

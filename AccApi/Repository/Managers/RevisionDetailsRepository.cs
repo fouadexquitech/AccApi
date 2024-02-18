@@ -63,7 +63,6 @@ namespace AccApi.Repository.Managers
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                              join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
                              where b.RdRevisionId == RevisionId
-
                              select new RevisionDetailsList
                              {
                                  RdRevisionId = b.RdRevisionId,
@@ -111,7 +110,6 @@ namespace AccApi.Repository.Managers
                                       join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                                       join item in _dbContext.NewItems on b.NewItemId equals item.Id
                                       where b.RdRevisionId == RevisionId
-
                                       select new RevisionDetailsList
                                       {
                                           RdRevisionId = b.RdRevisionId,
@@ -159,7 +157,6 @@ namespace AccApi.Repository.Managers
                                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                                                join o in _dbContext.TblOriginalBoqs on b.ParentItemO equals o.ItemO
                                                where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
-
                                                select new RevisionDetailsList
                                                {
                                                    RdRevisionId=b.RdRevisionId,
@@ -203,7 +200,6 @@ namespace AccApi.Repository.Managers
                                                    C6 = o.C6
                                                }).ToList();
 
-
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
             }
             else
@@ -216,7 +212,6 @@ namespace AccApi.Repository.Managers
                              join o in _dbContext.TblOriginalBoqs on c.BoqItem equals o.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
                              where b.RdRevisionId == RevisionId
-
                              select new RevisionDetailsList
                              {
                                  RdRevisionId = b.RdRevisionId,
@@ -268,7 +263,6 @@ namespace AccApi.Repository.Managers
                                       //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
                                       //join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
                                       where b.RdRevisionId == RevisionId
-
                                       select new RevisionDetailsList
                                       {
                                           RdRevisionId = b.RdRevisionId,
@@ -320,7 +314,6 @@ namespace AccApi.Repository.Managers
                                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
                                                //join n in _dbContext.NewItems on b.NewItemId equals n.Id
                                                where b.RdRevisionId == RevisionId
-
                                                select new RevisionDetailsList
                                                {
                                                    RdRevisionId = b.RdRevisionId,
@@ -363,14 +356,62 @@ namespace AccApi.Repository.Managers
                                                    C4 = o.C4,
                                                    C5 = o.C5,
                                                    C6 = o.C6
-                                               });
+                                               }).Union(from cur in curList
+                                                        join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
+                                                        join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                                        join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                                        join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+                                                        where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
+                                                        select new RevisionDetailsList
+                                                        {
+                                                            RdRevisionId = b.RdRevisionId,
+                                                            RdResourceSeq = b.RdResourceSeq,
+                                                            RdPrice = b.RdPrice,
+                                                            RdMissedPrice = b.RdMissedPrice,
+                                                            RdBoqItem = b.RdBoqItem,
+                                                            RdBoqItemDescription = b.ItemDescription,
+                                                            RdItemDescription = b.ResourceDescription,
+                                                            RdQty = b.RdQty,
+                                                            RdUnitRate = b.RdPrice,
+                                                            RdTotalBudget = (b.RdQty) * (b.RdPrice),
+                                                            ExchangeRate = bb.PrExchRate,
+                                                            RdOriginalPrice = b.RdPriceOrigCurrency,
+                                                            TotalSupplierPrice = b.RdAssignedPrice,
+                                                            currency = cur.CurCode,
+                                                            RdMissedPriceReason = b.RdMissedPriceReason,
+                                                            RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                                            RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                                            RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                                            RdAddedItem = b.RdAddedItem,
+                                                            RdAddedItemOn = b.RdAddedItemOn,
+                                                            IsAlternative = b.IsAlternative,
+                                                            IsNew = b.IsNew,
+                                                            NewItemId = b.NewItemId,
+                                                            NewItemResourceId = b.NewItemResourceId,
+                                                            ParentItemO = b.ParentItemO,
+                                                            ParentResourceId = b.ParentResourceId,
+                                                            Unit = o.UnitO,
+                                                            Comments = b.RdComment,
+                                                            L1 = o.L1,
+                                                            L2 = o.L2,
+                                                            L3 = o.L3,
+                                                            L4 = o.L4,
+                                                            L5 = o.L5,
+                                                            L6 = o.L6,
+                                                            C1 = o.C1,
+                                                            C2 = o.C2,
+                                                            C3 = o.C3,
+                                                            C4 = o.C4,
+                                                            C5 = o.C5,
+                                                            C6 = o.C6
+                                                        });
 
                 if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdBoqItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
                 if (resource != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(resource.ToUpper()));
             }
 
 
-var levels = revDtlQry.Select(x => new LevelModel
+            var levels = revDtlQry.Select(x => new LevelModel
             {
                 LevelName = (x.L1 != null ? "L1~" + x.L1 : "") +
                         (x.L2 != null ? "|L2~" + x.L2 : "") +

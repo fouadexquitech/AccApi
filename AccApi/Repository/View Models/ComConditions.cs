@@ -10,5 +10,6 @@ namespace AccApi.Repository.View_Models
         public int cmSeq { get; set; }
         public string cmDescription { get; set; }
         public string cmAccCondValue { get; set; }
+        public bool? Checked { get; set; }
     }
 }

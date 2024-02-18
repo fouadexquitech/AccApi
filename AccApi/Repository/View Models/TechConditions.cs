@@ -14,6 +14,7 @@ namespace AccApi.Repository.View_Models
         //public int groupId { get; set; }
         //public string groupDescription { get; set; }
         public List<TechConditionGroup> techConditionGroups { get; set; }
+        public bool? Checked { get; set; }
     }
 
     public class TechConditionGroup

@@ -37,7 +37,7 @@ namespace AccApi.Repository.Managers
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-        public List<ComConditions> GetComConditions(int revId)
+        public List<ComConditions> GetComConditions(int packSupId)
         {
             var comCond = (from b in _mdbcontext.TblComConds
                          select new ComConditions
@@ -47,11 +47,11 @@ namespace AccApi.Repository.Managers
                              cmAccCondValue=""
                          }).ToList();
 
-            if (revId > 0)
+            if (packSupId > 0)
             {
                 var comCondReply = from a in _dbcontext.TblSupplierPackageRevisions
                                    join r in _dbcontext.TblSuppComCondReplies on a.PrRevId equals r.CdRevisionId
-                                   where a.PrPackSuppId ==revId && a.PrRevNo==0 && r.CdAccCond !=null
+                                   where a.PrPackSuppId == packSupId && a.PrRevNo==0 
                                    select new ComConditions
                                    {
                                        cmSeq = r.CdComConId,
@@ -63,7 +63,10 @@ namespace AccApi.Repository.Managers
                     var accVal = comCond.FirstOrDefault(x => x.cmSeq == cond.cmSeq);
 
                     if (accVal != null)
+                    {
                         accVal.cmAccCondValue = cond.cmAccCondValue;
+                        accVal.Checked = true;
+                    }
                 }
             }
 
@@ -129,7 +132,7 @@ namespace AccApi.Repository.Managers
             {
                 var techCondReply = from a in _dbcontext.TblSupplierPackageRevisions
                                    join t in _dbcontext.TblSuppTechCondReplies on a.PrRevId equals t.TcRevisionId
-                                   where a.PrPackSuppId == revId && a.PrRevNo == 0 && t.TcAccCond != null
+                                   where a.PrPackSuppId == revId && a.PrRevNo == 0 
                                    select new TechConditions
                                    {
                                        TcSeq = t.TcTechConId,
@@ -140,12 +143,14 @@ namespace AccApi.Repository.Managers
                 {
                     var accVal = techCond.FirstOrDefault(x => x.TcSeq == cond.TcSeq);
 
-                    if (accVal != null)
+                    if (accVal != null) { 
                         accVal.TcAccCondValue = cond.TcAccCondValue;
+                        accVal.Checked=true;
+                    }
                 }
             }
 
-            return techCond;
+            return techCond.ToList();
         }
 
         public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
