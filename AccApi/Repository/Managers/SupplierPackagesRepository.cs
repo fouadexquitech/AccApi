@@ -723,7 +723,7 @@ namespace AccApi.Repository.Managers
         {
             string resDesc = "";
 
-            if (resourceDescription!="")
+            if (resourceDescription!="" && resourceDescription!=null)
             {
                 resDesc = resourceDescription;
             }
