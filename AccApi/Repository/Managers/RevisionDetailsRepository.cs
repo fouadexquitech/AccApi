@@ -3586,13 +3586,16 @@ namespace AccApi.Repository.Managers
 
         private double GetExchange(string foreignCurrency)
         {
-            var result = from a in _dbContext.TblParameters
-                         join b in _dbContext.TblCurrencies
-                         on a.EstimatedCur equals b.CurId
+            var curList = (from b in _mdbContext.TblCurrencies
+                           select b).ToList();
+
+            var result = from a in curList 
+                         join b in _dbContext.TblParameters
+                         on a.CurId equals b.EstimatedCur
                          select new ProjectCurrency
                          {
-                             curId = (int)a.EstimatedCur,
-                             curCode = b.CudCode
+                             curId = (int)b.EstimatedCur,
+                             curCode = a.CurCode
                          };
 
 
