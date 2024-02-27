@@ -26,5 +26,8 @@ namespace AccApi.Repository.Models.MasterModels
         public string AehInsertBy { get; set; }
         [Column("aehUpdateDate", TypeName = "datetime")]
         public DateTime? AehUpdateDate { get; set; }
+        [Column("aehDesc")]
+        [StringLength(250)]
+        public string AehDesc { get; set; }
     }
 }

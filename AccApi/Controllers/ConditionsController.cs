@@ -88,7 +88,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._conditionsRepository.GetTechConditions(packId, filter);
+                return  this._conditionsRepository.GetTechConditions(packId, filter);
             }
             catch (Exception ex)
             {
@@ -111,7 +111,6 @@ namespace AccApi.Controllers
             }
         }
 
-        
 
         [HttpPost("AddTechConditions")]
         public bool AddTechConditions(TechConditions techcond)
@@ -156,13 +155,58 @@ namespace AccApi.Controllers
         }
 
 
+        [HttpGet("GetComCondReplies")]
+        public List<DisplayCondition> GetComCondReplies(int packId, string costDB)
+        {
+            try
+            {
+
+                var displayConditions = this._conditionsRepository.GetComConditions(0).Select(x => new DisplayCondition
+                {
+                    Id = x.cmSeq,
+                    Description = x.cmDescription,
+                    Replies = new List<DisplayCondReply>()
+                }).ToList();
+
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
+
+                listPackageSuppliers.ForEach(sp =>
+                {
+                    var replies =  _conditionsRepository.GetComConditionsReply(sp.PsId, costDB);
+
+                    replies.ForEach(x =>
+                    {
+                        if (x.SupId != null)
+                        {
+                            DisplayCondReply displayReply = new DisplayCondReply
+                            {
+                                SupplierId = x.SupId.Value,
+                                SupplierName = x.SupName,
+                                ConditionId = x.CondId,
+                                Reply = x.CondReply
+                            };
+                            var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
+                            cond.Replies.Add(displayReply);
+                        }
+                    });
+                });
+
+                return displayConditions;
+            }
+            catch (Exception ex)
+            {
+                _ilogger.LogError(ex.Message);
+                return null;
+            }
+        }
+
         [HttpGet("GetTechCondReplies")]
         public List<DisplayCondition> GetTechCondReplies(int packId, string costDB)
         {
             try
             {
-
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId, null).Select(x => new DisplayCondition
+                //List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId, null).Select(x => new DisplayCondition
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditionsByPackage(packId, 0).Select(x => new DisplayCondition
                 {
                     Id = x.TcSeq,
                     Description = x.TcDescription,
@@ -170,9 +214,10 @@ namespace AccApi.Controllers
                 }).ToList();
 
                 var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
-                listPackageSuppliers.ForEach(async sp =>
+
+                listPackageSuppliers.ForEach(sp =>
                 {
-                    var replies = await _conditionsRepository.GetTechConditionsReply(sp.PsId,costDB);
+                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId, costDB);
 
                     replies.ForEach(x =>
                     {
@@ -191,59 +236,9 @@ namespace AccApi.Controllers
                                 cond.Replies.Add(displayReply);
                             }
                         }
-
-
-
-                    });
-
-
-
-                });
-                return displayConditions;
-            }
-            catch (Exception ex)
-            {
-                _ilogger.LogError(ex.Message);
-                return null;
-            }
-
-        }
-
-
-        [HttpGet("GetComCondReplies")]
-        public async Task<List<DisplayCondition>> GetComCondReplies(int packId, string costDB)
-        {
-            try
-            {
-
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetComConditions(0).Select(x => new DisplayCondition
-                {
-                    Id = x.cmSeq,
-                    Description = x.cmDescription,
-                    Replies = new List<DisplayCondReply>()
-                }).ToList();
-
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
-                listPackageSuppliers.ForEach(async sp =>
-                {
-                    var replies = await _conditionsRepository.GetComConditionsReply(sp.PsId,costDB);
-
-                    replies.ForEach(x =>
-                    {
-                        if (x.SupId != null)
-                        {
-                            DisplayCondReply displayReply = new DisplayCondReply
-                            {
-                                SupplierId = x.SupId.Value,
-                                SupplierName = x.SupName,
-                                ConditionId = x.CondId,
-                                Reply = x.CondReply
-                            };
-                            var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
-                            cond.Replies.Add(displayReply);
-                        }
                     });
                 });
+
                 return displayConditions;
             }
             catch (Exception ex)
@@ -254,11 +249,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditionsReply")]
-        public async Task<List<TmpConditionsReply>> GetComConditionsReply(int PackageSupliersID, string costDB)
+        public List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB)
         {
             try
             {
-                return await this._conditionsRepository.GetComConditionsReply(PackageSupliersID,costDB);
+                return this._conditionsRepository.GetComConditionsReply(PackageSupliersID,costDB);
             }
             catch (Exception ex)
             {
@@ -268,11 +263,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditionsReply")]
-        public async Task<List<TmpConditionsReply>> GetTechConditionsReply(int PackageSupliersID, string costDB)
+        public List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB)
         {
             try
             {
-                return await this._conditionsRepository.GetTechConditionsReply(PackageSupliersID,costDB);
+                return this._conditionsRepository.GetTechConditionsReply(PackageSupliersID,costDB);
             }
             catch (Exception ex)
             {

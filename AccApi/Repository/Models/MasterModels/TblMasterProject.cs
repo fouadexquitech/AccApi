@@ -95,5 +95,9 @@ namespace AccApi.Repository.Models.MasterModels
         public float? AllowableReEngSdHrs { get; set; }
         [Column("msBypassCM")]
         public bool? MsBypassCm { get; set; }
+        [StringLength(50)]
+        public string AllowableHistogram { get; set; }
+        [StringLength(50)]
+        public string TargetRatio { get; set; }
     }
 }

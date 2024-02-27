@@ -17,7 +17,7 @@ namespace AccApi.Repository.Models.MasterModels
         public string PkgeName { get; set; }
         public bool? Selected { get; set; }
         public short? Duration { get; set; }
-        [StringLength(5)]
+        [StringLength(2)]
         public string Division { get; set; }
         public bool? Standard { get; set; }
         public short? Trade { get; set; }
