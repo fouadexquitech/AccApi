@@ -160,7 +160,6 @@ namespace AccApi.Controllers
         {
             try
             {
-
                 var displayConditions = this._conditionsRepository.GetComConditions(0).Select(x => new DisplayCondition
                 {
                     Id = x.cmSeq,
@@ -172,7 +171,7 @@ namespace AccApi.Controllers
 
                 listPackageSuppliers.ForEach(sp =>
                 {
-                    var replies =  _conditionsRepository.GetComConditionsReply(sp.PsId, costDB);
+                    var replies =  _conditionsRepository.GetComConditionsReply(sp.PsId, costDB,0);
 
                     replies.ForEach(x =>
                     {
@@ -217,7 +216,7 @@ namespace AccApi.Controllers
 
                 listPackageSuppliers.ForEach(sp =>
                 {
-                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId, costDB);
+                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId, costDB,0);
 
                     replies.ForEach(x =>
                     {
@@ -253,7 +252,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._conditionsRepository.GetComConditionsReply(PackageSupliersID,costDB);
+                return this._conditionsRepository.GetComConditionsReply(PackageSupliersID,costDB,0);
             }
             catch (Exception ex)
             {
@@ -267,7 +266,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                return this._conditionsRepository.GetTechConditionsReply(PackageSupliersID,costDB);
+                return this._conditionsRepository.GetTechConditionsReply(PackageSupliersID,costDB, 0);
             }
             catch (Exception ex)
             {

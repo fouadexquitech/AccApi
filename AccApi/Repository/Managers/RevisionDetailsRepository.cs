@@ -1,6 +1,7 @@
 ﻿using AccApi.Data_Layer;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
@@ -544,8 +545,6 @@ namespace AccApi.Repository.Managers
                         {
                             try
                             {
-                                
-
                                 string boqRef = worksheet.Cells[row, 1].Value == null ? "" : worksheet.Cells[row, 1].Value.ToString();
 
                                 if ((byBoq != 1) & (oldBoqRef != "") & (boqRef == ""))
@@ -2107,7 +2106,7 @@ namespace AccApi.Repository.Managers
             return groups;
         }
 
-        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheet(packageId, input,0);
 
@@ -2355,7 +2354,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input,0);
 
@@ -2615,7 +2614,7 @@ namespace AccApi.Repository.Managers
             }
         }
          
-        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
 
@@ -2837,7 +2836,7 @@ namespace AccApi.Repository.Managers
             }
         }
   
-        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
 
@@ -3064,7 +3063,7 @@ namespace AccApi.Repository.Managers
             var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
             return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
         }
-        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items;
             List<string> excelList = new List<string>();
@@ -3074,10 +3073,10 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            var querySupp = (from b in _dbContext.TblSupplierPackageRevisions
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+            var querySupp = (from sup in supList
+                             join a in _dbContext.TblSupplierPackages on sup.SupCode equals  a.SpSupplierId
+                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in supList on a.SpSupplierId equals sup.SupCode
                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.RdPriceOrigCurrency > 0)
                              group sup by sup.SupCode into s
                              select new GroupingPackageSupplierPriceModel
@@ -3096,7 +3095,7 @@ namespace AccApi.Repository.Managers
             return excelList;
         }
 
-        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheetByBoq(packageId, input, supId);
 
@@ -3350,7 +3349,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpConditionsReply> comcondRepLst, List<TmpConditionsReply> techcondRepLst)
+        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
         {
             List<GroupingBoqModel> items = GetComparisonSheet(packageId, input, supId);
 

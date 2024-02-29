@@ -16,8 +16,8 @@ namespace AccApi.Repository.Interfaces
         bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName);
         bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile);
         bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile);
-        List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB);
-        List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB);
+        List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB, int packageId);
+        List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB , int packageId);
         List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID);
  
         List<TmpConditionsReply> GetPackageTechConditionsReply(int PackageID);

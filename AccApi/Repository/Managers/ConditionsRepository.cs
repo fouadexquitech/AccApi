@@ -152,7 +152,7 @@ namespace AccApi.Repository.Managers
             return techCond.ToList();
         }
 
-        public List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB)
+        public List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB, int PackageId)
         {
             //var comcond = (from b in _mdbcontext.TblComConds
             //               select b).ToList();
@@ -171,13 +171,13 @@ namespace AccApi.Repository.Managers
             //                  condReply = a.CdSuppReply
             //              });
 
-
             var p1 = new SqlParameter("@DB", costDB);
             var p2 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
             var p3 = new SqlParameter("@Type", 1);
+            var p4 = new SqlParameter("@PackageId", PackageId);
 
             List<TmpComparisonConditionsReply> list = _mdbcontext
-            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type", p1, p2, p3).ToList();
+            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type,@PackageId", p1, p2, p3,p4).ToList();
 
             return list;
 
@@ -201,7 +201,7 @@ namespace AccApi.Repository.Managers
             //return result;
         }
 
-        public List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB)
+        public List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB, int PackageId)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
             //                select b).ToList();
@@ -225,9 +225,10 @@ namespace AccApi.Repository.Managers
             var p1 = new SqlParameter("@DB", costDB);
             var p2 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
             var p3 = new SqlParameter("@Type", 2);
+            var p4 = new SqlParameter("@PackageId", PackageId);
 
             List<TmpComparisonConditionsReply> list = _mdbcontext
-            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type", p1, p2, p3)
+            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type,@PackageId", p1, p2, p3,p4)
             .ToList();
 
             return list;

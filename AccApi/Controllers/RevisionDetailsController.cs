@@ -1,6 +1,6 @@
-﻿using AccApi.Data_Layer;
+﻿
 using AccApi.Repository.Interfaces;
-using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Hosting;
@@ -9,12 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace AccApi.Controllers
@@ -219,13 +217,18 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq_Excel")]
-        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
         {
             try
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1);
-                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                //AH27022024
+                //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
+                List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
+                //AH27022024
+
                 return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
@@ -236,13 +239,17 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheet_Excel")]
-        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
         {
             try
             {
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
-                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                //AH27022024
+                //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
+                List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
+                //AH27022024
                 return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
@@ -267,12 +274,16 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetResourcesByGroup_Excel")]
-        public JsonResult GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
         {
             try
             {
-                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                //AH27022024
+                //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
+                List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
+                //AH27022024
                 return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst, techcondRepLst));
             }
             catch (Exception ex)
@@ -297,12 +308,16 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetBoqByGroup_Excel")]
-        public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input)
+        public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
         {
             try
             {
-                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                //AH27022024
+                //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
+                List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
+                //AH27022024
                 List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
                 return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
             }
@@ -345,12 +360,16 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GenerateSuppliersContracts_Excel")]
-        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input)
+        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
         {
             try
-            {              
-                List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
-                List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+            {
+                //AH27022024
+                //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
+                //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
+                List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
+                List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
+                //AH27022024
 
                 return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst));
                 
