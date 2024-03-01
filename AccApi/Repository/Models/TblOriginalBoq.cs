@@ -181,7 +181,6 @@ namespace AccApi.Repository.Models
         public string C15 { get; set; }
         [Column("obBackUpDate", TypeName = "datetime")]
         public DateTime? ObBackUpDate { get; set; }
-        public byte? ExportedToSupplier { get; set; }
         [Column("obTradeDesc")]
         [StringLength(500)]
         public string ObTradeDesc { get; set; }
@@ -195,6 +194,7 @@ namespace AccApi.Repository.Models
         public string InsertedBy { get; set; }
         [Column("insertedDate", TypeName = "datetime")]
         public DateTime? InsertedDate { get; set; }
+        public byte? ExportedToSupplier { get; set; }
         public bool? IsSynched { get; set; }
         [Column("obStatus")]
         [StringLength(50)]

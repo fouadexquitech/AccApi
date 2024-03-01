@@ -16,7 +16,7 @@ namespace AccApi.Repository.Models
         public byte CtgSeq { get; set; }
         [Required]
         [Column("ctgDesc")]
-        [StringLength(20)]
+        [StringLength(200)]
         public string CtgDesc { get; set; }
         [Column("ctgAbv")]
         [StringLength(2)]

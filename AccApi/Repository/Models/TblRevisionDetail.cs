@@ -39,8 +39,6 @@ namespace AccApi.Repository.Models
         public byte? RdMissedPrice { get; set; }
         [Column("rdMissedPriceReason")]
         public string RdMissedPriceReason { get; set; }
-        [Column("rdDiscount")]
-        public double? RdDiscount { get; set; }
         [Column("rdAddedItem")]
         public byte? RdAddedItem { get; set; }
         [Column("insertedBy")]
@@ -50,6 +48,8 @@ namespace AccApi.Repository.Models
         public DateTime? InsertedDate { get; set; }
         [Column("rdAddedItemOn", TypeName = "datetime")]
         public DateTime? RdAddedItemOn { get; set; }
+        [Column("rdDiscount")]
+        public double? RdDiscount { get; set; }
         public bool? IsSynched { get; set; }
         public bool? IsAlternative { get; set; }
         public bool? IsNew { get; set; }
@@ -62,5 +62,7 @@ namespace AccApi.Repository.Models
         public int? ParentResourceId { get; set; }
         public string ResourceDescription { get; set; }
         public string ItemDescription { get; set; }
+        public double? TotalPrice { get; set; }
+        public double? UnitPriceAfterDiscount { get; set; }
     }
 }

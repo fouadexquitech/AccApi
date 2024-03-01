@@ -1722,7 +1722,7 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
             var items = condQuery
-                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.BoqUprice, x.BoqUnitMesure,x.ScopeQtyO })
+                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.UnitRateO, x.ScopeQtyO })
                 .Select(p => p.FirstOrDefault()).ToList()
                 .Select(p => new GroupingBoqModel
                 {
@@ -1790,7 +1790,7 @@ namespace AccApi.Repository.Managers
                                  ExchRate = b.PrExchRate,
                                  ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
                                  Discount = c.RdDiscount,
-                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
+                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2)// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
                              }).ToList();
             //TotalPrice = (c.RdAssignedQty * c.RdPrice),
             else
@@ -1818,7 +1818,7 @@ namespace AccApi.Repository.Managers
                                  ExchRate = b.PrExchRate,
                                  ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
                                  Discount=c.RdDiscount,
-                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount),2)// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                              }).ToList();
             //TotalPrice = (c.RdAssignedQty * c.RdPrice),
 
@@ -1851,7 +1851,7 @@ namespace AccApi.Repository.Managers
                             ExchRate = IdealItem.ExchRate,
                             ExchRateNow = IdealItem.ExchRateNow,
                             Discount = IdealItem.Discount,
-                            UPriceAfterDiscount = Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                            UPriceAfterDiscount = Math.Round((double)(IdealItem.UPriceAfterDiscount), 2)//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
                         });
                     }
                 }

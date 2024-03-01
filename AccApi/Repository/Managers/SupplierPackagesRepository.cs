@@ -576,7 +576,7 @@ namespace AccApi.Repository.Managers
                                                    BoqResourceSeq = d.RdResourceSeq,
                                                    ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative),
                                                    ItemO = d.RdBoqItem,
-                                                   ItemDescription = GetBoqItemDescription(d.RdBoqItem),
+                                                   ItemDescription = d.ItemDescription,//GetBoqItemDescription(d.RdBoqItem),
                                                    Quantity = d.RdQty,
                                                    UnitPrice = d.RdPrice,
                                                    TotalPrice = (d.RdQty) * (d.RdPrice),
@@ -590,7 +590,8 @@ namespace AccApi.Repository.Managers
                                                    NewItemId = d.NewItemId,
                                                    NewItemResourceId = d.NewItemResourceId,
                                                    IsNewItem = d.IsNew,
-                                                   IsAlternative = d.IsAlternative
+                                                   IsAlternative = d.IsAlternative,
+                                                   UnitPriceAfterDiscount=d.UnitPriceAfterDiscount                                                                                                    
                                                }).ToList(),
                             CommercialConditions= (from d in LstComCondReply
                                                    select new AddCondModel
@@ -788,7 +789,9 @@ namespace AccApi.Repository.Managers
                             ParentItemO = row.ParentItemO,
                             ParentResourceId = row.ParentResourceId,
                             ResourceDescription = row.ResourceDescription,
-                            ItemDescription=row.ItemDescription 
+                            ItemDescription=row.ItemDescription ,
+                            UnitPriceAfterDiscount = row.UnitPriceAfterDiscount,
+                            TotalPrice=row.TotalPrice,
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
@@ -836,7 +839,11 @@ namespace AccApi.Repository.Managers
                                 NewItemId = 0,
                                 NewItemResourceId = 0,
                                 ParentItemO ="",
-                                ParentResourceId=0
+                                ParentResourceId=0,
+                                ResourceDescription = "",
+                                ItemDescription = row.DescriptionO,
+                                UnitPriceAfterDiscount = 0,
+                                TotalPrice = 0,
                             };
                             LstRevDetails.Add(revdtl);
                         }
@@ -844,7 +851,9 @@ namespace AccApi.Repository.Managers
                 }
                 else
                 {
-                    result = (from b in _dbcontext.TblBoqs
+                    result = (from o in _dbcontext.TblOriginalBoqs 
+                              join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                              join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                               where b.BoqScope == packId
                               select new BoqRessourcesList
                               {
@@ -857,7 +866,9 @@ namespace AccApi.Repository.Managers
                                   BoqUprice = b.BoqUprice,
                                   BoqDiv = b.BoqDiv,
                                   BoqPackage = b.BoqPackage,
-                                  BoqScope = b.BoqScope
+                                  BoqScope = b.BoqScope,
+                                  DescriptionO=o.DescriptionO,
+                                  ResDescription=r.ResDescription
                               }).ToList();
 
                     foreach (var row in result)
@@ -881,7 +892,11 @@ namespace AccApi.Repository.Managers
                                 NewItemId = 0,
                                 NewItemResourceId = 0,
                                 ParentItemO = "",
-                                ParentResourceId = 0
+                                ParentResourceId = 0,
+                                ResourceDescription = row.ResDescription,
+                                ItemDescription = row.DescriptionO,
+                                UnitPriceAfterDiscount = 0,
+                                TotalPrice = 0,
                             };
                             LstRevDetails.Add(revdtl);
                         }

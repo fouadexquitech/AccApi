@@ -24,6 +24,7 @@ namespace AccApi.Repository.View_Models
         public int? NewItemResourceId { get; set; }
         public string? ParentItemO { get; set; }
         public int? ParentResourceId { get; set; }
+        public double? UnitPriceAfterDiscount { get; set; }=0;
     }
 
     public class AddCondModel
