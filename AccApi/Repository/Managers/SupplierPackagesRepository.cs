@@ -873,7 +873,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var row in result)
                     {
-                        if ((row.BoqPackage != "") && (row.BoqQty > 0))
+                        if  (row.BoqQty > 0)
                         {
                             var revdtl = new TblRevisionDetail()
                             {

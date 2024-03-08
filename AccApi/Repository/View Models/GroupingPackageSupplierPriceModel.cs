@@ -36,6 +36,15 @@ namespace AccApi.Repository.View_Models
         public double? UPriceAfterDiscount { get; set; }
 
         public byte byBoq { get; set; }
+
+        public bool? IsAlternative { get; set; }
+        public bool? IsNewItem { get; set; }
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
+        public string? ParentItemO { get; set; }
+        public int? ParentResourceId { get; set; }
+        public bool isCreatedByThisSupplier { get; set; } = false;
+        public bool? IsExcluded { get; set; } = false;
     }
 
     public class LiveExchange

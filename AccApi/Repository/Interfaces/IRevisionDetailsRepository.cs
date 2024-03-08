@@ -38,5 +38,6 @@ namespace AccApi.Repository.Interfaces
         List<string> GenerateSuppliersContracts_Excel(int packageId,SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst);
 
         List<AcceptComment> GetRevisionAcceptance(int revId);
+        bool ExcludBoq(int packId, string Item,bool isNewItem, bool exclud);
     }
 }

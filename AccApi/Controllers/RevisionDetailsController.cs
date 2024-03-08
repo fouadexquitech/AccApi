@@ -451,5 +451,19 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpPost("ExcludBoq")]
+        public bool ExcludBoq(int packId, string Item, bool isNewItem, bool isExclud)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.ExcludBoq(packId, Item, isNewItem,isExclud);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }

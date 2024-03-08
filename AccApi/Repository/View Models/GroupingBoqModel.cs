@@ -15,11 +15,13 @@ namespace AccApi.Repository.View_Models
         public double? UnitPrice { get; set; }
         public double? TotalPrice { get; set; }  
         public bool IsSelected { get; set; }
+        public double? QuotationQty { get; set; }
+        public double? QuotationAmt { get; set; }
 
         public List<GroupingResourceModel>? GroupingResources { get; set; }
         public List<GroupingPackageSupplierPriceModel>? GroupingPackageSuppliersPrices { get; set; }
-
-        public double? QuotationQty { get; set; }
-        public double? QuotationAmt { get; set; }
+        public bool? IsAlternative { get; set; }
+        public bool? IsNewItem { get; set; }
+        public bool? IsExcluded { get; set; }=false;
     }
 }

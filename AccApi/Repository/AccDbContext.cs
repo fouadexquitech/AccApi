@@ -2070,6 +2070,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.IsAlternative).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.IsExcluded).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.IsNew).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
