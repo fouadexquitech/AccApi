@@ -1483,89 +1483,90 @@ namespace AccApi.Repository.Managers
                                                         join o in _dbContext.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
                                                         join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        where a.SpPackageId == packageId && c.IsNew == false && c.IsAlternative == false && bb.PrRevNo == 0
+                                                        where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
+                                                        && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
                                                         select new BoqRessourcesList
                                                         {
                                                             RowNumber = o.RowNumber,
-                                                            SectionO = o.SectionO,
-                                                            ItemO = o.ItemO,
-                                                            DescriptionO = o.DescriptionO,
-                                                            UnitO = o.UnitO,
-                                                            QtyO = o.QtyO,
-                                                            UnitRateO = o.UnitRate,
+                                                            SectionO = Convert.ToString(o.SectionO),
+                                                            ItemO = Convert.ToString(o.ItemO),
+                                                            DescriptionO = Convert.ToString(o.DescriptionO),
+                                                            UnitO = Convert.ToString(o.UnitO),
+                                                            QtyO = (double)o.QtyO,
+                                                            UnitRateO = (double)o.UnitRate,
                                                             ScopeO = o.Scope,
                                                             BoqSeq = b.BoqSeq,
-                                                            BoqCtg = b.BoqCtg,
-                                                            BoqUnitMesure = b.BoqUnitMesure,
-                                                            BoqQty = b.BoqQty,
-                                                            BoqUprice = b.BoqUprice,
-                                                            BoqDiv = b.BoqDiv,
-                                                            BoqPackage = b.BoqPackage,
-                                                            BoqScope = b.BoqScope,
-                                                            ResSeq = r.ResSeq,
-                                                            ResDescription = r.ResDescription,
+                                                            BoqCtg = Convert.ToString(b.BoqCtg),
+                                                            BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
+                                                            BoqQty = (double)b.BoqQty,
+                                                            BoqUprice = (double)b.BoqUprice,
+                                                            BoqDiv = Convert.ToString(b.BoqDiv),
+                                                            BoqPackage = Convert.ToString(b.BoqPackage),
+                                                            BoqScope = packageId,
+                                                            ResSeq = Convert.ToString(r.ResSeq),
+                                                            ResDescription = Convert.ToString(r.ResDescription),
                                                             IsAlternative = false,
                                                             IsNewItem = false,
                                                             IsExcluded = c.IsExcluded
-                                                        }).Union(from bb in _dbContext.TblSupplierPackageRevisions 
-                                                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                 join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                                                 join item in _dbContext.NewItems on b.NewItemId equals item.Id
-                                                                 join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
-                                                                 where a.SpPackageId == packageId && bb.PrRevNo == 0
-                                                                 select new BoqRessourcesList
-                                                                 {
-                                                                     RowNumber = 0,
-                                                                     SectionO = "",
-                                                                     ItemO = Convert.ToString(item.Id),
-                                                                     DescriptionO = item.ItemDescription,
-                                                                     UnitO = item.UnitO,
-                                                                     QtyO = 0,
-                                                                     UnitRateO = 0,
-                                                                     ScopeO = packageId,
-                                                                     BoqSeq = (int)b.NewItemResourceId,
-                                                                     BoqCtg = newr.ResourceType,
-                                                                     BoqUnitMesure = newr.ResourceUnit,
-                                                                     BoqQty = b.RdQty,
-                                                                     BoqUprice = b.RdPrice,
-                                                                     BoqDiv = "",
-                                                                     BoqPackage = "",
-                                                                     BoqScope = packageId,
-                                                                     ResSeq = Convert.ToString(b.NewItemResourceId),
-                                                                     ResDescription = b.ResourceDescription,
-                                                                     IsAlternative = false,
-                                                                     IsNewItem = true,
-                                                                     IsExcluded = b.IsExcluded
-                                                                 }).Union(from bb in _dbContext.TblSupplierPackageRevisions
-                                                                          join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                          join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId                                                                        
-                                                                          join q in _dbContext.TblBoqs on Convert.ToString(b.ParentResourceId) equals q.BoqItem
-                                                                          join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
-                                                                          where (a.SpPackageId == packageId && bb.PrRevNo == 0 && b.IsAlternative == true)
-                                                                          select new BoqRessourcesList
-                                                                          {
-                                                                                RowNumber = o.RowNumber,
-                                                                                SectionO = o.SectionO,
-                                                                                ItemO = o.ItemO,
-                                                                                DescriptionO = o.DescriptionO,
-                                                                                UnitO = o.UnitO,
-                                                                                QtyO = o.QtyO,
-                                                                                UnitRateO = o.UnitRate,
-                                                                                ScopeO = packageId,
-                                                                                BoqSeq =0,
-                                                                                BoqCtg = q.BoqCtg,
-                                                                                BoqUnitMesure = q.BoqUnitMesure,
-                                                                                BoqQty = b.RdQty,
-                                                                                BoqUprice = b.RdPrice,
-                                                                                BoqDiv = q.BoqDiv,
-                                                                                BoqPackage = q.BoqPackage,
-                                                                                BoqScope = packageId,
-                                                                                ResSeq = Convert.ToString(b.NewItemResourceId),
-                                                                                ResDescription = b.ResourceDescription,
-                                                                                IsAlternative = true,
-                                                                                IsNewItem = false,
-                                                                                IsExcluded = b.IsExcluded
-                                                                          });
+                                                        });
+            //.Union(from bb in _dbContext.TblSupplierPackageRevisions
+            //                                                     join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+            //                                                     join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+            //                                                     join item in _dbContext.NewItems on b.NewItemId equals item.Id
+            //                                                     join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
+            //                                                     where a.SpPackageId == packageId && bb.PrRevNo == 0
+            //                                                     select new BoqRessourcesList
+            //                                                     {
+            //                                                         RowNumber = 0,
+            //                                                         SectionO = Convert.ToString(""),
+            //                                                         ItemO = Convert.ToString(item.Id),
+            //                                                         DescriptionO = Convert.ToString(item.ItemDescription),
+            //                                                         UnitO = Convert.ToString(item.UnitO),
+            //                                                         QtyO = (double)0,
+            //                                                         UnitRateO = (double)0,
+            //                                                         ScopeO = packageId,
+            //                                                         BoqSeq = (int)b.NewItemResourceId,
+            //                                                         BoqCtg = Convert.ToString(newr.ResourceType),
+            //                                                         BoqUnitMesure = Convert.ToString(newr.ResourceUnit),
+            //                                                         BoqQty = (double)b.RdQty,
+            //                                                         BoqUprice = (double)b.RdPrice,
+            //                                                         BoqDiv = Convert.ToString(""),
+            //                                                         BoqPackage = Convert.ToString(""),
+            //                                                         BoqScope = packageId,
+            //                                                         ResSeq = Convert.ToString("0"),
+            //                                                         ResDescription = Convert.ToString(b.ResourceDescription),
+            //                                                         IsAlternative = false,
+            //                                                         IsNewItem = true,
+            //                                                         IsExcluded = b.IsExcluded
+            //                                                     }).Union(from bb in _dbContext.TblSupplierPackageRevisions
+            //                                                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+            //                                                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+            //                                                              join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+            //                                                              where (a.SpPackageId == packageId && bb.PrRevNo == 0 && b.IsAlternative == true)
+            //                                                              select new BoqRessourcesList
+            //                                                              {
+            //                                                                  RowNumber = o.RowNumber,
+            //                                                                  SectionO = Convert.ToString(o.SectionO),
+            //                                                                  ItemO = Convert.ToString(o.ItemO),
+            //                                                                  DescriptionO = Convert.ToString(o.DescriptionO),
+            //                                                                  UnitO = Convert.ToString(o.UnitO),
+            //                                                                  QtyO = (double)o.QtyO,
+            //                                                                  UnitRateO = (double)o.UnitRate,
+            //                                                                  ScopeO = packageId,
+            //                                                                  BoqSeq = (int)0,
+            //                                                                  BoqCtg = Convert.ToString(""),
+            //                                                                  BoqUnitMesure = Convert.ToString(""),
+            //                                                                  BoqQty = (double)b.RdQty,
+            //                                                                  BoqUprice = (double)b.RdPrice,
+            //                                                                  BoqDiv = Convert.ToString(""),
+            //                                                                  BoqPackage = Convert.ToString(""),
+            //                                                                  BoqScope = packageId,
+            //                                                                  ResSeq = Convert.ToString("0"),
+            //                                                                  ResDescription = Convert.ToString(b.ResourceDescription),
+            //                                                                  IsAlternative = false,
+            //                                                                  IsNewItem = true,
+            //                                                                  IsExcluded = b.IsExcluded
+            //                                                              });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
             if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -1578,7 +1579,7 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
             var items = condQuery
-                .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.IsNewItem, x.IsAlternative, x.IsExcluded })
+                .GroupBy(x => new { x.RowNumber, x.ItemO, x.DescriptionO, x.UnitO, x.IsNewItem, x.IsAlternative, x.IsExcluded })
                 .Select(p => p.FirstOrDefault())
                 .Select(p => new GroupingBoqModel
                 {
@@ -1611,18 +1612,22 @@ namespace AccApi.Repository.Managers
                                    ExchRateNow = GetExchange(cur.fromCurrency)
                                }).ToList();
 
-            IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
+            //IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
+
+            List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetail;
+            List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetailAlt;
+            List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetailNew;
 
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            if (supId == 0)
-                querySupp = (from cur in curList
+            PackageSupplierPriceRevDetail = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             where (a.SpPackageId == packageId && b.PrRevNo == 0)
+                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
+                             && (c.IsAlternative == false || c.IsAlternative == null) && (supId == 0 || a.SpSupplierId == supId))
                              select new GroupingPackageSupplierPriceModel
                              {
                                  SupplierId = sup.SupCode,
@@ -1640,39 +1645,185 @@ namespace AccApi.Repository.Managers
                                  ExchRate = b.PrExchRate,
                                  ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
                                  byBoq= (byte)a.SpByBoq,
-                                 BoqItemO=c.RdBoqItem
+                                 BoqItemO=c.RdBoqItem,
+                                 Discount = c.RdDiscount,
+                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
+                                 IsAlternative = c.IsAlternative,
+                                 IsNewItem = c.IsNew,
+                                 NewItemId = c.NewItemId,
+                                 NewItemResourceId = c.NewItemResourceId,
+                                 ParentItemO = c.ParentItemO,
+                                 ParentResourceId = c.ParentResourceId,
+                                 IsExcluded = c.IsExcluded
                              }).ToList();
-            else
-                querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                             join sup in supList on a.SpSupplierId equals sup.SupCode
-                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && a.SpSupplierId == supId)
-                             select new GroupingPackageSupplierPriceModel
-                                 {
-                                     SupplierId = sup.SupCode,
-                                     SupplierName = sup.SupName,
-                                     LastRevisionDate = b.PrRevDate,
-                                     AssignedPercentage = c.RdAssignedPerc,
-                                     AssignedQty = c.RdAssignedQty,
-                                     MissedPrice = c.RdMissedPrice,
-                                     OriginalCurrencyPrice = c.RdPriceOrigCurrency,
-                                     Qty = c.RdQty,
-                                     UnitPrice = c.RdPrice,
-                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
-                                     BoqResourceId = c.RdResourceSeq,
-                                     OriginalCurrency = cur.CurCode,
-                                     ExchRate = b.PrExchRate,
-                                     ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
-                                     byBoq = (byte)a.SpByBoq,
-                                     BoqItemO = c.RdBoqItem
-                                 }).ToList();
+
+            //Get all Suppliers of this revision
+            var supListRevision = PackageSupplierPriceRevDetail
+            .GroupBy(x => new { x.SupplierId, x.SupplierName, x.LastRevisionDate })
+            .Select(p => p.FirstOrDefault()).ToList()
+            .Select(p => new Supplier
+            {
+                SupID = p.SupplierId,
+                SupName = p.SupplierName,
+                RevisionDate = p.LastRevisionDate
+            }).ToList();
+
+            //New Items
+            PackageSupplierPriceRevDetailNew = (from cur in curList
+                                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
+                                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsNew == true)
+                                             select new GroupingPackageSupplierPriceModel
+                                             {
+                                                 SupplierId = sup.SupCode,
+                                                 SupplierName = sup.SupName,
+                                                 LastRevisionDate = b.PrRevDate,
+                                                 AssignedPercentage = c.RdAssignedPerc,
+                                                 AssignedQty = c.RdAssignedQty,
+                                                 MissedPrice = c.RdMissedPrice,
+                                                 OriginalCurrencyPrice = c.RdPriceOrigCurrency,
+                                                 Qty = c.RdQty,
+                                                 UnitPrice = c.RdPrice,
+                                                 TotalPrice = (c.RdAssignedQty * c.RdPrice),
+                                                 BoqResourceId = c.NewItemResourceId,
+                                                 OriginalCurrency = cur.CurCode,
+                                                 ExchRate = b.PrExchRate,
+                                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
+                                                 byBoq = (byte)a.SpByBoq,
+                                                 BoqItemO = Convert.ToString(c.NewItemId),
+                                                 Discount = c.RdDiscount,
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
+                                                 IsAlternative = c.IsAlternative,
+                                                 IsNewItem = c.IsNew,
+                                                 NewItemId = c.NewItemId,
+                                                 NewItemResourceId = c.NewItemResourceId,
+                                                 ParentItemO = c.ParentItemO,
+                                                 ParentResourceId = c.ParentResourceId,
+                                                 IsExcluded = c.IsExcluded
+                                             }).ToList();
+
+            foreach (var sup in supListRevision.OrderBy(x => x.SupName))
+            {
+                foreach (var itm in PackageSupplierPriceRevDetailNew)
+                {
+                    GroupingPackageSupplierPriceModel packSupRevDt = new GroupingPackageSupplierPriceModel
+                    {
+                        RevisionId = itm.RevisionId,
+                        SupplierId = sup.SupID,
+                        SupplierName = sup.SupName,
+                        LastRevisionDate = sup.RevisionDate,
+                        AssignedPercentage = itm.AssignedPercentage,
+                        AssignedQty = itm.AssignedQty,
+                        MissedPrice = itm.MissedPrice,
+                        OriginalCurrencyPrice = itm.OriginalCurrencyPrice,
+                        Qty = itm.Qty,
+                        UnitPrice = itm.UnitPrice,
+                        TotalPrice = itm.TotalPrice,     
+                        BoqResourceId=itm.BoqResourceId,
+                        OriginalCurrency = itm.OriginalCurrency,
+                        ExchRate = itm.ExchRate,
+                        ExchRateNow = itm.ExchRateNow,
+                        byBoq = itm.byBoq,
+                        BoqItemO = itm.BoqItemO,
+                        Discount = itm.Discount,
+                        UPriceAfterDiscount = itm.UPriceAfterDiscount,
+                        IsAlternative = itm.IsAlternative,
+                        IsNewItem = itm.IsNewItem,
+                        NewItemId = itm.NewItemId,
+                        NewItemResourceId = itm.NewItemResourceId,
+                        ParentItemO = itm.ParentItemO,
+                        ParentResourceId = itm.ParentResourceId,
+                        isCreatedByThisSupplier = (itm.SupplierId == sup.SupID),
+                        IsExcluded = itm.IsExcluded
+                    };
+
+                    PackageSupplierPriceRevDetail.Add(packSupRevDt);
+                }
+            }
+
+            //Alternative Items
+            PackageSupplierPriceRevDetailAlt = (from cur in curList
+                                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                             join sup in supList on a.SpSupplierId equals sup.SupCode
+                                             where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsAlternative == true)
+                                             select new GroupingPackageSupplierPriceModel
+                                             {
+                                                 SupplierId = sup.SupCode,
+                                                 SupplierName = sup.SupName,
+                                                 LastRevisionDate = b.PrRevDate,
+                                                 AssignedPercentage = c.RdAssignedPerc,
+                                                 AssignedQty = c.RdAssignedQty,
+                                                 MissedPrice = c.RdMissedPrice,
+                                                 OriginalCurrencyPrice = c.RdPriceOrigCurrency,
+                                                 Qty = c.RdQty,
+                                                 UnitPrice = c.RdPrice,
+                                                 TotalPrice = (c.RdAssignedQty * c.RdPrice),
+                                                 BoqResourceId = c.ParentResourceId,
+                                                 OriginalCurrency = cur.CurCode,
+                                                 ExchRate = b.PrExchRate,
+                                                 ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
+                                                 byBoq = (byte)a.SpByBoq,
+                                                 BoqItemO = c.RdBoqItem,
+                                                 Discount = c.RdDiscount,
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
+                                                 IsAlternative = c.IsAlternative,
+                                                 IsNewItem = c.IsNew,
+                                                 NewItemId = c.NewItemId,
+                                                 NewItemResourceId = c.NewItemResourceId,
+                                                 ParentItemO = c.ParentItemO,
+                                                 ParentResourceId = c.ParentResourceId,
+                                                 IsExcluded = c.IsExcluded
+                                             }).ToList();
+
+            foreach (var sup in supListRevision.OrderBy(x => x.SupName))
+            {
+                foreach (var itm in PackageSupplierPriceRevDetailAlt)
+                {
+                    GroupingPackageSupplierPriceModel packSupRevDt = new GroupingPackageSupplierPriceModel
+                    {
+                        RevisionId = itm.RevisionId,
+                        SupplierId = sup.SupID,
+                        SupplierName = sup.SupName,
+                        LastRevisionDate = sup.RevisionDate,
+                        AssignedPercentage = (itm.SupplierId == sup.SupID) ? itm.AssignedPercentage : 0,
+                        AssignedQty = (itm.SupplierId == sup.SupID) ? itm.AssignedQty : 0,
+                        MissedPrice = (itm.SupplierId == sup.SupID) ? itm.MissedPrice : 0,
+                        OriginalCurrencyPrice = (itm.SupplierId == sup.SupID) ? itm.OriginalCurrencyPrice : 0,
+                        Qty = (itm.SupplierId == sup.SupID) ? itm.Qty : 0,
+                        UnitPrice = (itm.SupplierId == sup.SupID) ? itm.UnitPrice : 0,
+                        TotalPrice = (itm.SupplierId == sup.SupID) ? itm.TotalPrice : 0,                    
+                        OriginalCurrency = itm.OriginalCurrency,
+                        BoqResourceId = itm.BoqResourceId,
+                        ExchRate = itm.ExchRate,
+                        ExchRateNow = itm.ExchRateNow,
+                        byBoq = itm.byBoq,
+                        BoqItemO = itm.BoqItemO,
+                        Discount = (itm.SupplierId == sup.SupID) ? itm.Discount : 0,
+                        UPriceAfterDiscount = (itm.SupplierId == sup.SupID) ? itm.UPriceAfterDiscount : 0,
+                        IsAlternative = itm.IsAlternative,
+                        IsNewItem = itm.IsNewItem,
+                        NewItemId = itm.NewItemId,
+                        NewItemResourceId = itm.NewItemResourceId,
+                        ParentItemO = itm.ParentItemO,
+                        ParentResourceId = itm.ParentResourceId,
+                        isCreatedByThisSupplier = (itm.SupplierId == sup.SupID),
+                        IsExcluded = itm.IsExcluded
+                    };
+
+                    PackageSupplierPriceRevDetail.Add(packSupRevDt);
+                }
+            }
 
 
             foreach (var item in items)
             {
-                item.GroupingResources = condQuery.Where(x => x.ItemO == item.ItemO).Select(y => new GroupingResourceModel
+                var x = condQuery.Where(x => x.ItemO == item.ItemO).FirstOrDefault();
+
+                item.GroupingResources = condQuery.Where(x => Convert.ToString( x.ItemO) == Convert.ToString(item.ItemO)).Select(y => new GroupingResourceModel
                 {
                     BoqSeq = y.BoqSeq,
                     ResourceSeq = y.ResSeq,
@@ -1682,8 +1833,8 @@ namespace AccApi.Repository.Managers
                     UnitPrice = y.BoqUprice,
                     TotalPrice = (y.BoqQty * y.BoqUprice),
                     ValidPerc = true,
-                    IsSelected = false,
-                    GroupingPackageSuppliersPrices = querySupp.Where(x => x.BoqResourceId == y.BoqSeq).OrderBy(x=>x.SupplierName).ToList()
+                    IsSelected = false
+                    //GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.BoqResourceId == y.BoqSeq).OrderBy(x=>x.SupplierName).ToList()
 
                 }).ToList();
 
@@ -1691,12 +1842,12 @@ namespace AccApi.Repository.Managers
                 if (supId == 0)
                 {
                     byte byBoq;
-                    byBoq=querySupp.FirstOrDefault().byBoq;
+                    byBoq= PackageSupplierPriceRevDetail.FirstOrDefault().byBoq;
 
                     if (byBoq == 1)
                     {
-                        var minPrice = querySupp.Where(p => p.BoqItemO == item.ItemO).Min(p => p.OriginalCurrencyPrice);
-                        var IdealItem = querySupp.Where(p => p.BoqItemO == item.ItemO && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
+                        var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO).Min(p => p.OriginalCurrencyPrice);
+                        var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
 
                         item.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
                         {
@@ -1714,15 +1865,23 @@ namespace AccApi.Repository.Managers
                             OriginalCurrency = IdealItem.OriginalCurrency,
                             ExchRate = IdealItem.ExchRate,
                             ExchRateNow = IdealItem.ExchRateNow,
-                            byBoq = byBoq
+                            byBoq = byBoq,
+                            Discount = IdealItem.Discount,
+                            UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                            IsAlternative = IdealItem.IsAlternative,
+                            IsNewItem = IdealItem.IsNewItem,
+                            NewItemId = IdealItem.NewItemId,
+                            NewItemResourceId = IdealItem.NewItemResourceId,
+                            ParentItemO = IdealItem.ParentItemO,
+                            ParentResourceId = IdealItem.ParentResourceId
                         });
                     }
                     else 
                     {
                         foreach(var res in item.GroupingResources)
                         { 
-                        var minPrice = querySupp.Where(p => p.BoqResourceId == res.BoqSeq).Min(p => p.OriginalCurrencyPrice);
-                        var IdealItem = querySupp.Where(p => p.BoqResourceId == res.BoqSeq && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
+                        var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq).Min(p => p.OriginalCurrencyPrice);
+                        var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
 
                             res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
                             {
@@ -1741,7 +1900,15 @@ namespace AccApi.Repository.Managers
                                 ExchRate = IdealItem.ExchRate,
                                 ExchRateNow = IdealItem.ExchRateNow,
                                 BoqResourceId= IdealItem.BoqResourceId,
-                                byBoq= byBoq
+                                byBoq= byBoq,
+                                Discount = IdealItem.Discount,
+                                UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                                IsAlternative = IdealItem.IsAlternative,
+                                IsNewItem = IdealItem.IsNewItem,
+                                NewItemId = IdealItem.NewItemId,
+                                NewItemResourceId = IdealItem.NewItemResourceId,
+                                ParentItemO = IdealItem.ParentItemO,
+                                ParentResourceId = IdealItem.ParentResourceId
                             });
                         }                   
                     }
@@ -1901,8 +2068,6 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            //if (supId == 0)
-            //{ 
                 PackageSupplierPriceRevDetail = (from cur in curList
                              join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -2091,44 +2256,6 @@ namespace AccApi.Repository.Managers
                         PackageSupplierPriceRevDetail.Add(packSupRevDt);
                     }
                 }
-
-                //TotalPrice = (c.RdAssignedQty * c.RdPrice),
-            //}
-            //else
-            //    PackageSupplierPriceRevDetail = (from cur in curList
-            //                 join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-            //                 join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-            //                 join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-            //                 join sup in supList on a.SpSupplierId equals sup.SupCode
-            //                 where (a.SpPackageId == packageId && b.PrRevNo == 0 && a.SpSupplierId == supId)
-            //                 select new GroupingPackageSupplierPriceModel
-            //                 {
-            //                     RevisionId = c.RdRevisionId,
-            //                     SupplierId = sup.SupCode,
-            //                     SupplierName = sup.SupName,
-            //                     LastRevisionDate = b.PrRevDate,
-            //                     AssignedPercentage = c.RdAssignedPerc,
-            //                     AssignedQty = c.RdAssignedQty,
-            //                     MissedPrice = c.RdMissedPrice,
-            //                     OriginalCurrencyPrice = c.RdPriceOrigCurrency,
-            //                     Qty = c.RdQty,
-            //                     UnitPrice = Math.Round((double)c.RdPrice,2),
-            //                     TotalPrice = Math.Round((double)(c.RdQty * c.RdPrice),2),
-            //                     BoqItemO = c.RdBoqItem,// c.ParentItemO != null ? c.ParentItemO : c.RdBoqItem,
-            //                     OriginalCurrency = cur.CurCode,
-            //                     ExchRate = b.PrExchRate,
-            //                     ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
-            //                     Discount=c.RdDiscount,
-            //                     UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount),2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-            //                     IsAlternative=c.IsAlternative,
-            //                     IsNewItem=c.IsNew,
-            //                     NewItemId=c.NewItemId,
-            //                     NewItemResourceId=c.NewItemResourceId,
-            //                     ParentItemO=c.ParentItemO,
-            //                     ParentResourceId=c.ParentResourceId
-            //                 }).ToList();
-
-            //TotalPrice = (c.RdAssignedQty * c.RdPrice),
 
 
             foreach (var item in items)
