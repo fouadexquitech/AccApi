@@ -14,5 +14,10 @@ namespace AccApi.Repository.View_Models
         public bool IsSelected { get; set; }
         public bool ValidPerc { get; set; }
         public List<GroupingPackageSupplierPriceModel>? GroupingPackageSuppliersPrices { get; set; }
+        public double? QuotationQty { get; set; }
+        public double? QuotationAmt { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
+        public bool? IsExcluded { get; set; } = false;
     }
 }

@@ -20,8 +20,8 @@ namespace AccApi.Repository.View_Models
 
         public List<GroupingResourceModel>? GroupingResources { get; set; }
         public List<GroupingPackageSupplierPriceModel>? GroupingPackageSuppliersPrices { get; set; }
-        public bool? IsAlternative { get; set; }
-        public bool? IsNewItem { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
         public bool? IsExcluded { get; set; }=false;
     }
 }
