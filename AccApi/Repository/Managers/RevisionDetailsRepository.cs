@@ -1588,7 +1588,7 @@ namespace AccApi.Repository.Managers
                     IsSelected = false,
                     RowNumber = p.First().RowNumber.Value,
                     IsNewItem = p.First().IsNewItem,
-                    IsAlternative = p.Max(x=> x.IsAlternative),
+                    IsAlternative = p.Min(x=> x.IsAlternative),
                     IsExcluded = p.First().IsExcluded
                 }).ToList();
 
@@ -1647,13 +1647,13 @@ namespace AccApi.Repository.Managers
                                  byBoq= (byte)a.SpByBoq,
                                  BoqItemO=c.RdBoqItem,
                                  Discount = c.RdDiscount,
-                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
-                                 IsAlternative = c.IsAlternative,
-                                 IsNewItem = c.IsNew,
-                                 NewItemId = c.NewItemId,
-                                 NewItemResourceId = c.NewItemResourceId,
-                                 ParentItemO = c.ParentItemO,
-                                 ParentResourceId = c.ParentResourceId,
+                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount==null ? 0 : c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
+                                 IsAlternative = false,
+                                 IsNewItem = false,
+                                 NewItemId = 0,
+                                 NewItemResourceId = 0,
+                                 ParentItemO = "",
+                                 ParentResourceId =0,
                                  IsExcluded = c.IsExcluded
                              }).ToList();
 
@@ -1697,7 +1697,7 @@ namespace AccApi.Repository.Managers
                                                     BoqItemO = Convert.ToString(c.NewItemId),
                                                     Discount = c.RdDiscount,
                                                     UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
-                                                    IsAlternative = c.IsAlternative,
+                                                    IsAlternative = false,
                                                     IsNewItem = c.IsNew,
                                                     NewItemId = c.NewItemId,
                                                     NewItemResourceId = c.NewItemResourceId,
@@ -1772,7 +1772,7 @@ namespace AccApi.Repository.Managers
                                                     BoqItemO = c.RdBoqItem,
                                                     Discount = c.RdDiscount,
                                                     UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)),2)
-                                                    IsAlternative = c.IsAlternative,
+                                                    IsAlternative =true,
                                                     IsNewItem = c.IsNew,
                                                     NewItemId = c.NewItemId,
                                                     NewItemResourceId = c.NewItemResourceId,
@@ -1826,7 +1826,7 @@ namespace AccApi.Repository.Managers
                 //var x = condQuery.Where(x => x.ItemO == item.ItemO).FirstOrDefault();
 
                 item.GroupingResources = condQuery.Where(x => x.ItemO == item.ItemO)
-                    .GroupBy(x => new { x.ItemO, x.BoqSeq, x.ResSeq })
+                    .GroupBy(x => new { x.ItemO, x.BoqSeq, x.ResSeq,x.IsAlternative,x.ResDescription })
                     .Select(p => p.FirstOrDefault()).ToList()
                     .Select(y => new GroupingResourceModel
                     {
@@ -1839,7 +1839,7 @@ namespace AccApi.Repository.Managers
                         TotalPrice = (y.BoqQty * y.BoqUprice),
                         ValidPerc = true,
                         IsSelected = false,
-                        GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.BoqResourceId == y.BoqSeq).OrderBy(x => x.SupplierName).ToList(),
+                        GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.BoqResourceId == y.BoqSeq && x.IsAlternative==y.IsAlternative).OrderBy(x => x.SupplierName).ToList(),
                         QuotationQty=y.BoqQty,
                         QuotationAmt=(y.BoqUprice * y.BoqQty),
                         IsNewItem = y.IsNewItem,
@@ -1924,7 +1924,8 @@ namespace AccApi.Repository.Managers
                     }
                 }
             }
-            return items;
+
+            return items.OrderBy(x=> x.IsNewItem).ThenBy(x => x.IsAlternative).ToList();
         }
 
         public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId)

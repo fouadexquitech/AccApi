@@ -1140,9 +1140,6 @@ namespace AccApi.Repository.Managers
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                       join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                                       join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                      join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
-                                                      join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
-                                                      join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                                       join i in _context.NewItems on c.NewItemId equals i.Id
                                                       join newr in _context.NewItemResources on c.NewItemResourceId equals newr.Id
                                                       join sup in supList on a.SpSupplierId equals sup.SupCode
@@ -1150,24 +1147,24 @@ namespace AccApi.Repository.Managers
                                                       select new RevisionDetails
                                                       {
                                                           resourceID = c.RdResourceSeq,
-                                                          ResDescription = e.ResDescription,
-                                                          resourceUnit = d.BoqUnitMesure,
+                                                          ResDescription = c.ResourceDescription,
+                                                          resourceUnit = newr.ResourceUnit,
                                                           resourceQty = c.RdQty,
                                                           price = c.RdPrice,
                                                           perc = c.RdAssignedPerc,
                                                           missedPrice = c.RdMissedPrice,
                                                           priceOrigCur = c.RdPriceOrigCurrency,
-                                                          ItemO = o.ItemO,
-                                                          DescriptionO = o.DescriptionO,
-                                                          SectionO = o.SectionO,
-                                                          Scope = o.Scope,
-                                                          BoqDiv = o.SectionO,
-                                                          ObSheetDesc = o.ObSheetDesc,
-                                                          RowNumber = o.RowNumber,
-                                                          BoqPackage = d.BoqPackage,
-                                                          BoqScope = d.BoqScope,
-                                                          ResDiv = d.BoqDiv,
-                                                          ResCtg = d.BoqCtg,
+                                                          ItemO = Convert.ToString(c.NewItemId),
+                                                          DescriptionO = c.ItemDescription,
+                                                          SectionO = Convert.ToString(""),
+                                                          Scope = pckgID,
+                                                          BoqDiv = Convert.ToString(""),
+                                                          ObSheetDesc = Convert.ToString(""),
+                                                          RowNumber = 0,
+                                                          BoqPackage = Convert.ToString(""),
+                                                          BoqScope = pckgID,
+                                                          ResDiv = Convert.ToString(""),
+                                                          ResCtg =newr.ResourceType,
                                                           AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                           OriginalCurrency = cur.CurCode,
                                                           AssignedQty = c.RdAssignedQty,

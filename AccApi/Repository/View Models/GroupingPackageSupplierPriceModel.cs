@@ -33,7 +33,7 @@ namespace AccApi.Repository.View_Models
         public double? ExchRate { get; set; }
         public double? ExchRateNow { get; set; }
         public double? Discount { get; set; }
-        public double? UPriceAfterDiscount { get; set; }
+        public double? UPriceAfterDiscount { get; set; }=0;
 
         public byte byBoq { get; set; }
 
