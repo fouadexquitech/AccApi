@@ -75,6 +75,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblUsersProject> TblUsersProjects { get; set; }
         public virtual DbSet<TempLabor> TempLabors { get; set; }
         public virtual DbSet<Tmp> Tmps { get; set; }
+        public virtual DbSet<TmpComparisonConditionsReply> TmpComparisonConditionsReplies { get; set; }
         public virtual DbSet<TmpStaffCost> TmpStaffCosts { get; set; }
         public virtual DbSet<TmpUnitCost> TmpUnitCosts { get; set; }
 
@@ -118,6 +119,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblAlertEmailHdr>(entity =>
             {
+                entity.Property(e => e.AehDesc).IsUnicode(false);
+
                 entity.Property(e => e.AehInsertBy).IsUnicode(false);
 
                 entity.Property(e => e.AehStoredProc).IsUnicode(false);
@@ -751,6 +754,8 @@ namespace AccApi.Repository
                 entity.HasKey(e => e.PkgeId)
                     .HasName("PK_Packages-Network");
 
+                entity.Property(e => e.PkgeId).ValueGeneratedNever();
+
                 entity.Property(e => e.FilePath).IsUnicode(false);
 
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
@@ -1203,19 +1208,13 @@ namespace AccApi.Repository
                 entity.Property(e => e.LegacyNo).IsUnicode(false);
             });
 
-            modelBuilder.Entity<Tmp>(entity =>
+            modelBuilder.Entity<TmpComparisonConditionsReply>(entity =>
             {
-                entity.Property(e => e.Id3).IsUnicode(false);
+                entity.Property(e => e.CondDesc).IsUnicode(false);
 
-                entity.Property(e => e.Id4).IsUnicode(false);
+                entity.Property(e => e.CondReply).IsUnicode(false);
 
-                entity.Property(e => e.TkId).IsUnicode(false);
-
-                entity.Property(e => e.TsId).IsUnicode(false);
-
-                entity.Property(e => e.VillaTypeId).IsUnicode(false);
-
-                entity.Property(e => e.ZoneId).IsUnicode(false);
+                entity.Property(e => e.SupName).IsUnicode(false);
             });
 
             modelBuilder.Entity<TmpStaffCost>(entity =>

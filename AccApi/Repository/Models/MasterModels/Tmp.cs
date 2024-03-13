@@ -13,23 +13,30 @@ namespace AccApi.Repository.Models.MasterModels
     public partial class Tmp
     {
         [Column("TK_ID")]
-        [StringLength(150)]
+        [StringLength(500)]
         public string TkId { get; set; }
         [Column("TS_ID")]
-        [StringLength(150)]
         public string TsId { get; set; }
         [Column("ID3")]
-        [StringLength(150)]
         public string Id3 { get; set; }
         [Column("ID4")]
-        [StringLength(150)]
         public string Id4 { get; set; }
-        public double? DayFee { get; set; }
+        [Column("ID5")]
+        public string Id5 { get; set; }
+        [Column("ID6")]
+        public string Id6 { get; set; }
+        [Column("ID7")]
+        public string Id7 { get; set; }
+        [Column("ID8")]
+        public string Id8 { get; set; }
+        [Column("ID9")]
+        public string Id9 { get; set; }
+        [Column("ID10")]
+        public string Id10 { get; set; }
+        public string DayFee { get; set; }
         [Column("ZoneID")]
-        [StringLength(150)]
         public string ZoneId { get; set; }
         [Column("VillaTypeID")]
-        [StringLength(150)]
         public string VillaTypeId { get; set; }
     }
 }

@@ -18,6 +18,8 @@ namespace AccApi.Repository.View_Models
         public byte ByBoq { get; set; }
 
         public DateTime? LastRevisionDate { get; set; }
+
+        public string? RevisionCurrency { get; set; }
     }
 
     public class FieldList
@@ -65,5 +67,9 @@ namespace AccApi.Repository.View_Models
 
         public double? Discount { get; set; }
         public double? UPriceAfterDiscount { get; set; }
+
+        public decimal totalPriceAfterExchange { get; set; }
+
+        public bool? IsExcluded { get; set; } = false;
     }
 }

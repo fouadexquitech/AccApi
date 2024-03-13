@@ -13,6 +13,8 @@ namespace AccApi.Repository.View_Models
 
         public string PhoneNumber { get; set; }
         public bool? IsAccountCreated { get; set; }
+
+        public DateTime? RevisionDate { get; set; }
     }
 
     //public class RegisterModel

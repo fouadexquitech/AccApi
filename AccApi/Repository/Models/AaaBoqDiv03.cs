@@ -96,5 +96,22 @@ namespace AccApi.Repository.Models
         public string BoqUnitMesure { get; set; }
         [Column("boqBOQSellRate")]
         public double? BoqBoqsellRate { get; set; }
+        [Column("boqLevel")]
+        [StringLength(10)]
+        public string BoqLevel { get; set; }
+        [Column("boqPackage")]
+        [StringLength(50)]
+        public string BoqPackage { get; set; }
+        [Column("boqBillQty")]
+        public double? BoqBillQty { get; set; }
+        public double? QtyScope { get; set; }
+        [Column("insertedBy")]
+        [StringLength(20)]
+        public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
+        [Column("subBoq")]
+        [StringLength(25)]
+        public string SubBoq { get; set; }
     }
 }

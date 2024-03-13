@@ -501,12 +501,12 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package || w.BoqScope == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
             if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
             if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
@@ -581,12 +581,12 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package);
+            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package || w.BoqScope == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
             if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
+            //if (input.Package > 0) condQuery = condQuery.Where(w => w.BoqScope == input.Package);
             if (input.boqLevel2.Length > 0) condQuery = condQuery.Where(w => input.boqLevel2.Contains(w.L2));
             if (input.boqLevel3.Length > 0) condQuery = condQuery.Where(w => input.boqLevel3.Contains(w.L3));
             //if (!string.IsNullOrEmpty(input.boqLevel3)) condQuery = condQuery.Where(w => w.L3.ToLower().Contains(input.boqLevel3.ToLower()));
@@ -684,6 +684,7 @@ namespace AccApi.Repository.Managers
             }
             return true;
         }
+
         public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input)
         {
             //get Exchange Rate Now
@@ -714,7 +715,7 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbcontext.TblSuppliers
                            select b).ToList();
 
-            var query = (from sup in supList
+            var supplierPackageRev = (from sup in supList
                          join b in _context.TblSupplierPackages on sup.SupCode equals b.SpSupplierId
                          join rev in _context.TblSupplierPackageRevisions on b.SpPackSuppId equals rev.PrPackSuppId
                          where (b.SpPackageId == pckgID && rev.PrRevNo == 0)
@@ -723,18 +724,19 @@ namespace AccApi.Repository.Managers
                              SupplierId = b.SpSupplierId,
                              SupplierName = sup.SupName,
                              LastRevisionDate = rev.PrRevDate,
-                             ByBoq = (byte)((b.SpByBoq == null) ? 0 : b.SpByBoq)
+                             ByBoq = (byte)((b.SpByBoq == null) ? 0 : b.SpByBoq),
+                             RevisionCurrency= curList.Find(x=>x.CurId==rev.PrCurrency).CurCode
                          }).ToList();
 
-            if (query.Count > 0)
+            if (supplierPackageRev.Count > 0)
             {
-                byte byboq = query.FirstOrDefault().ByBoq;
+                byte byboq = supplierPackageRev.FirstOrDefault().ByBoq;
 
-                query.Add(new PackageSuppliersPrice() { SupplierId = 0, SupplierName = "Ideal", LastRevisionDate = null, ByBoq = byboq });
+                supplierPackageRev.Add(new PackageSuppliersPrice() { SupplierId = 0, SupplierName = "Ideal", LastRevisionDate = null, ByBoq = byboq });
 
-                if (query.Count > 0)
+                if (supplierPackageRev.Count > 0)
                 {
-                    foreach (var item in query)
+                    foreach (var item in supplierPackageRev)
                     {
                         PackageSuppliersPrice packageSuppliersPrice = new PackageSuppliersPrice();
 
@@ -742,6 +744,8 @@ namespace AccApi.Repository.Managers
                         packageSuppliersPrice.SupplierName = item.SupplierName;
                         packageSuppliersPrice.ByBoq = item.ByBoq;
                         packageSuppliersPrice.LastRevisionDate = item.LastRevisionDate;
+                        packageSuppliersPrice.RevisionCurrency = item.RevisionCurrency;
+
                         byboq = item.ByBoq;
                         IEnumerable<RevisionDetails> revDtlQry;
                         IEnumerable<RevisionDetails> revDtlQryIdeal;
@@ -756,7 +760,7 @@ namespace AccApi.Repository.Managers
                                              join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                              join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0)
+                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null) && (c.IsAlternative == false || c.IsAlternative == null))
                                              select new RevisionDetails
                                              {
                                                  ItemO = o.ItemO,
@@ -775,8 +779,66 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                             });
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange= Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 IsExcluded= c.IsExcluded
+                                             }).Union(from cur in curList
+                                                      join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                      join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                      join itm in _context.NewItems on c.NewItemId equals itm.Id
+                                                      join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsNew == true)
+                                                      select new RevisionDetails
+                                                      {
+                                                          ItemO = c.RdBoqItem,
+                                                          DescriptionO = c.ItemDescription,
+                                                          UnitO = itm.UnitO,
+                                                          QtyO = c.RdQty,
+                                                          price = c.RdPrice,
+                                                          perc = c.RdAssignedPerc,
+                                                          missedPrice = c.RdMissedPrice,
+                                                          priceOrigCur = c.RdPriceOrigCurrency,
+                                                          Scope = pckgID,
+                                                          BoqDiv = "",
+                                                          ObSheetDesc = "",
+                                                          RowNumber = 0,
+                                                          AssignedToSupplier =  false,
+                                                          OriginalCurrency = cur.CurCode,
+                                                          AssignedQty = c.RdAssignedQty,
+                                                          Discount = c.RdDiscount,
+                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                          IsExcluded = c.IsExcluded
+                                                      }).Union(from cur in curList
+                                                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                               join o in _context.TblOriginalBoqs on c.ParentItemO equals o.ItemO
+                                                               join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                               where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsAlternative == true && c.UnitPriceAfterDiscount>0)
+                                                               select new RevisionDetails
+                                                               {
+                                                                   ItemO = c.RdBoqItem,
+                                                                   DescriptionO = c.ItemDescription,
+                                                                   UnitO = o.UnitO,
+                                                                   QtyO = c.RdQty,
+                                                                   price = c.RdPrice,
+                                                                   perc = c.RdAssignedPerc,
+                                                                   missedPrice = c.RdMissedPrice,
+                                                                   priceOrigCur = c.RdPriceOrigCurrency,
+                                                                   Scope = pckgID,
+                                                                   BoqDiv = o.SectionO,
+                                                                   ObSheetDesc = o.ObSheetDesc,
+                                                                   RowNumber = 0,
+                                                                   AssignedToSupplier = false,
+                                                                   OriginalCurrency = cur.CurCode,
+                                                                   AssignedQty = c.RdAssignedQty,
+                                                                   Discount = c.RdDiscount,
+                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange =  Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                                   IsExcluded = c.IsExcluded
+                                                               });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                                 if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -787,21 +849,6 @@ namespace AccApi.Repository.Managers
                                 if (input.RESType.Length > 0) revDtlQry = revDtlQry.Where(w => input.RESType.Contains(w.ResCtg));
                                 if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
                                 if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
-
-
-                                revDtlQryIdeal = revDtlQry
-                                    .GroupBy(x => new { x.ItemO })
-                                    .Select(p => new RevisionDetails
-                                    {
-                                        ItemO = p.First().ItemO,
-                                        DescriptionO = p.First().DescriptionO,
-                                        UnitO = p.First().UnitO,
-                                        QtyO = p.First().QtyO,
-                                        priceOrigCur = p.Min(c => c.priceOrigCur),
-                                        AssignedQty = p.First().AssignedQty,
-                                        OriginalCurrency = p.First().OriginalCurrency,
-                                        UPriceAfterDiscount = p.Min(c => c.UPriceAfterDiscount)
-                                    }).ToList();
                             }
                             else
                             {
@@ -813,8 +860,8 @@ namespace AccApi.Repository.Managers
                                              join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
                                              join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
-
+                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId && 
+                                             (c.IsNew == false || c.IsNew == null) && (c.IsAlternative == false || c.IsAlternative == null))
                                              select new RevisionDetails
                                              {
                                                  resourceID = c.RdResourceSeq,
@@ -840,8 +887,84 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                             });
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 IsExcluded = c.IsExcluded
+                                             }).Union(from cur in curList
+                                                      join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                      join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                      join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
+                                                      join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
+                                                      join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
+                                                      join i in _context.NewItems on c.NewItemId equals i.Id
+                                                      join newr in _context.NewItemResources on c.NewItemResourceId equals newr.Id
+                                                      join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
+                                                      select new RevisionDetails
+                                                      {
+                                                          resourceID = c.RdResourceSeq,
+                                                          ResDescription = e.ResDescription,
+                                                          resourceUnit = d.BoqUnitMesure,
+                                                          resourceQty = c.RdQty,
+                                                          price = c.RdPrice,
+                                                          perc = c.RdAssignedPerc,
+                                                          missedPrice = c.RdMissedPrice,
+                                                          priceOrigCur = c.RdPriceOrigCurrency,
+                                                          ItemO = o.ItemO,
+                                                          DescriptionO = o.DescriptionO,
+                                                          SectionO = o.SectionO,
+                                                          Scope = o.Scope,
+                                                          BoqDiv = o.SectionO,
+                                                          ObSheetDesc = o.ObSheetDesc,
+                                                          RowNumber = o.RowNumber,
+                                                          BoqPackage = d.BoqPackage,
+                                                          BoqScope = d.BoqScope,
+                                                          ResDiv = d.BoqDiv,
+                                                          ResCtg = d.BoqCtg,
+                                                          AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
+                                                          OriginalCurrency = cur.CurCode,
+                                                          AssignedQty = c.RdAssignedQty,
+                                                          Discount = c.RdDiscount,
+                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                          IsExcluded = c.IsExcluded
+                                                      }).Union(from cur in curList
+                                                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                               join d in _context.TblBoqs on c.ParentResourceId equals d.BoqSeq
+                                                               where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId 
+                                                               && c.IsAlternative==true && c.UnitPriceAfterDiscount > 0)
+                                                               select new RevisionDetails
+                                                               {
+                                                                   resourceID = c.RdResourceSeq,
+                                                                   ResDescription = c.ResourceDescription,
+                                                                   resourceUnit = d.BoqUnitMesure,
+                                                                   resourceQty = c.RdQty,
+                                                                   price = c.RdPrice,
+                                                                   perc = c.RdAssignedPerc,
+                                                                   missedPrice = c.RdMissedPrice,
+                                                                   priceOrigCur = c.RdPriceOrigCurrency,
+                                                                   ItemO = c.RdBoqItem,
+                                                                   DescriptionO = c.ItemDescription,
+                                                                   SectionO = d.BoqDiv,
+                                                                   Scope = pckgID,
+                                                                   BoqDiv = d.BoqDiv,
+                                                                   ObSheetDesc = "",
+                                                                   RowNumber =0,
+                                                                   BoqPackage = d.BoqPackage,
+                                                                   BoqScope = d.BoqScope,
+                                                                   ResDiv = d.BoqDiv,
+                                                                   ResCtg = d.BoqCtg,
+                                                                   AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
+                                                                   OriginalCurrency = cur.CurCode,
+                                                                   AssignedQty = c.RdAssignedQty,
+                                                                   Discount = c.RdDiscount,
+                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                                   IsExcluded = c.IsExcluded
+                                                               });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                                 if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -854,21 +977,22 @@ namespace AccApi.Repository.Managers
                                 if (!string.IsNullOrEmpty(input.RESPackage)) revDtlQry = revDtlQry.Where(w => w.BoqPackage == input.RESPackage);
                                 if (!string.IsNullOrEmpty(input.RESDesc)) revDtlQry = revDtlQry.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
-                                revDtlQryIdeal = revDtlQry
-                                .GroupBy(x => new { x.ItemO })
-                                .Select(p => new RevisionDetails
-                                {
-                                    ItemO = p.First().ItemO,
-                                    DescriptionO = p.First().DescriptionO,
-                                    UnitO = p.First().UnitO,
-                                    QtyO = p.First().QtyO,
-                                    priceOrigCur = p.Min(c => c.priceOrigCur),
-                                    AssignedQty = p.First().AssignedQty,
-                                    OriginalCurrency = p.First().OriginalCurrency,
-                                    UPriceAfterDiscount = p.Min(c => c.UPriceAfterDiscount)
-                                }).ToList();
-
                             }
+
+                            revDtlQryIdeal = revDtlQry.Where(x => x.totalPriceAfterExchange > 0)
+                            .GroupBy(x => new { x.ItemO, x.IsExcluded })
+                            .Select(p => new RevisionDetails
+                            {
+                                ItemO = p.First().ItemO,
+                                DescriptionO = p.First().DescriptionO,
+                                UnitO = p.First().UnitO,
+                                QtyO = p.First().QtyO,
+                                priceOrigCur = p.Min(c => (c.IsExcluded == true) ? 0 : c.priceOrigCur),
+                                AssignedQty = p.First().AssignedQty,
+                                OriginalCurrency = p.First().OriginalCurrency,
+                                UPriceAfterDiscount = p.Min(c => (c.IsExcluded == true) ? 0 : c.UPriceAfterDiscount),
+                                totalPriceAfterExchange = p.Min(c => (c.IsExcluded == true) ? 0 : c.totalPriceAfterExchange)
+                            }).ToList();
 
                             packageSuppliersPrice.revisionDetails = revDtlQryIdeal.ToList();
 
@@ -876,7 +1000,6 @@ namespace AccApi.Repository.Managers
                             f = null;
                             packageSuppliersPrice.fieldLists = f;
                         }
-
                         else
                         {
                             if (byboq == 1)
@@ -888,7 +1011,6 @@ namespace AccApi.Repository.Managers
                                              join o in _context.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
-
                                              select new RevisionDetails
                                              {
                                                  ItemO = o.ItemO,
@@ -907,9 +1029,63 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
-                                                 
-                                             });
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
+                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                             }).Union(from cur in curList
+                                                      join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                      join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                      join itm in _context.NewItems on c.NewItemId equals itm.Id
+                                                      join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsNew == true)
+                                                      select new RevisionDetails
+                                                      {
+                                                          ItemO = c.RdBoqItem,
+                                                          DescriptionO = c.ItemDescription,
+                                                          UnitO = itm.UnitO,
+                                                          QtyO = c.RdQty,
+                                                          price = c.RdPrice,
+                                                          perc = c.RdAssignedPerc,
+                                                          missedPrice = c.RdMissedPrice,
+                                                          priceOrigCur = c.RdPriceOrigCurrency,
+                                                          Scope = pckgID,
+                                                          BoqDiv = "",
+                                                          ObSheetDesc = "",
+                                                          RowNumber = 0,
+                                                          AssignedToSupplier = false,
+                                                          OriginalCurrency = cur.CurCode,
+                                                          AssignedQty = c.RdAssignedQty,
+                                                          Discount = c.RdDiscount,
+                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                      }).Union(from cur in curList
+                                                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                               join o in _context.TblOriginalBoqs on c.ParentItemO equals o.ItemO
+                                                               join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                               where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsAlternative == true)
+                                                               select new RevisionDetails
+                                                               {
+                                                                   ItemO = c.RdBoqItem,
+                                                                   DescriptionO = c.ItemDescription,
+                                                                   UnitO = o.UnitO,
+                                                                   QtyO = c.RdQty,
+                                                                   price = c.RdPrice,
+                                                                   perc = c.RdAssignedPerc,
+                                                                   missedPrice = c.RdMissedPrice,
+                                                                   priceOrigCur = c.RdPriceOrigCurrency,
+                                                                   Scope = pckgID,
+                                                                   BoqDiv = o.SectionO,
+                                                                   ObSheetDesc = o.ObSheetDesc,
+                                                                   RowNumber = 0,
+                                                                   AssignedToSupplier = false,
+                                                                   OriginalCurrency = cur.CurCode,
+                                                                   AssignedQty = c.RdAssignedQty,
+                                                                   Discount = c.RdDiscount,
+                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow):0
+                                                               });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                                 if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -933,7 +1109,6 @@ namespace AccApi.Repository.Managers
                                              join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
-
                                              select new RevisionDetails
                                              {
                                                  resourceID = c.RdResourceSeq,
@@ -959,8 +1134,78 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                             });
+                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                             }).Union(from cur in curList
+                                                      join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                      join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                      join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                      join i in _context.NewItems on c.NewItemId equals i.Id
+                                                      join newr in _context.NewItemResources on c.NewItemResourceId equals newr.Id
+                                                      join sup in supList on a.SpSupplierId equals sup.SupCode
+                                                      where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
+                                                      select new RevisionDetails
+                                                      {
+                                                          resourceID = c.RdResourceSeq,
+                                                          ResDescription = c.ResourceDescription,
+                                                          resourceUnit = newr.ResourceUnit,
+                                                          resourceQty = c.RdQty,
+                                                          price = c.RdPrice,
+                                                          perc = c.RdAssignedPerc,
+                                                          missedPrice = c.RdMissedPrice,
+                                                          priceOrigCur = c.RdPriceOrigCurrency,
+                                                          ItemO = Convert.ToString(c.NewItemId),
+                                                          DescriptionO = c.ItemDescription,
+                                                          SectionO = Convert.ToString(""),
+                                                          Scope = pckgID,
+                                                          BoqDiv = Convert.ToString(""),
+                                                          ObSheetDesc = Convert.ToString(""),
+                                                          RowNumber = 0,
+                                                          BoqPackage = Convert.ToString(""),
+                                                          BoqScope = pckgID,
+                                                          ResDiv = Convert.ToString(""),
+                                                          ResCtg =newr.ResourceType,
+                                                          AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
+                                                          OriginalCurrency = cur.CurCode,
+                                                          AssignedQty = c.RdAssignedQty,
+                                                          Discount = c.RdDiscount,
+                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                      }).Union(from cur in curList
+                                                               join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                               join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                               join d in _context.TblBoqs on c.ParentResourceId equals d.BoqSeq
+                                                               where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId
+                                                               && c.IsAlternative == true && c.UnitPriceAfterDiscount > 0)
+                                                               select new RevisionDetails
+                                                               {
+                                                                   resourceID = c.RdResourceSeq,
+                                                                   ResDescription = c.ResourceDescription,
+                                                                   resourceUnit = d.BoqUnitMesure,
+                                                                   resourceQty = c.RdQty,
+                                                                   price = c.RdPrice,
+                                                                   perc = c.RdAssignedPerc,
+                                                                   missedPrice = c.RdMissedPrice,
+                                                                   priceOrigCur = c.RdPriceOrigCurrency,
+                                                                   ItemO = c.RdBoqItem,
+                                                                   DescriptionO = c.ItemDescription,
+                                                                   SectionO = d.BoqDiv,
+                                                                   Scope = pckgID,
+                                                                   BoqDiv = d.BoqDiv,
+                                                                   ObSheetDesc = "",
+                                                                   RowNumber = 0,
+                                                                   BoqPackage = d.BoqPackage,
+                                                                   BoqScope = d.BoqScope,
+                                                                   ResDiv = d.BoqDiv,
+                                                                   ResCtg = d.BoqCtg,
+                                                                   AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
+                                                                   OriginalCurrency = cur.CurCode,
+                                                                   AssignedQty = c.RdAssignedQty,
+                                                                   Discount = c.RdDiscount,
+                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                               }); 
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                                 if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
@@ -990,7 +1235,6 @@ namespace AccApi.Repository.Managers
 
                             packageSuppliersPrice.revisionDetails = revDtlQry.ToList();
                             packageSuppliersPrice.fieldLists = fieldLists;
-
                         }
 
                         if (packageSuppliersPrice.revisionDetails.Count > 0)
@@ -998,9 +1242,9 @@ namespace AccApi.Repository.Managers
                             foreach (var itemRevision in packageSuppliersPrice.revisionDetails)
                             {
                                 if (packageSuppliersPrice.SupplierName == "Ideal")
-                                    packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
+                                    packageSuppliersPrice.totalprice += itemRevision.totalPriceAfterExchange;  // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                                 else
-                                    packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
+                                    packageSuppliersPrice.totalprice += itemRevision.totalPriceAfterExchange; // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                                 //packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.AssignedQty) * Convert.ToDecimal(itemRevision.priceOrigCur) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                             }
                         }
@@ -1028,18 +1272,22 @@ namespace AccApi.Repository.Managers
                     }
                 }
             }
+
             return result;
             //return result.OrderBy(x => x.SupplierName).ToList();
         }
         private double GetExchange(string foreignCurrency)
         {
-            var result = from a in _context.TblParameters
-                         join b in _context.TblCurrencies
-                         on a.EstimatedCur equals b.CurId
+            var curList = (from b in _mdbcontext.TblCurrencies
+                           select b).ToList();
+
+            var result = from c in curList
+                         join b in _context.TblParameters
+                         on c.CurId equals b.EstimatedCur
                          select new ProjectCurrency
                          {
-                             curId = (int)a.EstimatedCur,
-                             curCode = b.CudCode
+                             curId = (int)b.EstimatedCur,
+                             curCode = c.CurCode
                          };
 
 
@@ -1892,9 +2140,6 @@ namespace AccApi.Repository.Managers
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
                                                    AssignedPackage = ""
                                                });
-
-
-
             var total = condQuery.Count();
 
             double FinalTotalPrice = 0;

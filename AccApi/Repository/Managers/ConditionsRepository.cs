@@ -149,11 +149,10 @@ namespace AccApi.Repository.Managers
                     }
                 }
             }
-
             return techCond.ToList();
         }
 
-        public List<TmpConditionsReply> GetComConditionsReply(int PackageSupliersID)
+        public List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB, int PackageId)
         {
             //var comcond = (from b in _mdbcontext.TblComConds
             //               select b).ToList();
@@ -172,30 +171,37 @@ namespace AccApi.Repository.Managers
             //                  condReply = a.CdSuppReply
             //              });
 
-            var param1 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
-            var param2 = new SqlParameter("@Type", 1);
+            var p1 = new SqlParameter("@DB", costDB);
+            var p2 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
+            var p3 = new SqlParameter("@Type", 1);
+            var p4 = new SqlParameter("@PackageId", PackageId);
 
-            List<TmpConditionsReply> list = _dbcontext
-                        .TmpConditionsReplies
-                        .FromSqlRaw("exec SP_GetConditionsReply @PackageSupliersID,@Type", param1, param2)
-                        .ToList();
-
-            return list;
-        }
-
-        public List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID)
-        {        
-            var param1 = new SqlParameter("@PackageID", PackageID);
-            var param2 = new SqlParameter("@Type", 1);
-
-            List<TmpConditionsReply> list = _dbcontext
-                        .TmpConditionsReplies
-                        .FromSqlRaw("exec SP_GetPackageConditionsReply @PackageID,@Type", param1, param2)
-                        .ToList();
+            List<TmpComparisonConditionsReply> list = _mdbcontext
+            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type,@PackageId", p1, p2, p3,p4).ToList();
 
             return list;
+
+            //List<SqlParameter> parameters = new List<SqlParameter>();
+            //parameters.Add(p1);
+            //parameters.Add(p2);
+            //parameters.Add(p3);
+
+            //ExecuteRawSP executeRawSP = new ExecuteRawSP();
+
+            //      var result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type", parameters,
+            //            x => new TmpConditionsReply
+            //            {
+            //                CondId = (int)x["condId"],
+            //                CondDesc = (string)x["condDesc"],
+            //                CondReply = x["condReply"] == null ? "" : (string)x["condReply"],
+            //                SupId= (int)x["supId"],
+            //                SupName= (string)x["supName"]
+            //            });
+
+            //return result;
         }
-        public List<TmpConditionsReply> GetTechConditionsReply(int PackageSupliersID)
+
+        public List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB, int PackageId)
         {
             //var techcond = (from b in _mdbcontext.TblTechConds
             //                select b).ToList();
@@ -216,16 +222,49 @@ namespace AccApi.Repository.Managers
 
             //return result.ToList();
 
-            var param1 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
-            var param2 = new SqlParameter("@Type", 2);
+            var p1 = new SqlParameter("@DB", costDB);
+            var p2 = new SqlParameter("@PackageSupliersID", PackageSupliersID);
+            var p3 = new SqlParameter("@Type", 2);
+            var p4 = new SqlParameter("@PackageId", PackageId);
+
+            List<TmpComparisonConditionsReply> list = _mdbcontext
+            .TmpComparisonConditionsReplies.FromSqlRaw("exec SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type,@PackageId", p1, p2, p3,p4)
+            .ToList();
+
+            return list;
+            //List<SqlParameter> parameters = new List<SqlParameter>();
+            //parameters.Add(p1);
+            //parameters.Add(p2);
+            //parameters.Add(p3);
+
+            //ExecuteRawSP executeRawSP = new ExecuteRawSP();
+
+            //var result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "SP_GetComparisonConditionsReply @DB,@PackageSupliersID,@Type", parameters,
+            //      x => new TmpConditionsReply
+            //      {
+            //          CondId = (int)x["condId"],
+            //          CondDesc = (string)x["condDesc"],
+            //          CondReply = x["condReply"] == null ? "" : (string)x["condReply"],
+            //          SupId = (int)x["supId"],
+            //          SupName = (string)x["supName"]
+            //      });
+
+            //return result;
+        }
+
+        public List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID)
+        {        
+            var param1 = new SqlParameter("@PackageID", PackageID);
+            var param2 = new SqlParameter("@Type", 1);
 
             List<TmpConditionsReply> list = _dbcontext
                         .TmpConditionsReplies
-                        .FromSqlRaw("exec SP_GetConditionsReply @PackageSupliersID,@Type", param1, param2)
+                        .FromSqlRaw("exec SP_GetPackageConditionsReply @PackageID,@Type", param1, param2)
                         .ToList();
 
             return list;
         }
+       
         public List<TmpConditionsReply> GetPackageTechConditionsReply(int PackageID)
         {
             var param1 = new SqlParameter("@PackageID", PackageID);

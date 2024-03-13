@@ -19,7 +19,7 @@ namespace AccApi.Repository.Models
         public byte RicCtg { get; set; }
         [Required]
         [Column("ricDesc")]
-        [StringLength(100)]
+        [StringLength(500)]
         public string RicDesc { get; set; }
         [Column("ricSort")]
         public int? RicSort { get; set; }

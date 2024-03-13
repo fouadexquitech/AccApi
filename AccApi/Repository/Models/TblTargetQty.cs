@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models
 {
     [Table("tblTargetQty")]
-    [Index(nameof(TqArea), nameof(TqTrade), Name = "IX_tblTargetQty")]
     public partial class TblTargetQty
     {
         [Key]

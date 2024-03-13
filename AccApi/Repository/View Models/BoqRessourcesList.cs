@@ -67,7 +67,14 @@ namespace AccApi.Repository.View_Models
         public double? BoqTotalPrice { get; set; }
         public string BoqResSeq { get; set; }
         public string resCode { get; set; }
-        
+
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
+        public string? ParentItemO { get; set; }
+        public int? ParentResourceId { get; set; }
+        public bool? IsExcluded { get; set; } = false;
     }
 
 
