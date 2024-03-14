@@ -813,14 +813,14 @@ namespace AccApi.Repository.Managers
                                   ItemO = o.ItemO,
                                   DescriptionO = o.DescriptionO,
                                   UnitO = o.UnitO,
-                                  QtyO = o.QtyO,
+                                  ScopeQtyO = o.QtyScope,
                                   UnitRateO = o.UnitRate,
                                   ScopeO = o.Scope
                               }).ToList();
 
                     foreach (var row in result)
                     {
-                        if ((row.ItemO != "") && (row.QtyO > 0))
+                        if ((row.ItemO != "") && (row.ScopeQtyO > 0))
                         {
                             var revdtl = new TblRevisionDetail()
                             {
@@ -829,7 +829,7 @@ namespace AccApi.Repository.Managers
                                 RdBoqItem = row.ItemO,
                                 RdPrice = 0,
                                 RdPriceOrigCurrency = 0,
-                                RdQty = row.QtyO,
+                                RdQty = row.ScopeQtyO,
                                 RdComment = "",
                                 RdMissedPrice = 0,
                                 RdDiscount = discount,
@@ -862,7 +862,7 @@ namespace AccApi.Repository.Managers
                                   BoqSeq = b.BoqSeq,
                                   BoqCtg = b.BoqCtg,
                                   BoqUnitMesure = b.BoqUnitMesure,
-                                  BoqQty = b.BoqQty,
+                                  BoqScopeQty = b.BoqQtyScope,
                                   BoqUprice = b.BoqUprice,
                                   BoqDiv = b.BoqDiv,
                                   BoqPackage = b.BoqPackage,
@@ -873,7 +873,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var row in result)
                     {
-                        if  (row.BoqQty > 0)
+                        if  (row.BoqScopeQty > 0)
                         {
                             var revdtl = new TblRevisionDetail()
                             {
@@ -881,7 +881,7 @@ namespace AccApi.Repository.Managers
                                 RdResourceSeq = row.BoqSeq,
                                 RdBoqItem = row.BoqItem,
                                 RdPrice = 0,
-                                RdQty = row.BoqQty,
+                                RdQty = row.BoqScopeQty,
                                 RdComment = "",
                                 RdPriceOrigCurrency = 0,
                                 RdMissedPrice = 0,

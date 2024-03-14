@@ -1855,8 +1855,8 @@ namespace AccApi.Repository.Managers
 
                     if (byBoq == 1)
                     {
-                        var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO).Min(p => p.OriginalCurrencyPrice);
-                        var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
+                        var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
+                        var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
 
                         item.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
                         {
@@ -1889,8 +1889,8 @@ namespace AccApi.Repository.Managers
                     {
                         foreach(var res in item.GroupingResources)
                         { 
-                            var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq).Min(p => p.OriginalCurrencyPrice);
-                            var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.OriginalCurrencyPrice == minPrice).FirstOrDefault();
+                            var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
+                            var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative==res.IsAlternative).FirstOrDefault();
 
                             if (minPrice!=null)
                             res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
@@ -1904,7 +1904,7 @@ namespace AccApi.Repository.Managers
                                 OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
                                 Qty = IdealItem.Qty,
                                 UnitPrice = IdealItem.UnitPrice,
-                                TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
+                                TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
                                 BoqItemO = IdealItem.BoqItemO,
                                 OriginalCurrency = IdealItem.OriginalCurrency,
                                 ExchRate = IdealItem.ExchRate,
@@ -1936,7 +1936,8 @@ namespace AccApi.Repository.Managers
                                                         join o in _dbContext.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
                                                         join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        where a.SpPackageId == packageId && c.IsNew == false && c.IsAlternative == false && bb.PrRevNo == 0
+                                                        where a.SpPackageId == packageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
+                                                                && (c.IsAlternative == false || c.IsAlternative == null)
                                                         select new BoqRessourcesList
                                                         {
                                                             RowNumber = o.RowNumber,
@@ -2291,7 +2292,7 @@ namespace AccApi.Repository.Managers
                             OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
                             Qty = (IdealItem.IsExcluded == true) ? 0 : IdealItem.Qty,
                             UnitPrice = IdealItem.UnitPrice,
-                            TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
+                            TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
                             BoqItemO = IdealItem.BoqItemO,
                             OriginalCurrency = IdealItem.OriginalCurrency,
                             ExchRate = IdealItem.ExchRate,
