@@ -779,9 +779,9 @@ namespace AccApi.Repository.Managers
                                                  AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
-                                                 Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                 totalPriceAfterExchange= Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
+                                                 UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange= c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
                                                  IsExcluded= c.IsExcluded
                                              }).Union(from cur in curList
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
@@ -807,8 +807,8 @@ namespace AccApi.Repository.Managers
                                                           AssignedToSupplier =  false,
                                                           OriginalCurrency = cur.CurCode,
                                                           AssignedQty = c.RdAssignedQty,
-                                                          Discount = c.RdDiscount,
-                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
+                                                          UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                                                           totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
                                                           IsExcluded = c.IsExcluded
                                                       }).Union(from cur in curList
@@ -835,9 +835,9 @@ namespace AccApi.Repository.Managers
                                                                    AssignedToSupplier = false,
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,
-                                                                   Discount = c.RdDiscount,
-                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                                   totalPriceAfterExchange =  Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                                   Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
+                                                                   UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
                                                                    IsExcluded = c.IsExcluded
                                                                });
 
@@ -888,9 +888,16 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                 IsExcluded = c.IsExcluded
+                                                 UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 IsAlternative = false,
+                                                 IsNewItem = false,
+                                                 NewItemId = c.NewItemId,
+                                                 NewItemResourceId = c.NewItemResourceId,
+                                                 ParentItemO = c.ParentItemO,
+                                                 ParentResourceId = c.ParentResourceId,
+                                                 IsExcluded = c.IsExcluded,
+                                                 SupplierId = (int)a.SpSupplierId
                                              }).Union(from cur in curList
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                       join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -924,9 +931,16 @@ namespace AccApi.Repository.Managers
                                                           OriginalCurrency = cur.CurCode,
                                                           AssignedQty = c.RdAssignedQty,
                                                           Discount = c.RdDiscount,
-                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                          IsExcluded = c.IsExcluded
+                                                          UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                          IsAlternative = false,
+                                                          IsNewItem = true,
+                                                          NewItemId = c.NewItemId,
+                                                          NewItemResourceId = c.NewItemResourceId,
+                                                          ParentItemO = c.ParentItemO,
+                                                          ParentResourceId = c.ParentResourceId,
+                                                          IsExcluded = c.IsExcluded,
+                                                          SupplierId = (int)a.SpSupplierId
                                                       }).Union(from cur in curList
                                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -958,9 +972,16 @@ namespace AccApi.Repository.Managers
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,
                                                                    Discount = c.RdDiscount,
-                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                                   totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                                   IsExcluded = c.IsExcluded
+                                                                   UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                                   IsAlternative = true,
+                                                                   IsNewItem = false,
+                                                                   NewItemId = c.NewItemId,
+                                                                   NewItemResourceId = c.NewItemResourceId,
+                                                                   ParentItemO = c.ParentItemO,
+                                                                   ParentResourceId = c.ParentResourceId,
+                                                                   IsExcluded = c.IsExcluded,
+                                                                   SupplierId = (int)a.SpSupplierId
                                                                });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -976,7 +997,7 @@ namespace AccApi.Repository.Managers
                             }
 
                             revDtlQryIdeal = revDtlQry.Where(x => x.totalPriceAfterExchange > 0)
-                            .GroupBy(x => new { x.ItemO,x.resourceID, x.IsExcluded })
+                            .GroupBy(x => new { x.ItemO,x.resourceID, x.IsExcluded, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
                             .Select(p => new RevisionDetails
                             {
                                 ItemO = p.First().ItemO,
@@ -1025,8 +1046,8 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
-                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                 UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 :  Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
+                                                 totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
                                              }).Union(from cur in curList
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                       join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1052,8 +1073,8 @@ namespace AccApi.Repository.Managers
                                                           OriginalCurrency = cur.CurCode,
                                                           AssignedQty = c.RdAssignedQty,
                                                           Discount = c.RdDiscount,
-                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                          UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
                                                       }).Union(from cur in curList
                                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1079,8 +1100,8 @@ namespace AccApi.Repository.Managers
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,
                                                                    Discount = c.RdDiscount,
-                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                                   totalPriceAfterExchange = (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow):0
+                                                                   UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 :  (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow):0
                                                                });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -1101,14 +1122,14 @@ namespace AccApi.Repository.Managers
                                              join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                              join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                              join d in _context.TblBoqs on c.RdResourceSeq equals d.BoqSeq
-                                             join e in _context.TblResources on d.BoqResSeq equals e.ResSeq
                                              join o in _context.TblOriginalBoqs on d.BoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId)
+                                             where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId 
+                                             && (c.IsNew == false || c.IsNew == null) && (c.IsAlternative == false || c.IsAlternative == null))
                                              select new RevisionDetails
                                              {
                                                  resourceID = c.RdResourceSeq,
-                                                 ResDescription = e.ResDescription,
+                                                 ResDescription = c.ResourceDescription == null ? "": c.ResourceDescription,
                                                  resourceUnit = d.BoqUnitMesure,
                                                  resourceQty = c.RdQty,
                                                  price = c.RdPrice,
@@ -1116,7 +1137,7 @@ namespace AccApi.Repository.Managers
                                                  missedPrice = c.RdMissedPrice,
                                                  priceOrigCur = c.RdPriceOrigCurrency,
                                                  ItemO = o.ItemO,
-                                                 DescriptionO = o.DescriptionO,
+                                                 DescriptionO =  o.DescriptionO == null ? "" : o.DescriptionO,
                                                  SectionO = o.SectionO,
                                                  Scope = o.Scope,
                                                  BoqDiv = o.SectionO,
@@ -1130,8 +1151,16 @@ namespace AccApi.Repository.Managers
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
-                                                 UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                 totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                 UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 :  Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                 totalPriceAfterExchange = c.UnitPriceAfterDiscount ==null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 IsAlternative = false,
+                                                 IsNewItem = false,
+                                                 NewItemId = c.NewItemId,
+                                                 NewItemResourceId = c.NewItemResourceId,
+                                                 ParentItemO = c.ParentItemO,
+                                                 ParentResourceId = c.ParentResourceId,
+                                                 IsExcluded = c.IsExcluded,
+                                                 SupplierId = (int)a.SpSupplierId
                                              }).Union(from cur in curList
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                       join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1160,13 +1189,21 @@ namespace AccApi.Repository.Managers
                                                           BoqPackage = Convert.ToString(""),
                                                           BoqScope = pckgID,
                                                           ResDiv = Convert.ToString(""),
-                                                          ResCtg =newr.ResourceType,
+                                                          ResCtg = newr.ResourceType,
                                                           AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                           OriginalCurrency = cur.CurCode,
                                                           AssignedQty = c.RdAssignedQty,
                                                           Discount = c.RdDiscount,
-                                                          UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                          totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                          UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                          totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                          IsAlternative = false,
+                                                          IsNewItem = true,
+                                                          NewItemId = c.NewItemId,
+                                                          NewItemResourceId = c.NewItemResourceId,
+                                                          ParentItemO = c.ParentItemO,
+                                                          ParentResourceId = c.ParentResourceId,
+                                                          IsExcluded = c.IsExcluded,
+                                                          SupplierId = (int)a.SpSupplierId
                                                       }).Union(from cur in curList
                                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1199,9 +1236,17 @@ namespace AccApi.Repository.Managers
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,
                                                                    Discount = c.RdDiscount,
-                                                                   UPriceAfterDiscount = Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                                   totalPriceAfterExchange = (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow) : 0
-                                                               }); 
+                                                                   UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
+                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow) : 0,
+                                                                   IsAlternative = true,
+                                                                   IsNewItem = false,
+                                                                   NewItemId = c.NewItemId,
+                                                                   NewItemResourceId = c.NewItemResourceId,
+                                                                   ParentItemO = c.ParentItemO,
+                                                                   ParentResourceId = c.ParentResourceId,
+                                                                   IsExcluded = c.IsExcluded,
+                                                                   SupplierId = (int)a.SpSupplierId
+                                                               });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
                                 if (!string.IsNullOrEmpty(input.BOQItem)) revDtlQry = revDtlQry.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));

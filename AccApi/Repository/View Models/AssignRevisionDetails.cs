@@ -42,6 +42,8 @@ namespace AccApi.Repository.View_Models
         public int resourceID { get; set; }
         public List<SupplierQty> supplierQtys { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
     }
 
     public class SupplierBOQ
@@ -49,6 +51,8 @@ namespace AccApi.Repository.View_Models
         public string BoqItemID { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
         public List<SupplierQty> supplierQtys { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
     }
 
     public class SupplierGroups

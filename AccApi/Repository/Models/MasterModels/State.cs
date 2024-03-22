@@ -25,8 +25,8 @@ namespace AccApi.Repository.Models.MasterModels
         public DateTime CreatedAt { get; set; }
         public string Data { get; set; }
 
-        [ForeignKey(nameof(JobId))]
-        [InverseProperty("States")]
-        public virtual Job Job { get; set; }
+        //[ForeignKey(nameof(JobId))]
+        //[InverseProperty("States")]
+        //public virtual Job Job { get; set; }
     }
 }
