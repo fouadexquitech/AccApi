@@ -171,7 +171,7 @@ namespace AccApi.Controllers
 
                 listPackageSuppliers.ForEach(sp =>
                 {
-                    var replies =  _conditionsRepository.GetComConditionsReply(sp.PsId, costDB,0);
+                    var replies =  _conditionsRepository.GetComConditionsReply(sp.PsId, costDB, 0);
 
                     replies.ForEach(x =>
                     {
@@ -190,6 +190,7 @@ namespace AccApi.Controllers
                     });
                 });
 
+                displayConditions.RemoveAll(x => x.Replies.Count() == 0);
                 return displayConditions;
             }
             catch (Exception ex)
@@ -216,7 +217,7 @@ namespace AccApi.Controllers
 
                 listPackageSuppliers.ForEach(sp =>
                 {
-                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId, costDB,0);
+                    var replies = _conditionsRepository.GetTechConditionsReply(sp.PsId, costDB, 0);
 
                     replies.ForEach(x =>
                     {
@@ -238,6 +239,7 @@ namespace AccApi.Controllers
                     });
                 });
 
+                displayConditions.RemoveAll(x=>x.Replies.Count()==0);
                 return displayConditions;
             }
             catch (Exception ex)

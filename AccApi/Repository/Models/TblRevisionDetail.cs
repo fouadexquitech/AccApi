@@ -63,8 +63,10 @@ namespace AccApi.Repository.Models
         public string ResourceDescription { get; set; }
         public string ItemDescription { get; set; }
         public double? TotalPrice { get; set; }
-        public double? UnitPriceAfterDiscount { get; set; } = 0;
+        public double? UnitPriceAfterDiscount { get; set; }
         [Column("isExcluded")]
         public bool? IsExcluded { get; set; }
+        [Column("rdQuotationQty")]
+        public double? RdQuotationQty { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace AccApi.Repository.View_Models
         public string? ItemO { get; set; }
         public string? ItemDescription { get; set; }
         public double? Quantity { get; set; }
+        public double? QuotationQty { get; set; }
         public double? UnitPrice { get; set; } = 0;
         public double? TotalPrice { get; set; } = 0;
         public double? DiscountPerc { get; set; } = 0;
