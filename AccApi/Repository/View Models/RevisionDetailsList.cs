@@ -21,7 +21,8 @@ namespace AccApi.Repository.View_Models
         public string RdItemDescription  { get; set; }
 
         //budget
-        public double? RdQty { get; set; }
+        public double? RdQty { get; set; }  //Supplier Qty
+        public double? RdQuotationQty { get; set; } //ACC Qty
         public double? RdUnitRate { get; set; }
         public double? RdTotalBudget { get; set; }
         ///budget

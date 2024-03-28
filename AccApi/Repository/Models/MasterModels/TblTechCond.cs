@@ -20,5 +20,7 @@ namespace AccApi.Repository.Models.MasterModels
         public string TcDescription { get; set; }
         [Column("tcSelected")]
         public byte? TcSelected { get; set; }
+        [Column("tcAccCond")]
+        public string TcAccCond { get; set; }
     }
 }

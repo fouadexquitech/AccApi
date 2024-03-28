@@ -8,15 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.MasterModels
 {
-    [Keyless]
-    [Table("tmp1")]
-    public partial class Tmp1
+    public partial class AcceptanceComment
     {
-        [Column("t1")]
-        [StringLength(500)]
-        public string T1 { get; set; }
-        [Column("t11")]
-        [StringLength(500)]
-        public string T11 { get; set; }
+        [Key]
+        public int Id { get; set; }
+        [StringLength(50)]
+        public string Caption { get; set; }
+        public bool? Enabled { get; set; }
     }
 }

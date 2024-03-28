@@ -465,5 +465,19 @@ namespace AccApi.Controllers
                 return false;
             }
         }
+
+        [HttpPost("ExcludRessource")]
+        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool isExclud)
+        {
+            try
+            {
+                return this._revisionDetailsRepository.ExcludRessource(packId, boqSeq, isNewItem, isAlternative, isExclud);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
     }
 }

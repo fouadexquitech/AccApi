@@ -70,6 +70,13 @@ namespace AccApi.Repository.View_Models
 
         public decimal totalPriceAfterExchange { get; set; }
 
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
+        public int? NewItemId { get; set; }
+        public int? NewItemResourceId { get; set; }
+        public string? ParentItemO { get; set; }
+        public int? ParentResourceId { get; set; }
         public bool? IsExcluded { get; set; } = false;
+        public int SupplierId { get; set; }
     }
 }

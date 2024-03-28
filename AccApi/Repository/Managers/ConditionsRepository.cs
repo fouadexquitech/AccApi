@@ -44,7 +44,8 @@ namespace AccApi.Repository.Managers
                          {
                              cmSeq = b.CmSeq,
                              cmDescription = b.CmDescription,
-                             cmAccCondValue=""
+                             cmAccCondValue=b.CmAccCond,
+                             Checked= packSupId>0 ? false : true
                          }).ToList();
 
             if (packSupId > 0)
@@ -124,7 +125,8 @@ namespace AccApi.Repository.Managers
                                 TcDescription = b.TcDescription,
                                 TcPackId = b.TcPackId,
                                 TcSeq = b.TcSeq,
-                                TcAccCondValue=""
+                                TcAccCondValue=b.TcAccCond,
+                                Checked= revId > 0 ? false : true
                             }).ToList();
 
 

@@ -181,6 +181,7 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1256_CI_AS");
@@ -2097,6 +2098,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdPriceOrigCurrency).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdQuotationQty).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TotalPrice).HasDefaultValueSql("((0))");
 

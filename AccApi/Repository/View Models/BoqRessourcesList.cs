@@ -75,6 +75,7 @@ namespace AccApi.Repository.View_Models
         public string? ParentItemO { get; set; }
         public int? ParentResourceId { get; set; }
         public bool? IsExcluded { get; set; } = false;
+        public int SupplierId { get; set; }
     }
 
 

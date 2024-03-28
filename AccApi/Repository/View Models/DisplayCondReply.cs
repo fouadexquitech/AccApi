@@ -8,5 +8,6 @@
         public int? ConditionId { get; set; }
 
         public string? Reply { get; set; }
+        public string? AccCondValue { get; set; }
     }
 }
