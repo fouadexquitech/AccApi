@@ -160,10 +160,11 @@ namespace AccApi.Controllers
         {
             try
             {
-                var displayConditions = this._conditionsRepository.GetComConditions(0).Select(x => new DisplayCondition
+                var displayConditions = this._conditionsRepository.GetComConditions(packId).Select(x => new DisplayCondition
                 {
                     Id = x.cmSeq,
                     Description = x.cmDescription,
+                    AccCondition=x.cmAccCondValue,
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
@@ -182,7 +183,8 @@ namespace AccApi.Controllers
                                 SupplierId = x.SupId.Value,
                                 SupplierName = x.SupName,
                                 ConditionId = x.CondId,
-                                Reply = x.CondReply
+                                Reply = x.CondReply,
+                                AccCondValue=x.AccCond
                             };
                             var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
                             cond.Replies.Add(displayReply);
@@ -210,6 +212,7 @@ namespace AccApi.Controllers
                 {
                     Id = x.TcSeq,
                     Description = x.TcDescription,
+                    AccCondition=x.TcAccCondValue,
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
@@ -228,7 +231,8 @@ namespace AccApi.Controllers
                                 SupplierId = x.SupId.Value,
                                 SupplierName = x.SupName,
                                 ConditionId = x.CondId,
-                                Reply = x.CondReply
+                                Reply = x.CondReply,
+                                AccCondValue = x.AccCond
                             };
                             var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
                             if (cond != null)

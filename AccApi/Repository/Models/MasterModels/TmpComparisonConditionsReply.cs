@@ -23,5 +23,6 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("supName")]
         [StringLength(200)]
         public string SupName { get; set; }
+        public string AccCond { get; set; }
     }
 }
