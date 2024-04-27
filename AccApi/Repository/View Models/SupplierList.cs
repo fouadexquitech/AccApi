@@ -15,6 +15,8 @@ namespace AccApi.Repository.View_Models
         public bool? IsAccountCreated { get; set; }
 
         public DateTime? RevisionDate { get; set; }
+
+        public int? RevisionId { get; set; }
     }
 
     //public class RegisterModel

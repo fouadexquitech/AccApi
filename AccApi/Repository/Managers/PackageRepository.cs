@@ -209,9 +209,9 @@ namespace AccApi.Repository.Managers
                         BoqDiv = (string)x["BoqDiv"],
                         ResDescription =(string)x["ResDescription"],
                         BoqTotalPrice = (double)x["BoqTotalPrice"],
-                        l1 = x["L1"] != DBNull.Value ? (string)x["L1"] : null,
-                        l2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
-                        l3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
+                        L1 = x["L1"] != DBNull.Value ? (string)x["L1"] : null,
+                        L2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
+                        L3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
                         resCode= (string)x["BoqPackage"]
                       });
 
@@ -1017,7 +1017,7 @@ namespace AccApi.Repository.Managers
                             f = null;
                             packageSuppliersPrice.fieldLists = f;
                         }
-                        else
+                        else  //item.SupplierName <> "Ideal"
                         {
                             if (byboq == 1)
                             {
@@ -1047,7 +1047,8 @@ namespace AccApi.Repository.Managers
                                                  AssignedQty = c.RdAssignedQty,
                                                  Discount = c.RdDiscount,
                                                  UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 :  Math.Round((double)(c.UnitPriceAfterDiscount), 2),// Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2),
-                                                 totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                 totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                 IsExcluded = c.IsExcluded
                                              }).Union(from cur in curList
                                                       join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                       join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1074,7 +1075,8 @@ namespace AccApi.Repository.Managers
                                                           AssignedQty = c.RdAssignedQty,
                                                           Discount = c.RdDiscount,
                                                           UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                          totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow)
+                                                          totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                          IsExcluded = c.IsExcluded
                                                       }).Union(from cur in curList
                                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
@@ -1101,7 +1103,8 @@ namespace AccApi.Repository.Managers
                                                                    AssignedQty = c.RdAssignedQty,
                                                                    Discount = c.RdDiscount,
                                                                    UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
-                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 :  (item.SupplierId == sup.SupCode) ? Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow):0
+                                                                   totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 :  Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
+                                                                   IsExcluded = c.IsExcluded,
                                                                });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -1282,10 +1285,10 @@ namespace AccApi.Repository.Managers
                         {
                             foreach (var itemRevision in packageSuppliersPrice.revisionDetails)
                             {
-                                if (packageSuppliersPrice.SupplierName == "Ideal")
-                                    packageSuppliersPrice.totalprice += itemRevision.totalPriceAfterExchange;  // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
-                                else
-                                    packageSuppliersPrice.totalprice += itemRevision.totalPriceAfterExchange; // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
+                                //if (packageSuppliersPrice.SupplierName == "Ideal")
+                                //    packageSuppliersPrice.totalprice += itemRevision.IsExcluded itemRevision.totalPriceAfterExchange;  // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
+                                //else
+                                    packageSuppliersPrice.totalprice += (itemRevision.IsExcluded == true) ? 0 : itemRevision.totalPriceAfterExchange; // Convert.ToDecimal(itemRevision.QtyO) * Convert.ToDecimal(itemRevision.UPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                                 //packageSuppliersPrice.totalprice += Convert.ToDecimal(itemRevision.AssignedQty) * Convert.ToDecimal(itemRevision.priceOrigCur) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == itemRevision.OriginalCurrency).ExchRateNow);
                             }
                         }
@@ -1416,9 +1419,9 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 8].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
                         worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 9].Value = (x.BoqDiv == null) ? "" : x.BoqDiv;
-                        worksheet.Cells[i, 10].Value = (x.l1 == null) ? "" : x.l1;
-                        worksheet.Cells[i, 11].Value = (x.l2 == null) ? "" : x.l2;
-                        worksheet.Cells[i, 12].Value = (x.l3 == null) ? "" : x.l3;
+                        worksheet.Cells[i, 10].Value = (x.L1 == null) ? "" : x.L1;
+                        worksheet.Cells[i, 11].Value = (x.L2 == null) ? "" : x.L2;
+                        worksheet.Cells[i, 12].Value = (x.L3 == null) ? "" : x.L3;
                         i++;
                     }
 
@@ -1522,119 +1525,119 @@ namespace AccApi.Repository.Managers
                     foreach (var x in lstBoq)
                     {
                         Boq = x.ItemO;
-                        C = x.c1;
-                        l1 = (x.l1 == null) ? "" : x.l1;
-                        l2 = (x.l2 == null) ? "" : x.l2;
-                        l3 = (x.l3 == null) ? "" : x.l3;
-                        l4 = (x.l4 == null) ? "" : x.l4;
-                        l5 = (x.l5 == null) ? "" : x.l5;
-                        l6 = (x.l6 == null) ? "" : x.l6;
+                        C = x.C1;
+                        l1 = (x.L1 == null) ? "" : x.L1;
+                        l2 = (x.L2 == null) ? "" : x.L2;
+                        l3 = (x.L3 == null) ? "" : x.L3;
+                        l4 = (x.L4 == null) ? "" : x.L4;
+                        l5 = (x.L5 == null) ? "" : x.L5;
+                        l6 = (x.L6 == null) ? "" : x.L6;
 
                         if ((Boq != OldBoq) || (OldBoq == ""))
                         {
                             if ((l1 != "") && (l1 != oldl1))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref;
+                                //worksheet.Cells[i, 1].Value = (x.L1Ref == null) ? "" : x.L1Ref;
                                 worksheet.Cells[i, 2].Value = "1";
-                                worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
+                                worksheet.Cells[i, 3].Value = (x.L1 == null) ? "" : x.L1;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl1 = x.l1;
+                                oldl1 = x.L1;
                                 i = i + 2;
                             }
                             if ((l2 != "") && (l2 != oldl2))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
+                                //worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
                                 worksheet.Cells[i, 2].Value = "2";
-                                worksheet.Cells[i, 3].Value = (x.l2 == null) ? "" : x.l2;
+                                worksheet.Cells[i, 3].Value = (x.L2 == null) ? "" : x.L2;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl2 = x.l2;
+                                oldl2 = x.L2;
                                 i = i + 2;
                             }
                             if ((l3 != "") && (l3 != oldl3))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
+                                //worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
                                 worksheet.Cells[i, 2].Value = "3";
-                                worksheet.Cells[i, 3].Value = (x.l3 == null) ? "" : x.l3;
+                                worksheet.Cells[i, 3].Value = (x.L3 == null) ? "" : x.L3;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl3 = x.l3;
+                                oldl3 = x.L3;
                                 i = i + 2;
                             }
                             if ((l4 != "") && (l4 != oldl4))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
+                                //worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
                                 worksheet.Cells[i, 2].Value = "4";
-                                worksheet.Cells[i, 3].Value = (x.l4 == null) ? "" : x.l4;
+                                worksheet.Cells[i, 3].Value = (x.L4 == null) ? "" : x.L4;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl4 = x.l4;
+                                oldl4 = x.L4;
                                 i = i + 2;
                             }
                             if ((l5 != "") && (l5 != oldl5))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
+                                //worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
                                 worksheet.Cells[i, 2].Value = "5";
-                                worksheet.Cells[i, 3].Value = (x.l5 == null) ? "" : x.l5;
+                                worksheet.Cells[i, 3].Value = (x.L5 == null) ? "" : x.L5;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl5 = x.l5;
+                                oldl5 = x.L5;
                                 i = i + 2;
                             }
                             if ((l6 != "") && (l6 != oldl6))
                             {
-                                worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
+                                //worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
                                 worksheet.Cells[i, 2].Value = "6";
-                                worksheet.Cells[i, 3].Value = (x.l6 == null) ? "" : x.l6;
+                                worksheet.Cells[i, 3].Value = (x.L6 == null) ? "" : x.L6;
                                 worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                oldl6 = x.l6;
+                                oldl6 = x.L6;
                                 i = i + 2;
                             }
 
                             if ((C != OldC) | (OldC == ""))
                             {
-                                if (((x.c1 == null) ? "" : x.c1) != "")
+                                if (((x.C1 == null) ? "" : x.C1) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c1 == null) ? "" : x.c1;
+                                    worksheet.Cells[i, 3].Value = (x.C1 == null) ? "" : x.C1;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                     OldC = C;
                                 }
-                                if (((x.c2 == null) ? "" : x.c2) != "")
+                                if (((x.C2 == null) ? "" : x.C2) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c2 == null) ? "" : x.c2;
+                                    worksheet.Cells[i, 3].Value = (x.C2 == null) ? "" : x.C2;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                 }
-                                if (((x.c3 == null) ? "" : x.c3) != "")
+                                if (((x.C3 == null) ? "" : x.C3) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c3 == null) ? "" : x.c3;
+                                    worksheet.Cells[i, 3].Value = (x.C3 == null) ? "" : x.C3;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                 }
-                                if (((x.c4 == null) ? "" : x.c4) != "")
+                                if (((x.C4 == null) ? "" : x.C4) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c4 == null) ? "" : x.c4;
+                                    worksheet.Cells[i, 3].Value = (x.C4 == null) ? "" : x.C4;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                 }
-                                if (((x.c5 == null) ? "" : x.c5) != "")
+                                if (((x.C5 == null) ? "" : x.C5) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.Cells[i, 3].Value = (x.C5 == null) ? "" : x.C5;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                 }
-                                if (((x.c6 == null) ? "" : x.c6) != "")
+                                if (((x.C6 == null) ? "" : x.C6) != "")
                                 {
-                                    worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
+                                    //worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
                                     worksheet.Cells[i, 2].Value = "C";
-                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.Cells[i, 3].Value = (x.C5 == null) ? "" : x.C5;
                                     worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
                                     i = i + 2;
                                 }

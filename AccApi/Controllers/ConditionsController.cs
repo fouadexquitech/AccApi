@@ -188,6 +188,7 @@ namespace AccApi.Controllers
                             };
                             var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
                             cond.Replies.Add(displayReply);
+                            cond.AccCondition = displayReply.AccCondValue;
                         }
                     });
                 });
@@ -238,6 +239,7 @@ namespace AccApi.Controllers
                             if (cond != null)
                             {
                                 cond.Replies.Add(displayReply);
+                                cond.AccCondition = displayReply.AccCondValue;
                             }
                         }
                     });

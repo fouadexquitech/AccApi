@@ -40,11 +40,11 @@ namespace AccApi.Repository.Managers
             IlogonRepository logonRepository, GlobalLists globalLists, HttpClient httpClient, IConfiguration configuration)
         {
             /*_dbcontext = Context;*/
-            _pdbcontext = pdbcontext;
             _mdbContext = mdbContext;
             _logonRepository = logonRepository;
             _globalLists = globalLists;
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _pdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             _httpClient = httpClient;
             _configuration = configuration;
         }

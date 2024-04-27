@@ -23,5 +23,13 @@ namespace AccApi.Repository.View_Models
         public bool? IsAlternative { get; set; } = false;
         public bool? IsNewItem { get; set; } = false;
         public bool? IsExcluded { get; set; }=false;
+        public string? LevelName { get; set; }
+    }
+
+    public class GroupingLevelModel
+    {
+        public string? LevelName { get; set; }
+
+        public List<GroupingBoqModel> Items { get; set; }
     }
 }

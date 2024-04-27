@@ -20,6 +20,7 @@ namespace AccApi.Repository.Managers
         public IConfiguration Configuration { get; }
 
         private static PolicyDbContext pdb;
+        private static PolicyDbContext _tsdbcontext;
         //private static AccDbContext costDB;
 
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration, GlobalLists globalLists)
@@ -55,7 +56,17 @@ namespace AccApi.Repository.Managers
             string ConName = conn.DbConnection;
             pdb = _pdbcontext.CreateConnectionFromOut(ConName);
 
-            var result = from b in pdb.Tblprojects
+
+            string connectionString = conn.DbConnection; ;
+            var TSconnection = new SqlConnectionStringBuilder(connectionString);
+            string TsConName = TSconnection.ConnectionString.ToString();
+
+            _globalLists.SetTimeSheetDbConnectionString(TsConName);
+
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+
+
+            var result = from b in _tsdbcontext.Tblprojects
                          where b.PrjCostDatabase != null
                          select new Project
                          {
@@ -68,7 +79,7 @@ namespace AccApi.Repository.Managers
 
         public ProjectCurrency GetProjectCurrency(int projSeq)
         {
-            var result = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+            var result = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
             string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase;
 
             if ((costDb != "") && (costDb != null))
@@ -108,7 +119,7 @@ namespace AccApi.Repository.Managers
             
             //usr = checkCredentials(user, pass);
 
-            var result = pdb.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();
+            var result = _tsdbcontext.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();
 
             User usr = new User();
             if (result != null) {
@@ -128,10 +139,10 @@ namespace AccApi.Repository.Managers
             bool isAdmin = (bool)(usr.UsrAdmin==null ? false : usr.UsrAdmin);
             if (!isAdmin)
             {
-                var accAllProjects = pdb.TblPermGrpUsrs.Where(x => x.PrmUser == username && x.PrmFuncId == "AccessAllProjects" && x.MinOfprmRead == 1).FirstOrDefault();
+                var accAllProjects = _tsdbcontext.TblPermGrpUsrs.Where(x => x.PrmUser == username && x.PrmFuncId == "AccessAllProjects" && x.MinOfprmRead == 1).FirstOrDefault();
                 if (accAllProjects == null)
                 {
-                    var query = pdb.TblUsersProjects.Where(x => x.UpUserId == username && x.UpProject == projSeq).FirstOrDefault();
+                    var query = _tsdbcontext.TblUsersProjects.Where(x => x.UpUserId == username && x.UpProject == projSeq).FirstOrDefault();
                     if (query == null)
                     {
                         usr = null;
@@ -152,7 +163,7 @@ namespace AccApi.Repository.Managers
             
             if (usr != null)
             {
-                var prj = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+                var prj = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
                 if(prj != null)
                 {
                   usr.UsrLoggedProjectName = prj.PrjName;
@@ -165,7 +176,7 @@ namespace AccApi.Repository.Managers
 
         private string  connectToProject(int projSeq)
         {
-            var result = pdb.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
+            var result = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
             string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase ;
 
             if ((costDb != "") && (costDb != null))
@@ -210,7 +221,7 @@ namespace AccApi.Repository.Managers
 
         private User checkCredentials(string username, string password)
         {
-            var result = from u in pdb.TblUsers                
+            var result = from u in _tsdbcontext.TblUsers                
                         where u.UsrId == username &&
                         u.UsrPwd == password
                         select new User
@@ -229,7 +240,7 @@ namespace AccApi.Repository.Managers
 
         public User GetUser(string username)
         {
-            var result = from u in _pdbcontext.TblUsers
+            var result = from u in _tsdbcontext.TblUsers
                          where u.UsrId == username
                          select new User
                          {
@@ -246,8 +257,8 @@ namespace AccApi.Repository.Managers
 
         private bool checkAccessProject(string username, int projSeq)
         {
-            var query = from p in _pdbcontext.Tblprojects
-                        join u in _pdbcontext.TblUsersProjects 
+            var query = from p in _tsdbcontext.Tblprojects
+                        join u in _tsdbcontext.TblUsersProjects 
                         on p.Seq equals u.UpProject
                         where u.UpUserId == username &&
                          p.Seq== projSeq
@@ -347,7 +358,7 @@ namespace AccApi.Repository.Managers
 
        public bool hasPermission(string user, string functionId)
         {  
-            var result = _pdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId).FirstOrDefault();
+            var result = _tsdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId).FirstOrDefault();
             if (result != null)
             {
                 return true;

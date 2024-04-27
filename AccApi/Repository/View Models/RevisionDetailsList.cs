@@ -65,7 +65,6 @@ namespace AccApi.Repository.View_Models
         public string? C4 { get; set; }
         public string? C5 { get; set; }
         public string? C6 { get; set; }
-
         public string? LevelName { get; set; }
         public string? Unit { get; set; }
         public string? Comments { get; set; }
@@ -74,7 +73,6 @@ namespace AccApi.Repository.View_Models
     public class LevelModel
     {
         public string? LevelName { get; set; }
-
         public List<RevisionDetailsList> Items { get; set; }
     }
 }
