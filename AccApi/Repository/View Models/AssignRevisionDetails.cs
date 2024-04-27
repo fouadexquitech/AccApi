@@ -21,6 +21,9 @@ namespace AccApi.Repository.View_Models
         public double? assignPrice { get; set; }
         public int revisionId { get; set; }
         public double? priceOrigCurrency { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
+        public string NewItemId { get; set; }
     }
 
     public class SupplierPercent
@@ -65,6 +68,8 @@ namespace AccApi.Repository.View_Models
     public class boqItem
     {
         public string BoqItemID { get; set; }
+        public bool? IsAlternative { get; set; } = false;
+        public bool? IsNewItem { get; set; } = false;
     }
 
     public class Group

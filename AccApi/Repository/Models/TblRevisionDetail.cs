@@ -68,5 +68,6 @@ namespace AccApi.Repository.Models
         public bool? IsExcluded { get; set; }
         [Column("rdQuotationQty")]
         public double? RdQuotationQty { get; set; }
+        public int? ItemCopiedFromRevision { get; set; }
     }
 }

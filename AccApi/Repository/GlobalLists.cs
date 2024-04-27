@@ -13,27 +13,35 @@ namespace AccApi.Repository
     public class GlobalLists
     {
         private readonly IServiceProvider _provider;  
-        private string _accDbconnectionString;
+        private string _costDbconnectionString;
+        private string _timeSheetDbconnectionString;
         public IConfiguration _configuration { get; }
 
 
         public GlobalLists(IServiceProvider provider, IConfiguration configuration)
         {
-            _provider = provider;
-            
+            _provider = provider;   
             _configuration = configuration;
         }
 
+
         public void SetAccDbConnectionString(string str)
         {
-            _accDbconnectionString = str;        
-               
+            _costDbconnectionString = str;                
+        }
+
+        public void SetTimeSheetDbConnectionString(string str)
+        {
+            _timeSheetDbconnectionString = str;
         }
 
 
         public string GetAccDbconnectionString() {
-            return _accDbconnectionString;
+            return _costDbconnectionString;
         }
-
+        public string GetTimeSheetDbconnectionString()
+        {
+            return _timeSheetDbconnectionString;
+        }
     }
 }

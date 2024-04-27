@@ -9,14 +9,40 @@ namespace AccApi.Repository
 {
     public partial class PolicyDbContext : DbContext
     {
-        public PolicyDbContext()
+
+        private readonly string _connectionString;
+
+        public PolicyDbContext(string connectionString)
         {
+            _connectionString = connectionString;
         }
 
         public PolicyDbContext(DbContextOptions<PolicyDbContext> options)
             : base(options)
         {
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(_connectionString);
+        }
+
+        public PolicyDbContext CreateConnectionFromOut(string connectionString)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<PolicyDbContext>();
+            optionsBuilder.UseSqlServer(connectionString);
+            var context = new PolicyDbContext(optionsBuilder.Options);
+            return context;
+        }
+
+        //public PolicyDbContext()
+        //{
+        //}
+
+        //public PolicyDbContext(DbContextOptions<PolicyDbContext> options)
+        //    : base(options)
+        //{
+        //}
 
         public virtual DbSet<AddDed> AddDeds { get; set; }
         public virtual DbSet<Area> Areas { get; set; }
@@ -192,14 +218,6 @@ namespace AccApi.Repository
         public virtual DbSet<VwGetPrevHoursFirstAttendance> VwGetPrevHoursFirstAttendances { get; set; }
         public virtual DbSet<VwIsFirstAttendance> VwIsFirstAttendances { get; set; }
 
-
-        public PolicyDbContext CreateConnectionFromOut(string connectionString)
-        {
-            var optionsBuilder = new DbContextOptionsBuilder<PolicyDbContext>();
-            optionsBuilder.UseSqlServer(connectionString);
-            var context = new PolicyDbContext(optionsBuilder.Options);
-            return context;
-        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

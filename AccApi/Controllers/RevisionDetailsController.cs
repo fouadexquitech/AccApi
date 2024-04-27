@@ -189,7 +189,7 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GetComparisonSheet")]
-        public List<GroupingBoqModel> GetComparisonSheet(int packageId, SearchInput input)
+        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input)
         {
             try
             {
@@ -203,7 +203,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq")]
-        public List<GroupingBoqModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
+        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
         {
             try
             {

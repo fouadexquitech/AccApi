@@ -20,35 +20,10 @@ namespace AccApi.Repository.View_Models
         public int? ScopeO { get; set; }
         public string ObSheetDesc { get; set; }
         public string ObTradeDesc { get; set; }
-        public string l1 { get; set; }
-        public string l2 { get; set; }
-        public string l3 { get; set; }
-        public string l4 { get; set; }
-        public string l5 { get; set; }
-        public string l6 { get; set; }
-        public string l1Ref { get; set; }
-        public string l2Ref { get; set; }
-        public string l3Ref { get; set; }
-        public string l4Ref { get; set; }
-        public string l5Ref { get; set; }
-        public string l6Ref { get; set; }
-        public string c1 { get; set; }
-        public string c2 { get; set; }
-        public string c3 { get; set; }
-        public string c4 { get; set; }
-        public string c5 { get; set; }
-        public string c6 { get; set; }
-        public string c1Ref { get; set; }
-        public string c2Ref { get; set; }
-        public string c3Ref { get; set; }
-        public string c4Ref { get; set; }
-        public string c5Ref { get; set; }
-        public string c6Ref { get; set; }
         public string? AssignedPackage { get; set; }
        public string BoqStatus { get; set; }
         public int? GroupId { get; set; }
         public string? GroupName { get; set; }
-
 
         public int? BurRev { get; set; }
         public int BoqSeq { get; set; }
@@ -76,6 +51,21 @@ namespace AccApi.Repository.View_Models
         public int? ParentResourceId { get; set; }
         public bool? IsExcluded { get; set; } = false;
         public int SupplierId { get; set; }
+
+        public string? L1 { get; set; }
+        public string? L2 { get; set; }
+        public string? L3 { get; set; }
+        public string? L4 { get; set; }
+        public string? L5 { get; set; }
+        public string? L6 { get; set; }
+        public string? C1 { get; set; }
+        public string? C2 { get; set; }
+        public string? C3 { get; set; }
+        public string? C4 { get; set; }
+        public string? C5 { get; set; }
+        public string? C6 { get; set; }
+        public string? LevelName { get; set; }
+
     }
 
 

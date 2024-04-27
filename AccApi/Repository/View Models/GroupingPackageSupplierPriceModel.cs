@@ -45,6 +45,9 @@ namespace AccApi.Repository.View_Models
         public int? ParentResourceId { get; set; }
         public bool isCreatedByThisSupplier { get; set; } = false;
         public bool? IsExcluded { get; set; } = false;
+
+        public string ItemDescription { get; set; }
+        public string ResourceDescription { get; set; }
     }
 
     public class LiveExchange
