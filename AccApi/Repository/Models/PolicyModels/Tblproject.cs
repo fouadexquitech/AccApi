@@ -83,9 +83,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public byte? PrjNewTsVers { get; set; }
         [Column("prjProjectType")]
         public byte? PrjProjectType { get; set; }
-        [Column("prjCostDatabase")]
-        [StringLength(50)]
-        public string PrjCostDatabase { get; set; }
         [Column("prjCountry")]
         [StringLength(50)]
         public string PrjCountry { get; set; }
@@ -100,6 +97,12 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("prjSAPCode")]
         [StringLength(50)]
         public string PrjSapcode { get; set; }
+        [Column("prjCostDatabase")]
+        [StringLength(50)]
+        public string PrjCostDatabase { get; set; }
+        [Column("prjCostDbEmailTemplate")]
+        [StringLength(50)]
+        public string PrjCostDbEmailTemplate { get; set; }
 
         [InverseProperty(nameof(TblProjectWeek.PwkProjectNavigation))]
         public virtual ICollection<TblProjectWeek> TblProjectWeeks { get; set; }

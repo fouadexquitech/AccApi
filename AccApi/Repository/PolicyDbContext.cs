@@ -9,7 +9,6 @@ namespace AccApi.Repository
 {
     public partial class PolicyDbContext : DbContext
     {
-
         private readonly string _connectionString;
 
         public PolicyDbContext(string connectionString)
@@ -17,7 +16,7 @@ namespace AccApi.Repository
             _connectionString = connectionString;
         }
 
-        public PolicyDbContext(DbContextOptions<PolicyDbContext> options)
+        public PolicyDbContext(DbContextOptions<AccDbContext> options)
             : base(options)
         {
         }
@@ -29,20 +28,11 @@ namespace AccApi.Repository
 
         public PolicyDbContext CreateConnectionFromOut(string connectionString)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<PolicyDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
             optionsBuilder.UseSqlServer(connectionString);
             var context = new PolicyDbContext(optionsBuilder.Options);
             return context;
         }
-
-        //public PolicyDbContext()
-        //{
-        //}
-
-        //public PolicyDbContext(DbContextOptions<PolicyDbContext> options)
-        //    : base(options)
-        //{
-        //}
 
         public virtual DbSet<AddDed> AddDeds { get; set; }
         public virtual DbSet<Area> Areas { get; set; }
@@ -3148,6 +3138,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.PrjCode).IsUnicode(false);
 
                 entity.Property(e => e.PrjCostDatabase).IsUnicode(false);
+
+                entity.Property(e => e.PrjCostDbEmailTemplate).IsUnicode(false);
 
                 entity.Property(e => e.PrjCountry).IsUnicode(false);
 

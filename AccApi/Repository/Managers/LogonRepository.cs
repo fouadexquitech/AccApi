@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Dynamic.Core;
 
 namespace AccApi.Repository.Managers
 {
@@ -267,16 +268,26 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
-        public EmailTemplate GetSuppliersEmailTemplate(string Lang)
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang)
         {
-            var result = from b in _mdbcontext.TblEmailTemplates
-                         where b.EtLang == Lang
+            var result = (from b in _mdbcontext.TblEmailTemplates
+                         where (Lang == null || b.EtLang == Lang) 
                          select new EmailTemplate
                          {
                              EtSeq=b.EtSeq,
-                             EtContent=b.EtContent
-                         };
-            return result.FirstOrDefault();
+                             EtContent=b.EtContent,
+                             EtLang=b.EtLang
+                         }).ToList();
+            //return result.FirstOrDefault();
+            return result;
+        }
+
+        public string GetDefaultProjectEmailTemplate(string costDb)
+        {
+            var lang = _tsdbcontext.Tblprojects.Where(x => x.PrjCostDatabase == costDb).Select(p => p.PrjCostDbEmailTemplate).FirstOrDefault();
+            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtLang == lang).Select(p => p.EtContent).FirstOrDefault();
+
+            return result;
         }
 
 

@@ -97,7 +97,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSuppliersEmailTemplate")]
-        public EmailTemplate GetSuppliersEmailTemplate(string Lang)
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang)
         {
             try
             {
@@ -109,6 +109,21 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+        [HttpGet("GetDefaultProjectEmailTemplate")]
+        public string GetDefaultProjectEmailTemplate(string costDb)
+        {
+            try
+            {
+                return this._logonRepository.GetDefaultProjectEmailTemplate(costDb);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
 
         [HttpPost("SaveEmailTemplate")]
         public bool SaveEmailTemplate(int id, string emailbody)
