@@ -282,12 +282,17 @@ namespace AccApi.Repository.Managers
             return result;
         }
 
-        public string GetDefaultProjectEmailTemplate(string costDb)
+        public EmailTemplate GetDefaultProjectEmailTemplate(string costDb)
         {
             var lang = _tsdbcontext.Tblprojects.Where(x => x.PrjCostDatabase == costDb).Select(p => p.PrjCostDbEmailTemplate).FirstOrDefault();
-            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtLang == lang).Select(p => p.EtContent).FirstOrDefault();
+            var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtLang == lang).Select(b => new EmailTemplate
+            {
+                EtSeq = b.EtSeq,
+                EtContent = b.EtContent,
+                EtLang = b.EtLang
+            });
 
-            return result;
+            return result.FirstOrDefault();
         }
 
 

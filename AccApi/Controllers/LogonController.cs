@@ -111,7 +111,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetDefaultProjectEmailTemplate")]
-        public string GetDefaultProjectEmailTemplate(string costDb)
+        public EmailTemplate GetDefaultProjectEmailTemplate(string costDb)
         {
             try
             {

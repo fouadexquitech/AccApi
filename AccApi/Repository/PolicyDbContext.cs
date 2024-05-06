@@ -16,7 +16,7 @@ namespace AccApi.Repository
             _connectionString = connectionString;
         }
 
-        public PolicyDbContext(DbContextOptions<AccDbContext> options)
+        public PolicyDbContext(DbContextOptions<PolicyDbContext> options)
             : base(options)
         {
         }
@@ -28,7 +28,7 @@ namespace AccApi.Repository
 
         public PolicyDbContext CreateConnectionFromOut(string connectionString)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<AccDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<PolicyDbContext>();
             optionsBuilder.UseSqlServer(connectionString);
             var context = new PolicyDbContext(optionsBuilder.Options);
             return context;

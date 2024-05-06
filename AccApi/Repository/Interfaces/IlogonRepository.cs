@@ -24,7 +24,7 @@ namespace AccApi.Repository.Interfaces
         bool ConnectToDB(string connString);
         bool hasPermission(string user, string functionId);
 
-        string GetDefaultProjectEmailTemplate(string costDb);
+        EmailTemplate GetDefaultProjectEmailTemplate(string costDb);
 
     }
 }
