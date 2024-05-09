@@ -86,7 +86,7 @@ namespace AccApi.Repository.Managers
             //                  SupEmail = b.SupEmail
             //              };
 
-            var results = (from b in _mdbcontext.TblSuppliers.Where(s => !supPackageList.Contains(s.SupCode)).ToList()                  
+            var results = (from b in _mdbcontext.TblSuppliers.Where(s => s.IsAccountCreated==true && !supPackageList.Contains(s.SupCode)).ToList()                  
                           select new Supplier
                           {
                               SupID = b.SupCode,

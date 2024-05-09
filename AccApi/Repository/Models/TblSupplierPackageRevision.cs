@@ -28,5 +28,7 @@ namespace AccApi.Repository.Models
         public double? PrExchRate { get; set; }
         public bool? IsSynched { get; set; }
         public int? StatusId { get; set; }
+        [Column("revExpiryDate", TypeName = "date")]
+        public DateTime? RevExpiryDate { get; set; }
     }
 }

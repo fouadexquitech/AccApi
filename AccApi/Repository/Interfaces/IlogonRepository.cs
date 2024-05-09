@@ -13,7 +13,7 @@ namespace AccApi.Repository.Interfaces
         List<Project> GetProjects(int dbSeq);
         User GetLogin(string user, string pass, int projSeq);
         ProjectCurrency GetProjectCurrency(int projSeq);
-        EmailTemplate GetSuppliersEmailTemplate(string Lang);
+        List<EmailTemplate> GetSuppliersEmailTemplate(string Lang);
         bool SaveEmailTemplate(int id, string emailbody);
         List<TopManagement> GetManagementEmail(string filter);
         bool AddManagementEmail(List<TopManagement> users);
@@ -23,6 +23,8 @@ namespace AccApi.Repository.Interfaces
 
         bool ConnectToDB(string connString);
         bool hasPermission(string user, string functionId);
+
+        EmailTemplate GetDefaultProjectEmailTemplate(string costDb);
 
     }
 }

@@ -16,11 +16,10 @@ namespace AccApi.Repository.View_Models
         public string? ProjectCode { get; set; }
         public bool? IsSynched { get; set; } = false;
         public List<AddRevisionDetailModel> RevisionDetails { get; set; }
-
         //List of commercial conditions
         public List<AddCondModel> CommercialConditions { get; set; }
-
         //List of technical conditions
         public List<AddCondModel> TechnicalConditions { get; set; }
+        public DateTime? RevExpiryDate { get; set; }
     }
 }

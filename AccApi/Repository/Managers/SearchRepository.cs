@@ -4,6 +4,7 @@ using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
@@ -293,15 +294,19 @@ namespace AccApi.Repository.Managers
 
         public List<Package> PackageList()
         {
-            var results = (from b in _mdbContext.TblPackages
+            var usedPackO = _context.TblOriginalBoqs.Where(x => x.Scope > 0).Select(p => p.Scope).Distinct().ToList();
+            var usedPackB = _context.TblBoqs.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
+            var usedPack = usedPackO.Union(usedPackB).ToList();
+
+            var results = (from b in _mdbContext.TblPackages where usedPack.Contains(b.PkgeId)
                            orderby b.PkgeName
                            select new Package
                            {
                                IDPkge = b.PkgeId,
                                PkgeName = b.PkgeName
                            }).ToList();
-
-            return results;
+            var l= results.OrderBy(p=>p.PkgeName).ToList();
+            return l;
         }
 
         public List<RESPackageList> RESPackageList()

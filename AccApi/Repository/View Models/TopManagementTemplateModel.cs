@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 
 namespace AccApi.Repository.View_Models
@@ -21,5 +22,7 @@ namespace AccApi.Repository.View_Models
         public string UserName { get; set; }
         public List<string> ListCC { get; set; }
         public List<string> ListAttach { get; set; }
+
+        public DateTime RevisionExpiryDate { get; set; }
     }
 }

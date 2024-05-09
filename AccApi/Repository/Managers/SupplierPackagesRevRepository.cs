@@ -39,7 +39,8 @@ namespace AccApi.Repository.Managers
                                PrTotPrice = b.PrTotPrice,
                                PrCurrency = b.PrCurrency,
                                PrExchRate = b.PrExchRate,
-                               Currency = cur.CurCode
+                               Currency = cur.CurCode,
+                               PrRevExpDate = b.RevExpiryDate
                            }).ToList();
 
             // Check If Fields Exists
@@ -71,7 +72,8 @@ namespace AccApi.Repository.Managers
                                PrRevDate = b.PrRevDate,
                                PrTotPrice = b.PrTotPrice,
                                PrCurrency = b.PrCurrency,
-                               PrExchRate = b.PrExchRate
+                               PrExchRate = b.PrExchRate,
+                               PrRevExpDate=b.RevExpiryDate
                            }).FirstOrDefault();
 
             var fields = _context.TblRevisionFields.Where(x => x.RevisionId == revisionId).ToList();
