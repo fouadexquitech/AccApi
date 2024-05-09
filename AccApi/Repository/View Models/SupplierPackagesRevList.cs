@@ -16,5 +16,6 @@ namespace AccApi.Repository.View_Models
         public double? PrExchRate { get; set; }
 
         public string? Currency { get; set; }
+        public DateTime? PrRevExpDate { get; set; }
     }
 }

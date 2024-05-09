@@ -452,13 +452,13 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments)
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate)
         {
             var t = await _dbcontext.Database.BeginTransactionAsync();
+
             try
             {
                 string sent = "";
-                string ComCondAttch = "";
                 var AttachmentList = new List<string>();
 
                 var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
@@ -527,13 +527,13 @@ namespace AccApi.Repository.Managers
 
                     if (Rev1 != null)
                     {
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate };
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate };
                         rev1Id = Rev1.PrRevId;
                     }
                     else
                     {
                         int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency };
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate };
                         rev1Id = 0;
                     }
                     _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
@@ -570,6 +570,7 @@ namespace AccApi.Repository.Managers
                             StatusId = 1,
                             ProjectCode = proj.PrjCode,
                             IsSynched = false,
+                            RevExpiryDate = Rev0.RevExpiryDate,
                             RevisionDetails = (from d in LstRevDetails
                                                select new AddRevisionDetailModel
                                                {
