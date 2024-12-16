@@ -8,8 +8,8 @@ namespace AccApi
     {
         public AutoMapperProfile()
         {
-            CreateMap<TblOriginalBoq, OriginalBoqModel>().ReverseMap();
-            CreateMap<TblBoq, BoqModel>().ReverseMap();
+            CreateMap<TblOriginalBoqVd, OriginalBoqModel>().ReverseMap();
+            CreateMap<TblBoqVd, BoqModel>().ReverseMap();
         }
     }
 }

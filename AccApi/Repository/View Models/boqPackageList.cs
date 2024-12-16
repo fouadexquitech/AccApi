@@ -7,7 +7,6 @@ namespace AccApi.Repository.View_Models
 {
     public class boqPackageList
     {
-
         public string l1 { get; set; }
         public string l2 { get; set; }
         public string l3 { get; set; }
@@ -56,13 +55,19 @@ namespace AccApi.Repository.View_Models
         public string boqDesc { get; set; }
         public string unit { get; set; }
         public double qty { get; set; }
+        public double? unitPrice { get; set; }
+        public double? totalPrice { get; set; }
+        public string resCtg { get; set; }
+        public string resDiv { get; set; }
         public string resType { get; set; }
         public string resCode { get; set; }
         public string resDesc { get; set; }
-        public string ResUnit { get; set; }
+        public string resUnit { get; set; }
+        public double? resUnitPrice { get; set; }
         public double? boqQty { get; set; }
         public double? boqBillQty { get; set; }
         public double? boqScopeQty { get; set; }
+        public double? resTotalPrice { get; set; }
         public byte exportedToSupplier { get; set; }
     }
 }

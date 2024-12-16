@@ -62,12 +62,12 @@ namespace AccApi.Repository.Models
         public int? ParentResourceId { get; set; }
         public string ResourceDescription { get; set; }
         public string ItemDescription { get; set; }
+        [Column("rdQuotationQty")]
+        public double? RdQuotationQty { get; set; }
+        public int? ItemCopiedFromRevision { get; set; }
         public double? TotalPrice { get; set; }
         public double? UnitPriceAfterDiscount { get; set; }
         [Column("isExcluded")]
         public bool? IsExcluded { get; set; }
-        [Column("rdQuotationQty")]
-        public double? RdQuotationQty { get; set; }
-        public int? ItemCopiedFromRevision { get; set; }
     }
 }

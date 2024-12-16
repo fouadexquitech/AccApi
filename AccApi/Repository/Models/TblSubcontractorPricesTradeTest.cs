@@ -33,5 +33,15 @@ namespace AccApi.Repository.Models
         public string Des { get; set; }
         [Column("unitRate")]
         public double? UnitRate { get; set; }
+        [Column("insertdate", TypeName = "datetime")]
+        public DateTime? Insertdate { get; set; }
+        [Column("insertBy")]
+        [StringLength(50)]
+        public string InsertBy { get; set; }
+        [Column("updatedBy")]
+        [StringLength(50)]
+        public string UpdatedBy { get; set; }
+        [Column("updatedDate", TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
     }
 }

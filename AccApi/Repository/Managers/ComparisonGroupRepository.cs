@@ -40,8 +40,8 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqModel> GetBoqList(int packageId, int groupId, SearchInput input)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
+                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
                                                         where o.Scope == packageId
                                                         select new BoqRessourcesList
@@ -88,7 +88,7 @@ namespace AccApi.Repository.Managers
 
 
             List<BoqModel> list = (from c in _dbContext.ComparisonPackageGroups
-                                   join g in _dbContext.TblBoqs on c.Id equals g.GroupId
+                                   join g in _dbContext.TblBoqVds on c.Id equals g.GroupId
                                    where c.PackageId == packageId && g.GroupId == groupId
                                    select new BoqModel
                                    {
@@ -115,8 +115,8 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqModel> GetBoqListOnly(int packageId, int groupId, SearchInput input)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
+                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
                                                         where o.Scope == packageId
                                                         select new BoqRessourcesList
@@ -166,7 +166,7 @@ namespace AccApi.Repository.Managers
 
 
             List<BoqModel> listByBoq = (from c in _dbContext.ComparisonPackageGroups
-                                        join g in _dbContext.TblOriginalBoqs on c.Id equals g.GroupId
+                                        join g in _dbContext.TblOriginalBoqVds on c.Id equals g.GroupId
                                         where c.PackageId == packageId && g.GroupId == groupId
                                         select new BoqModel
                                         {
@@ -191,7 +191,7 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblBoqs.Where(x => x.BoqSeq == r.BoqSeq).FirstOrDefault();
+                var boq = _dbContext.TblBoqVds.Where(x => x.BoqSeq == r.BoqSeq).FirstOrDefault();
                 if (boq != null)
                 {
                     boq.GroupId = groupId;
@@ -206,7 +206,7 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblOriginalBoqs.Where(x => x.ItemO == r.ItemO).FirstOrDefault();
+                var boq = _dbContext.TblOriginalBoqVds.Where(x => x.ItemO == r.ItemO).FirstOrDefault();
                 if (boq != null)
                 {
                     boq.GroupId = groupId;
@@ -221,7 +221,7 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblBoqs.Where(x => x.BoqSeq == r.BoqSeq && x.GroupId == groupId).FirstOrDefault();
+                var boq = _dbContext.TblBoqVds.Where(x => x.BoqSeq == r.BoqSeq && x.GroupId == groupId).FirstOrDefault();
                 if (boq != null)
                 {
                     boq.GroupId = null;
@@ -236,7 +236,7 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblOriginalBoqs.Where(x => x.ItemO == r.ItemO && x.GroupId == groupId).FirstOrDefault();
+                var boq = _dbContext.TblOriginalBoqVds.Where(x => x.ItemO == r.ItemO && x.GroupId == groupId).FirstOrDefault();
                 if (boq != null)
                 {
                     boq.GroupId = null;

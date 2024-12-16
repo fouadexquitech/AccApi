@@ -23,6 +23,7 @@ using AccApi.Repository.Models.MasterModels;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 using AccApi.Data_Layer;
 using System.Reflection.Emit;
+using System.Net.Mail;
 
 namespace AccApi.Repository.Managers
 {
@@ -93,9 +94,11 @@ namespace AccApi.Repository.Managers
 
         public List<boqPackageList> boqPackageList(int packId, byte byboq)
         {
+            var boqList = new List<boqPackageList>();
+
             if (byboq == 1)
             {
-                var pack = (from o in _dbcontext.TblOriginalBoqs
+                 boqList = (from o in _dbcontext.TblOriginalBoqVds
                             where o.Scope == packId
                             orderby o.RowNumber
                             select new boqPackageList
@@ -144,15 +147,15 @@ namespace AccApi.Repository.Managers
                                 boqDesc = o.DescriptionO,
                                 unit = o.UnitO,
                                 qty = (double)o.QtyScope,
+                                unitPrice = o.UnitRate,
+                                totalPrice = o.QtyO * o.UnitRate,
                                 exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
                             }).ToList();
-
-                return pack;
             }
             else
             {
-                var pack = (from o in _dbcontext.TblOriginalBoqs
-                            join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                boqList = (from o in _dbcontext.TblOriginalBoqVds
+                            join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                             join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                             where b.BoqScope == packId
                             orderby o.RowNumber
@@ -174,18 +177,53 @@ namespace AccApi.Repository.Managers
                                 boqDesc = o.DescriptionO,
                                 unit = o.UnitO,
                                 qty = (double)o.QtyScope,
+                                unitPrice = o.UnitRate,
+                                totalPrice = o.QtyO * o.UnitRate,
                                 resType = b.BoqCtg,
                                 resCode = b.BoqPackage,
                                 resDesc = r.ResDescription,
-                                ResUnit = b.BoqUnitMesure,
+                                resUnit = b.BoqUnitMesure,   
+                                resCtg= b.BoqCtg,
+                                resDiv = b.BoqDiv,
                                 boqBillQty = b.BoqBillQty,
                                 boqQty = b.BoqQty,
+                                resUnitPrice=b.BoqUprice,
+                                resTotalPrice = b.BoqQty * b.BoqUprice,
                                 boqScopeQty = b.BoqQtyScope,
                                 exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
                             }).ToList();
-
-                return pack;
             }
+
+            //Calculate Discount
+            //var lstDiscount = _dbcontext.TblBoqDiscounts.Where(x => (x.BoqdDiscountAll + x.Boqddiscount) > 0).ToList();
+
+            //foreach (var d in lstDiscount.Where(d => (d.BoqdDiscountAll + d.Boqddiscount) > 0))
+            //{
+            //    foreach (var boq in boqList.Where(x => x.resCtg == d.BoqdCtg && x.resDiv == d.BoqdDiv))
+            //    {
+            //        boq.resUnitPrice = boq.resUnitPrice - (boq.resUnitPrice * ((d.BoqdDiscountAll + d.Boqddiscount) / 100));
+            //        boq.resTotalPrice = boq.resTotalPrice - (boq.resTotalPrice * ((d.BoqdDiscountAll + d.Boqddiscount) / 100));
+            //    }
+            //}
+
+            //var boqCost = boqList
+            //              .GroupBy(x => new { x.item})
+            //              .Select(p => new boqPackageList
+            //              {
+            //                    item = p.First().item,
+            //                    totalPrice = p.Sum(c=> c.resTotalPrice)
+            //                }).ToList();
+
+            //foreach (var boqc in boqCost)
+            //{
+            //    foreach (var boq in boqList.Where(x => x.item == boqc.item))
+            //    {
+            //        boq.totalPrice = boqc.totalPrice;
+            //        boq.unitPrice = boqc.totalPrice / boq.qty;
+            //    }
+            //}
+
+            return boqList;
         }
 
         public string ValidateExcelBeforeAssign(int packId, byte byBoq)
@@ -194,7 +232,6 @@ namespace AccApi.Repository.Managers
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
             //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
             //AH0702
-
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
@@ -208,7 +245,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = true;
+                //worksheet.Protection.IsProtected = true;
 
                 int i, j;
                 string Boq = "", OldBoq = "", C = "", OldC = "", l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
@@ -223,34 +260,29 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[i, 3].Value = "Bill Description";
                 worksheet.Cells[i, 4].Value = "Unit";
                 worksheet.Cells[i, 5].Value = "Qty";
+                worksheet.Cells[i, 6].Value = "Unit Price";
+                worksheet.Cells[i, 7].Value = "Total Price";
 
                 if (byBoq == 1)
                 {
-                    worksheet.Cells[i, 6].Value = "Unit Price";
-                    worksheet.Cells[i, 7].Value = "Discount %";
-                    worksheet.Cells[i, 8].Value = "Unit Price After Disc.";
-                    worksheet.Cells[i, 9].Value = "Total Price";
-                    worksheet.Cells[i, 10].Value = "Comments";
-                    worksheet.Column(10).Width = 50;
-                    worksheet.Columns[10].Style.WrapText = true;
+                    worksheet.Cells[i, 8].Value = "Comments";
+                    worksheet.Column(8).Width = 50;
+                    worksheet.Columns[8].Style.WrapText = true;
                     //worksheet.Column(7).AutoFit();
                 }
                 else
                 {
-                    worksheet.Cells[i, 6].Value = "Ressouce Type";
-                    worksheet.Cells[i, 7].Value = "Ressouce Code";
-                    worksheet.Column(8).Width = 50;
-                    worksheet.Columns[8].Style.WrapText = true;
-                    worksheet.Column(8).AutoFit();
-                    worksheet.Cells[i, 8].Value = "Ressouce Description";
-                    worksheet.Cells[i, 9].Value = "Ressouce Unit";
-                    worksheet.Cells[i, 10].Value = "Ressouce Qty";
+                    worksheet.Cells[i, 8].Value = "Ressource Type";
+                    worksheet.Cells[i, 9].Value = "Ressource Code";
+                    worksheet.Cells[i, 10].Value = "Ressource Description";
+                    worksheet.Column(10).Width = 50;
+                    worksheet.Columns[10].Style.WrapText = true;
                     worksheet.Column(10).AutoFit();
-                    worksheet.Cells[i, 11].Value = "Unit Price";
-                    worksheet.Cells[i, 12].Value = "Discount %";
-                    worksheet.Cells[i, 13].Value = "Unit Price After Disc.";
+                    worksheet.Cells[i, 11].Value = "ResUnit";
+                    worksheet.Cells[i, 12].Value = "ResQty";
+                    worksheet.Cells[i, 13].Value = "ResUnitPrice";
                     worksheet.Column(13).AutoFit();
-                    worksheet.Cells[i, 14].Value = "Total Price";
+                    worksheet.Cells[i, 14].Value = "ResTotalPrice";
                     worksheet.Column(14).AutoFit();
                     worksheet.Cells[i, 15].Value = "Comments";
                     worksheet.Column(15).Width = 50;
@@ -386,16 +418,20 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
                         worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
                         worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 6].Value = (x.unitPrice == null) ? "" : x.unitPrice;
+                        worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 7].Value = (x.totalPrice == null) ? "" : x.totalPrice;
+                        worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
 
                         if (byBoq == 1)
                         {
-                            worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
-                            worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
-                            worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
-                            worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
-                            worksheet.Cells[i, 6].Style.Locked = false;
-                            worksheet.Cells[i, 7].Style.Locked = false;
-                            worksheet.Cells[i, 10].Style.Locked = false;
+                            //worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
+                            //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
+                            //worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
+                            //worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
+                            //worksheet.Cells[i, 6].Style.Locked = false;
+                            //worksheet.Cells[i, 7].Style.Locked = false;
+                            //worksheet.Cells[i, 10].Style.Locked = false;
                         }
                         i = i + 1;
                         OldBoq = Boq;
@@ -403,19 +439,23 @@ namespace AccApi.Repository.Managers
 
                     if (byBoq != 1)
                     {
-                        worksheet.Cells[i, 6].Value = (x.resType == null) ? "" : x.resType;
-                        worksheet.Cells[i, 7].Value = (x.resCode == null) ? "" : x.resCode;
-                        worksheet.Cells[i, 8].Value = (x.resDesc == null) ? "" : x.resDesc;
-                        worksheet.Cells[i, 9].Value = (x.ResUnit == null) ? "" : x.ResUnit;
-                        worksheet.Cells[i, 10].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
-                        worksheet.Cells[i, 10].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
+                        worksheet.Cells[i, 8].Value = (x.resType == null) ? "" : x.resType;
+                        worksheet.Cells[i, 9].Value = (x.resCode == null) ? "" : x.resCode;
+                        worksheet.Cells[i, 10].Value = (x.resDesc == null) ? "" : x.resDesc;
+                        worksheet.Cells[i, 11].Value = (x.resUnit == null) ? "" : x.resUnit;
+                        worksheet.Cells[i, 12].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
+                        worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 13].Value = (x.resUnitPrice == null) ? "" : x.resUnitPrice;
                         worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
+                        worksheet.Cells[i, 14].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
                         worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 11].Style.Locked = false;
-                        worksheet.Cells[i, 12].Style.Locked = false;
-                        worksheet.Cells[i, 15].Style.Locked = false;
+                        //worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
+                        //worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
+                        //worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
+                        //worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
+                        //worksheet.Cells[i, 11].Style.Locked = false;
+                        //worksheet.Cells[i, 12].Style.Locked = false;
+                        //worksheet.Cells[i, 15].Style.Locked = false;
                     }
                     i++;
                 }
@@ -424,24 +464,28 @@ namespace AccApi.Repository.Managers
                 if (byBoq == 1)
                 {
                     var lstBoqo = (from a in result
-                                   join b in _dbcontext.TblOriginalBoqs on a.item equals b.ItemO
+                                   join b in _dbcontext.TblOriginalBoqVds on a.item equals b.ItemO
                                    select b).ToList();
 
                     foreach (var item in result)
                     {
                         lstBoqo.Where(d => d.ItemO == item.item).First().ExportedToSupplier = 1;
                     }
-                    _dbcontext.TblOriginalBoqs.UpdateRange(lstBoqo);
+                    _dbcontext.TblOriginalBoqVds.UpdateRange(lstBoqo);
                     _dbcontext.SaveChanges();
                 }
 
+                var p = _dbcontext.TblParameters.FirstOrDefault();
+                string ProjectName = p.Project;
+
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"Package-{PackageName}.xlsx";
+                string excelName = $"{ProjectName}-Package-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 package.FilePath = excelName;
@@ -452,6 +496,55 @@ namespace AccApi.Repository.Managers
             }
         }
 
+        public bool TestSendMail()
+        {
+            string sent = "";
+            var AttachmentList = new List<string>();
+
+            AttachmentList.Clear();
+
+            //send email
+            string SupEmail = "";
+                SupEmail = "ahijazi@accsal.com";
+
+                List<string> mylistTo = new List<string>();
+                mylistTo.Add(SupEmail);
+
+                List<string> mylistCC = new List<string>();
+                mylistCC.Add("ahijazi@accsal.com");
+            
+                List<string> mylistBCC = new List<string>();
+
+                string Subject = "Procurement";
+
+                string MailBody;
+
+
+                MailBody = "Dear Sir,";
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += "test Email";
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += Environment.NewLine;
+                MailBody += "Best regards";
+
+                //User user = _logonRepository.GetUser("ahijazi");
+                string userSignature = "";   //(user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+
+                if (userSignature != "")
+                    {
+                        MailBody += @"<br><br>";
+                        MailBody += userSignature;
+                    }
+
+                List<IFormFile> attachments=new List<IFormFile>();
+
+                Mail m = new Mail();
+                sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+                return true;
+        }
         public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate)
         {
             var t = await _dbcontext.Database.BeginTransactionAsync();
@@ -716,7 +809,7 @@ namespace AccApi.Repository.Managers
                 }
             }
             catch (Exception ex)
-            {
+            {            
                 await t.RollbackAsync();
                 throw;
             }
@@ -735,7 +828,7 @@ namespace AccApi.Repository.Managers
             }
             else
             {
-                var result = from a in _dbcontext.TblBoqs
+                var result = from a in _dbcontext.TblBoqVds
                              join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
                              where a.BoqSeq == boqSeq
                              select new RessourceList
@@ -753,7 +846,7 @@ namespace AccApi.Repository.Managers
 
         private string GetBoqItemDescription(string boqItemO)
         {
-            var result = _dbcontext.TblOriginalBoqs.Where(x => x.ItemO == boqItemO).FirstOrDefault();
+            var result = _dbcontext.TblOriginalBoqVds.Where(x => x.ItemO == boqItemO).FirstOrDefault();
 
             if (result == null)
                 return "";
@@ -794,7 +887,7 @@ namespace AccApi.Repository.Managers
                             ResourceDescription = row.ResourceDescription,
                             ItemDescription=row.ItemDescription ,
                             UnitPriceAfterDiscount = row.UnitPriceAfterDiscount,
-                            TotalPrice=row.TotalPrice,
+                            TotalPrice= row.RdQuotationQty*row.UnitPriceAfterDiscount,
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
@@ -807,7 +900,7 @@ namespace AccApi.Repository.Managers
 
                 if (byBoq == 1)
                 {
-                    result = (from o in _dbcontext.TblOriginalBoqs
+                    result = (from o in _dbcontext.TblOriginalBoqVds
                               where o.Scope == packId
                               select new BoqRessourcesList
                               {
@@ -855,8 +948,8 @@ namespace AccApi.Repository.Managers
                 }
                 else
                 {
-                    result = (from o in _dbcontext.TblOriginalBoqs 
-                              join b in _dbcontext.TblBoqs on o.ItemO equals b.BoqItem
+                    result = (from o in _dbcontext.TblOriginalBoqVds 
+                              join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                               join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                               where b.BoqScope == packId
                               select new BoqRessourcesList
@@ -1139,7 +1232,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"Commercial Conditions-{PackageName}-{ProjectName}.xlsx";
+                string excelName = $"{ProjectName}-Commercial Conditions-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -1152,6 +1245,7 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;

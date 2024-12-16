@@ -24,5 +24,7 @@ namespace AccApi.Repository.Models.MasterModels
         [StringLength(50)]
         public string Emstype { get; set; }
         public float? Hrs { get; set; }
+        [Column("insertDate", TypeName = "datetime")]
+        public DateTime? InsertDate { get; set; }
     }
 }

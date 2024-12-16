@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models
 {
     [Table("tblSubcontractor")]
+    [Index(nameof(SubName), Name = "IX_tblSubcontractor", IsUnique = true)]
     public partial class TblSubcontractor
     {
         [Key]
@@ -23,5 +24,15 @@ namespace AccApi.Repository.Models
         public string Note { get; set; }
         [StringLength(12)]
         public string Forman { get; set; }
+        [Column("insertdate", TypeName = "datetime")]
+        public DateTime? Insertdate { get; set; }
+        [Column("insertBy")]
+        [StringLength(50)]
+        public string InsertBy { get; set; }
+        [Column("updatedBy")]
+        [StringLength(50)]
+        public string UpdatedBy { get; set; }
+        [Column("updatedDate", TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
     }
 }

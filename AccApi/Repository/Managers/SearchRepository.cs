@@ -34,8 +34,8 @@ namespace AccApi.Repository.Managers
             var Level4 = filter.Level4;
             var resType = filter.resType;
 
-            results = (from o in _context.TblOriginalBoqs
-                       join b in _context.TblBoqs on o.ItemO equals b.BoqItem
+            results = (from o in _context.TblOriginalBoqVds
+                       join b in _context.TblBoqVds on o.ItemO equals b.BoqItem
                        where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
@@ -65,8 +65,8 @@ namespace AccApi.Repository.Managers
 
             //if (resTypeList.Count > 0)
             //{
-                results = (from b in _context.TblBoqs 
-                           join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                results = (from b in _context.TblBoqVds 
+                           join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                          (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                          (Level4.Count == 0 || Level4.Contains(o.L4)) &&
@@ -80,7 +80,7 @@ namespace AccApi.Repository.Managers
                            }).ToList();
             //}
             //else
-            //    results = (from b in _context.TblOriginalBoqs
+            //    results = (from b in _context.TblOriginalBoqVds
             //               where (divO.Count == 0 || divO.Contains(b.SectionO))
             //               group b.L2 by b.L2 into g
             //               orderby g.Key
@@ -94,7 +94,7 @@ namespace AccApi.Repository.Managers
 
         //public List<BOQLevelList> GetBOQLevel2List()
         //{
-        //  var  results = (from b in _context.TblOriginalBoqs
+        //  var  results = (from b in _context.TblOriginalBoqVds
         //                   group b.L2 by b.L2 into g
         //                   orderby g.Key
         //                   select new BOQLevelList
@@ -124,8 +124,8 @@ namespace AccApi.Repository.Managers
 
             //if (resTypeList.Count > 0)
             //{
-                results = (from b in _context.TblBoqs 
-                           join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                results = (from b in _context.TblBoqVds 
+                           join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
@@ -140,7 +140,7 @@ namespace AccApi.Repository.Managers
 
             //}
             //else
-            //    results = (from b in _context.TblOriginalBoqs
+            //    results = (from b in _context.TblOriginalBoqVds
             //               where (divO.Count == 0 || divO.Contains(b.SectionO))
             //               group b.L3 by b.L3 into g
             //               orderby g.Key
@@ -170,8 +170,8 @@ namespace AccApi.Repository.Managers
 
             //if (resTypeList.Count > 0)
             //{
-                results = (from b in _context.TblBoqs 
-                           join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                results = (from b in _context.TblBoqVds 
+                           join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
@@ -185,7 +185,7 @@ namespace AccApi.Repository.Managers
                            }).ToList();
             //}
             //else
-            //    results = (from b in _context.TblOriginalBoqs
+            //    results = (from b in _context.TblOriginalBoqVds
             //               where (divO.Count == 0 || divO.Contains(b.SectionO))
             //               group b.L4 by b.L4 into g
             //               orderby g.Key
@@ -205,8 +205,8 @@ namespace AccApi.Repository.Managers
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
-            results = (from b in _context.TblBoqs
-                       join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            results = (from b in _context.TblBoqVds
+                       join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
                        where    (Level2.Count==0 || Level2.Contains(i.L2)) &&
                                 (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                                 (Level4.Count == 0 || Level4.Contains(i.L4)) &&
@@ -217,15 +217,15 @@ namespace AccApi.Repository.Managers
 
             //if (Level4.Count > 0)
             //    if (divO.Count > 0)
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level4.Contains(i.L4) && divO.Contains(i.SectionO)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
             //                   select new RESTypeList { BoqCtg = g.Key }).ToList();
             //    else
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level4.Contains(i.L4)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
@@ -233,15 +233,15 @@ namespace AccApi.Repository.Managers
 
             //else if (Level3.Count > 0)
             //    if (divO.Count > 0)
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level3.Contains(i.L3) && divO.Contains(i.SectionO)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
             //                   select new RESTypeList { BoqCtg = g.Key }).ToList();
             //    else
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level3.Contains(i.L3)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
@@ -249,15 +249,15 @@ namespace AccApi.Repository.Managers
 
             //else if (Level2.Count > 0)
             //    if (divO.Count > 0)
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level2.Contains(i.L2) && divO.Contains(i.SectionO)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
             //                   select new RESTypeList { BoqCtg = g.Key }).ToList();
             //    else
-            //        results = (from b in _context.TblBoqs
-            //                   join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //        results = (from b in _context.TblBoqVds
+            //                   join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                   where Level2.Contains(i.L2)
             //                   group b by b.BoqCtg into g
             //                   orderby g.Key
@@ -265,14 +265,14 @@ namespace AccApi.Repository.Managers
 
             //else
             //   if (divO.Count > 0)
-            //      results = (from b in _context.TblBoqs
-            //                 join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //      results = (from b in _context.TblBoqVds
+            //                 join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                 where divO.Contains(i.SectionO)
             //                 group b by b.BoqCtg into g
             //                 orderby g.Key
             //                 select new RESTypeList { BoqCtg = g.Key }).ToList();
             //   else
-            //      results = (from b in _context.TblBoqs
+            //      results = (from b in _context.TblBoqVds
             //               group b by b.BoqCtg into g
             //               orderby g.Key
             //               select new RESTypeList { BoqCtg = g.Key }).ToList();
@@ -283,7 +283,7 @@ namespace AccApi.Repository.Managers
 
         public List<RESDivList> RESDivList()
         {
-            var results = (from b in _context.TblBoqs
+            var results = (from b in _context.TblBoqVds
                            group b by b.BoqDiv into g
                            orderby g.Key
                            select new RESDivList { BoqDiv = g.Key }).ToList();
@@ -292,26 +292,43 @@ namespace AccApi.Repository.Managers
         }
 
 
-        public List<Package> PackageList()
+        public List<Package> GetPackagesList(bool usedPackages)
         {
-            var usedPackO = _context.TblOriginalBoqs.Where(x => x.Scope > 0).Select(p => p.Scope).Distinct().ToList();
-            var usedPackB = _context.TblBoqs.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
-            var usedPack = usedPackO.Union(usedPackB).ToList();
+            List<Package> results = null;
 
-            var results = (from b in _mdbContext.TblPackages where usedPack.Contains(b.PkgeId)
-                           orderby b.PkgeName
-                           select new Package
-                           {
-                               IDPkge = b.PkgeId,
-                               PkgeName = b.PkgeName
-                           }).ToList();
+            if (usedPackages)
+            {
+                var usedPackO = _context.TblOriginalBoqVds.Where(x => x.Scope > 0).Select(p => p.Scope).Distinct().ToList();
+                var usedPackB = _context.TblBoqVds.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
+                var usedPack = usedPackO.Union(usedPackB).ToList();
+
+                 results = (from b in _mdbContext.TblPackages
+                               where usedPack.Contains(b.PkgeId)
+                               orderby b.PkgeName
+                               select new Package
+                               {
+                                   IDPkge = b.PkgeId,
+                                   PkgeName = b.PkgeName
+                               }).ToList();
+            }
+            else
+            {
+                 results = (from b in _mdbContext.TblPackages
+                               orderby b.PkgeName
+                               select new Package
+                               {
+                                   IDPkge = b.PkgeId,
+                                   PkgeName = b.PkgeName
+                               }).ToList();
+            }
+
             var l= results.OrderBy(p=>p.PkgeName).ToList();
             return l;
         }
 
         public List<RESPackageList> RESPackageList()
         {
-            var results = (from b in _context.TblBoqs
+            var results = (from b in _context.TblBoqVds
                            group b by b.BoqPackage into g
                            orderby g.Key
                            select new RESPackageList { BoqPackage = g.Key }).ToList();
@@ -321,7 +338,7 @@ namespace AccApi.Repository.Managers
 
         public List<SheetDescList> SheetDescList()
         {
-            var results = (from b in _context.TblOriginalBoqs
+            var results = (from b in _context.TblOriginalBoqVds
                            group b by b.ObSheetDesc into g
                            orderby g.Key
                            select new SheetDescList { obSheetDesc = g.Key }).ToList();
@@ -349,7 +366,7 @@ namespace AccApi.Repository.Managers
 
             if (resTypeList.Count > 0)
                 resList = (from l in resTypeList
-                           join b in _context.TblBoqs on l.resourceType equals b.BoqCtg
+                           join b in _context.TblBoqVds on l.resourceType equals b.BoqCtg
                            group b by b.BoqResSeq into g
                            orderby g.Key
                            select new Ressource
@@ -359,8 +376,8 @@ namespace AccApi.Repository.Managers
 
 
             //if (Level4.Count > 0)
-                boqResList = (from b in _context.TblBoqs
-                              join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                boqResList = (from b in _context.TblBoqVds
+                              join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
                               where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(i.L4)) &&
@@ -371,8 +388,8 @@ namespace AccApi.Repository.Managers
                               { ResId = g.Key }).ToList();
 
             //else if (Level3.Count > 0)
-            //    boqResList = (from b in _context.TblBoqs
-            //                  join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //    boqResList = (from b in _context.TblBoqVds
+            //                  join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                  where Level3.Contains(i.L3)
             //                  group b by b.BoqResSeq into g
             //                  orderby g.Key
@@ -380,8 +397,8 @@ namespace AccApi.Repository.Managers
             //                  { ResId = g.Key }).ToList();
 
             //else if (Level2.Count > 0)
-            //    boqResList = (from b in _context.TblBoqs
-            //                  join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //    boqResList = (from b in _context.TblBoqVds
+            //                  join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //                  where Level2.Contains(i.L2)
             //                  group b by b.BoqResSeq into g
             //                  orderby g.Key
@@ -389,7 +406,7 @@ namespace AccApi.Repository.Managers
             //                  { ResId = g.Key }).ToList();
 
             //else
-            //    boqResList = (from b in _context.TblBoqs
+            //    boqResList = (from b in _context.TblBoqVds
             //                  group b by b.BoqResSeq into g
             //                  orderby g.Key
             //                  select new Ressource
@@ -430,7 +447,7 @@ namespace AccApi.Repository.Managers
 
             //if (Level2.Count > 0)
             //{
-                query = (from b in _context.TblOriginalBoqs
+                query = (from b in _context.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(b.L2)) &&
                                (divO.Count == 0 || divO.Contains(b.SectionO))
                          group b.L3 by b.L3 into g
@@ -438,7 +455,7 @@ namespace AccApi.Repository.Managers
                          select new BOQLevelList { Level = g.Key }).Distinct();
             //}
             //else
-            //    query = (from b in _context.TblOriginalBoqs
+            //    query = (from b in _context.TblOriginalBoqVds
             //             group b.L3 by b.L3 into g
             //             orderby g.Key
             //             select new BOQLevelList { Level = g.Key }).Distinct();
@@ -456,7 +473,7 @@ namespace AccApi.Repository.Managers
             var divO = filter.boqDiv;
 
             //if (Level2.Count > 0)
-                query = (from i in _context.TblOriginalBoqs
+                query = (from i in _context.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                                (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                                (divO.Count == 0 || divO.Contains(i.SectionO))
@@ -465,14 +482,14 @@ namespace AccApi.Repository.Managers
                          select new BOQLevelList { Level = g.Key }).Distinct();
 
             //else if (Level3.Count > 0)
-            //    query = (from b in _context.TblOriginalBoqs
+            //    query = (from b in _context.TblOriginalBoqVds
             //             where Level3.Contains(b.L3)
             //             group b.L4 by b.L4 into g
             //             orderby g.Key
             //             select new BOQLevelList { Level = g.Key }).Distinct();
 
             //else
-            //    query = (from b in _context.TblOriginalBoqs
+            //    query = (from b in _context.TblOriginalBoqVds
             //             group b.L4 by b.L4 into g
             //             orderby g.Key
             //             select new BOQLevelList { Level = g.Key }).Distinct();
@@ -492,10 +509,10 @@ namespace AccApi.Repository.Managers
 
             //if ((Level2 == null || Level2.Count == 0) && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
             //{
-            //    query = (from b in _context.TblBoqs
+            //    query = (from b in _context.TblBoqVds
             //             join c in _context.TblResources
             //             on b.BoqResSeq equals c.ResSeq
-            //             join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //             join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //             orderby c.ResDescription
             //             select new RessourceList
             //             {
@@ -506,10 +523,10 @@ namespace AccApi.Repository.Managers
             //}
             //else if (Level2 != null && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
             //{
-            //    query = (from b in _context.TblBoqs
+            //    query = (from b in _context.TblBoqVds
             //             join c in _context.TblResources
             //             on b.BoqResSeq equals c.ResSeq
-            //             join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //             join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //             where Level2.Contains(i.L2)
             //             orderby c.ResDescription
             //             select new RessourceList
@@ -521,10 +538,10 @@ namespace AccApi.Repository.Managers
             //}
             //else if (Level3 != null && (Level4 == null || Level4.Count == 0))
             //{
-            //    query = (from b in _context.TblBoqs
+            //    query = (from b in _context.TblBoqVds
             //             join c in _context.TblResources
             //             on b.BoqResSeq equals c.ResSeq
-            //             join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+            //             join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
             //             where Level3.Contains(i.L3)
             //             orderby c.ResDescription
             //             select new RessourceList
@@ -536,10 +553,10 @@ namespace AccApi.Repository.Managers
             //}
             //else if (Level4 != null)
             //{
-                query = (from b in _context.TblBoqs
+                query = (from b in _context.TblBoqVds
                          join c in _context.TblResources
                          on b.BoqResSeq equals c.ResSeq
-                         join i in _context.TblOriginalBoqs on b.BoqItem equals i.ItemO
+                         join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                                (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                                (Level4.Count == 0 || Level4.Contains(i.L4)) &&
