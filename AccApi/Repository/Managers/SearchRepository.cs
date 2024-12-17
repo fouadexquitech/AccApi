@@ -6,6 +6,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
@@ -34,7 +35,13 @@ namespace AccApi.Repository.Managers
             var Level4 = filter.Level4;
             var resType = filter.resType;
 
-            results = (from o in _context.TblOriginalBoqVds
+            if ((Level2 == null || Level2.Count == 0) && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
+                results = (from o in _context.TblOriginalBoqVds                         
+                           group o.SectionO by o.SectionO into g
+                           orderby g.Key
+                           select new BOQDivList { SectionO = g.Key }).ToList();
+            else
+                results = (from o in _context.TblOriginalBoqVds
                        join b in _context.TblBoqVds on o.ItemO equals b.BoqItem
                        where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
@@ -65,6 +72,20 @@ namespace AccApi.Repository.Managers
 
             //if (resTypeList.Count > 0)
             //{
+            if (resType == null || resType.Count == 0)
+                results = (from o in _context.TblOriginalBoqVds 
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                         (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                         (Level4.Count == 0 || Level4.Contains(o.L4)) &&                        
+                         (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L2 by o.L2 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+
+            else
                 results = (from b in _context.TblBoqVds 
                            join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
@@ -122,8 +143,19 @@ namespace AccApi.Repository.Managers
             //}
 
 
-            //if (resTypeList.Count > 0)
-            //{
+            if (resType == null || resType.Count == 0)
+                results = (from o in _context.TblOriginalBoqVds 
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L3 by o.L3 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+            else
                 results = (from b in _context.TblBoqVds 
                            join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
@@ -168,8 +200,19 @@ namespace AccApi.Repository.Managers
             //}
 
 
-            //if (resTypeList.Count > 0)
-            //{
+            if (resType == null || resType.Count == 0)
+                results = (from o in _context.TblOriginalBoqVds
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L4 by o.L4 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+            else
                 results = (from b in _context.TblBoqVds 
                            join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
@@ -205,7 +248,7 @@ namespace AccApi.Repository.Managers
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
-            results = (from b in _context.TblBoqVds
+           results = (from b in _context.TblBoqVds
                        join i in _context.TblOriginalBoqVds on b.BoqItem equals i.ItemO
                        where    (Level2.Count==0 || Level2.Contains(i.L2)) &&
                                 (Level3.Count == 0 || Level3.Contains(i.L3)) &&
