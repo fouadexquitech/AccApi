@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblMonthlyAddDed")]
+    [Index(nameof(MadLabId), Name = "IX_tblMonthlyAddDed")]
+    [Index(nameof(MadEndDate), Name = "IX_tblMonthlyAddDed_1")]
+    [Index(nameof(MadProjectDef), Name = "IX_tblMonthlyAddDed_2")]
     public partial class TblMonthlyAddDed
     {
         [Key]

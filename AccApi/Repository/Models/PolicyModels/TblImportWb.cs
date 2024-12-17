@@ -20,18 +20,18 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(75)]
         public string IwWbsCode { get; set; }
         [Column("iwLevel")]
-        public byte? IwLevel { get; set; }
+        public int? IwLevel { get; set; }
         [Column("iwDivision")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string IwDivision { get; set; }
         [Column("iwSubDiv")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string IwSubDiv { get; set; }
         [Column("iwTrade")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string IwTrade { get; set; }
         [Column("iwSubTrade")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string IwSubTrade { get; set; }
         [Column("iwDescription")]
         [StringLength(300)]

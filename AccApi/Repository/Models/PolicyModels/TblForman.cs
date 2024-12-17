@@ -8,16 +8,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Table("TblForman")]
+    [Table("tblForman")]
     public partial class TblForman
     {
         [Key]
         [Column("forId")]
         public int ForId { get; set; }
-        [Key]
-        [Column("forFileNumber")]
-        [StringLength(10)]
-        public string ForFileNumber { get; set; }
         [Column("forProj")]
         public int? ForProj { get; set; }
         [Column("forName")]
@@ -28,9 +24,10 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("forAbv")]
         [StringLength(5)]
         public string ForAbv { get; set; }
-        [Column("forWrkLocation")]
-        public int? ForWrkLocation { get; set; }
-        public int? InsertForman { get; set; }
+        [Required]
+        [Column("forFileNumber")]
+        [StringLength(15)]
+        public string ForFileNumber { get; set; }
         [StringLength(25)]
         public string InsertedBy { get; set; }
         [Column(TypeName = "datetime")]
@@ -39,6 +36,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public string LastUserUpdate { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? LastUpdate { get; set; }
+        [Column("forWrkLocation")]
+        public int? ForWrkLocation { get; set; }
+        public int? InsertForman { get; set; }
         [Column("forusername")]
         [StringLength(15)]
         public string Forusername { get; set; }

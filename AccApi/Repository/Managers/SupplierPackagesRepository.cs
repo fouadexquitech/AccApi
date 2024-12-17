@@ -674,7 +674,7 @@ namespace AccApi.Repository.Managers
                                                    Quantity = d.RdQty,
                                                    QuotationQty = d.RdQuotationQty,
                                                    UnitPrice = d.RdPrice,
-                                                   TotalPrice = (d.RdQty) * (d.RdPrice),
+                                                   TotalPrice = (d.RdQuotationQty) * (d.UnitPriceAfterDiscount),
                                                    DiscountPerc = d.RdDiscount,
                                                    Comments = d.RdComment,
                                                    CreatedOn = DateTime.Now,
@@ -887,7 +887,7 @@ namespace AccApi.Repository.Managers
                             ResourceDescription = row.ResourceDescription,
                             ItemDescription=row.ItemDescription ,
                             UnitPriceAfterDiscount = row.UnitPriceAfterDiscount,
-                            TotalPrice= row.RdQuotationQty*row.UnitPriceAfterDiscount,
+                            TotalPrice= Math.Round((double) (row.RdQuotationQty*row.UnitPriceAfterDiscount),2),
                         };
                         LstRevDetails.Add(revdtl);
                     }                  

@@ -14,8 +14,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public TblLab()
         {
             TblDistribHdrs = new HashSet<TblDistribHdr>();
-            TblLabDocuments = new HashSet<TblLabDocument>();
-            TblLabSalHistories = new HashSet<TblLabSalHistory>();
             TblMonthlyAddDeds = new HashSet<TblMonthlyAddDed>();
         }
 
@@ -24,18 +22,18 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(8)]
         public string LabId { get; set; }
         [Column("labLegacyNo")]
-        [StringLength(10)]
+        [StringLength(20)]
         public string LabLegacyNo { get; set; }
         [Column("labName")]
-        [StringLength(300)]
+        [StringLength(250)]
         public string LabName { get; set; }
         [Column("labNameE")]
-        [StringLength(300)]
+        [StringLength(200)]
         public string LabNameE { get; set; }
         [Column("labjob")]
         public int? Labjob { get; set; }
         [Column("LabFName")]
-        [StringLength(300)]
+        [StringLength(75)]
         public string LabFname { get; set; }
         [Column("LabLName")]
         [StringLength(75)]
@@ -67,7 +65,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("labHasPhoto")]
         public bool? LabHasPhoto { get; set; }
         [Column("labPhoto")]
-        [StringLength(300)]
+        [StringLength(255)]
         public string LabPhoto { get; set; }
         [Column("labWDate", TypeName = "datetime")]
         public DateTime? LabWdate { get; set; }
@@ -123,7 +121,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(50)]
         public string LabNbPass { get; set; }
         [Column("labprojectCode")]
-        [StringLength(50)]
+        [StringLength(20)]
         public string LabprojectCode { get; set; }
         [Column("labSkilled")]
         public byte? LabSkilled { get; set; }
@@ -132,68 +130,59 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("labPhone")]
         [StringLength(50)]
         public string LabPhone { get; set; }
-        [Column("labSafetyInd")]
-        public byte? LabSafetyInd { get; set; }
+        [Column("LabFAccNew")]
+        [StringLength(8)]
+        public string LabFaccNew { get; set; }
+        [Column("labNationalNo")]
+        [StringLength(50)]
+        public string LabNationalNo { get; set; }
         [Column("labType")]
         public byte? LabType { get; set; }
-        [Column("labClassSalary")]
-        [StringLength(5)]
-        public string LabClassSalary { get; set; }
         [Column("labEntryNo")]
         [StringLength(50)]
         public string LabEntryNo { get; set; }
+        [Column("labWrkRef")]
+        [StringLength(10)]
+        public string LabWrkRef { get; set; }
+        [Column("labEndRef")]
+        [StringLength(3)]
+        public string LabEndRef { get; set; }
+        [Column("labTrskRef")]
+        [StringLength(3)]
+        public string LabTrskRef { get; set; }
+        [Column("LabBB")]
+        [StringLength(5)]
+        public string LabBb { get; set; }
+        [Column("labbank")]
+        [StringLength(50)]
+        public string Labbank { get; set; }
+        [Column("labWEPayType")]
+        public byte? LabWepayType { get; set; }
+        [Column("labFileNo")]
+        [StringLength(15)]
+        public string LabFileNo { get; set; }
+        [Column("labNew")]
+        public byte? LabNew { get; set; }
+        [Column("labSalType")]
+        public byte? LabSalType { get; set; }
+        [Column("labCardExpire", TypeName = "datetime")]
+        public DateTime? LabCardExpire { get; set; }
+        [Column("labSafetyInd")]
+        public byte? LabSafetyInd { get; set; }
+        [Column("labClassSalary")]
+        [StringLength(5)]
+        public string LabClassSalary { get; set; }
         [Column("labAccomlocation")]
         public int? LabAccomlocation { get; set; }
         [Column("labAccomRoom")]
         public int? LabAccomRoom { get; set; }
         [Column("labAccomDate", TypeName = "datetime")]
         public DateTime? LabAccomDate { get; set; }
-        [Column("labWrkRef")]
-        [StringLength(10)]
-        public string LabWrkRef { get; set; }
-        [Column("labEndRef")]
-        [StringLength(4)]
-        public string LabEndRef { get; set; }
-        [Column("labTrskRef")]
-        [StringLength(4)]
-        public string LabTrskRef { get; set; }
+        [Column("labPhoneCountry")]
+        [StringLength(50)]
+        public string LabPhoneCountry { get; set; }
         [Column("labReportToPolice")]
         public bool? LabReportToPolice { get; set; }
-        [Column("labInsurancePin")]
-        [StringLength(50)]
-        public string LabInsurancePin { get; set; }
-        [Column("labGOSI")]
-        [StringLength(50)]
-        public string LabGosi { get; set; }
-        [StringLength(10)]
-        public string UpdatedBy { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? UpdatedDate { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? LabPassExpireDate { get; set; }
-        [Column("LabBB")]
-        [StringLength(5)]
-        public string LabBb { get; set; }
-        [Column("labCardExpire", TypeName = "datetime")]
-        public DateTime? LabCardExpire { get; set; }
-        [Column("labbank")]
-        [StringLength(50)]
-        public string Labbank { get; set; }
-        [Column("LabFAccNew")]
-        [StringLength(8)]
-        public string LabFaccNew { get; set; }
-        [Column("labFileNo")]
-        [StringLength(15)]
-        public string LabFileNo { get; set; }
-        [Column("labWEPayType")]
-        public byte? LabWepayType { get; set; }
-        [Column("labNationalNo")]
-        [StringLength(50)]
-        public string LabNationalNo { get; set; }
-        [Column("labNew")]
-        public byte? LabNew { get; set; }
-        [Column("labSalType")]
-        public byte? LabSalType { get; set; }
         public int? Labsex { get; set; }
         public int? LabTitle { get; set; }
         [Column("LabMStatus")]
@@ -224,10 +213,22 @@ namespace AccApi.Repository.Models.PolicyModels
         public DateTime? LabInsuranceExpiryDate { get; set; }
         [Column("labHasAccommodation")]
         public bool? LabHasAccommodation { get; set; }
-        [StringLength(10)]
+        [StringLength(50)]
         public string InsertedBy { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? InsertedDate { get; set; }
+        [Column("labInsurancePin")]
+        [StringLength(50)]
+        public string LabInsurancePin { get; set; }
+        [Column("labGOSI")]
+        [StringLength(50)]
+        public string LabGosi { get; set; }
+        [StringLength(10)]
+        public string UpdatedBy { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? UpdatedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? LabPassExpireDate { get; set; }
         public bool? LabManualEntryPerm { get; set; }
         [Column("labNssfNb")]
         [StringLength(15)]
@@ -259,10 +260,6 @@ namespace AccApi.Repository.Models.PolicyModels
 
         [InverseProperty(nameof(TblDistribHdr.DisLabNavigation))]
         public virtual ICollection<TblDistribHdr> TblDistribHdrs { get; set; }
-        [InverseProperty(nameof(TblLabDocument.DocLab))]
-        public virtual ICollection<TblLabDocument> TblLabDocuments { get; set; }
-        [InverseProperty(nameof(TblLabSalHistory.LshLabSeqNavigation))]
-        public virtual ICollection<TblLabSalHistory> TblLabSalHistories { get; set; }
         [InverseProperty(nameof(TblMonthlyAddDed.MadLab))]
         public virtual ICollection<TblMonthlyAddDed> TblMonthlyAddDeds { get; set; }
     }

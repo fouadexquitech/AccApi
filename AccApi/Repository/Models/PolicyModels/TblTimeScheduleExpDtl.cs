@@ -41,6 +41,8 @@ namespace AccApi.Repository.Models.PolicyModels
         public DateTime? TsedPrayTimeTo { get; set; }
         [Column("tsedPrayHrs")]
         public float? TsedPrayHrs { get; set; }
+        [Column("tsedWeekEnd")]
+        public byte? TsedWeekEnd { get; set; }
 
         [ForeignKey(nameof(TsedHdrSeq))]
         [InverseProperty(nameof(TblTimeScheduleExpHdr.TblTimeScheduleExpDtls))]

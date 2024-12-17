@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblRndSel")]
+    [Index(nameof(RnsWho), Name = "IX_tblRndSel")]
+    [Index(nameof(RnsUser), Name = "IX_tblRndSel_1")]
+    [Index(nameof(RnsRnd), Name = "IX_tblRndSel_2")]
     public partial class TblRndSel
     {
         [Key]

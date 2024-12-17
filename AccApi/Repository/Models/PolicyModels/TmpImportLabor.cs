@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Keyless]
     [Table("tmpImportLabor")]
     public partial class TmpImportLabor
     {
@@ -113,5 +112,8 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("Place of Residence")]
         [StringLength(100)]
         public string PlaceOfResidence { get; set; }
+        [Key]
+        [Column("codSeq")]
+        public int CodSeq { get; set; }
     }
 }

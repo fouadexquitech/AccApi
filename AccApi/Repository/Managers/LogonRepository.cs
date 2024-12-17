@@ -68,7 +68,7 @@ namespace AccApi.Repository.Managers
 
 
             var result = (from b in _tsdbcontext.Tblprojects
-                         where ((b.PrjCostDatabase != "") && (b.PrjCostDatabase != null))
+                         where ((b.PrjCostDatabase != "") && (b.PrjCostDatabase != null)) && (b.PrjVendan=="1")
                          select new Project
                          {
                              Seq = b.Seq,

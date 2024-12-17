@@ -23,7 +23,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disTimeout", TypeName = "datetime")]
         public DateTime? DisTimeout { get; set; }
         [Column("disWBS")]
-        [StringLength(50)]
+        [StringLength(15)]
         public string DisWbs { get; set; }
         [Column("disStatus")]
         public short? DisStatus { get; set; }
@@ -83,7 +83,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disDeleted")]
         public byte? DisDeleted { get; set; }
         [Column("disDeletedBy")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string DisDeletedBy { get; set; }
         [Column("disDeletedOn", TypeName = "datetime")]
         public DateTime? DisDeletedOn { get; set; }

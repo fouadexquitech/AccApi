@@ -66,5 +66,7 @@ namespace AccApi.Repository.Models
         public int? TaSkipTotPayment { get; set; }
         [Column("taAddTotBudget")]
         public bool? TaAddTotBudget { get; set; }
+        [Column("taVORefId")]
+        public int? TaVorefId { get; set; }
     }
 }

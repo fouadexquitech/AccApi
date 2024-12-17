@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblAreas")]
+    [Index(nameof(ArProj), nameof(ArName), nameof(ArProjDef), Name = "IX_tblAreas", IsUnique = true)]
     public partial class TblArea
     {
         [Key]
@@ -23,7 +24,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("arZone")]
         public int? ArZone { get; set; }
         [Column("arName")]
-        [StringLength(30)]
+        [StringLength(50)]
         public string ArName { get; set; }
         [StringLength(25)]
         public string InsertedBy { get; set; }
@@ -38,5 +39,15 @@ namespace AccApi.Repository.Models.PolicyModels
         public string ArLevel { get; set; }
         [Column("arSiteEng")]
         public int? ArSiteEng { get; set; }
+        [Column("arPhase")]
+        public int? ArPhase { get; set; }
+        [Column("arPackage")]
+        [StringLength(100)]
+        public string ArPackage { get; set; }
+        [Column("Sub-Zone")]
+        [StringLength(100)]
+        public string SubZone { get; set; }
+        [StringLength(100)]
+        public string Sector { get; set; }
     }
 }

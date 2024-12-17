@@ -12,31 +12,31 @@ namespace AccApi.Repository.Models.PolicyModels
     [Table("tempCorrectWBS")]
     public partial class TempCorrectWb
     {
-        [StringLength(15)]
+        [StringLength(255)]
         public string FileNo { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string Area { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string Foreman { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? FromDate { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? ToDate { get; set; }
+        [StringLength(255)]
+        public string FromDate { get; set; }
+        [StringLength(255)]
+        public string ToDate { get; set; }
         [Column("WrongWBS")]
-        [StringLength(15)]
+        [StringLength(255)]
         public string WrongWbs { get; set; }
         [Column("CorrectWBS")]
-        [StringLength(15)]
+        [StringLength(255)]
         public string CorrectWbs { get; set; }
-        [StringLength(20)]
+        [StringLength(255)]
         public string ProjectDef { get; set; }
-        [StringLength(15)]
+        [StringLength(255)]
         public string InsertedBy { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? InsertedDate { get; set; }
-        [StringLength(25)]
+        [StringLength(255)]
+        public string InsertedDate { get; set; }
+        [StringLength(255)]
         public string NewProjectDef { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string NewArea { get; set; }
     }
 }

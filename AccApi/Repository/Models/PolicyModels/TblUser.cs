@@ -37,5 +37,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public string UsrSignature { get; set; }
         [Column("emailSignature", TypeName = "text")]
         public string EmailSignature { get; set; }
+        [Column("usrReadPolicy")]
+        public byte? UsrReadPolicy { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int TsdProjId { get; set; }
         [Key]
         [Column("tsdProjectDef")]
-        [StringLength(9)]
+        [StringLength(20)]
         public string TsdProjectDef { get; set; }
         [Key]
         [Column("tsdnight")]

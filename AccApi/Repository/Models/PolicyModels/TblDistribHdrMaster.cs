@@ -9,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblDistribHdrMaster")]
-    [Index(nameof(DisProject), Name = "IX_tblDistribHdrMaster_1")]
-    [Index(nameof(DisDate), Name = "IX_tblDistribHdrmaster")]
+    [Index(nameof(DisProject), Name = "IX_tblDistribHdrMaster")]
+    [Index(nameof(DisDate), Name = "IX_tblDistribHdrMaster_1")]
+    [Index(nameof(DisLab), Name = "IX_tblDistribHdrMaster_2")]
+    [Index(nameof(DisProjectDef), Name = "IX_tblDistribHdrMaster_3")]
+    [Index(nameof(Seq), Name = "IX_tblDistribHdrMaster_4")]
     public partial class TblDistribHdrMaster
     {
         [Key]
@@ -25,7 +28,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disTimeout", TypeName = "datetime")]
         public DateTime? DisTimeout { get; set; }
         [Column("disWBS")]
-        [StringLength(50)]
+        [StringLength(15)]
         public string DisWbs { get; set; }
         [Column("disStatus")]
         public short? DisStatus { get; set; }
@@ -39,7 +42,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disEntry")]
         public byte? DisEntry { get; set; }
         [Column("disProjectDef")]
-        [StringLength(9)]
+        [StringLength(20)]
         public string DisProjectDef { get; set; }
         [Column("disTimeInAct", TypeName = "datetime")]
         public DateTime? DisTimeInAct { get; set; }
@@ -85,7 +88,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disDeleted")]
         public byte? DisDeleted { get; set; }
         [Column("disDeletedBy")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string DisDeletedBy { get; set; }
         [Column("disDeletedOn", TypeName = "datetime")]
         public DateTime? DisDeletedOn { get; set; }
@@ -111,16 +114,6 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? DisPayNh { get; set; }
         [Column("disArea")]
         public int? DisArea { get; set; }
-        [Column("disDesig")]
-        public int? DisDesig { get; set; }
-        [Column("disLocation")]
-        public int? DisLocation { get; set; }
-        [Column("disLunchBreakWrkHrs")]
-        public float? DisLunchBreakWrkHrs { get; set; }
-        [StringLength(15)]
-        public string UserOpenExport { get; set; }
-        [Column(TypeName = "datetime")]
-        public DateTime? DateOpenExport { get; set; }
         [Column("disTotalOTHrs")]
         public double? DisTotalOthrs { get; set; }
         [Column("disTotalPayOver")]
@@ -177,6 +170,16 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? DisNonTaxable { get; set; }
         [Column("disWeek")]
         public double? DisWeek { get; set; }
+        [Column("disDesig")]
+        public int? DisDesig { get; set; }
+        [Column("disLocation")]
+        public int? DisLocation { get; set; }
+        [Column("disLunchBreakWrkHrs")]
+        public float? DisLunchBreakWrkHrs { get; set; }
+        [StringLength(15)]
+        public string UserOpenExport { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? DateOpenExport { get; set; }
         [Column("disRecalc")]
         public byte? DisRecalc { get; set; }
         [Column("disRecalcBy")]
@@ -188,16 +191,14 @@ namespace AccApi.Repository.Models.PolicyModels
         public int? DisSponsor { get; set; }
         [Column("disBldg")]
         public int? DisBldg { get; set; }
-        [Column("disHrsDaySchedule")]
-        public float? DisHrsDaySchedule { get; set; }
         [Column("disTransportPay")]
         public double? DisTransportPay { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? DteInsFromHdr { get; set; }
-        [Column("disJob")]
-        public int? DisJob { get; set; }
         [Column("disHousingPay")]
         public double? DisHousingPay { get; set; }
+        [Column("disJob")]
+        public int? DisJob { get; set; }
         [Column("disOTValidation")]
         public byte? DisOtvalidation { get; set; }
         [Column("disOTValidationBy")]

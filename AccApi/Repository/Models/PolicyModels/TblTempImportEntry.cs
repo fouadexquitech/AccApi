@@ -43,7 +43,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("FAMILY NAME")]
         [StringLength(50)]
         public string FamilyName { get; set; }
-        [Column(TypeName = "date")]
+        [Column(TypeName = "datetime")]
         public DateTime? Dob { get; set; }
         [Column("LUser")]
         [StringLength(50)]

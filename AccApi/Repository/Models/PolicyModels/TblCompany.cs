@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblCompany")]
+    [Index(nameof(ComCompany), Name = "IX_tblCompany")]
+    [Index(nameof(ComProjCode), Name = "IX_tblCompany_1", IsUnique = true)]
     public partial class TblCompany
     {
         [Key]
@@ -16,10 +18,10 @@ namespace AccApi.Repository.Models.PolicyModels
         public int ComProjId { get; set; }
         [Key]
         [Column("comProjCode")]
-        [StringLength(9)]
+        [StringLength(20)]
         public string ComProjCode { get; set; }
         [Column("comCompany")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string ComCompany { get; set; }
         [Column("comOrderInDailyReport")]
         public int? ComOrderInDailyReport { get; set; }

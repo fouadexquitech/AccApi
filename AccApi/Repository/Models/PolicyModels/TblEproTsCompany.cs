@@ -15,7 +15,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(10)]
         public string EproCompany { get; set; }
         [Key]
-        [StringLength(20)]
+        [StringLength(200)]
         public string EproDatabase { get; set; }
         [Key]
         [Column("TSSponsor")]

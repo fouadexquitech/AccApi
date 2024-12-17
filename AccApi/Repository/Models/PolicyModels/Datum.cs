@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("DATA")]
+    [Index(nameof(Sts), Name = "IX_DATA_6")]
     public partial class Datum
     {
         [Key]
@@ -31,5 +32,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("LUser")]
         [StringLength(20)]
         public string Luser { get; set; }
+        [Column("facePunch")]
+        public byte? FacePunch { get; set; }
     }
 }
