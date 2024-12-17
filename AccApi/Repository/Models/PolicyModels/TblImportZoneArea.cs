@@ -21,5 +21,12 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("Location_SubArea")]
         [StringLength(50)]
         public string LocationSubArea { get; set; }
+        [Column("Sub-Zone")]
+        [StringLength(100)]
+        public string SubZone { get; set; }
+        [StringLength(100)]
+        public string Sector { get; set; }
+        [Column("projectId")]
+        public int? ProjectId { get; set; }
     }
 }

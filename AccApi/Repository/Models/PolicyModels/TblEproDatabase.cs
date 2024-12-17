@@ -12,7 +12,7 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TblEproDatabase
     {
         [Key]
-        [StringLength(20)]
+        [StringLength(200)]
         public string EproDatabase { get; set; }
         public int? Companies { get; set; }
     }

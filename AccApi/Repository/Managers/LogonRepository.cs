@@ -67,15 +67,15 @@ namespace AccApi.Repository.Managers
             _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
 
 
-            var result = from b in _tsdbcontext.Tblprojects
-                         where b.PrjCostDatabase != null
+            var result = (from b in _tsdbcontext.Tblprojects
+                         where ((b.PrjCostDatabase != "") && (b.PrjCostDatabase != null)) && (b.PrjVendan=="1")
                          select new Project
                          {
                              Seq = b.Seq,
-                             PrjCostDatabase = b.PrjCostDatabase,
+                             PrjCostDatabase = b.PrjName,
                              projectName=b.PrjName
-                         };
-            return result.ToList();
+                         });
+            return result.OrderBy(x=> x.projectName).ToList();
         }
 
         public ProjectCurrency GetProjectCurrency(int projSeq)

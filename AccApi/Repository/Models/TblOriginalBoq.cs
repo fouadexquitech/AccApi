@@ -16,13 +16,12 @@ namespace AccApi.Repository.Models
         [StringLength(25)]
         public string ItemO { get; set; }
         [Column("Project-o")]
-        [StringLength(10)]
+        [StringLength(20)]
         public string ProjectO { get; set; }
         [Column("section-o")]
-        [StringLength(3)]
+        [StringLength(30)]
         public string SectionO { get; set; }
         [Column("Description-o")]
-        [StringLength(1000)]
         public string DescriptionO { get; set; }
         [Column("Unit-o")]
         [StringLength(255)]
@@ -43,7 +42,7 @@ namespace AccApi.Repository.Models
         [Column("obSeq")]
         public int ObSeq { get; set; }
         [Column("obSheetDesc")]
-        [StringLength(50)]
+        [StringLength(500)]
         public string ObSheetDesc { get; set; }
         public int? RowNumber { get; set; }
         [StringLength(50)]
@@ -64,17 +63,11 @@ namespace AccApi.Repository.Models
         public double? ObBoqsellTotPrice { get; set; }
         [Column("obSkipWBSQty")]
         public bool? ObSkipWbsqty { get; set; }
-        [StringLength(5000)]
         public string C1 { get; set; }
-        [StringLength(5000)]
         public string C2 { get; set; }
-        [StringLength(5000)]
         public string C3 { get; set; }
-        [StringLength(5000)]
         public string C4 { get; set; }
-        [StringLength(5000)]
         public string C5 { get; set; }
-        [StringLength(5000)]
         public string C6 { get; set; }
         public double? QtyScope { get; set; }
         [Column("obBillPage")]
@@ -88,17 +81,11 @@ namespace AccApi.Repository.Models
         public string ObLevel { get; set; }
         [Column("obBillQty")]
         public double? ObBillQty { get; set; }
-        [StringLength(5000)]
         public string L1 { get; set; }
-        [StringLength(5000)]
         public string L2 { get; set; }
-        [StringLength(5000)]
         public string L3 { get; set; }
-        [StringLength(5000)]
         public string L4 { get; set; }
-        [StringLength(5000)]
         public string L5 { get; set; }
-        [StringLength(5000)]
         public string L6 { get; set; }
         [Column(TypeName = "money")]
         public decimal? BillSubmitted { get; set; }

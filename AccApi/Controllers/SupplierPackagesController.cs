@@ -65,7 +65,6 @@ namespace AccApi.Controllers
             {
                 var res=(this._supplierPackagesRepository.ValidateExcelBeforeAssign(packId, byBoq));
                 return new JsonResult(res);
-
             }
             catch (Exception ex)
             {
@@ -140,6 +139,21 @@ namespace AccApi.Controllers
 
                 List<IFormFile> FileAttachments = formCollection.Files.ToList();
                 return await this._supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments, assignPackageTemplate.RevisionExpiryDate);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return false;
+            }
+        }
+
+        [HttpPost("TestSendMail")]
+        public bool TestSendMail()
+        {
+            try
+            {
+                this._supplierPackagesRepository.TestSendMail();
+                return true;
             }
             catch (Exception ex)
             {

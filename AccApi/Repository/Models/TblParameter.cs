@@ -118,5 +118,9 @@ namespace AccApi.Repository.Models
         public double? MobileAllowA { get; set; }
         public double? MobileAllowB { get; set; }
         public double? MobileAllowC { get; set; }
+        [Column("readyVenDan")]
+        public byte? ReadyVenDan { get; set; }
+        [Column("simsomProjId")]
+        public int? SimsomProjId { get; set; }
     }
 }

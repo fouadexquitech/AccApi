@@ -20,7 +20,8 @@ namespace AccApi.Repository.Models.MasterModels
         [StringLength(2)]
         public string Division { get; set; }
         public bool? Standard { get; set; }
-        public short? Trade { get; set; }
+        [StringLength(1000)]
+        public string Trade { get; set; }
         [StringLength(200)]
         public string FilePath { get; set; }
         public bool? IsSynched { get; set; }

@@ -134,5 +134,11 @@ namespace AccApi.Repository.Models.PolicyModels
         public string UserName { get; set; }
         [Column("TotWEContHours")]
         public double? TotWecontHours { get; set; }
+        [Column("disTimeinAct", TypeName = "datetime")]
+        public DateTime? DisTimeinAct { get; set; }
+        [Column("disTimeoutAct", TypeName = "datetime")]
+        public DateTime? DisTimeoutAct { get; set; }
+        [Column("disLunchBreakHrs")]
+        public float? DisLunchBreakHrs { get; set; }
     }
 }

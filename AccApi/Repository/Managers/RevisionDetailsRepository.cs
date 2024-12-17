@@ -66,8 +66,9 @@ namespace AccApi.Repository.Managers
                              join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                             join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
-                             where b.RdRevisionId == RevisionId
+                             join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                             where b.RdRevisionId == RevisionId && (b.IsNew == false || b.IsNew == null)
+                             && (b.IsAlternative == false || b.IsAlternative == null)
                              select new RevisionDetailsList
                              {
                                  RdRevisionId = b.RdRevisionId,
@@ -115,7 +116,7 @@ namespace AccApi.Repository.Managers
                                       join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                       join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                                       join item in _dbContext.NewItems on b.NewItemId equals item.Id
-                                      where b.RdRevisionId == RevisionId
+                                      where b.RdRevisionId == RevisionId && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
                                       select new RevisionDetailsList
                                       {
                                           RdRevisionId = b.RdRevisionId,
@@ -162,8 +163,8 @@ namespace AccApi.Repository.Managers
                                                join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                               join o in _dbContext.TblOriginalBoqs on b.ParentItemO equals o.ItemO
-                                               where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
+                                               join o in _dbContext.TblOriginalBoqVds on b.ParentItemO equals o.ItemO
+                                               where (b.RdRevisionId == RevisionId && b.IsAlternative == true) && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
                                                select new RevisionDetailsList
                                                {
                                                    RdRevisionId=b.RdRevisionId,
@@ -216,8 +217,8 @@ namespace AccApi.Repository.Managers
                              join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                             join c in _dbContext.TblBoqs on b.RdResourceSeq equals c.BoqSeq
-                             join o in _dbContext.TblOriginalBoqs on c.BoqItem equals o.ItemO
+                             join c in _dbContext.TblBoqVds on b.RdResourceSeq equals c.BoqSeq
+                             join o in _dbContext.TblOriginalBoqVds on c.BoqItem equals o.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
                              where b.RdRevisionId == RevisionId
                              select new RevisionDetailsList
@@ -270,7 +271,7 @@ namespace AccApi.Repository.Managers
                                       join item in _dbContext.NewItems on b.NewItemId equals item.Id
                                       join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
                                       //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
-                                      //join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+                                      //join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                       where b.RdRevisionId == RevisionId
                                       select new RevisionDetailsList
                                       {
@@ -319,7 +320,7 @@ namespace AccApi.Repository.Managers
                                                join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                               join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+                                               join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                                join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
                                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
                                                //join n in _dbContext.NewItems on b.NewItemId equals n.Id
@@ -371,7 +372,7 @@ namespace AccApi.Repository.Managers
                                                         join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
                                                         join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                         join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                                        join o in _dbContext.TblOriginalBoqs on b.RdBoqItem equals o.ItemO
+                                                        join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                                         where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
                                                         select new RevisionDetailsList
                                                         {
@@ -617,7 +618,7 @@ namespace AccApi.Repository.Managers
 
                                         resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
 
-                                        var result = _dbContext.TblBoqs.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+                                        var result = _dbContext.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
                                         if (result != null)
                                             resSeq = result.BoqSeq;
 
@@ -956,7 +957,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -987,7 +988,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1025,7 +1026,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                                                   join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                    where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1056,7 +1057,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                                                   join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                    where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1097,7 +1098,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                                               join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1129,7 +1130,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                                               join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1164,7 +1165,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1195,7 +1196,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1496,8 +1497,8 @@ namespace AccApi.Repository.Managers
             IEnumerable<BoqRessourcesList> condQuery = (from bb in _dbContext.TblSupplierPackageRevisions
                                                         join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                         join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                        join b in _dbContext.TblBoqs on c.RdResourceSeq equals b.BoqSeq
-                                                        join o in _dbContext.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                                                        join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqSeq
+                                                        join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                                                         where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
                                                         && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
                                                         select new BoqRessourcesList
@@ -1523,23 +1524,23 @@ namespace AccApi.Repository.Managers
                                                             ResDescription = Convert.ToString(c.ResourceDescription),
                                                             IsAlternative = false,
                                                             IsNewItem = false,
-                                                            NewItemId = c.NewItemId,
-                                                            NewItemResourceId = c.NewItemResourceId,
-                                                            ParentItemO = c.ParentItemO,
-                                                            ParentResourceId = c.ParentResourceId,
-                                                            IsExcluded = c.IsExcluded,
+                                                            NewItemId = (int)c.NewItemId,
+                                                            NewItemResourceId = (int)c.NewItemResourceId,
+                                                            ParentItemO = Convert.ToString(c.ParentItemO),
+                                                            ParentResourceId = (int)c.ParentResourceId,
+                                                            IsExcluded = (bool)c.IsExcluded,
                                                             SupplierId= (int)a.SpSupplierId,
-                                                            L2 = o.L2,
-                                                            L3 = o.L3,
-                                                            L4 = o.L4,
-                                                            L5 = o.L5,
-                                                            L6 = o.L6,
-                                                            C1 = o.C1,
-                                                            C2 = o.C2,
-                                                            C3 = o.C3,
-                                                            C4 = o.C4,
-                                                            C5 = o.C5,
-                                                            C6 = o.C6
+                                                            L2 = Convert.ToString(o.L2),
+                                                            L3 = Convert.ToString(o.L3),
+                                                            L4 = Convert.ToString(o.L4),
+                                                            L5 = Convert.ToString(o.L5),
+                                                            L6 = Convert.ToString(o.L6),
+                                                            C1 = Convert.ToString(o.C1),
+                                                            C2 = Convert.ToString(o.C2),
+                                                            C3 = Convert.ToString(o.C3),
+                                                            C4 = Convert.ToString(o.C4),
+                                                            C5 = Convert.ToString(o.C5),
+                                                            C6 = Convert.ToString(o.C6)
                                                         }).Union(from bb in _dbContext.TblSupplierPackageRevisions
                                                                  join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                                  join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
@@ -1569,27 +1570,27 @@ namespace AccApi.Repository.Managers
                                                                      ResDescription = Convert.ToString(c.ResourceDescription),
                                                                      IsAlternative = false,
                                                                      IsNewItem = true,
-                                                                     NewItemId = c.NewItemId,
-                                                                     NewItemResourceId = c.NewItemResourceId,
-                                                                     ParentItemO = c.ParentItemO,
-                                                                     ParentResourceId = c.ParentResourceId,
-                                                                     IsExcluded = c.IsExcluded,
+                                                                     NewItemId = (int)c.NewItemId,
+                                                                     NewItemResourceId = (int)c.NewItemResourceId,
+                                                                     ParentItemO = Convert.ToString(c.ParentItemO),
+                                                                     ParentResourceId = (int)c.ParentResourceId,
+                                                                     IsExcluded = (bool)c.IsExcluded,
                                                                      SupplierId = (int)a.SpSupplierId,
-                                                                     L2 = item.L2,
-                                                                     L3 = item.L3,
-                                                                     L4 = item.L4,
-                                                                     L5 = item.L5,
-                                                                     L6 = item.L6,
-                                                                     C1 = item.C1,
-                                                                     C2 = item.C2,
-                                                                     C3 = item.C3,
-                                                                     C4 = item.C4,
-                                                                     C5 = item.C5,
-                                                                     C6 = item.C6
+                                                                     L2 = Convert.ToString(item.L2),
+                                                                     L3 = Convert.ToString(item.L3),
+                                                                     L4 = Convert.ToString(item.L4),
+                                                                     L5 = Convert.ToString(item.L5),
+                                                                     L6 = Convert.ToString(item.L6),
+                                                                     C1 = Convert.ToString(item.C1),
+                                                                     C2 = Convert.ToString(item.C2),
+                                                                     C3 = Convert.ToString(item.C3),
+                                                                     C4 = Convert.ToString(item.C4),
+                                                                     C5 = Convert.ToString(item.C5),
+                                                                     C6 = Convert.ToString(item.C6)
                                                                  }).Union(from bb in _dbContext.TblSupplierPackageRevisions
                                                                     join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                                     join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                                    join o in _dbContext.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
+                                                                    join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
                                                                     where(a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
                                                                     select new BoqRessourcesList
                                                                     {
@@ -1614,23 +1615,23 @@ namespace AccApi.Repository.Managers
                                                                         ResDescription = Convert.ToString(c.ResourceDescription),
                                                                         IsAlternative = true,
                                                                         IsNewItem = false,
-                                                                        NewItemId = c.NewItemId,
-                                                                        NewItemResourceId = c.NewItemResourceId,
-                                                                        ParentItemO = c.ParentItemO,
-                                                                        ParentResourceId = c.ParentResourceId,
-                                                                        IsExcluded = c.IsExcluded,
+                                                                        NewItemId = (int)c.NewItemId,
+                                                                        NewItemResourceId = (int)c.NewItemResourceId,
+                                                                        ParentItemO = Convert.ToString(c.ParentItemO),
+                                                                        ParentResourceId = (int)c.ParentResourceId,
+                                                                        IsExcluded = (bool)c.IsExcluded,
                                                                         SupplierId = (int)a.SpSupplierId,
-                                                                        L2 = o.L2,
-                                                                        L3 = o.L3,
-                                                                        L4 = o.L4,
-                                                                        L5 = o.L5,
-                                                                        L6 = o.L6,
-                                                                        C1 = o.C1,
-                                                                        C2 = o.C2,
-                                                                        C3 = o.C3,
-                                                                        C4 = o.C4,
-                                                                        C5 = o.C5,
-                                                                        C6 = o.C6
+                                                                        L2 = Convert.ToString(o.L2),
+                                                                        L3 = Convert.ToString(o.L3),
+                                                                        L4 = Convert.ToString(o.L4),
+                                                                        L5 = Convert.ToString(o.L5),
+                                                                        L6 = Convert.ToString(o.L6),
+                                                                        C1 = Convert.ToString(o.C1),
+                                                                        C2 = Convert.ToString(o.C2),
+                                                                        C3 = Convert.ToString(o.C3),
+                                                                        C4 = Convert.ToString(o.C4),
+                                                                        C5 = Convert.ToString(o.C5),
+                                                                        C6 = Convert.ToString(o.C6)
                                                                     });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -2004,11 +2005,14 @@ namespace AccApi.Repository.Managers
                                 if (res.IsAlternative == true)
                                     minPrice = (double)res.GroupingPackageSuppliersPrices.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
                                 else
-                                    minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
+                                    if (PackageSupplierPriceRevDetail.Where(p => p.UPriceAfterDiscount > 0).FirstOrDefault() == null)
+                                        minPrice = 0;
+                                    else
+                                        minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
 
-                                var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
+                                    var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
 
-                                if (minPrice != null)
+                                    if (minPrice != null)
                                     res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
                                     {
                                         SupplierId = 0,
@@ -2049,141 +2053,156 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from bb in _dbContext.TblSupplierPackageRevisions
-                                                        join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                        join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                        join o in _dbContext.TblOriginalBoqs on c.RdBoqItem equals o.ItemO
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        where a.SpPackageId == packageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
-                                                                && (c.IsAlternative == false || c.IsAlternative == null)
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = Convert.ToString(o.SectionO),
-                                                            ItemO = Convert.ToString(o.ItemO),
-                                                            DescriptionO = Convert.ToString(o.DescriptionO),
-                                                            UnitO = Convert.ToString(o.UnitO),
-                                                            QtyO = o.QtyO,
-                                                            ScopeQtyO = o.QtyScope,
-                                                            UnitRateO = o.UnitRate,
-                                                            ScopeO = o.Scope,
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = Convert.ToString(b.BoqCtg),
-                                                            BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
-                                                            BoqQty = b.BoqQty,
-                                                            BoqUprice = o.UnitRate,
-                                                            BoqDiv = Convert.ToString(b.BoqDiv),
-                                                            BoqPackage = Convert.ToString(b.BoqPackage),
-                                                            BoqScope = b.BoqScope,
-                                                            ResSeq = Convert.ToString(r.ResSeq),
-                                                            ResDescription = Convert.ToString(r.ResDescription),
-                                                            IsAlternative=false,
-                                                            IsNewItem=false,
-                                                            IsExcluded=c.IsExcluded,
-                                                            L2 = o.L2,
-                                                            L3 = o.L3,
-                                                            L4 = o.L4,
-                                                            L5 = o.L5,
-                                                            L6 = o.L6,
-                                                            C1 = o.C1,
-                                                            C2 = o.C2,
-                                                            C3 = o.C3,
-                                                            C4 = o.C4,
-                                                            C5 = o.C5,
-                                                            C6 = o.C6
-                                                        }).Union(from bb in _dbContext.TblSupplierPackageRevisions
-                                                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                 join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
-                                                                 join item in _dbContext.NewItems on r.NewItemId equals item.Id
-                                                                 where a.SpPackageId == packageId && bb.PrRevNo == 0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null)
-                                                                 select new BoqRessourcesList
-                                                                 {
-                                                                     RowNumber = 0,
-                                                                     SectionO = Convert.ToString(""),
-                                                                     ItemO = Convert.ToString(item.Id.ToString()),
-                                                                     DescriptionO = Convert.ToString(r.ItemDescription),
-                                                                     UnitO = Convert.ToString(item.UnitO),
-                                                                     QtyO = (double)r.RdQty,
-                                                                     ScopeQtyO = (double)r.RdQty,
-                                                                     UnitRateO = (double)r.RdPrice,
-                                                                     ScopeO = packageId,
-                                                                     BoqSeq = 0,
-                                                                     BoqCtg = Convert.ToString(""),
-                                                                     BoqUnitMesure = Convert.ToString(item.UnitO),
-                                                                     BoqQty = (double)r.RdQty,
-                                                                     BoqUprice = (double)r.RdPrice,
-                                                                     BoqDiv = Convert.ToString(""),
-                                                                     BoqPackage = Convert.ToString(""),
-                                                                     BoqScope = packageId,
-                                                                     ResSeq = Convert.ToString(""),
-                                                                     ResDescription = Convert.ToString(""),
-                                                                     IsAlternative = false,
-                                                                     IsNewItem = true,
-                                                                     IsExcluded = r.IsExcluded,
-                                                                     L2 = item.L2,
-                                                                     L3 = item.L3,
-                                                                     L4 = item.L4,
-                                                                     L5 = item.L5,
-                                                                     L6 = item.L6,
-                                                                     C1 = item.C1,
-                                                                     C2 = item.C2,
-                                                                     C3 = item.C3,
-                                                                     C4 = item.C4,
-                                                                     C5 = item.C5,
-                                                                     C6 = item.C6
-                                                                 }).Union(from bb in _dbContext.TblSupplierPackageRevisions
-                                                                          join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                          join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
-                                                                          join o in _dbContext.TblOriginalBoqs on r.ParentItemO equals o.ItemO
-                                                                          where (a.SpPackageId == packageId && r.IsAlternative == true && bb.PrRevNo==0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null))
-                                                                          select new BoqRessourcesList
-                                                                          {
-                                                                              RowNumber = o.RowNumber,
-                                                                              SectionO = Convert.ToString(o.SectionO),
-                                                                              ItemO = Convert.ToString(r.RdBoqItem),
-                                                                              DescriptionO = Convert.ToString(r.ItemDescription),
-                                                                              UnitO = Convert.ToString(o.UnitO),
-                                                                              QtyO = r.RdQty,
-                                                                              ScopeQtyO = (double)r.RdQty,
-                                                                              UnitRateO = r.RdPrice,
-                                                                              ScopeO = packageId,
-                                                                              BoqSeq = 0,
-                                                                              BoqCtg = Convert.ToString(""),
-                                                                              BoqUnitMesure = Convert.ToString(o.UnitO),
-                                                                              BoqQty = r.RdQty,
-                                                                              BoqUprice = r.RdPrice,
-                                                                              BoqDiv = Convert.ToString(""),
-                                                                              BoqPackage = Convert.ToString(""),
-                                                                              BoqScope = packageId,
-                                                                              ResSeq = Convert.ToString(""),
-                                                                              ResDescription = Convert.ToString(""),
-                                                                              IsAlternative = true,
-                                                                              IsNewItem = false,
-                                                                              IsExcluded = r.IsExcluded,
-                                                                              L2 = o.L2,
-                                                                              L3 = o.L3,
-                                                                              L4 = o.L4,
-                                                                              L5 = o.L5,
-                                                                              L6 = o.L6,
-                                                                              C1 = o.C1,
-                                                                              C2 = o.C2,
-                                                                              C3 = o.C3,
-                                                                              C4 = o.C4,
-                                                                              C5 = o.C5,
-                                                                              C6 = o.C6
-                                                                          });
+            //IEnumerable<BoqRessourcesList> condQuery
+            var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
+                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                             join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                             join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
+                             join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
+                             join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
+                             where a.SpPackageId == packageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
+                             && (c.IsAlternative == false || c.IsAlternative == null) && (supId == 0 || a.SpSupplierId == supId)
+                                select new BoqRessourcesList
+                             {
+                                 RowNumber = o.RowNumber,
+                                 SectionO = Convert.ToString(o.SectionO),
+                                 ItemO = Convert.ToString(o.ItemO),
+                                 DescriptionO = Convert.ToString(o.DescriptionO),
+                                 UnitO = Convert.ToString(o.UnitO),
+                                 QtyO = o.QtyO,
+                                 ScopeQtyO = o.QtyScope,
+                                 UnitRateO = o.UnitRate,
+                                 ScopeO = o.Scope,
+                                 BoqSeq = b.BoqSeq,
+                                 BoqCtg = Convert.ToString(b.BoqCtg),
+                                 BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
+                                 BoqQty = b.BoqQty,
+                                 BoqUprice = o.UnitRate,
+                                 BoqDiv = Convert.ToString(b.BoqDiv),
+                                 BoqPackage = Convert.ToString(b.BoqPackage),
+                                 BoqScope = b.BoqScope,
+                                 ResSeq = Convert.ToString(r.ResSeq),
+                                 ResDescription = Convert.ToString(r.ResDescription),
+                                 IsAlternative = false,
+                                 IsNewItem = false,
+                                 IsExcluded = c.IsExcluded,
+                                 L2 = o.L2,
+                                 L3 = o.L3,
+                                 L4 = o.L4,
+                                 L5 = o.L5,
+                                 L6 = o.L6,
+                                 C1 = o.C1,
+                                 C2 = o.C2,
+                                 C3 = o.C3,
+                                 C4 = o.C4,
+                                 C5 = o.C5,
+                                 C6 = o.C6
+                             });
 
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.ScopeO == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+            if (input.BOQDiv.Length > 0) condQueryItm = condQueryItm.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQueryItm = condQueryItm.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQueryItm = condQueryItm.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQueryItm = condQueryItm.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQueryItm = condQueryItm.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQueryItm = condQueryItm.Where(w => w.ScopeO == input.Package);
+            if (input.RESDiv.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESType.Contains(w.BoqCtg));
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQueryItm = condQueryItm.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
+            //New Items
+            var condQueryNew = (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
+                                join item in _dbContext.NewItems on r.NewItemId equals item.Id
+                                where a.SpPackageId == packageId && bb.PrRevNo == 0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null)
+                                && (supId == 0 || a.SpSupplierId == supId)
+                                select new BoqRessourcesList
+                                {
+                                    RowNumber = 0,
+                                    SectionO = Convert.ToString(""),
+                                    ItemO = Convert.ToString(item.Id.ToString()),
+                                    DescriptionO = Convert.ToString(r.ItemDescription),
+                                    UnitO = Convert.ToString(item.UnitO),
+                                    QtyO = (double)r.RdQty,
+                                    ScopeQtyO = (double)r.RdQty,
+                                    UnitRateO = (double)r.RdPrice,
+                                    ScopeO = packageId,
+                                    BoqSeq = 0,
+                                    BoqCtg = Convert.ToString(""),
+                                    BoqUnitMesure = Convert.ToString(item.UnitO),
+                                    BoqQty = (double)r.RdQty,
+                                    BoqUprice = (double)r.RdPrice,
+                                    BoqDiv = Convert.ToString(""),
+                                    BoqPackage = Convert.ToString(""),
+                                    BoqScope = packageId,
+                                    ResSeq = Convert.ToString(""),
+                                    ResDescription = Convert.ToString(""),
+                                    IsAlternative = false,
+                                    IsNewItem = true,
+                                    IsExcluded = r.IsExcluded,
+                                    L2 = item.L2,
+                                    L3 = item.L3,
+                                    L4 = item.L4,
+                                    L5 = item.L5,
+                                    L6 = item.L6,
+                                    C1 = item.C1,
+                                    C2 = item.C2,
+                                    C3 = item.C3,
+                                    C4 = item.C4,
+                                    C5 = item.C5,
+                                    C6 = item.C6
+                                }).ToList();
+
+            //Alternative Items
+            var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
+                                join o in _dbContext.TblOriginalBoqVds on r.ParentItemO equals o.ItemO
+                                where (a.SpPackageId == packageId && r.IsAlternative == true && bb.PrRevNo == 0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null))
+                                && (supId == 0 || a.SpSupplierId == supId)
+                                select new BoqRessourcesList
+                                {
+                                    RowNumber = o.RowNumber,
+                                    SectionO = Convert.ToString(o.SectionO),
+                                    ItemO = Convert.ToString(r.RdBoqItem),
+                                    DescriptionO = Convert.ToString(r.ItemDescription),
+                                    UnitO = Convert.ToString(o.UnitO),
+                                    QtyO = r.RdQty,
+                                    ScopeQtyO = (double)r.RdQty,
+                                    UnitRateO = r.RdPrice,
+                                    ScopeO = packageId,
+                                    BoqSeq = 0,
+                                    BoqCtg = Convert.ToString(""),
+                                    BoqUnitMesure = Convert.ToString(o.UnitO),
+                                    BoqQty = r.RdQty,
+                                    BoqUprice = r.RdPrice,
+                                    BoqDiv = Convert.ToString(""),
+                                    BoqPackage = Convert.ToString(""),
+                                    BoqScope = packageId,
+                                    ResSeq = Convert.ToString(""),
+                                    ResDescription = Convert.ToString(""),
+                                    IsAlternative = true,
+                                    IsNewItem = false,
+                                    IsExcluded = r.IsExcluded,
+                                    L2 = o.L2,
+                                    L3 = o.L3,
+                                    L4 = o.L4,
+                                    L5 = o.L5,
+                                    L6 = o.L6,
+                                    C1 = o.C1,
+                                    C2 = o.C2,
+                                    C3 = o.C3,
+                                    C4 = o.C4,
+                                    C5 = o.C5,
+                                    C6 = o.C6
+                                }).ToList();
+
+            var condQuery = condQueryItm.ToList();
+
+            foreach (var itm in condQueryNew)
+                condQuery.Add(itm);
+            foreach (var itm in condQueryAlt)
+                condQuery.Add(itm);
 
             //var items = condQuery
             //.GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.UnitRateO, x.ScopeQtyO, x.IsNewItem, x.IsAlternative, x.IsExcluded })
@@ -2588,7 +2607,6 @@ namespace AccApi.Repository.Managers
                             }
                         }
                     }
-
                 }
             }
 
@@ -2597,8 +2615,8 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
+                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
                                                         join g in _dbContext.ComparisonPackageGroups on o.GroupId equals g.Id
                                                         where o.Scope == packageId
@@ -2676,7 +2694,7 @@ namespace AccApi.Repository.Managers
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblOriginalBoqs on c.RdBoqItem equals boq.ItemO
+                             join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                              join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.Scope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
@@ -2720,8 +2738,8 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
         {
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqs
-                                                        join b in _dbContext.TblBoqs on o.ItemO equals b.BoqItem
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
+                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
                                                         join g in _dbContext.ComparisonPackageGroups on b.GroupId equals g.Id
                                                         where o.Scope == packageId
@@ -2799,7 +2817,7 @@ namespace AccApi.Repository.Managers
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblBoqs on c.RdResourceSeq equals boq.BoqSeq
+                             join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
                              join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
@@ -3096,7 +3114,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
+                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3109,6 +3127,7 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -3175,6 +3194,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[6, 7].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 //worksheet.Column(4).Width = 30;
 
+                row = 9;
                 foreach (var level in levels)
                 {
                     if (level.Items.Count > 0)
@@ -3205,24 +3225,24 @@ namespace AccApi.Repository.Managers
                         }
                     }
 
-                    row = 7;
-                    worksheet.Cells[row, 1].Value = "No";
-                    worksheet.Cells[row, 2].Value = "Description";
+                    //row = 7;
+                    worksheet.Cells[7, 1].Value = "No";
+                    worksheet.Cells[7, 2].Value = "Description";
                     worksheet.Column(2).Width = 70;
                     worksheet.Columns[2].Style.WrapText = true;
                     worksheet.Column(2).AutoFit();
-                    worksheet.Cells[row, 3].Value = "Unit";
-                    worksheet.Cells[row, 4].Value = "Final Qty";
-                    worksheet.Cells[row, 5].Value = "Price U.";
-                    worksheet.Cells[row, 6].Value = "Price T.";
+                    worksheet.Cells[7, 3].Value = "Unit";
+                    worksheet.Cells[7, 4].Value = "Final Qty";
+                    worksheet.Cells[7, 5].Value = "Price U.";
+                    worksheet.Cells[7, 6].Value = "Price T.";
 
-                    worksheet.Cells[row, 7].Value = "Q. Qty";
-                    worksheet.Cells[row, 8].Value = "Price T.";
+                    worksheet.Cells[7, 7].Value = "Q. Qty";
+                    worksheet.Cells[7, 8].Value = "Price T.";
 
-                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                    worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[7, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[7, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-                    row = 9;
+                    //row = 9;
                     j = 0;
                     foreach (var item in level.Items)
                     {
@@ -3246,6 +3266,8 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[row, 8].Value = (item.QuotationAmt) == null ? "" : item.QuotationAmt;
                             worksheet.Cells[row, 8].Style.Numberformat.Format = "#,##0.0";
 
+                            var quotQty = item.QuotationQty;
+
                             int col = 0;
                             foreach (var suplier in suppliers)
                             {
@@ -3267,18 +3289,17 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[row, 10 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                                     worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
                                     worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
-                                    worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
-                                    worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
-                                    worksheet.Cells[row, 13 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    //worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : (double)(supReply.UPriceAfterDiscount * supReply.ExchRateNow);
+                                    worksheet.Cells[row, 13 + col].Value = quotQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice; 
                                     worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
                                 }
                                 col = col + 5;
-                            }
+                            }                           
                         }
                         row++;
                     }
-
-                    row++;
+                    //row++;
                 }
   
 
@@ -3383,7 +3404,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
+                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3396,6 +3417,7 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -3605,7 +3627,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
+                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3618,6 +3640,7 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -3828,7 +3851,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{PackageName}-Comparison.xlsx";
+                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3841,6 +3864,7 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -3943,6 +3967,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[6, 7].Style.Font.Bold = true;
                 worksheet.Cells[6, 7].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
+                row = 9;
                 foreach (var level in levels)
                 {
                     if (level.Items.Count > 0)
@@ -3972,24 +3997,25 @@ namespace AccApi.Repository.Managers
                         }
                     }
 
-                    row = 7;
-                    worksheet.Cells[row, 1].Value = "No";
-                    worksheet.Cells[row, 2].Value = "Description";
+                    //row = 7;
+                    worksheet.Cells[7, 1].Value = "No";
+                    worksheet.Cells[7, 2].Value = "Description";
                     worksheet.Column(2).Width = 70;
                     worksheet.Columns[2].Style.WrapText = true;
                     worksheet.Column(2).AutoFit();
-                    worksheet.Cells[row, 3].Value = "U.";
-                    worksheet.Cells[row, 4].Value = "Final Qty";
-                    worksheet.Cells[row, 5].Value = "P.U.";
-                    worksheet.Cells[row, 6].Value = "P.T.";
+                    worksheet.Cells[7, 3].Value = "U.";
+                    worksheet.Cells[7, 4].Value = "Final Qty";
+                    worksheet.Cells[7, 5].Value = "P.U.";
+                    worksheet.Cells[7, 6].Value = "P.T.";
 
-                    worksheet.Cells[row, 7].Value = "Q. Qty";
-                    worksheet.Cells[row, 8].Value = "Price T.";
+                    worksheet.Cells[7, 7].Value = "Q. Qty";
+                    worksheet.Cells[7, 8].Value = "Price T.";
 
-                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                    worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[7, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[7, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-                    row = 9;
+                    //row = 9;
+                    //row++;
                     j = 0;
 
                     foreach (var item in level.Items)
@@ -4036,9 +4062,9 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[row, 10 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
                                     worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
                                     worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
-                                    worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
-                                    worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
-                                    worksheet.Cells[row, 13 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    //worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;             
+                                    worksheet.Cells[row, 13 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice; // supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
                                     worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
                                 }
                                 col = col + 5;
@@ -4046,8 +4072,7 @@ namespace AccApi.Repository.Managers
                         }
                         row++;
                     }
-
-                    row++;
+                    //row++;
                 }
 
                 //Commercial Conditions
@@ -4152,11 +4177,12 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
 
                 string suplierName =  suppliers.FirstOrDefault().Trim();
-                string excelName = $"{suplierName}-{PackageName}.xlsx";
+                string excelName = $"{ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -4412,11 +4438,12 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
 
                 string suplierName = suppliers.FirstOrDefault();
-                string excelName = $"{suplierName}-{PackageName}.xlsx";
+                string excelName = $"{ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
+                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
 
                 return excelName;

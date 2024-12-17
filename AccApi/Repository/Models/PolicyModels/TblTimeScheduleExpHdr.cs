@@ -23,7 +23,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int TsehProjId { get; set; }
         [Required]
         [Column("tsehProjectDef")]
-        [StringLength(9)]
+        [StringLength(20)]
         public string TsehProjectDef { get; set; }
         [Required]
         [Column("tsehDesc")]

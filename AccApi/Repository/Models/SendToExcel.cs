@@ -45,5 +45,22 @@ namespace AccApi.Repository.Models
         [Column("lcTotalHours")]
         [StringLength(50)]
         public string LcTotalHours { get; set; }
+        [Column("lcDate", TypeName = "datetime")]
+        public DateTime? LcDate { get; set; }
+        [Column("lcSubCon")]
+        [StringLength(200)]
+        public string LcSubCon { get; set; }
+        [Column("lcSiteEng")]
+        [StringLength(500)]
+        public string LcSiteEng { get; set; }
+        [Column("lcSecEng")]
+        [StringLength(200)]
+        public string LcSecEng { get; set; }
+        [Column("lcCampTranspAuxCost")]
+        public double? LcCampTranspAuxCost { get; set; }
+        [Column("lcIdleHours")]
+        public double? LcIdleHours { get; set; }
+        [Column("lcIdleCost")]
+        public double? LcIdleCost { get; set; }
     }
 }

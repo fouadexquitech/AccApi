@@ -75,6 +75,9 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? InvDiscount { get; set; }
         [Column("invApproved")]
         public byte? InvApproved { get; set; }
+        [Column("invProjDef")]
+        [StringLength(50)]
+        public string InvProjDef { get; set; }
 
         [InverseProperty(nameof(TblInvDtl.IndHdr))]
         public virtual ICollection<TblInvDtl> TblInvDtls { get; set; }

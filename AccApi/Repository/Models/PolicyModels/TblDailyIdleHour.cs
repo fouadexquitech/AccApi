@@ -12,6 +12,8 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TblDailyIdleHour
     {
         [Key]
+        public int Seq { get; set; }
+        [Key]
         [Column("idlDate", TypeName = "datetime")]
         public DateTime IdlDate { get; set; }
         [Key]

@@ -77,8 +77,6 @@ namespace AccApi
             app.UseSwagger();
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AccApi v1"));
 
-  
-
             //app.UseHttpsRedirection();
 
             app.UseRouting();

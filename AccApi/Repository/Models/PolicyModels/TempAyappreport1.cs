@@ -35,6 +35,9 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disLab")]
         [StringLength(14)]
         public string DisLab { get; set; }
+        [Column("laborName")]
+        [StringLength(150)]
+        public string LaborName { get; set; }
         [StringLength(50)]
         public string Descrip { get; set; }
         [StringLength(150)]
@@ -60,6 +63,16 @@ namespace AccApi.Repository.Models.PolicyModels
         public string SiteEng { get; set; }
         [StringLength(100)]
         public string SectionEng { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TimeFrom { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TimeTo { get; set; }
         public double? Hrs { get; set; }
+        [Column("isBreak")]
+        public bool? IsBreak { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TimeLunchIn { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? TimeLunchOut { get; set; }
     }
 }

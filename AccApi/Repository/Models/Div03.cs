@@ -46,7 +46,7 @@ namespace AccApi.Repository.Models
         [StringLength(50)]
         public string ObSheetDesc { get; set; }
         public short? RowNumber { get; set; }
-        [StringLength(50)]
+        [StringLength(10)]
         public string RefNumber { get; set; }
         public double? UnitRate { get; set; }
         [StringLength(12)]
@@ -56,129 +56,5 @@ namespace AccApi.Repository.Models
         public double? ObBoqsellRate { get; set; }
         [Column("obBOQSellTotPrice")]
         public double? ObBoqsellTotPrice { get; set; }
-        [StringLength(5000)]
-        public string C1 { get; set; }
-        [StringLength(5000)]
-        public string C2 { get; set; }
-        [StringLength(5000)]
-        public string C3 { get; set; }
-        [StringLength(5000)]
-        public string C4 { get; set; }
-        [StringLength(5000)]
-        public string C5 { get; set; }
-        [StringLength(5000)]
-        public string C6 { get; set; }
-        [Column("obBillPage")]
-        [StringLength(50)]
-        public string ObBillPage { get; set; }
-        [Column("obPriceCode")]
-        [StringLength(50)]
-        public string ObPriceCode { get; set; }
-        [Column("obLevel")]
-        [StringLength(50)]
-        public string ObLevel { get; set; }
-        [Column("obBillQty")]
-        public double? ObBillQty { get; set; }
-        [StringLength(5000)]
-        public string L1 { get; set; }
-        [StringLength(5000)]
-        public string L2 { get; set; }
-        [StringLength(5000)]
-        public string L3 { get; set; }
-        [StringLength(5000)]
-        public string L4 { get; set; }
-        [StringLength(5000)]
-        public string L5 { get; set; }
-        [StringLength(5000)]
-        public string L6 { get; set; }
-        [Column(TypeName = "money")]
-        public decimal? BillSubmitted { get; set; }
-        [Column("C1Ref")]
-        [StringLength(100)]
-        public string C1ref { get; set; }
-        [Column("C2Ref")]
-        [StringLength(100)]
-        public string C2ref { get; set; }
-        [Column("C3Ref")]
-        [StringLength(100)]
-        public string C3ref { get; set; }
-        [Column("C4Ref")]
-        [StringLength(100)]
-        public string C4ref { get; set; }
-        [Column("C5Ref")]
-        [StringLength(100)]
-        public string C5ref { get; set; }
-        [Column("C6Ref")]
-        [StringLength(100)]
-        public string C6ref { get; set; }
-        [Column("C7Ref")]
-        [StringLength(100)]
-        public string C7ref { get; set; }
-        [Column("C8Ref")]
-        [StringLength(100)]
-        public string C8ref { get; set; }
-        [Column("C9Ref")]
-        [StringLength(100)]
-        public string C9ref { get; set; }
-        [Column("C10Ref")]
-        [StringLength(100)]
-        public string C10ref { get; set; }
-        public string C7 { get; set; }
-        public string C8 { get; set; }
-        public string C9 { get; set; }
-        public string C10 { get; set; }
-        [Column("obItemCode")]
-        [StringLength(100)]
-        public string ObItemCode { get; set; }
-        [Column("L1Ref")]
-        [StringLength(100)]
-        public string L1ref { get; set; }
-        [Column("L2Ref")]
-        [StringLength(100)]
-        public string L2ref { get; set; }
-        [Column("L3Ref")]
-        [StringLength(100)]
-        public string L3ref { get; set; }
-        [Column("L4Ref")]
-        [StringLength(100)]
-        public string L4ref { get; set; }
-        [Column("L5Ref")]
-        [StringLength(100)]
-        public string L5ref { get; set; }
-        [Column("L6Ref")]
-        [StringLength(100)]
-        public string L6ref { get; set; }
-        [Column("L7Ref")]
-        [StringLength(100)]
-        public string L7ref { get; set; }
-        [Column("L8Ref")]
-        [StringLength(100)]
-        public string L8ref { get; set; }
-        [Column("L9Ref")]
-        [StringLength(100)]
-        public string L9ref { get; set; }
-        [Column("L10Ref")]
-        [StringLength(100)]
-        public string L10ref { get; set; }
-        public string L7 { get; set; }
-        public string L8 { get; set; }
-        public string L9 { get; set; }
-        public string L10 { get; set; }
-        public string C11 { get; set; }
-        public string C12 { get; set; }
-        public string C13 { get; set; }
-        public string C14 { get; set; }
-        public string C15 { get; set; }
-        public double? QtyScope { get; set; }
-        [Column("obExchangeTo")]
-        [StringLength(20)]
-        public string ObExchangeTo { get; set; }
-        [Column("obExchangeRate")]
-        public double? ObExchangeRate { get; set; }
-        [Column("insertedBy")]
-        [StringLength(20)]
-        public string InsertedBy { get; set; }
-        [Column("insertedDate", TypeName = "datetime")]
-        public DateTime? InsertedDate { get; set; }
     }
 }

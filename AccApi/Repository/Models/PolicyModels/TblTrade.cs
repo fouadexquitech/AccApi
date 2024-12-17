@@ -8,17 +8,46 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Table("tblTrades")]
+    [Table("tblTrade")]
     public partial class TblTrade
     {
         [Key]
-        [Column("trSeq")]
-        public int TrSeq { get; set; }
-        [Column("trProject")]
-        [StringLength(9)]
-        public string TrProject { get; set; }
-        [Column("trDesc")]
+        public int Proj { get; set; }
+        [Key]
+        [StringLength(5)]
+        public string Seq { get; set; }
+        [Key]
+        [StringLength(3)]
+        public string Div { get; set; }
+        [Key]
+        [StringLength(3)]
+        public string SubDiv { get; set; }
+        [StringLength(100)]
+        public string Trade { get; set; }
+        [Column("LUser")]
+        [StringLength(10)]
+        public string Luser { get; set; }
+        [Column("LDate", TypeName = "datetime")]
+        public DateTime? Ldate { get; set; }
+        public int? TrUnit { get; set; }
+        public float? TrBudget { get; set; }
+        public short? Export { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? LastUpdate { get; set; }
+        public short? CalcQty { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? Productivity { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? Cost { get; set; }
+        [Column("WBS")]
         [StringLength(50)]
-        public string TrDesc { get; set; }
+        public string Wbs { get; set; }
+        public byte? Used { get; set; }
+        [Column("WBS_MAP")]
+        [StringLength(8)]
+        public string WbsMap { get; set; }
+        [Column("CC")]
+        [StringLength(8)]
+        public string Cc { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public string IndItem { get; set; }
         [Key]
         [Column("indItemDesc")]
-        [StringLength(100)]
+        [StringLength(50)]
         public string IndItemDesc { get; set; }
         [Key]
         [Column("indUnitCost")]

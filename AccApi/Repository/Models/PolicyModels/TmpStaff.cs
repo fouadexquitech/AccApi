@@ -14,6 +14,9 @@ namespace AccApi.Repository.Models.PolicyModels
         [Key]
         [Column("sSeq")]
         public long SSeq { get; set; }
+        [Key]
+        [StringLength(30)]
+        public string UserName { get; set; }
         [StringLength(75)]
         public string JobDesc { get; set; }
         public int? JobTitle { get; set; }
@@ -60,8 +63,6 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(30)]
         public string AbsentFrom { get; set; }
         public byte? Daily { get; set; }
-        [StringLength(30)]
-        public string UserName { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? JoinDate { get; set; }
         public int? OtherSorts { get; set; }
@@ -77,5 +78,6 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(100)]
         public string WorkTypeDesc { get; set; }
         public int? Worktype { get; set; }
+        public int? PlanHistogram { get; set; }
     }
 }

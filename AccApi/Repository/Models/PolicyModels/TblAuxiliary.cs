@@ -83,5 +83,14 @@ namespace AccApi.Repository.Models.PolicyModels
         public double? AxDedIncomeTax { get; set; }
         [Column("axContGHS")]
         public double? AxContGhs { get; set; }
+        [Column("LUser")]
+        [StringLength(50)]
+        public string Luser { get; set; }
+        [Column("LDate", TypeName = "datetime")]
+        public DateTime? Ldate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? LastUpdateDate { get; set; }
+        [StringLength(50)]
+        public string LastUpdate { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace AccApi.Repository.Models.MasterModels
         [Column("etContent", TypeName = "text")]
         public string EtContent { get; set; }
         [Column("etLang")]
-        [StringLength(2)]
+        [StringLength(50)]
         public string EtLang { get; set; }
     }
 }

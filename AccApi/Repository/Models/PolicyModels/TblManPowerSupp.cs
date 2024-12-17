@@ -71,8 +71,6 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("mpLogo")]
         [StringLength(50)]
         public string MpLogo { get; set; }
-        [Column("mpIsManPowSup")]
-        public bool MpIsManPowSup { get; set; }
         [Column("mpProject")]
         [StringLength(20)]
         public string MpProject { get; set; }

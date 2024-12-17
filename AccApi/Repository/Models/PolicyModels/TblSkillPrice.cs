@@ -24,10 +24,13 @@ namespace AccApi.Repository.Models.PolicyModels
         public DateTime SpFdate { get; set; }
         [Column("spToDate", TypeName = "datetime")]
         public DateTime? SpToDate { get; set; }
-        [StringLength(30)]
+        [Column("insertedBy")]
+        [StringLength(20)]
         public string InsertedBy { get; set; }
+        [Column("insertedDate", TypeName = "datetime")]
+        public DateTime? InsertedDate { get; set; }
         [Column("LUser")]
-        [StringLength(30)]
+        [StringLength(20)]
         public string Luser { get; set; }
         [Column("LDate", TypeName = "datetime")]
         public DateTime? Ldate { get; set; }

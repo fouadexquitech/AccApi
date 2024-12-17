@@ -24,8 +24,9 @@ namespace AccApi.Repository.Models.PolicyModels
         [Key]
         [Column("dslJob")]
         public int DslJob { get; set; }
+        [Key]
         [Column("dslTrade")]
-        public int? DslTrade { get; set; }
+        public int DslTrade { get; set; }
         [Column("dslLabors")]
         public short? DslLabors { get; set; }
         [Column("dslFormen")]

@@ -13,7 +13,7 @@ namespace AccApi.Repository.Interfaces
         List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter);
         List<RESDivList> RESDivList();
         List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter);
-        List<Package> PackageList();
+        List<Package> GetPackagesList(bool usedPackages);
         List<RESPackageList> RESPackageList();
         List<SheetDescList> SheetDescList();
         List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter);

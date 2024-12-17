@@ -6,7 +6,9 @@
       "launchUrl": "swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "nativeDebugging": true,
+      "sqlDebugging": true
     },
     "AccApi": {
       "commandName": "Project",
@@ -16,7 +18,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": "true",
-      "applicationUrl": "http://localhost:5000"
+      "applicationUrl": "http://localhost:5000",
+      "nativeDebugging": true,
+      "sqlDebugging": true
     },
     "WSL": {
       "commandName": "WSL2",

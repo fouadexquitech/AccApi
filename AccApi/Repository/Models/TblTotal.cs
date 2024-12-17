@@ -74,5 +74,8 @@ namespace AccApi.Repository.Models
         public double? CostPlusRate { get; set; }
         [Column(TypeName = "money")]
         public decimal? CostPlusAmount { get; set; }
+        [Column("billingNo")]
+        [StringLength(500)]
+        public string BillingNo { get; set; }
     }
 }

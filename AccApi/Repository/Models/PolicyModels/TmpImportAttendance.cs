@@ -30,5 +30,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public string Team { get; set; }
         [StringLength(50)]
         public string Area { get; set; }
+        [StringLength(100)]
+        public string Forman { get; set; }
     }
 }

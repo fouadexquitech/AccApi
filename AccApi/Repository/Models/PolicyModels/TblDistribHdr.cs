@@ -9,9 +9,13 @@ using Microsoft.EntityFrameworkCore;
 namespace AccApi.Repository.Models.PolicyModels
 {
     [Table("tblDistribHdr")]
-    [Index(nameof(DisDate), Name = "IX_tblDistribHdr")]
-    [Index(nameof(DisProject), Name = "IX_tblDistribHdr_1")]
-    [Index(nameof(DisDeleted), Name = "IX_tblDistribHdr_2")]
+    [Index(nameof(DisLab), Name = "IX_tblDistribHdr")]
+    [Index(nameof(DisDate), Name = "IX_tblDistribHdr_1")]
+    [Index(nameof(DisProject), Name = "IX_tblDistribHdr_2")]
+    [Index(nameof(DisForman), Name = "IX_tblDistribHdr_3")]
+    [Index(nameof(DisWbs), Name = "IX_tblDistribHdr_4")]
+    [Index(nameof(DisProjectDef), Name = "IX_tblDistribHdr_5")]
+    [Index(nameof(DisDeleted), Name = "IX_tblDistribHdr_6")]
     public partial class TblDistribHdr
     {
         [Key]
@@ -26,7 +30,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disTimeout", TypeName = "datetime")]
         public DateTime? DisTimeout { get; set; }
         [Column("disWBS")]
-        [StringLength(50)]
+        [StringLength(15)]
         public string DisWbs { get; set; }
         [Column("disStatus")]
         public short? DisStatus { get; set; }
@@ -40,7 +44,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disEntry")]
         public byte? DisEntry { get; set; }
         [Column("disProjectDef")]
-        [StringLength(9)]
+        [StringLength(20)]
         public string DisProjectDef { get; set; }
         [Column("disTimeInAct", TypeName = "datetime")]
         public DateTime? DisTimeInAct { get; set; }
@@ -49,8 +53,8 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("disNight")]
         [StringLength(5)]
         public string DisNight { get; set; }
-        [Column("disforman")]
-        public int? Disforman { get; set; }
+        [Column("disForman")]
+        public int? DisForman { get; set; }
         [Column("disTimeinRnd", TypeName = "datetime")]
         public DateTime? DisTimeinRnd { get; set; }
         [Column("disTimeoutRnd", TypeName = "datetime")]
@@ -206,6 +210,14 @@ namespace AccApi.Repository.Models.PolicyModels
         public DateTime? DisOtvalidationDate { get; set; }
         [Column("disOccupGrp")]
         public int? DisOccupGrp { get; set; }
+        [Column("facePunchIn")]
+        public byte? FacePunchIn { get; set; }
+        [Column("facePunchOut")]
+        public byte? FacePunchOut { get; set; }
+        [Column("disOTHrs1")]
+        public double? DisOthrs1 { get; set; }
+        [Column("disOTHrs2")]
+        public double? DisOthrs2 { get; set; }
 
         [ForeignKey(nameof(DisLab))]
         [InverseProperty(nameof(TblLab.TblDistribHdrs))]

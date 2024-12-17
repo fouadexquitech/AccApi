@@ -22,8 +22,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public int JsSponsor { get; set; }
         [Key]
         [Column("jsSkill")]
-        [StringLength(100)]
-        public string JsSkill { get; set; }
+        public int JsSkill { get; set; }
         [Column("jsSkillGroup")]
         public short? JsSkillGroup { get; set; }
         [Column(TypeName = "datetime")]
@@ -44,5 +43,7 @@ namespace AccApi.Repository.Models.PolicyModels
         public DateTime? JsToDate { get; set; }
         [Column("jsSponsorType")]
         public int? JsSponsorType { get; set; }
+        [Column("jsNationality")]
+        public int? JsNationality { get; set; }
     }
 }

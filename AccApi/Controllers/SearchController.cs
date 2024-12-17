@@ -152,12 +152,12 @@ namespace AccApi.Controllers
 
 
 
-        [HttpGet("PackageList")]
-        public List<Package> GetPackageList()
+        [HttpGet("GetPackagesList")]
+        public List<Package> GetPackagesList(bool usedPackages)
         {
             try
             {
-                return this._searchRepository.PackageList();
+                return this._searchRepository.GetPackagesList(usedPackages);
             }
             catch (Exception ex)
             {

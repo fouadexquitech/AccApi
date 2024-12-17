@@ -58,5 +58,7 @@ namespace AccApi.Repository.Models
         public short? PtRowNumber { get; set; }
         public double? BudUnitRate { get; set; }
         public double? BudQty { get; set; }
+        [StringLength(250)]
+        public string BillNo { get; set; }
     }
 }

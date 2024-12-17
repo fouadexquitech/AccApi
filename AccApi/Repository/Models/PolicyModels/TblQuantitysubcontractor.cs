@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
-    [Table("tblquantitysubcontractor")]
-    public partial class Tblquantitysubcontractor
+    [Table("tblQuantitysubcontractor")]
+    public partial class TblQuantitysubcontractor
     {
         [Key]
         [Column("subconID")]

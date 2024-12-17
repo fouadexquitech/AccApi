@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccApi.Repository.Models.PolicyModels
 {
+    [Table("tblCodes")]
     public partial class TblCode
     {
         [Key]
@@ -18,7 +19,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [StringLength(100)]
         public string CodDescA { get; set; }
         [Column("codDescE")]
-        [StringLength(150)]
+        [StringLength(100)]
         public string CodDescE { get; set; }
         [Column("codRep")]
         [StringLength(3)]
@@ -58,7 +59,7 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("codSel")]
         public bool? CodSel { get; set; }
         [Column("codAbrv")]
-        [StringLength(150)]
+        [StringLength(20)]
         public string CodAbrv { get; set; }
         [Column("codTax")]
         public short? CodTax { get; set; }

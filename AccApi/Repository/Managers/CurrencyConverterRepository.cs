@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
@@ -23,7 +24,11 @@ namespace AccApi.Repository.Managers
             double conversionRate = 0;
             try
             {
-                jsonData = webClient.DownloadString(url);
+                if (localCurrency == foreignCurrency)
+                    conversionRate = 1;
+                else
+                { 
+                    jsonData = webClient.DownloadString(url);
 
                 //var jsonObject = JsonConvert.DeserializeObject<ExchangeRate>(jsonData);
 
@@ -37,6 +42,7 @@ namespace AccApi.Repository.Managers
                 //}
 
                 conversionRate = Double.Parse(id);
+                }
             }
             catch (Exception) { }
 

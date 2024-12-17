@@ -13,16 +13,18 @@ namespace AccApi.Repository.Models.PolicyModels
     public partial class TmpReplaceWb
     {
         [Column("File NO")]
-        [StringLength(150)]
+        [StringLength(255)]
         public string FileNo { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string Foreman { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string Area { get; set; }
-        [Column("From Date", TypeName = "datetime")]
-        public DateTime? FromDate { get; set; }
-        [Column("To Date", TypeName = "datetime")]
-        public DateTime? ToDate { get; set; }
+        [Column("From Date")]
+        [StringLength(255)]
+        public string FromDate { get; set; }
+        [Column("To Date")]
+        [StringLength(255)]
+        public string ToDate { get; set; }
         [Column("Old WBS")]
         [StringLength(255)]
         public string OldWbs { get; set; }
@@ -35,16 +37,28 @@ namespace AccApi.Repository.Models.PolicyModels
         [Column("New Project Definition")]
         [StringLength(255)]
         public string NewProjectDefinition { get; set; }
-        [StringLength(30)]
+        [StringLength(255)]
         public string NewProjectCode { get; set; }
-        [StringLength(50)]
+        [StringLength(255)]
         public string NewArea { get; set; }
         [Column("New File No")]
-        [StringLength(8)]
+        [StringLength(255)]
         public string NewFileNo { get; set; }
-        [StringLength(150)]
+        [StringLength(255)]
         public string OldSponsor { get; set; }
-        [StringLength(150)]
+        [StringLength(255)]
         public string NewSponsor { get; set; }
+        [Column("projId")]
+        [StringLength(255)]
+        public string ProjId { get; set; }
+        [StringLength(255)]
+        public string NewprojId { get; set; }
+        [Column("projCode")]
+        [StringLength(255)]
+        public string ProjCode { get; set; }
+        [StringLength(255)]
+        public string NewProjCode { get; set; }
+        [StringLength(255)]
+        public string NewForeman { get; set; }
     }
 }
