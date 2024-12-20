@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace AccApi.Controllers
 {
@@ -30,6 +31,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -44,6 +51,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -58,6 +71,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -72,6 +91,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -86,6 +111,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return false;
             }
         }
@@ -100,6 +131,12 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _ilogger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
