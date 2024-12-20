@@ -384,16 +384,16 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("DeletePackage")]
-        public bool DeletePackage(int id)
+        public async Task<ResponseModel<bool>> DeletePackage(int id)
         {
             try
             {
-                return this._packageRepository.DeletePackage(id);
+                return await this._packageRepository.DeletePackage(id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return false;
+                throw;
             }
         }
         #endregion
