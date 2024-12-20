@@ -4064,7 +4064,7 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
                                     //worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
                                     worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;             
-                                    worksheet.Cells[row, 13 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.TotalPrice; // supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 13 + col].Value = item.QuotationQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
                                     worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
                                 }
                                 col = col + 5;

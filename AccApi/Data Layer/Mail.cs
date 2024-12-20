@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Mail;
 using System.Net.Mime;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 
@@ -88,15 +86,11 @@ namespace AccApi.Data_Layer
             catch (Exception ex)
             {
                 string error = ex.ToString();
-
                 string path = @"C:\App\error_log.txt";
-
-
                 using (StreamWriter sw = (File.Exists(path)) ? File.AppendText(path) : File.CreateText(path))
                 {
                     sw.WriteLine(ex.Message);
                 }
-
                 return error;
             }
         }
