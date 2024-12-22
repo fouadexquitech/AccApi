@@ -1,18 +1,10 @@
 ﻿using AccApi.Repository.Interfaces;
-using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-
-
 using System.IO;
-
 
 namespace AccApi.Controllers
 {

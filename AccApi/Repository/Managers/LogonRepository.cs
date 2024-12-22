@@ -35,20 +35,20 @@ namespace AccApi.Repository.Managers
 
         public List<ProjectCountries> GetProjectCountries()
         {
-            var result = from b in _mdbcontext.TblDataBases
-                         where b.DbActive == 1 && b.DbLocation !=""
-                         select new ProjectCountries
+            var result = (from b in _mdbcontext.TblDataBases
+                         where b.DbActive == 1 && b.DbLocation !="" orderby b.DbLocation
+                          select new ProjectCountries
                          {
-                          dbSeq = b.DbSeq,
-            dbActive = b.DbActive,
-            dbLocation = b.DbLocation,
-            dbServer = b.DbServer,
-            dbUserId = b.DbUserId,
-            dbPass = b.DbPass,
-            dbName=b.DbName,
-            dbDescription=b.DbDescription
-                        };
-            return result.ToList();
+                            dbSeq = b.DbSeq,
+                            dbActive = b.DbActive,
+                            dbLocation = b.DbLocation,
+                            dbServer = b.DbServer,
+                            dbUserId = b.DbUserId,
+                            dbPass = b.DbPass,
+                            dbName=b.DbName,
+                            dbDescription=b.DbDescription
+                        }).ToList();
+            return result;
         }
 
         public List<Project> GetProjects(int dbSeq)

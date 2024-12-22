@@ -498,52 +498,63 @@ namespace AccApi.Repository.Managers
 
         public bool TestSendMail()
         {
-            string sent = "";
-            var AttachmentList = new List<string>();
 
-            AttachmentList.Clear();
+            string path1 = @"C:\App\service_log.txt";
+            string dte = DateTime.Now.ToString();
+            using (StreamWriter sw = (System.IO.File.Exists(path1)) ? System.IO.File.AppendText(path1) : System.IO.File.CreateText(path1))
+            {
+                sw.WriteLine("request received on " + dte);
+            }
 
-            //send email
-            string SupEmail = "";
-                SupEmail = "ahijazi@accsal.com";
+            return true;
 
-                List<string> mylistTo = new List<string>();
-                mylistTo.Add(SupEmail);
 
-                List<string> mylistCC = new List<string>();
-                mylistCC.Add("ahijazi@accsal.com");
+            //string sent = "";
+            //var AttachmentList = new List<string>();
+
+            //AttachmentList.Clear();
+
+            ////send email
+            //string SupEmail = "";
+            //    SupEmail = "ahijazi@accsal.com";
+
+            //    List<string> mylistTo = new List<string>();
+            //    mylistTo.Add(SupEmail);
+
+            //    List<string> mylistCC = new List<string>();
+            //    mylistCC.Add("ahijazi@accsal.com");
             
-                List<string> mylistBCC = new List<string>();
+            //    List<string> mylistBCC = new List<string>();
 
-                string Subject = "Procurement";
+            //    string Subject = "Procurement";
 
-                string MailBody;
+            //    string MailBody;
 
 
-                MailBody = "Dear Sir,";
-                MailBody += Environment.NewLine;
-                MailBody += Environment.NewLine;
-                MailBody += "test Email";
-                MailBody += Environment.NewLine;
-                MailBody += Environment.NewLine;
-                MailBody += Environment.NewLine;
-                MailBody += Environment.NewLine;
-                MailBody += "Best regards";
+            //    MailBody = "Dear Sir,";
+            //    MailBody += Environment.NewLine;
+            //    MailBody += Environment.NewLine;
+            //    MailBody += "test Email";
+            //    MailBody += Environment.NewLine;
+            //    MailBody += Environment.NewLine;
+            //    MailBody += Environment.NewLine;
+            //    MailBody += Environment.NewLine;
+            //    MailBody += "Best regards";
 
-                //User user = _logonRepository.GetUser("ahijazi");
-                string userSignature = "";   //(user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+            //    //User user = _logonRepository.GetUser("ahijazi");
+            //    string userSignature = "";   //(user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
 
-                if (userSignature != "")
-                    {
-                        MailBody += @"<br><br>";
-                        MailBody += userSignature;
-                    }
+            //    if (userSignature != "")
+            //        {
+            //            MailBody += @"<br><br>";
+            //            MailBody += userSignature;
+            //        }
 
-                List<IFormFile> attachments=new List<IFormFile>();
+            //    List<IFormFile> attachments=new List<IFormFile>();
 
-                Mail m = new Mail();
-                sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
-                return true;
+            //    Mail m = new Mail();
+            //    sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+            //    return true;
         }
         public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate)
         {
