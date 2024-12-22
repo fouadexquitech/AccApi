@@ -2195,23 +2195,43 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
-        public bool DeletePackage(int id)
+        public async Task<ResponseModel<bool>> DeletePackage(int id)
         {
-            var pack = _context.TblSupplierPackages.Where(x => x.SpPackageId == id).FirstOrDefault();
-            if (pack == null)
+            var packList = await _context.TblSupplierPackages.Where(x => x.SpPackageId == id).ToListAsync();
+            var packOriginalBoq = await _context.TblOriginalBoqVds.Where(x => x.Scope == id).ToListAsync();
+            var packBoq = await _context.TblBoqVds.Where(x => x.BoqScope == id).ToListAsync();
+
+            if (!packList.Any() && !packOriginalBoq.Any() && !packBoq.Any())
             {
-                var result = _mdbcontext.TblPackages.Where(x => x.PkgeId == id).FirstOrDefault();
+                var result = await _mdbcontext.TblPackages.Where(x => x.PkgeId == id).FirstOrDefaultAsync();
                 if (result != null)
                 {
                     _mdbcontext.TblPackages.Remove(result);
                     _mdbcontext.SaveChanges();
-                    return true;
+                    return new ResponseModel<bool>
+                    {
+                        Message = "Package deleted successfully"
+                    };
                 }
                 else
-                    return false;
+                {
+                    return new ResponseModel<bool>
+                    {
+                        Success = false,
+                        Message = "Package not found"
+                    };
+                }
+
             }
             else
-                return false;
+            {
+                return new ResponseModel<bool>
+                {
+                    Success = false,
+                    Message = "Package is linked to Boq"
+                };
+            }
+                
         }
         #endregion
 

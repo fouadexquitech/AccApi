@@ -523,22 +523,16 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("DeletePackage")]
-        public bool DeletePackage(int id)
+        public async Task<ResponseModel<bool>> DeletePackage(int id)
         {
             try
             {
-                return this._packageRepository.DeletePackage(id);
+                return await this._packageRepository.DeletePackage(id);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                string error = ex.ToString();
-                string path = @"C:\App\error_log.txt";
-                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
-                {
-                    sw.WriteLine(ex.Message);
-                }
-                return false;
+                throw;
             }
         }
         #endregion
