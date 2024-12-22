@@ -1,9 +1,11 @@
-﻿using AccApi.Repository.Interfaces;
+﻿using AccApi.Repository;
+using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace AccApi.Controllers
 {
@@ -13,10 +15,13 @@ namespace AccApi.Controllers
     {
         private readonly ILogger<SearchController> _logger;
         private ISearchRepository _searchRepository;
-        public SearchController(ILogger<SearchController> logger, ISearchRepository searchRepository)
+        private GlobalLists _globalLists;
+
+        public SearchController(ILogger<SearchController> logger, ISearchRepository searchRepository, GlobalLists globalLists)
         {
             _logger = logger;
             _searchRepository = searchRepository;
+            _globalLists = globalLists;
         }
 
         [HttpPost("GetBOQDivList")]
@@ -28,7 +33,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -43,7 +53,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -63,8 +78,6 @@ namespace AccApi.Controllers
         //    }
         //}
 
-
-
         [HttpPost("GetBOQLevel3List")]
         public List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter)
         {
@@ -74,7 +87,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -88,11 +106,15 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
-
 
         [HttpPost("GetBOQLevel3ListByLevel2")]
         public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter)
@@ -103,7 +125,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -117,7 +144,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -131,7 +163,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -145,11 +182,15 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
-
 
 
         [HttpGet("GetPackagesList")]
@@ -161,7 +202,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -175,7 +221,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -189,7 +240,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -204,7 +260,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
@@ -218,7 +279,12 @@ namespace AccApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
                 return null;
             }
         }
