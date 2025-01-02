@@ -54,117 +54,120 @@ namespace AccApi.Repository.Managers
             var supPack = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSuppliersID).FirstOrDefault();
             byte byBoq = (byte)((supPack.SpByBoq == null) ? 0 : supPack.SpByBoq);
 
-            RevisionDetailsList revDtlList = new RevisionDetailsList();
-            IEnumerable<RevisionDetailsList> revDtlQry;
+            List<RevisionDetailsList> revDetailList = new List<RevisionDetailsList>();
 
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
             if (byBoq == 1)
             {
-                revDtlQry = (from cur in curList
-                             join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                             join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                             join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
-                             where b.RdRevisionId == RevisionId && (b.IsNew == false || b.IsNew == null)
-                             && (b.IsAlternative == false || b.IsAlternative == null)
-                             select new RevisionDetailsList
-                             {
-                                 RdRevisionId = b.RdRevisionId,
-                                 RdResourceSeq = b.RdResourceSeq,
-                                 RdPrice = b.RdPrice,
-                                 RdMissedPrice = b.RdMissedPrice,
-                                 RdBoqItem = b.RdBoqItem,
-                                 RdItemDescription = o.DescriptionO,
-                                 RdQty = b.RdQty,
-                                 RdQuotationQty=b.RdQuotationQty,
-                                 RdUnitRate = o.UnitRate,
-                                 RdTotalBudget = o.Submitted,
-                                 ExchangeRate = bb.PrExchRate,
-                                 RdOriginalPrice = b.RdPriceOrigCurrency,
-                                 TotalSupplierPrice = b.RdAssignedPrice,
-                                 currency = cur.CurCode,
-                                 RdMissedPriceReason = b.RdMissedPriceReason,
-                                 RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                 RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
-                                 RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
-                                 RdAddedItem = b.RdAddedItem,
-                                 RdAddedItemOn = b.RdAddedItemOn,
-                                 IsAlternative = b.IsAlternative,
-                                 IsNew = b.IsNew,
-                                 NewItemId = b.NewItemId,
-                                 NewItemResourceId = b.NewItemResourceId,
-                                 ParentItemO = b.ParentItemO,
-                                 ParentResourceId = b.ParentResourceId,
-                                 Unit=o.UnitO,
-                                 Comments = b.RdComment,
-                                 //L1 = o.L1,
-                                 L2 = o.L2,
-                                 L3 = o.L3,
-                                 L4 = o.L4,
-                                 L5 = o.L5,
-                                 L6 = o.L6,
-                                 C1 = o.C1,
-                                 C2 = o.C2,
-                                 C3 = o.C3,
-                                 C4 = o.C4,
-                                 C5 = o.C5,
-                                 C6 = o.C6
-                             }).Union(from cur in curList
-                                      join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
-                                      join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                      join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                      join item in _dbContext.NewItems on b.NewItemId equals item.Id
-                                      where b.RdRevisionId == RevisionId && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
-                                      select new RevisionDetailsList
-                                      {
-                                          RdRevisionId = b.RdRevisionId,
-                                          RdResourceSeq = b.RdResourceSeq,
-                                          RdPrice = b.RdPrice,
-                                          RdMissedPrice = b.RdMissedPrice,
-                                          RdBoqItem = b.RdBoqItem,
-                                          RdItemDescription = item.ItemDescription,
-                                          RdQty = b.RdQty,
-                                          RdQuotationQty = b.RdQuotationQty,
-                                          RdUnitRate = b.RdPrice,
-                                          RdTotalBudget = 0,
-                                          ExchangeRate = bb.PrExchRate,
-                                          RdOriginalPrice = b.RdPriceOrigCurrency,
-                                          TotalSupplierPrice = b.RdAssignedPrice,
-                                          currency = cur.CurCode,
-                                          RdMissedPriceReason = b.RdMissedPriceReason,
-                                          RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                          RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
-                                          RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
-                                          RdAddedItem = b.RdAddedItem,
-                                          RdAddedItemOn = b.RdAddedItemOn,
-                                          IsAlternative = b.IsAlternative,
-                                          IsNew = b.IsNew,
-                                          NewItemId = b.NewItemId,
-                                          NewItemResourceId = b.NewItemResourceId,
-                                          ParentItemO = b.ParentItemO,
-                                          ParentResourceId = b.ParentResourceId,
-                                          Unit = item.UnitO,
-                                          Comments = b.RdComment,
-                                          //L1 = item.L1,
-                                          L2 = item.L2,
-                                          L3 = item.L3,
-                                          L4 = item.L4,
-                                          L5 = item.L5,
-                                          L6 = item.L6,
-                                          C1 = item.C1,
-                                          C2 = item.C2,
-                                          C3 = item.C3,
-                                          C4 = item.C4,
-                                          C5 = item.C5,
-                                          C6 = item.C6
-                                      }).Union(from cur in curList
-                                               join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
+                var revDtlQry = (from bb in _dbContext.TblSupplierPackageRevisions 
+                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                 join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                 join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                                 where b.RdRevisionId == RevisionId && (b.IsNew == false || b.IsNew == null)
+                                 && (b.IsAlternative == false || b.IsAlternative == null)
+                                 && (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
+                                 select new RevisionDetailsList
+                                 {
+                                     RdRevisionId = b.RdRevisionId,
+                                     RdResourceSeq = b.RdResourceSeq,
+                                     RdPrice = b.RdPrice,
+                                     RdMissedPrice = b.RdMissedPrice,
+                                     RdBoqItem = b.RdBoqItem,
+                                     RdItemDescription = o.DescriptionO,
+                                     RdQty = b.RdQty,
+                                     RdQuotationQty = b.RdQuotationQty,
+                                     RdUnitRate = o.UnitRate,
+                                     RdTotalBudget = o.Submitted,
+                                     ExchangeRate = bb.PrExchRate,
+                                     RdOriginalPrice = b.RdPriceOrigCurrency,
+                                     TotalSupplierPrice = b.RdAssignedPrice,
+                                     currency = bb.PrCurrency.ToString(),
+                                     RdMissedPriceReason = b.RdMissedPriceReason,
+                                     RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                     RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                     RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                     RdAddedItem = b.RdAddedItem,
+                                     RdAddedItemOn = b.RdAddedItemOn,
+                                     IsAlternative = b.IsAlternative,
+                                     IsNew = b.IsNew,
+                                     NewItemId = b.NewItemId,
+                                     NewItemResourceId = b.NewItemResourceId,
+                                     ParentItemO = b.ParentItemO,
+                                     ParentResourceId = b.ParentResourceId,
+                                     Unit = o.UnitO,
+                                     Comments = b.RdComment,
+                                     //L1 = o.L1,
+                                     L2 = o.L2,
+                                     L3 = o.L3,
+                                     L4 = o.L4,
+                                     L5 = o.L5,
+                                     L6 = o.L6,
+                                     C1 = o.C1,
+                                     C2 = o.C2,
+                                     C3 = o.C3,
+                                     C4 = o.C4,
+                                     C5 = o.C5,
+                                     C6 = o.C6
+                                 }).ToList();
+
+                var revDtlQryNew = (from bb in _dbContext.TblSupplierPackageRevisions 
+                                    join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                    join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                    join item in _dbContext.NewItems on b.NewItemId equals item.Id
+                                    where b.RdRevisionId == RevisionId && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
+                                    && (itemDesc == null || item.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
+                                    select new RevisionDetailsList
+                                    {
+                                        RdRevisionId = b.RdRevisionId,
+                                        RdResourceSeq = b.RdResourceSeq,
+                                        RdPrice = b.RdPrice,
+                                        RdMissedPrice = b.RdMissedPrice,
+                                        RdBoqItem = b.RdBoqItem,
+                                        RdItemDescription = item.ItemDescription,
+                                        RdQty = b.RdQty,
+                                        RdQuotationQty = b.RdQuotationQty,
+                                        RdUnitRate = b.RdPrice,
+                                        RdTotalBudget = 0,
+                                        ExchangeRate = bb.PrExchRate,
+                                        RdOriginalPrice = b.RdPriceOrigCurrency,
+                                        TotalSupplierPrice = b.RdAssignedPrice,
+                                        currency = bb.PrCurrency.ToString(),
+                                        RdMissedPriceReason = b.RdMissedPriceReason,
+                                        RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                        RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                        RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                        RdAddedItem = b.RdAddedItem,
+                                        RdAddedItemOn = b.RdAddedItemOn,
+                                        IsAlternative = b.IsAlternative,
+                                        IsNew = b.IsNew,
+                                        NewItemId = b.NewItemId,
+                                        NewItemResourceId = b.NewItemResourceId,
+                                        ParentItemO = b.ParentItemO,
+                                        ParentResourceId = b.ParentResourceId,
+                                        Unit = item.UnitO,
+                                        Comments = b.RdComment,
+                                        //L1 = item.L1,
+                                        L2 = item.L2,
+                                        L3 = item.L3,
+                                        L4 = item.L4,
+                                        L5 = item.L5,
+                                        L6 = item.L6,
+                                        C1 = item.C1,
+                                        C2 = item.C2,
+                                        C3 = item.C3,
+                                        C4 = item.C4,
+                                        C5 = item.C5,
+                                        C6 = item.C6
+                                    }).ToList();
+
+                var revDtlQryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
                                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                                                join o in _dbContext.TblOriginalBoqVds on b.ParentItemO equals o.ItemO
                                                where (b.RdRevisionId == RevisionId && b.IsAlternative == true) && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
+                                              && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                                select new RevisionDetailsList
                                                {
                                                    RdRevisionId=b.RdRevisionId,
@@ -180,7 +183,7 @@ namespace AccApi.Repository.Managers
                                                    ExchangeRate = bb.PrExchRate,
                                                    RdOriginalPrice = b.RdPriceOrigCurrency,
                                                    TotalSupplierPrice = b.RdAssignedPrice,
-                                                   currency = cur.CurCode,
+                                                   currency = bb.PrCurrency.ToString(),
                                                    RdMissedPriceReason = b.RdMissedPriceReason,
                                                    RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
                                                    RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
@@ -209,18 +212,24 @@ namespace AccApi.Repository.Managers
                                                    C6 = o.C6
                                                }).ToList();
 
-                if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
+               revDetailList = revDtlQry;
+
+               foreach (var itm in revDtlQryNew)
+                    revDetailList.Add(itm);
+               foreach (var itm in revDtlQryAlt)
+                    revDetailList.Add(itm);
             }
             else
             {
-                revDtlQry = (from cur in curList
-                             join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
+                var revDtl = (from bb in _dbContext.TblSupplierPackageRevisions 
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
                              join c in _dbContext.TblBoqVds on b.RdResourceSeq equals c.BoqSeq
                              join o in _dbContext.TblOriginalBoqVds on c.BoqItem equals o.ItemO
                              join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
-                             where b.RdRevisionId == RevisionId
+                             where (b.RdRevisionId == RevisionId) 
+                             && (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
+                             && (resource == null || e.ResDescription.ToUpper().Contains(resource.ToUpper()))
                              select new RevisionDetailsList
                              {
                                  RdRevisionId = b.RdRevisionId,
@@ -233,15 +242,15 @@ namespace AccApi.Repository.Managers
                                  RdQty = b.RdQty,
                                  RdQuotationQty = b.RdQuotationQty,
                                  RdUnitRate = c.BoqUprice,
-                                 RdTotalBudget = (b.RdQty)* (c.BoqUprice),
+                                 RdTotalBudget = (b.RdQty) * (c.BoqUprice),
                                  ExchangeRate = bb.PrExchRate,
                                  RdOriginalPrice = b.RdPriceOrigCurrency,
                                  TotalSupplierPrice = b.RdAssignedPrice,
-                                 currency = cur.CurCode,
+                                 currency =  bb.PrCurrency.ToString(),
                                  RdMissedPriceReason = b.RdMissedPriceReason,
                                  RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                 RdPriceAfterDiscount = Math.Round((double) (b.RdPrice - (b.RdPrice* ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)),3),
-                                 RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice* ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty),3),
+                                 RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                 RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
                                  RdAddedItem = b.RdAddedItem,
                                  RdAddedItemOn = b.RdAddedItemOn,
                                  IsAlternative = b.IsAlternative,
@@ -264,167 +273,190 @@ namespace AccApi.Repository.Managers
                                  C4 = o.C4,
                                  C5 = o.C5,
                                  C6 = o.C6
-                             }).Union(from cur in curList
-                                      join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
-                                      join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                      join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                      join item in _dbContext.NewItems on b.NewItemId equals item.Id
-                                      join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
-                                      //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
-                                      //join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
-                                      where b.RdRevisionId == RevisionId
-                                      select new RevisionDetailsList
-                                      {
-                                          RdRevisionId = b.RdRevisionId,
-                                          RdResourceSeq = b.RdResourceSeq,
-                                          RdPrice = b.RdPrice,
-                                          RdMissedPrice = b.RdMissedPrice,
-                                          RdBoqItem = b.RdBoqItem,
-                                          RdBoqItemDescription = b.ItemDescription,
-                                          RdItemDescription = b.ResourceDescription,
-                                          RdQty = b.RdQty,
-                                          RdQuotationQty = b.RdQuotationQty,
-                                          RdUnitRate = b.RdPrice,
-                                          RdTotalBudget = (b.RdQty) * (b.RdPrice),
-                                          ExchangeRate = bb.PrExchRate,
-                                          RdOriginalPrice = b.RdPriceOrigCurrency,
-                                          TotalSupplierPrice = b.RdAssignedPrice,
-                                          currency = cur.CurCode,
-                                          RdMissedPriceReason = b.RdMissedPriceReason,
-                                          RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                          RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
-                                          RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
-                                          RdAddedItem = b.RdAddedItem,
-                                          RdAddedItemOn = b.RdAddedItemOn,
-                                          IsAlternative = b.IsAlternative,
-                                          IsNew = b.IsNew,
-                                          NewItemId = b.NewItemId,
-                                          NewItemResourceId = b.NewItemResourceId,
-                                          ParentItemO = b.ParentItemO,
-                                          ParentResourceId = b.ParentResourceId,
-                                          Unit = newr.ResourceUnit,
-                                          Comments = b.RdComment,
-                                          //L1 = item.L1,
-                                          L2 = item.L2,
-                                          L3 = item.L3,
-                                          L4 = item.L4,
-                                          L5 = item.L5,
-                                          L6 = item.L6,
-                                          C1 = item.C1,
-                                          C2 = item.C2,
-                                          C3 = item.C3,
-                                          C4 = item.C4,
-                                          C5 = item.C5,
-                                          C6 = item.C6
-                                      }).Union(from cur in curList
-                                               join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
-                                               join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                               join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                               join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
-                                               join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
-                                               //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
-                                               //join n in _dbContext.NewItems on b.NewItemId equals n.Id
-                                               where b.RdRevisionId == RevisionId
-                                               select new RevisionDetailsList
-                                               {
-                                                   RdRevisionId = b.RdRevisionId,
-                                                   RdResourceSeq = b.RdResourceSeq,
-                                                   RdPrice = b.RdPrice,
-                                                   RdMissedPrice = b.RdMissedPrice,
-                                                   RdBoqItem = b.RdBoqItem,
-                                                   RdBoqItemDescription = b.ItemDescription,
-                                                   RdItemDescription = b.ResourceDescription,
-                                                   RdQty = b.RdQty,
-                                                   RdQuotationQty = b.RdQuotationQty,
-                                                   RdUnitRate = b.RdPrice,
-                                                   RdTotalBudget = (b.RdQty) * (b.RdPrice),
-                                                   ExchangeRate = bb.PrExchRate,
-                                                   RdOriginalPrice = b.RdPriceOrigCurrency,
-                                                   TotalSupplierPrice = b.RdAssignedPrice,
-                                                   currency = cur.CurCode,
-                                                   RdMissedPriceReason = b.RdMissedPriceReason,
-                                                   RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                                   RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
-                                                   RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
-                                                   RdAddedItem = b.RdAddedItem,
-                                                   RdAddedItemOn = b.RdAddedItemOn,
-                                                   IsAlternative = b.IsAlternative,
-                                                   IsNew = b.IsNew,
-                                                   NewItemId = b.NewItemId,
-                                                   NewItemResourceId = b.NewItemResourceId,
-                                                   ParentItemO = b.ParentItemO,
-                                                   ParentResourceId = b.ParentResourceId,
-                                                   Unit = o.UnitO,
-                                                   Comments = b.RdComment,
-                                                   //L1 = o.L1,
-                                                   L2 = o.L2,
-                                                   L3 = o.L3,
-                                                   L4 = o.L4,
-                                                   L5 = o.L5,
-                                                   L6 = o.L6,
-                                                   C1 = o.C1,
-                                                   C2 = o.C2,
-                                                   C3 = o.C3,
-                                                   C4 = o.C4,
-                                                   C5 = o.C5,
-                                                   C6 = o.C6
-                                               }).Union(from cur in curList
-                                                        join bb in _dbContext.TblSupplierPackageRevisions on cur.CurId equals bb.PrCurrency
-                                                        join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                        join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                                        join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
-                                                        where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
-                                                        select new RevisionDetailsList
-                                                        {
-                                                            RdRevisionId = b.RdRevisionId,
-                                                            RdResourceSeq = b.RdResourceSeq,
-                                                            RdPrice = b.RdPrice,
-                                                            RdMissedPrice = b.RdMissedPrice,
-                                                            RdBoqItem = b.RdBoqItem,
-                                                            RdBoqItemDescription = b.ItemDescription,
-                                                            RdItemDescription = b.ResourceDescription,
-                                                            RdQty = b.RdQty,
-                                                            RdQuotationQty = b.RdQuotationQty,
-                                                            RdUnitRate = b.RdPrice,
-                                                            RdTotalBudget = (b.RdQty) * (b.RdPrice),
-                                                            ExchangeRate = bb.PrExchRate,
-                                                            RdOriginalPrice = b.RdPriceOrigCurrency,
-                                                            TotalSupplierPrice = b.RdAssignedPrice,
-                                                            currency = cur.CurCode,
-                                                            RdMissedPriceReason = b.RdMissedPriceReason,
-                                                            RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
-                                                            RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
-                                                            RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
-                                                            RdAddedItem = b.RdAddedItem,
-                                                            RdAddedItemOn = b.RdAddedItemOn,
-                                                            IsAlternative = b.IsAlternative,
-                                                            IsNew = b.IsNew,
-                                                            NewItemId = b.NewItemId,
-                                                            NewItemResourceId = b.NewItemResourceId,
-                                                            ParentItemO = b.ParentItemO,
-                                                            ParentResourceId = b.ParentResourceId,
-                                                            Unit = o.UnitO,
-                                                            Comments = b.RdComment,
-                                                            //L1 = o.L1,
-                                                            L2 = o.L2,
-                                                            L3 = o.L3,
-                                                            L4 = o.L4,
-                                                            L5 = o.L5,
-                                                            L6 = o.L6,
-                                                            C1 = o.C1,
-                                                            C2 = o.C2,
-                                                            C3 = o.C3,
-                                                            C4 = o.C4,
-                                                            C5 = o.C5,
-                                                            C6 = o.C6
-                                                        });
+                             }).ToList();
 
-                if (itemDesc != null) revDtlQry = revDtlQry.Where(w => w.RdBoqItemDescription.ToUpper().Contains(itemDesc.ToUpper()));
-                if (resource != null) revDtlQry = revDtlQry.Where(w => w.RdItemDescription.ToUpper().Contains(resource.ToUpper()));
+                var revDtlNew= (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                join item in _dbContext.NewItems on b.NewItemId equals item.Id
+                                join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
+                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
+                                //join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                                where b.RdRevisionId == RevisionId
+                                && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
+                                && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
+                               select new RevisionDetailsList
+                                {
+                                    RdRevisionId = b.RdRevisionId,
+                                    RdResourceSeq = b.RdResourceSeq,
+                                    RdPrice = b.RdPrice,
+                                    RdMissedPrice = b.RdMissedPrice,
+                                    RdBoqItem = b.RdBoqItem,
+                                    RdBoqItemDescription = b.ItemDescription,
+                                    RdItemDescription = b.ResourceDescription,
+                                    RdQty = b.RdQty,
+                                    RdQuotationQty = b.RdQuotationQty,
+                                    RdUnitRate = b.RdPrice,
+                                    RdTotalBudget = (b.RdQty) * (b.RdPrice),
+                                    ExchangeRate = bb.PrExchRate,
+                                    RdOriginalPrice = b.RdPriceOrigCurrency,
+                                    TotalSupplierPrice = b.RdAssignedPrice,
+                                    currency = bb.PrCurrency.ToString(),
+                                    RdMissedPriceReason = b.RdMissedPriceReason,
+                                    RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                    RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                    RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                    RdAddedItem = b.RdAddedItem,
+                                    RdAddedItemOn = b.RdAddedItemOn,
+                                    IsAlternative = b.IsAlternative,
+                                    IsNew = b.IsNew,
+                                    NewItemId = b.NewItemId,
+                                    NewItemResourceId = b.NewItemResourceId,
+                                    ParentItemO = b.ParentItemO,
+                                    ParentResourceId = b.ParentResourceId,
+                                    Unit = newr.ResourceUnit,
+                                    Comments = b.RdComment,
+                                    //L1 = item.L1,
+                                    L2 = item.L2,
+                                    L3 = item.L3,
+                                    L4 = item.L4,
+                                    L5 = item.L5,
+                                    L6 = item.L6,
+                                    C1 = item.C1,
+                                    C2 = item.C2,
+                                    C3 = item.C3,
+                                    C4 = item.C4,
+                                    C5 = item.C5,
+                                    C6 = item.C6
+                                }).ToList();
+
+                var revDtlNewRes=(from bb in _dbContext.TblSupplierPackageRevisions 
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                                join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
+                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
+                                //join n in _dbContext.NewItems on b.NewItemId equals n.Id
+                                where b.RdRevisionId == RevisionId
+                                && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
+                                && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
+                                select new RevisionDetailsList
+                                {
+                                    RdRevisionId = b.RdRevisionId,
+                                    RdResourceSeq = b.RdResourceSeq,
+                                    RdPrice = b.RdPrice,
+                                    RdMissedPrice = b.RdMissedPrice,
+                                    RdBoqItem = b.RdBoqItem,
+                                    RdBoqItemDescription = b.ItemDescription,
+                                    RdItemDescription = b.ResourceDescription,
+                                    RdQty = b.RdQty,
+                                    RdQuotationQty = b.RdQuotationQty,
+                                    RdUnitRate = b.RdPrice,
+                                    RdTotalBudget = (b.RdQty) * (b.RdPrice),
+                                    ExchangeRate = bb.PrExchRate,
+                                    RdOriginalPrice = b.RdPriceOrigCurrency,
+                                    TotalSupplierPrice = b.RdAssignedPrice,
+                                    currency = bb.PrCurrency.ToString(),
+                                    RdMissedPriceReason = b.RdMissedPriceReason,
+                                    RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                    RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                    RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                    RdAddedItem = b.RdAddedItem,
+                                    RdAddedItemOn = b.RdAddedItemOn,
+                                    IsAlternative = b.IsAlternative,
+                                    IsNew = b.IsNew,
+                                    NewItemId = b.NewItemId,
+                                    NewItemResourceId = b.NewItemResourceId,
+                                    ParentItemO = b.ParentItemO,
+                                    ParentResourceId = b.ParentResourceId,
+                                    Unit = o.UnitO,
+                                    Comments = b.RdComment,
+                                    //L1 = o.L1,
+                                    L2 = o.L2,
+                                    L3 = o.L3,
+                                    L4 = o.L4,
+                                    L5 = o.L5,
+                                    L6 = o.L6,
+                                    C1 = o.C1,
+                                    C2 = o.C2,
+                                    C3 = o.C3,
+                                    C4 = o.C4,
+                                    C5 = o.C5,
+                                    C6 = o.C6
+                                }).ToList();
+
+                var revDtlAlt = (from bb in _dbContext.TblSupplierPackageRevisions
+                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                 join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                 join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                                 where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
+                                 && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
+                                 && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
+                                 select new RevisionDetailsList
+                                 {
+                                     RdRevisionId = b.RdRevisionId,
+                                     RdResourceSeq = b.RdResourceSeq,
+                                     RdPrice = b.RdPrice,
+                                     RdMissedPrice = b.RdMissedPrice,
+                                     RdBoqItem = b.RdBoqItem,
+                                     RdBoqItemDescription = b.ItemDescription,
+                                     RdItemDescription = b.ResourceDescription,
+                                     RdQty = b.RdQty,
+                                     RdQuotationQty = b.RdQuotationQty,
+                                     RdUnitRate = b.RdPrice,
+                                     RdTotalBudget = (b.RdQty) * (b.RdPrice),
+                                     ExchangeRate = bb.PrExchRate,
+                                     RdOriginalPrice = b.RdPriceOrigCurrency,
+                                     TotalSupplierPrice = b.RdAssignedPrice,
+                                     currency = bb.PrCurrency.ToString(),
+                                     RdMissedPriceReason = b.RdMissedPriceReason,
+                                     RdDiscount = ((b.RdDiscount == null) ? 0 : b.RdDiscount),
+                                     RdPriceAfterDiscount = Math.Round((double)(b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)), 3),
+                                     RdTotalPrice = Math.Round((double)((b.RdPrice - (b.RdPrice * ((b.RdDiscount == null) ? 0 : b.RdDiscount) / 100)) * b.RdQty), 3),
+                                     RdAddedItem = b.RdAddedItem,
+                                     RdAddedItemOn = b.RdAddedItemOn,
+                                     IsAlternative = b.IsAlternative,
+                                     IsNew = b.IsNew,
+                                     NewItemId = b.NewItemId,
+                                     NewItemResourceId = b.NewItemResourceId,
+                                     ParentItemO = b.ParentItemO,
+                                     ParentResourceId = b.ParentResourceId,
+                                     Unit = o.UnitO,
+                                     Comments = b.RdComment,
+                                     //L1 = o.L1,
+                                     L2 = o.L2,
+                                     L3 = o.L3,
+                                     L4 = o.L4,
+                                     L5 = o.L5,
+                                     L6 = o.L6,
+                                     C1 = o.C1,
+                                     C2 = o.C2,
+                                     C3 = o.C3,
+                                     C4 = o.C4,
+                                     C5 = o.C5,
+                                     C6 = o.C6
+                                 }).ToList();
+
+                 revDetailList = revDtl;
+
+                //foreach (var itm in revDtl)
+                //    revDetailList.Add(itm);
+                foreach (var itm in revDtlNew)
+                    revDetailList.Add(itm);
+                foreach (var itm in revDtlNewRes)
+                    revDetailList.Add(itm);
+                foreach (var itm in revDtlAlt)
+                    revDetailList.Add(itm);             
             }
 
+            foreach (var itm in revDetailList)
+            {
+                itm.currency = curList.Find(x => x.CurId.ToString() == itm.currency).CurCode;
+            }
+           
 
-            var levels = revDtlQry.Select(x => new LevelModel
+
+                var levels = revDetailList.Select(x => new LevelModel
             {
                 LevelName = //(x.L1 != null ? "L1~" + x.L1 : "") +
                         (x.L2 != null ? "L2~" + x.L2 : "") +
@@ -445,7 +477,7 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var level in levels)
                 {
-                    level.Items = revDtlQry.Select(x => new RevisionDetailsList
+                    level.Items = revDetailList.Select(x => new RevisionDetailsList
                     {
                         RdRevisionId = x.RdRevisionId,
                         RdBoqItem = x.RdBoqItem,//x.IsAlternative.HasValue && x.IsAlternative.Value ? (x.RdBoqItem + "-a" + x.RdRevisionId) : x.RdBoqItem,

@@ -25,7 +25,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("CheckConnections")]
-        public bool CheckConnections(string CostDbConn)
+        public bool CheckConnections(string CostDbConn,string TSDbConn)
         {
             try
             {
@@ -41,16 +41,28 @@ namespace AccApi.Controllers
                     }
                 }
 
+                if (_globalLists.GetTimeSheetDbconnectionString() == null)
+                {
+                    _globalLists.SetTimeSheetDbConnectionString(TSDbConn);
+
+                    string path1 = @"C:\App\conn_log.txt";
+                    string dte = DateTime.Now.ToString();
+                    using (StreamWriter sw = (System.IO.File.Exists(path1)) ? System.IO.File.AppendText(path1) : System.IO.File.CreateText(path1))
+                    {
+                        sw.WriteLine("TSDbConn changed to (" + TSDbConn + ") on " + dte);
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)
             {
-                string error = ex.ToString();
-                string path = @"C:\App\error_log.txt";
-                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
-                {
-                    sw.WriteLine(ex.Message);
-                }
+                //string error = ex.ToString();
+                //string path = @"C:\App\error_log.txt";
+                //using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                //{
+                //    sw.WriteLine(ex.Message);
+                //}
                 return false;
             }
         }
