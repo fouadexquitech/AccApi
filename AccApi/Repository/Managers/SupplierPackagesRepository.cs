@@ -226,7 +226,7 @@ namespace AccApi.Repository.Managers
             return boqList;
         }
 
-        public string ValidateExcelBeforeAssign(int packId, byte byBoq)
+        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice)
         {
             //AH0702
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
@@ -245,9 +245,11 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ");
                 worksheet.Columns.AutoFit();
-                //worksheet.Protection.IsProtected = true;
 
-                int i, j;
+                if (!withPrice)
+                  worksheet.Protection.IsProtected = true;
+
+                    int i, j;
                 string Boq = "", OldBoq = "", C = "", OldC = "", l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
 
                 i = 1;
@@ -260,15 +262,24 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[i, 3].Value = "Bill Description";
                 worksheet.Cells[i, 4].Value = "Unit";
                 worksheet.Cells[i, 5].Value = "Qty";
-                worksheet.Cells[i, 6].Value = "Unit Price";
-                worksheet.Cells[i, 7].Value = "Total Price";
+                worksheet.Columns[5].Style.WrapText = true;
+                worksheet.Column(5).AutoFit();
+
+                if (withPrice)
+                { 
+                    worksheet.Cells[i, 6].Value = "Unit Price";
+                    worksheet.Cells[i, 7].Value = "Total Price";
+                }
 
                 if (byBoq == 1)
                 {
-                    worksheet.Cells[i, 8].Value = "Comments";
-                    worksheet.Column(8).Width = 50;
-                    worksheet.Columns[8].Style.WrapText = true;
-                    //worksheet.Column(7).AutoFit();
+                    if (!withPrice)
+                    {
+                        worksheet.Cells[i, 8].Value = "Comments";
+                        worksheet.Column(8).Width = 50;
+                        worksheet.Columns[8].Style.WrapText = true;
+                        //worksheet.Column(7).AutoFit();
+                    }
                 }
                 else
                 {
@@ -279,14 +290,22 @@ namespace AccApi.Repository.Managers
                     worksheet.Columns[10].Style.WrapText = true;
                     worksheet.Column(10).AutoFit();
                     worksheet.Cells[i, 11].Value = "ResUnit";
+                    worksheet.Columns[11].Style.WrapText = true;
+                    worksheet.Column(11).AutoFit();
                     worksheet.Cells[i, 12].Value = "ResQty";
-                    worksheet.Cells[i, 13].Value = "ResUnitPrice";
-                    worksheet.Column(13).AutoFit();
-                    worksheet.Cells[i, 14].Value = "ResTotalPrice";
-                    worksheet.Column(14).AutoFit();
-                    worksheet.Cells[i, 15].Value = "Comments";
-                    worksheet.Column(15).Width = 50;
-                    worksheet.Columns[15].Style.WrapText = true;
+                    worksheet.Columns[12].Style.WrapText = true;
+                    worksheet.Column(12).AutoFit();
+
+                    if (withPrice)
+                    {
+                        worksheet.Cells[i, 13].Value = "ResUnitPrice";
+                        worksheet.Column(13).AutoFit();
+                        worksheet.Cells[i, 14].Value = "ResTotalPrice";
+                        worksheet.Column(14).AutoFit();
+                        worksheet.Cells[i, 15].Value = "Comments";
+                        worksheet.Column(15).Width = 50;
+                        worksheet.Columns[15].Style.WrapText = true;
+                    }
                     //worksheet.Column(12).AutoFit();                   
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
@@ -418,10 +437,14 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
                         worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
                         worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 6].Value = (x.unitPrice == null) ? "" : x.unitPrice;
-                        worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 7].Value = (x.totalPrice == null) ? "" : x.totalPrice;
-                        worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
+
+                        if (withPrice)
+                        {
+                            worksheet.Cells[i, 6].Value = (x.unitPrice == null) ? "" : x.unitPrice;
+                            worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
+                            worksheet.Cells[i, 7].Value = (x.totalPrice == null) ? "" : x.totalPrice;
+                            worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
+                        }
 
                         if (byBoq == 1)
                         {
@@ -445,10 +468,14 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 11].Value = (x.resUnit == null) ? "" : x.resUnit;
                         worksheet.Cells[i, 12].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
                         worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 13].Value = (x.resUnitPrice == null) ? "" : x.resUnitPrice;
-                        worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 14].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
-                        worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
+
+                        if (withPrice)
+                        {
+                            worksheet.Cells[i, 13].Value = (x.resUnitPrice == null) ? "" : x.resUnitPrice;
+                            worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
+                            worksheet.Cells[i, 14].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
+                            worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
+                        }
                         //worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
                         //worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
                         //worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
@@ -576,6 +603,8 @@ namespace AccApi.Repository.Managers
                 List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
                 List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
                 AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
+
+                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false);
 
                 foreach (var supInput in supInputList)
                 {
@@ -737,6 +766,7 @@ namespace AccApi.Repository.Managers
                     //    AttachmentList.Add(ComCondAttch);
                     //}
 
+                    AttachmentList.Add(attachExcel);
 
                     //send email
                     string SupEmail = "";
@@ -976,10 +1006,30 @@ namespace AccApi.Repository.Managers
                                   BoqPackage = b.BoqPackage,
                                   BoqScope = b.BoqScope,
                                   DescriptionO=o.DescriptionO,
-                                  ResDescription=r.ResDescription
+                                  ResDescription=r.ResDescription,
+                                  ResSeq=r.ResSeq,
                               }).ToList();
 
-                    foreach (var row in result)
+                    var resourcesGrp = result
+                            .GroupBy(x => new { x.ResSeq, x.BoqUnitMesure,x.BoqUprice,x.BoqScope  ,x.ResDescription })
+                            .Select(p => new BoqRessourcesList
+                            {
+                                RowNumber = 0,
+                                BoqItem = p.First().BoqItem,
+                                BoqSeq = p.First().BoqSeq,
+                                BoqCtg = p.First().BoqCtg,
+                                BoqUnitMesure = p.First().BoqUnitMesure,
+                                BoqScopeQty = p.Sum(c => c.BoqScopeQty),
+                                BoqUprice = p.First().BoqUprice,
+                                BoqDiv = p.First().BoqDiv,
+                                BoqPackage = p.First().BoqPackage,
+                                BoqScope = p.First().BoqScope,
+                                DescriptionO = p.First().DescriptionO,
+                                ResDescription = p.First().ResDescription,
+                            }).ToList();
+
+
+                    foreach (var row in resourcesGrp)
                     {
                         if  (row.BoqScopeQty > 0)
                         {

@@ -80,6 +80,7 @@ namespace AccApi.Repository.Managers
 
         public ProjectCurrency GetProjectCurrency(int projSeq)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
             string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase;
 
@@ -117,9 +118,9 @@ namespace AccApi.Repository.Managers
         //fouad
         public User GetLogin(string username, string pass, int projSeq)
         {
-            
-            //usr = checkCredentials(user, pass);
 
+            //usr = checkCredentials(user, pass);
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();
 
             User usr = new User();
@@ -130,7 +131,7 @@ namespace AccApi.Repository.Managers
                 usr.UsrAdmin = result.UsrAdmin;
                 usr.UsrEmail = result.UsrEmail;
                 usr.UsrEmailSignature = result.EmailSignature;
-            }
+            }   
             else
             {
                 usr = null;
@@ -170,6 +171,7 @@ namespace AccApi.Repository.Managers
                   usr.UsrLoggedProjectName = prj.PrjName;
                   usr.usrLoggedConnString = connString;
                   usr.usrLoggedCostDB = prj.PrjCostDatabase;
+                  usr.usrLoggedTSConnString = _globalLists.GetTimeSheetDbconnectionString();
                 } 
             }
             return usr;
@@ -177,6 +179,7 @@ namespace AccApi.Repository.Managers
 
         private string  connectToProject(int projSeq)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
             string costDb = (result.PrjCostDatabase == null) ? "" : result.PrjCostDatabase ;
 
@@ -222,6 +225,8 @@ namespace AccApi.Repository.Managers
 
         private User checkCredentials(string username, string password)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+
             var result = from u in _tsdbcontext.TblUsers                
                         where u.UsrId == username &&
                         u.UsrPwd == password
@@ -241,6 +246,7 @@ namespace AccApi.Repository.Managers
 
         public User GetUser(string username)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = from u in _tsdbcontext.TblUsers
                          where u.UsrId == username
                          select new User
@@ -258,6 +264,8 @@ namespace AccApi.Repository.Managers
 
         private bool checkAccessProject(string username, int projSeq)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+
             var query = from p in _tsdbcontext.Tblprojects
                         join u in _tsdbcontext.TblUsersProjects 
                         on p.Seq equals u.UpProject
@@ -284,6 +292,8 @@ namespace AccApi.Repository.Managers
 
         public EmailTemplate GetDefaultProjectEmailTemplate(string costDb)
         {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+
             var lang = _tsdbcontext.Tblprojects.Where(x => x.PrjCostDatabase == costDb).Select(p => p.PrjCostDbEmailTemplate).FirstOrDefault();
             var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtLang == lang).Select(b => new EmailTemplate
             {
@@ -373,7 +383,8 @@ namespace AccApi.Repository.Managers
         }
 
        public bool hasPermission(string user, string functionId)
-        {  
+        {
+            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId).FirstOrDefault();
             if (result != null)
             {

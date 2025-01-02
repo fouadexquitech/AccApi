@@ -117,6 +117,7 @@ namespace AccApi.Repository.Managers
             }
             return SupplierPackageRev.PrTotPrice;
         }
+
         public bool DeleteField(int fieldId)
         {
             var field = _context.TblRevisionFields.Where(x => x.Id == fieldId).FirstOrDefault();
@@ -129,6 +130,7 @@ namespace AccApi.Repository.Managers
             else
                 return false;
         }
+
         public List<CurrencyList> GetCurrencies()
         {
             var result = from b in _masterDbContext.TblCurrencies
@@ -139,6 +141,7 @@ namespace AccApi.Repository.Managers
                          };
             return result.ToList();
         }
+
         public List<RevisionFieldsList> GetFields(int revisionid)
         {
             var result = (from b in _context.TblRevisionFields

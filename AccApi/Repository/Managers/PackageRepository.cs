@@ -181,7 +181,14 @@ namespace AccApi.Repository.Managers
                             QtyO = (double)x["QtyO"],
                             ScopeQtyO = (double)x["ScopeQtyO"],
                             //ObTradeDesc = x["ObTradeDesc"] != DBNull.Value ? (string)x["ObTradeDesc"] : null,
-                            BoqStatus = x["BoqStatus"] != DBNull.Value ? (string)x["BoqStatus"] : null
+                            BoqStatus = x["BoqStatus"] != DBNull.Value ? (string)x["BoqStatus"] : null,
+                            L2= (string)x["L2"],
+                            L3 = (string)x["L3"],
+                            L4 = (string)x["L4"],
+                            C1 = (string)x["C1"],
+                            C2 = (string)x["C2"],
+                            C3 = (string)x["C3"],
+                            C4 = (string)x["C4"]
                         });
                     break;
 
@@ -1863,23 +1870,30 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[r, 9].Value = "Unit Price";
                     worksheet.Cells[r, 10].Value = "Total Price";
 
-                    worksheet.Cells[r, 11].Value = "Ressouce Type";
-                    worksheet.Cells[r, 12].Value = "Ressouce Code";
+                    worksheet.Cells[r, 11].Value = "Res Type";
+                    worksheet.Cells[r, 12].Value = "Res Code";
                     worksheet.Column(13).Width = 40;
                     worksheet.Columns[13].Style.WrapText = true;
                     worksheet.Column(13).AutoFit();
-                    worksheet.Cells[r, 13].Value = "Ressouce Description";
-                    worksheet.Cells[r, 14].Value = "Ressouce Unit";
-                    worksheet.Cells[r, 15].Value = "Ressouce Qty";
+                    worksheet.Cells[r, 13].Value = "Res Description";
+                    worksheet.Cells[r, 14].Value = "Res Unit";
+                    worksheet.Cells[r, 15].Value = "Res Qty";
                     worksheet.Column(15).AutoFit();
-                    worksheet.Cells[r, 16].Value = "ResUnitPrice";
+                    worksheet.Cells[r, 16].Value = "Res U Price";
                     worksheet.Column(16).AutoFit();
-                    worksheet.Cells[r, 17].Value = "ResTotalPrice";
+                    worksheet.Cells[r, 17].Value = "Res T Price";
                     worksheet.Column(17).AutoFit();
-                    worksheet.Cells[r, 18].Value = "Comments";
-                    worksheet.Column(18).Width = 50;
-                    worksheet.Columns[18].Style.WrapText = true;
-                    worksheet.Row(r).Style.Font.Bold = true;
+                    worksheet.Cells[r, 18].Value = "Res Div";
+                    worksheet.Column(18).AutoFit();
+                    worksheet.Cells[r, 19].Value = "Level 2";
+                    worksheet.Column(19).Width = 50;
+                    worksheet.Columns[19].Style.WrapText = true;
+                    worksheet.Cells[r, 20].Value = "Level 3";
+                    worksheet.Column(20).Width = 50;
+                    worksheet.Columns[20].Style.WrapText = true;
+                    worksheet.Cells[r, 21].Value = "Level 4";
+                    worksheet.Column(21).Width = 50;
+                    worksheet.Columns[21].Style.WrapText = true;
                 }
 
                 r = 2;
@@ -2105,6 +2119,11 @@ namespace AccApi.Repository.Managers
                                 //worksheet.Cells[r, 13].Formula = "= (K" + r + ") - (K" + r + "*" + "L" + r + "/100)";
                                 worksheet.Cells[r, 17].Value = (y.BoqTotalPrice == null) ? "" : y.BoqTotalPrice;
                                 worksheet.Cells[r, 17].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[r, 18].Value = (y.BoqDiv == null) ? "" : y.BoqDiv;
+                                worksheet.Cells[r, 19].Value = (y.L2 == null) ? "" : y.L2;
+                                worksheet.Cells[r, 20].Value = (y.L3 == null) ? "" : y.L3;
+                                worksheet.Cells[r, 21].Value = (y.L4 == null) ? "" : y.L4;
+
                                 r++;
                                 //}                               
                             }
