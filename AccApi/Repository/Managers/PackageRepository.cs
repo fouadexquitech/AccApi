@@ -214,7 +214,12 @@ namespace AccApi.Repository.Managers
                         L1 = x["L1"] != DBNull.Value ? (string)x["L1"] : null,
                         L2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
                         L3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
-                        resCode= (string)x["BoqPackage"]
+                        L4 = x["L3"] != DBNull.Value ? (string)x["L4"] : null,
+                        C1 = (string)x["C1"],
+                        C2 = (string)x["C2"],
+                        C3 = (string)x["C3"],
+                        C4 = (string)x["C4"],
+                        resCode = (string)x["BoqPackage"]
                       });
                     break;
                 case 5:
@@ -1894,6 +1899,18 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[r, 21].Value = "Level 4";
                     worksheet.Column(21).Width = 50;
                     worksheet.Columns[21].Style.WrapText = true;
+                    worksheet.Cells[r, 22].Value = "C 1";
+                    worksheet.Column(22).Width = 50;
+                    worksheet.Columns[22].Style.WrapText = true;
+                    worksheet.Cells[r, 23].Value = "C 2";
+                    worksheet.Column(23).Width = 50;
+                    worksheet.Columns[23].Style.WrapText = true;
+                    worksheet.Cells[r, 24].Value = "C 3";
+                    worksheet.Column(24).Width = 50;
+                    worksheet.Columns[24].Style.WrapText = true;
+                    worksheet.Cells[r, 25].Value = "C 4";
+                    worksheet.Column(25).Width = 50;
+                    worksheet.Columns[25].Style.WrapText = true;
                 }
 
                 r = 2;
@@ -2123,6 +2140,10 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[r, 19].Value = (y.L2 == null) ? "" : y.L2;
                                 worksheet.Cells[r, 20].Value = (y.L3 == null) ? "" : y.L3;
                                 worksheet.Cells[r, 21].Value = (y.L4 == null) ? "" : y.L4;
+                                worksheet.Cells[r, 22].Value = (y.C1 == null) ? "" : y.C1;
+                                worksheet.Cells[r, 23].Value = (y.C2 == null) ? "" : y.C2;
+                                worksheet.Cells[r, 24].Value = (y.C3 == null) ? "" : y.C3;
+                                worksheet.Cells[r, 25].Value = (y.C4 == null) ? "" : y.C4;
 
                                 r++;
                                 //}                               
