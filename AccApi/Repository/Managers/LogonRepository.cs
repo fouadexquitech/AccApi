@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Runtime.Intrinsics.Arm;
+using static AutoMapper.Internal.ExpressionFactory;
 
 namespace AccApi.Repository.Managers
 {
@@ -276,8 +278,13 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
-        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang)
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName )
         {
+            var pack = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
+            string PackageName = "";
+            if (pack!=null)
+                 PackageName = pack.PkgeName;
+
             var result = (from b in _mdbcontext.TblEmailTemplates
                          where (Lang == null || b.EtLang == Lang) 
                          select new EmailTemplate
@@ -287,6 +294,13 @@ namespace AccApi.Repository.Managers
                              EtLang=b.EtLang
                          }).ToList();
             //return result.FirstOrDefault();
+
+            foreach (var tmp in result)
+            {
+                tmp.EtContent= tmp.EtContent.Replace("packageName", PackageName);
+                tmp.EtContent = tmp.EtContent.Replace("projectName", projName);
+            }
+    
             return result;
         }
 
