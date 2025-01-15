@@ -130,11 +130,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSuppliersEmailTemplate")]
-        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang, int packId, string projName)
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang, int packId, string projName, string revExpiryDate)
         {
             try
             {
-                return this._logonRepository.GetSuppliersEmailTemplate(Lang,  packId,  projName);
+                return this._logonRepository.GetSuppliersEmailTemplate(Lang,  packId,  projName, revExpiryDate);
             }
             catch (Exception ex)
             {

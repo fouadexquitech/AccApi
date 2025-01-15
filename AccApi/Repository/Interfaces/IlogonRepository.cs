@@ -13,7 +13,7 @@ namespace AccApi.Repository.Interfaces
         List<Project> GetProjects(int dbSeq);
         User GetLogin(string user, string pass, int projSeq);
         ProjectCurrency GetProjectCurrency(int projSeq);
-        List<EmailTemplate> GetSuppliersEmailTemplate(string Lang, int packId, string projName);
+        List<EmailTemplate> GetSuppliersEmailTemplate(string Lang, int packId, string projName, string revExpiryDate);
         bool SaveEmailTemplate(int id, string emailbody);
         List<TopManagement> GetManagementEmail(string filter);
         bool AddManagementEmail(List<TopManagement> users);

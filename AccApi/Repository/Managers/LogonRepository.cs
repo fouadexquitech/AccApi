@@ -278,7 +278,7 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
-        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName )
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName,string revExpiryDate)
         {
             var pack = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = "";
@@ -295,10 +295,16 @@ namespace AccApi.Repository.Managers
                          }).ToList();
             //return result.FirstOrDefault();
 
+            string projectCountry = _pdbcontext.Tblprojects.Where(x => x.PrjName == projName).Select(p => p.PrjCountry).FirstOrDefault();
+
             foreach (var tmp in result)
             {
                 tmp.EtContent= tmp.EtContent.Replace("packageName", PackageName);
                 tmp.EtContent = tmp.EtContent.Replace("projectName", projName);
+                tmp.EtContent = tmp.EtContent.Replace("projectCountry", projectCountry);
+
+                if (revExpiryDate!="")
+                tmp.EtContent = tmp.EtContent.Replace("expiryDate", DateTime.Parse(revExpiryDate.ToString()).ToString("dd-MM-yyyy"));
             }
     
             return result;
