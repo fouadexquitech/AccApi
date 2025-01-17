@@ -9,8 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
-using System.Runtime.Intrinsics.Arm;
-using static AutoMapper.Internal.ExpressionFactory;
+
 
 namespace AccApi.Repository.Managers
 {
@@ -29,10 +28,10 @@ namespace AccApi.Repository.Managers
         public LogonRepository (MasterDbContext mdbcontext, PolicyDbContext pdbcontext, AccDbContext dbcontext,IConfiguration configuration, GlobalLists globalLists)
         {
             _mdbcontext = mdbcontext;
-            _pdbcontext = pdbcontext;
-             Configuration = configuration;
             _globalLists = globalLists;
-            _dbcontext = dbcontext;
+            _pdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());     
+            _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            Configuration = configuration;
         }
 
         public List<ProjectCountries> GetProjectCountries()
@@ -281,6 +280,7 @@ namespace AccApi.Repository.Managers
         public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName,string revExpiryDate)
         {
             var pack = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
+
             string PackageName = "";
             if (pack!=null)
                  PackageName = pack.PkgeName;
@@ -294,7 +294,7 @@ namespace AccApi.Repository.Managers
                              EtLang=b.EtLang
                          }).ToList();
             //return result.FirstOrDefault();
-
+            
             string projectCountry = _pdbcontext.Tblprojects.Where(x => x.PrjName == projName).Select(p => p.PrjCountry).FirstOrDefault();
 
             foreach (var tmp in result)
@@ -303,7 +303,7 @@ namespace AccApi.Repository.Managers
                 tmp.EtContent = tmp.EtContent.Replace("projectName", projName);
                 tmp.EtContent = tmp.EtContent.Replace("projectCountry", projectCountry);
 
-                if (revExpiryDate!="")
+                if (revExpiryDate!="" && revExpiryDate != null)
                 tmp.EtContent = tmp.EtContent.Replace("expiryDate", DateTime.Parse(revExpiryDate.ToString()).ToString("dd-MM-yyyy"));
             }
     
@@ -312,9 +312,8 @@ namespace AccApi.Repository.Managers
 
         public EmailTemplate GetDefaultProjectEmailTemplate(string costDb)
         {
-            _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
-
-            var lang = _tsdbcontext.Tblprojects.Where(x => x.PrjCostDatabase == costDb).Select(p => p.PrjCostDbEmailTemplate).FirstOrDefault();
+            //_tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+            var lang = _pdbcontext.Tblprojects.Where(x => x.PrjCostDatabase == costDb).Select(p => p.PrjCostDbEmailTemplate).FirstOrDefault();
             var result = _mdbcontext.TblEmailTemplates.Where(x => x.EtLang == lang).Select(b => new EmailTemplate
             {
                 EtSeq = b.EtSeq,
