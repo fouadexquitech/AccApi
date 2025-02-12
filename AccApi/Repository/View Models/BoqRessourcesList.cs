@@ -74,5 +74,6 @@ namespace AccApi.Repository.View_Models
         public int? PkgeId { get; set; }
         public string? PkgeName { get; set; }
         public double? TotalBudget { get; set; }
+        public double? TotalBudgetBeforeDisct { get; set; }
     }
 }

@@ -3146,7 +3146,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3436,7 +3436,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3659,7 +3659,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -3883,7 +3883,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 //string path = @"C:\App\";
 
@@ -4209,7 +4209,7 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
 
                 string suplierName =  suppliers.FirstOrDefault().Trim();
-                string excelName = $"{ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
@@ -4470,7 +4470,7 @@ namespace AccApi.Repository.Managers
                 stream.Position = 0;
 
                 string suplierName = suppliers.FirstOrDefault();
-                string excelName = $"{ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-{suplierName}-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);

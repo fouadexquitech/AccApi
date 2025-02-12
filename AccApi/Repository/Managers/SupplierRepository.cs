@@ -7,12 +7,19 @@ using AccApi.Repository.View_Models.Request;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Nancy;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace AccApi.Repository.Managers
 {
@@ -22,18 +29,23 @@ namespace AccApi.Repository.Managers
         private readonly GlobalLists _globalLists;
         private readonly AccDbContext _dbcontext;
 
-        public SupplierRepository(MasterDbContext mdbContext, GlobalLists globalLists)
+        private readonly HttpClient _httpClient;
+        private IConfiguration _configuration { get; }
+
+        public SupplierRepository(MasterDbContext mdbContext, GlobalLists globalLists, HttpClient httpClient, IConfiguration configuration)
         {
             _globalLists = globalLists;
             _mdbcontext = mdbContext;
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _httpClient = httpClient;
+            _configuration = configuration;
         }
 
         public List<Supplier> SupplierList(int packID)
         {
-            Models.MasterModels.TblPackage package = (from p in _mdbcontext.TblPackages                        
-            where p.PkgeId == packID
-            select p).First();
+            Models.MasterModels.TblPackage package = (from p in _mdbcontext.TblPackages
+                                                      where p.PkgeId == packID
+                                                      select p).First();
 
             //var results=from b in _mdbcontext.TblSuppliers
             //           join d in _mdbcontext.TblSupplierDivs
@@ -77,7 +89,7 @@ namespace AccApi.Repository.Managers
             //               SupEmail=b.SupEmail
             //           };
 
-            var supPackageList = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packID).Select(p=> p.SpSupplierId).ToList();
+            var supPackageList = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packID).Select(p => p.SpSupplierId).ToList();
             //              orderby b.SupName
             //              select new Supplier
             //              {
@@ -86,15 +98,15 @@ namespace AccApi.Repository.Managers
             //                  SupEmail = b.SupEmail
             //              };
 
-            var results = (from b in _mdbcontext.TblSuppliers.Where(s => s.IsAccountCreated==true && !supPackageList.Contains(s.SupCode)).ToList()                  
-                          select new Supplier
-                          {
-                              SupID = b.SupCode,
-                              SupName = b.SupName,
-                              SupEmail = b.SupEmail
-                          }).ToList(); 
+            var results = (from b in _mdbcontext.TblSuppliers.Where(s => s.IsAccountCreated == true && !supPackageList.Contains(s.SupCode)).ToList()
+                           select new Supplier
+                           {
+                               SupID = b.SupCode,
+                               SupName = b.SupName + "          \\ " + b.SupEmail,
+                               SupEmail = b.SupEmail
+                           }).ToList();
 
-            return results.OrderBy(x=> x.SupName).ToList();
+            return results.OrderBy(x => x.SupName).ToList();
         }
 
         public DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest)
@@ -121,11 +133,12 @@ namespace AccApi.Repository.Managers
             {
                 result = result.Where(x => string.Concat(x.SupName.ToUpper()).Contains(dtRequest.SearchVal.ToUpper())).ToList();
             }
-           
+
 
             var list = result.AsQueryable().OrderBy($"{sortColumnName} {sortDirection}").Skip(skip).Take(take);
 
-            return new DataTablesResponse<Supplier> { 
+            return new DataTablesResponse<Supplier>
+            {
                 Data = list.ToList(),
                 RecordsTotal = totalRecords,
                 RecordsFiltered = result.Count
@@ -181,7 +194,7 @@ namespace AccApi.Repository.Managers
         }
 
         public async Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model)
-        { 
+        {
             var suppliers = await _mdbcontext.TblSuppliers.Where(x => model.Suppliers.Contains(x.SupCode)).ToListAsync();
             foreach (var sup in suppliers)
             {
@@ -193,5 +206,42 @@ namespace AccApi.Repository.Managers
             return true;
 
         }
+
+
+        public async Task<ResponseModel<bool>> Register(List<RegisterModel> model)
+        {
+            //Post the portal API (Create supplier account on portal database)
+            var body = System.Text.Json.JsonSerializer.Serialize(model);
+            var portalApiPath = _configuration["PortalApiPath"];
+            var key = _configuration["External:Key"];
+            var requestContent = new StringContent(body, Encoding.UTF8, "application/json");
+            _httpClient.DefaultRequestHeaders.Add("Authorization", key);
+            var response = await _httpClient.PostAsync(portalApiPath + "Account/Register", requestContent);
+            response.EnsureSuccessStatusCode();
+
+            dynamic content = await response.Content.ReadAsStringAsync();
+
+            //var jsonObject = System.Text.Json.JsonSerializer.Serialize(content);
+            JObject result = JsonConvert.DeserializeObject(content);
+
+            if ((bool)result["success"] == true)
+            {
+                return new ResponseModel<bool>
+                {
+                    Success = true,
+                    Message = "Registered successfully"
+                };
+            }
+            else
+            {
+                return new ResponseModel<bool>
+                {
+                    Success = true,
+                    Message = (string)result["message"]
+                };
+            }
+
+        }
     }
+
 }

@@ -141,5 +141,24 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpPost("Register")]
+        public async Task<ResponseModel<bool>> Register(List<RegisterModel> model)
+        {
+            try
+            {
+                return await _supplierRepository.Register(model);
+            }
+            catch (Exception)
+            {
+                return new ResponseModel<bool>
+                {
+                    Success = false,
+                    Message = "Something went wrong!"
+                };
+
+            }
+        }
+
     }
 }

@@ -605,7 +605,7 @@ namespace AccApi.Repository.Managers
             if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
             if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
             if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.Scope == input.Package || w.BoqScope == input.Package);
+            if (input.Package > 0) condQuery = condQuery.Where(w => input.Package.ToString().Contains(w.BoqScope.ToString()));//condQuery.Where(w => w.Scope == input.Package || w.BoqScope == input.Package);
             if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESPackage)) condQuery = condQuery.Where(w => w.BoqPackage == input.RESPackage);
@@ -1823,7 +1823,8 @@ namespace AccApi.Repository.Managers
                              select new packagesList
                              {
                                 PkgeId = g.Key,
-                                TotalBudget = g.Sum(x => x.BoqQty * x.BoqUprice)
+                                TotalBudget = g.Sum(x => x.BoqQty * x.BoqUprice),
+                                TotalBudgetBeforeDisct = g.Sum(x => x.BoqQty * x.BoqUpriceBeforeDisct )
                              };
 
             var packgesCost = (from a in packList
@@ -1832,7 +1833,8 @@ namespace AccApi.Repository.Managers
                                {
                                    PkgeId = (int)a.PkgeId,
                                    PkgeName = a.PkgeName,
-                                   TotalBudget = b.TotalBudget
+                                   TotalBudget = b.TotalBudget,
+                                   TotalBudgetBeforeDisct = b.TotalBudgetBeforeDisct > 0 ?  b.TotalBudgetBeforeDisct * 833144 : 0 
                                }).ToList();
 
             var parm = _context.TblParameters.FirstOrDefault();
@@ -1851,8 +1853,10 @@ namespace AccApi.Repository.Managers
 
                 worksheet.Cells[r, 1].Value = "Project_ID";
                 worksheet.Cells[r, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[1, 1].Style.Font.Bold = true;
                 worksheet.Cells[r, 2].Value = "Package_ID";
                 worksheet.Cells[r, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+                worksheet.Cells[1, 2].Style.Font.Bold = true;
                 worksheet.Cells[r, 3].Value = "Assigned Package";
                 worksheet.Column(3).Width = 30;
                 worksheet.Columns[3].Style.WrapText = true;
@@ -1862,55 +1866,60 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[1,4].Style.Font.Bold = true;
                 worksheet.Column(4).Width = 20;      
                 worksheet.Columns[4].Style.WrapText = true;
+                worksheet.Cells[r, 5].Value = "Serial Number";
+                worksheet.Cells[1, 5].Style.Font.Bold = true;
+                worksheet.Column(5).Width = 20;
+                worksheet.Columns[5].Style.WrapText = true;
+
 
                 if (withBoq==1)
                 {
-                    worksheet.Cells[r, 5].Value = "Item";
-                    worksheet.Column(5).Width = 22;
-                    worksheet.Cells[r, 6].Value = "Bill Description";
-                    worksheet.Column(6).Width = 50;
-                    worksheet.Columns[6].Style.WrapText = true;
-                    worksheet.Cells[r, 7].Value = "Unit";
-                    worksheet.Cells[r, 8].Value = "Qty";
-                    worksheet.Cells[r, 9].Value = "Unit Price";
-                    worksheet.Cells[r, 10].Value = "Total Price";
+                    worksheet.Cells[r, 6].Value = "Item";
+                    worksheet.Column(6).Width = 22;
+                    worksheet.Cells[r, 7].Value = "Bill Description";
+                    worksheet.Column(7).Width = 50;
+                    worksheet.Columns[7].Style.WrapText = true;
+                    worksheet.Cells[r, 8].Value = "Unit";
+                    worksheet.Cells[r, 9].Value = "Qty";
+                    worksheet.Cells[r, 10].Value = "Unit Price";
+                    worksheet.Cells[r, 11].Value = "Total Price";
 
-                    worksheet.Cells[r, 11].Value = "Res Type";
-                    worksheet.Cells[r, 12].Value = "Res Code";
-                    worksheet.Column(13).Width = 40;
-                    worksheet.Columns[13].Style.WrapText = true;
-                    worksheet.Column(13).AutoFit();
-                    worksheet.Cells[r, 13].Value = "Res Description";
-                    worksheet.Cells[r, 14].Value = "Res Unit";
-                    worksheet.Cells[r, 15].Value = "Res Qty";
-                    worksheet.Column(15).AutoFit();
-                    worksheet.Cells[r, 16].Value = "Res U Price";
+                    worksheet.Cells[r, 12].Value = "Res Type";
+                    worksheet.Cells[r, 13].Value = "Res Code";
+                    worksheet.Column(14).Width = 40;
+                    worksheet.Columns[14].Style.WrapText = true;
+                    worksheet.Column(14).AutoFit();
+                    worksheet.Cells[r, 14].Value = "Res Description";
+                    worksheet.Cells[r, 15].Value = "Res Unit";
+                    worksheet.Cells[r, 16].Value = "Res Qty";
                     worksheet.Column(16).AutoFit();
-                    worksheet.Cells[r, 17].Value = "Res T Price";
+                    worksheet.Cells[r, 17].Value = "Res U Price";
                     worksheet.Column(17).AutoFit();
-                    worksheet.Cells[r, 18].Value = "Res Div";
+                    worksheet.Cells[r, 18].Value = "Res T Price";
                     worksheet.Column(18).AutoFit();
-                    worksheet.Cells[r, 19].Value = "Level 2";
-                    worksheet.Column(19).Width = 50;
-                    worksheet.Columns[19].Style.WrapText = true;
-                    worksheet.Cells[r, 20].Value = "Level 3";
+                    worksheet.Cells[r, 19].Value = "Res Div";
+                    worksheet.Column(19).AutoFit();
+                    worksheet.Cells[r, 20].Value = "Level 2";
                     worksheet.Column(20).Width = 50;
                     worksheet.Columns[20].Style.WrapText = true;
-                    worksheet.Cells[r, 21].Value = "Level 4";
+                    worksheet.Cells[r, 21].Value = "Level 3";
                     worksheet.Column(21).Width = 50;
                     worksheet.Columns[21].Style.WrapText = true;
-                    worksheet.Cells[r, 22].Value = "C 1";
+                    worksheet.Cells[r, 22].Value = "Level 4";
                     worksheet.Column(22).Width = 50;
                     worksheet.Columns[22].Style.WrapText = true;
-                    worksheet.Cells[r, 23].Value = "C 2";
+                    worksheet.Cells[r, 23].Value = "C 1";
                     worksheet.Column(23).Width = 50;
                     worksheet.Columns[23].Style.WrapText = true;
-                    worksheet.Cells[r, 24].Value = "C 3";
+                    worksheet.Cells[r, 24].Value = "C 2";
                     worksheet.Column(24).Width = 50;
                     worksheet.Columns[24].Style.WrapText = true;
-                    worksheet.Cells[r, 25].Value = "C 4";
+                    worksheet.Cells[r, 25].Value = "C 3";
                     worksheet.Column(25).Width = 50;
                     worksheet.Columns[25].Style.WrapText = true;
+                    worksheet.Cells[r, 26].Value = "C 4";
+                    worksheet.Column(26).Width = 50;
+                    worksheet.Columns[26].Style.WrapText = true;
                 }
 
                 r = 2;
@@ -1922,8 +1931,10 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[r, 3].Value = (x.PkgeName == null) ? "" : x.PkgeName;
                         worksheet.Cells[r, 4].Value = (x.TotalBudget == null) ? 0 : x.TotalBudget;
                         worksheet.Cells[r, 4].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.SelectedRange[r, 1, r, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                        worksheet.SelectedRange[r, 1, r, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                        worksheet.Cells[r, 5].Value = (x.TotalBudgetBeforeDisct == null) ? 0 : x.TotalBudgetBeforeDisct;
+                        worksheet.Cells[r, 5].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.SelectedRange[r, 1, r, 5].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        worksheet.SelectedRange[r, 1, r, 5].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
                     }
                     else
                     {
@@ -2077,20 +2088,22 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[r, 3].Value = (x.PkgeName == null) ? "" : x.PkgeName;
                                     worksheet.Cells[r, 4].Value = (x.TotalBudget == null) ? 0 : x.TotalBudget;
                                     worksheet.Cells[r, 4].Style.Numberformat.Format = "#,##0.0";
-                                    worksheet.SelectedRange[r, 1, r, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    worksheet.SelectedRange[r, 1, r, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                    worksheet.Cells[r, 5].Value = (x.TotalBudgetBeforeDisct == null) ? 0 : x.TotalBudgetBeforeDisct;
+                                    worksheet.Cells[r, 5].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.SelectedRange[r, 1, r, 5].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.SelectedRange[r, 1, r, 5].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
 
-                                    worksheet.SelectedRange[r, 5,r, 10].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                    worksheet.SelectedRange[r, 5, r, 10].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
-                                    worksheet.Cells[r, 5].Value = (y.ItemO == null) ? "" : y.ItemO;
-                                    worksheet.Cells[r, 6].Value = (y.DescriptionO == null) ? "" : y.DescriptionO;
-                                    worksheet.Cells[r, 7].Value = (y.UnitO == null) ? "" : y.UnitO;
-                                    worksheet.Cells[r, 8].Value = (y.QtyO == null) ? "" : y.QtyO;
-                                    worksheet.Cells[r, 8].Style.Numberformat.Format = "#,##0.0";
-                                    worksheet.Cells[r, 9].Value = (y.UnitRateO == null) ? "" : y.UnitRateO;
+                                    worksheet.SelectedRange[r, 6,r, 10].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.SelectedRange[r, 6, r, 10].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                                    worksheet.Cells[r, 6].Value = (y.ItemO == null) ? "" : y.ItemO;
+                                    worksheet.Cells[r, 7].Value = (y.DescriptionO == null) ? "" : y.DescriptionO;
+                                    worksheet.Cells[r, 8].Value = (y.UnitO == null) ? "" : y.UnitO;
+                                    worksheet.Cells[r, 9].Value = (y.QtyO == null) ? "" : y.QtyO;
                                     worksheet.Cells[r, 9].Style.Numberformat.Format = "#,##0.0";
-                                    worksheet.Cells[r, 10].Value = (y.TotalPriceO == null) ? "" : y.TotalPriceO;
-                                    worksheet.Cells[r, 10].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[r, 10].Value = (y.UnitRateO == null) ? "" : y.UnitRateO;
+                                    //worksheet.Cells[r, 9].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[r, 11].Value = (y.TotalPriceO == null) ? "" : y.TotalPriceO;
+                                    worksheet.Cells[r, 11].Style.Numberformat.Format = "#,##0.0";
 
                                     //if (byBoq == 1)
                                     //{
@@ -2112,38 +2125,40 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[r, 3].Value = (x.PkgeName == null) ? "" : x.PkgeName;
                                 worksheet.Cells[r, 4].Value = (x.TotalBudget == null) ? 0 : x.TotalBudget;
                                 worksheet.Cells[r, 4].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.SelectedRange[r, 1, r, 4].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
-                                worksheet.SelectedRange[r, 1, r, 4].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
+                                worksheet.Cells[r, 5].Value = (x.TotalBudgetBeforeDisct == null) ? 0 : x.TotalBudgetBeforeDisct;
+                                worksheet.Cells[r, 5].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.SelectedRange[r, 1, r, 5].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.SelectedRange[r, 1, r, 5].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
 
-                                worksheet.Cells[r, 5].Value = (y.ItemO == null) ? "" : y.ItemO;
-                                worksheet.Cells[r, 6].Value = (y.DescriptionO == null) ? "" : y.DescriptionO;
-                                worksheet.Cells[r, 7].Value = (y.UnitO == null) ? "" : y.UnitO;
-                                worksheet.Cells[r, 8].Value = (y.QtyO == null) ? "" : y.QtyO;
-                                worksheet.Cells[r, 8].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[r, 9].Value = (y.UnitRateO == null) ? "" : y.UnitRateO;
+                                worksheet.Cells[r, 6].Value = (y.ItemO == null) ? "" : y.ItemO;
+                                worksheet.Cells[r, 7].Value = (y.DescriptionO == null) ? "" : y.DescriptionO;
+                                worksheet.Cells[r, 8].Value = (y.UnitO == null) ? "" : y.UnitO;
+                                worksheet.Cells[r, 9].Value = (y.QtyO == null) ? "" : y.QtyO;
                                 worksheet.Cells[r, 9].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[r, 10].Value = (y.TotalPriceO == null) ? "" : y.TotalPriceO;
-                                worksheet.Cells[r, 10].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[r, 10].Value = (y.UnitRateO == null) ? "" : y.UnitRateO;
+                                //worksheet.Cells[r, 9].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[r, 11].Value = (y.TotalPriceO == null) ? "" : y.TotalPriceO;
+                                worksheet.Cells[r, 11].Style.Numberformat.Format = "#,##0.0";
 
-                                worksheet.Cells[r, 11].Value = (y.BoqCtg == null) ? "" : y.BoqCtg;
-                                worksheet.Cells[r, 12].Value = (y.resCode == null) ? "" : y.resCode;
-                                worksheet.Cells[r, 13].Value = (y.ResDescription == null) ? "" : y.ResDescription;
-                                worksheet.Cells[r, 14].Value = (y.BoqUnitMesure == null) ? "" : y.BoqUnitMesure;
-                                worksheet.Cells[r, 15].Value = (y.BoqQty == null) ? "" : y.BoqQty;
-                                worksheet.Cells[r, 15].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[r, 16].Value = (y.BoqUprice == null) ? "" : y.BoqUprice;
-                                worksheet.Cells[r, 16].Style.Numberformat.Format = "#,##0.0";
-                                //worksheet.Cells[r, 13].Formula = "= (K" + r + ") - (K" + r + "*" + "L" + r + "/100)";
-                                worksheet.Cells[r, 17].Value = (y.BoqTotalPrice == null) ? "" : y.BoqTotalPrice;
+                                worksheet.Cells[r, 12].Value = (y.BoqCtg == null) ? "" : y.BoqCtg;
+                                worksheet.Cells[r, 13].Value = (y.resCode == null) ? "" : y.resCode;
+                                worksheet.Cells[r, 14].Value = (y.ResDescription == null) ? "" : y.ResDescription;
+                                worksheet.Cells[r, 15].Value = (y.BoqUnitMesure == null) ? "" : y.BoqUnitMesure;
+                                worksheet.Cells[r, 16].Value = (y.BoqQty == null) ? "" : y.BoqQty;
                                 worksheet.Cells[r, 17].Style.Numberformat.Format = "#,##0.0";
-                                worksheet.Cells[r, 18].Value = (y.BoqDiv == null) ? "" : y.BoqDiv;
-                                worksheet.Cells[r, 19].Value = (y.L2 == null) ? "" : y.L2;
-                                worksheet.Cells[r, 20].Value = (y.L3 == null) ? "" : y.L3;
-                                worksheet.Cells[r, 21].Value = (y.L4 == null) ? "" : y.L4;
-                                worksheet.Cells[r, 22].Value = (y.C1 == null) ? "" : y.C1;
-                                worksheet.Cells[r, 23].Value = (y.C2 == null) ? "" : y.C2;
-                                worksheet.Cells[r, 24].Value = (y.C3 == null) ? "" : y.C3;
-                                worksheet.Cells[r, 25].Value = (y.C4 == null) ? "" : y.C4;
+                                worksheet.Cells[r, 17].Value = (y.BoqUprice == null) ? "" : y.BoqUprice;
+                                //worksheet.Cells[r, 16].Style.Numberformat.Format = "#,##0.0";
+                                //worksheet.Cells[r, 13].Formula = "= (K" + r + ") - (K" + r + "*" + "L" + r + "/100)";
+                                worksheet.Cells[r, 18].Value = (y.BoqTotalPrice == null) ? "" : y.BoqTotalPrice;
+                                worksheet.Cells[r, 18].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[r, 19].Value = (y.BoqDiv == null) ? "" : y.BoqDiv;
+                                worksheet.Cells[r, 20].Value = (y.L2 == null) ? "" : y.L2;
+                                worksheet.Cells[r, 21].Value = (y.L3 == null) ? "" : y.L3;
+                                worksheet.Cells[r, 22].Value = (y.L4 == null) ? "" : y.L4;
+                                worksheet.Cells[r, 23].Value = (y.C1 == null) ? "" : y.C1;
+                                worksheet.Cells[r, 24].Value = (y.C2 == null) ? "" : y.C2;
+                                worksheet.Cells[r, 25].Value = (y.C3 == null) ? "" : y.C3;
+                                worksheet.Cells[r, 26].Value = (y.C4 == null) ? "" : y.C4;
 
                                 r++;
                                 //}                               
@@ -2164,12 +2179,16 @@ namespace AccApi.Repository.Managers
                 else
                     excelName = $"{ProjectName}-Packages Dry Cost-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
+                excelName = excelName.Replace("/", "-");
+
+                //string filePath = "C:\\App\\ExportExcel\\vendan\\" + excelName;
+
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
-                excelName = excelName.Replace("/", "-");
                 xlPackage.SaveAs(excelName);
             }
+
             return excelName;
         }
 

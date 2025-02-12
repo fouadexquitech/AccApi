@@ -350,7 +350,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-Technical Conditions-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-Technical Conditions-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);

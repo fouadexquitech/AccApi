@@ -513,6 +513,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+
+                //string filePath = "C:\\App\\ExportExcel\\vendan\\" + excelName;
                 xlPackage.SaveAs(excelName);
 
                 package.FilePath = excelName;
