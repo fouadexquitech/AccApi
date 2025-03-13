@@ -31,6 +31,8 @@ namespace AccApi.Repository.View_Models
         public string BoqUnitMesure { get; set; }
         public double? BoqUprice { get; set; }
         public string BoqDiv { get; set; }
+        public string BoqSubDiv { get; set; }
+        public string BoqTrade { get; set; }
         public string BoqPackage { get; set; }
         public int? BoqScope { get; set; }
         public string ResSeq { get; set; }
@@ -52,19 +54,39 @@ namespace AccApi.Repository.View_Models
         public bool? IsExcluded { get; set; } = false;
         public int SupplierId { get; set; }
 
-        public string? L1 { get; set; }
-        public string? L2 { get; set; }
-        public string? L3 { get; set; }
-        public string? L4 { get; set; }
-        public string? L5 { get; set; }
-        public string? L6 { get; set; }
-        public string? C1 { get; set; }
-        public string? C2 { get; set; }
-        public string? C3 { get; set; }
-        public string? C4 { get; set; }
-        public string? C5 { get; set; }
-        public string? C6 { get; set; }
-        public string? LevelName { get; set; }
+        public string? L1 { get; set; } = "";
+        public string? L2 { get; set; } = "";
+        public string? L3 { get; set; } = "";
+        public string? L4 { get; set; } = "";
+        public string? L5 { get; set; } = "";
+        public string? L6 { get; set; } = "";
+        public string? L7 { get; set; } = "";
+        public string? L8 { get; set; } = "";
+        public string? L9 { get; set; } = "";
+        public string? L10 { get; set; } = "";
+        public string? C1 { get; set; } = "";
+        public string? C2 { get; set; } = "";
+        public string? C3 { get; set; } = "";
+        public string? C4 { get; set; } = "";
+        public string? C5 { get; set; } = "";
+        public string? C6 { get; set; } = "";
+        public string C7 { get; set; } = "";
+        public string C8 { get; set; } = "";
+        public string C9 { get; set; } = "";
+        public string C10 { get; set; } = "";
+        public string C11 { get; set; } = "";
+        public string C12 { get; set; } = "";
+        public string C13 { get; set; } = "";
+        public string C14 { get; set; } = "";
+        public string C15 { get; set; } = "";
+        public string? LevelName { get; set; } = "";
+
+        public string BoqCtg_st { get; set; }
+        public string BoqUnitMesure_st { get; set; }
+        public double? BoqUprice_st { get; set; }
+        public string BoqDiv_st { get; set; }
+        public double? BoqQty_st { get; set; }
+        public double? BoqTotalPrice_st { get; set; }
 
     }
 

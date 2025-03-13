@@ -156,7 +156,7 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetComCondReplies")]
-        public List<DisplayCondition> GetComCondReplies(int packId, string costDB)
+        public List<DisplayCondition> GetComCondReplies(int packId, string costDB, string CostConn)
         {
             try
             {
@@ -168,7 +168,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn);
 
                 listPackageSuppliers.ForEach(sp =>
                 {
@@ -204,7 +204,7 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechCondReplies")]
-        public List<DisplayCondition> GetTechCondReplies(int packId, string costDB)
+        public List<DisplayCondition> GetTechCondReplies(int packId, string costDB, string CostConn)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn);
 
                 listPackageSuppliers.ForEach(sp =>
                 {

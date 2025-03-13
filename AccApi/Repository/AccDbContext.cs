@@ -2588,6 +2588,8 @@ namespace AccApi.Repository
                     .IsUnicode(false)
                     .HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
 
                 entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
@@ -2770,6 +2772,8 @@ namespace AccApi.Repository
                 entity.HasKey(e => e.SpPackSuppId)
                     .HasName("PK_tbSupplierPackages");
 
+                entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.SpByBoq).HasDefaultValueSql("((0))");
@@ -2779,6 +2783,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<TblSupplierPackageRevision>(entity =>
             {
+                entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.PrExchRate).HasDefaultValueSql("((0))");

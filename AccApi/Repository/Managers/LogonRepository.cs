@@ -404,7 +404,7 @@ namespace AccApi.Repository.Managers
        public bool hasPermission(string user, string functionId)
         {
             _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
-            var result = _tsdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId).FirstOrDefault();
+            var result = _tsdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == user && x.PrmFuncId==functionId && x.PrmRead==1).FirstOrDefault();
             if (result != null)
             {
                 return true;

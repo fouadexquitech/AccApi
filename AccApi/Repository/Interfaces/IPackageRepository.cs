@@ -12,6 +12,7 @@ namespace AccApi.Repository.Interfaces
         List<BoqModel> GetBoqList(string ItemO, SearchInput input); 
         List<BoqModel> GetAllBoqList(SearchInput input);
         Task<string> ExportBoqExcel(SearchInput input, string costDB);
+        Task<string> ExportExcelVerification(SearchInput input, string costDB, string userName);
         Task<string> ExportNotAssigned(string costDB);
         public bool updateOriginalBoqQty(OriginalBoqModel boq);
         public bool updateBoqResQty(BoqModel res);

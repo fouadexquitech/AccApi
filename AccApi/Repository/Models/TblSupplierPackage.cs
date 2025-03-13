@@ -22,5 +22,7 @@ namespace AccApi.Repository.Models
         public byte? SpByBoq { get; set; }
         public bool? TecCondSent { get; set; }
         public bool? IsSynched { get; set; }
+        [Column("insertDate", TypeName = "datetime")]
+        public DateTime? InsertDate { get; set; }
     }
 }

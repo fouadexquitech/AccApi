@@ -52,11 +52,11 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetSupplierPackagesList")]
-        public List<SupplierPackagesList> GetSupplierPackagesList(int packageid)
+        public List<SupplierPackagesList> GetSupplierPackagesList(int packageid, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRepository.GetSupplierPackagesList(packageid);
+                return this._supplierPackagesRepository.GetSupplierPackagesList(packageid, CostConn);
             }
             catch (Exception ex)
             {

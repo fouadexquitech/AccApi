@@ -27,13 +27,15 @@ namespace AccApi.Controllers
         private readonly ILogger<PackageController> _logger;
         private IPackageRepository _packageRepository;
         private IComparisonGroupRepository _comparisonGroupRepository;
+        private IlogonRepository _logonRepository;
 
-        public PackageController(ILogger<PackageController> logger, IPackageRepository packageRepository, IComparisonGroupRepository comparisonGroupRepository)
+        public PackageController(ILogger<PackageController> logger, IPackageRepository packageRepository, IComparisonGroupRepository comparisonGroupRepository, IlogonRepository logonRepository)
         {
             _logger = logger;
             _packageRepository = packageRepository;
             _comparisonGroupRepository = comparisonGroupRepository;
-            _comparisonGroupRepository = comparisonGroupRepository;
+            _logonRepository = logonRepository;
+            //_comparisonGroupRepository = comparisonGroupRepository;
         }
 
         [HttpPost("GetOriginalBoqList")]
@@ -103,6 +105,31 @@ namespace AccApi.Controllers
             try
             {
                 return new JsonResult(await this._packageRepository.ExportBoqExcel(input,  costDB));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message);
+                }
+                return null;
+            }
+        }
+
+        [HttpPost("ExportExcelVerification")]
+        public async Task<JsonResult> ExportExcelVerification(SearchInput input, string costDB,string userName)
+        {
+            try
+            {
+                bool hasPerm = this._logonRepository.hasPermission(userName, "validateBOQ_TS_VD");
+
+                if (hasPerm) 
+                    return new JsonResult(await this._packageRepository.ExportExcelVerification(input, costDB, userName));
+                else
+                    return new JsonResult(null);
             }
             catch (Exception ex)
             {

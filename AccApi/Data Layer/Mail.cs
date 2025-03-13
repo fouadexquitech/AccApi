@@ -81,6 +81,7 @@ namespace AccApi.Data_Layer
                 }
 
                 client.Send(mail);
+                mail.Dispose();
                 return "sent";
             }
             catch (Exception ex)
