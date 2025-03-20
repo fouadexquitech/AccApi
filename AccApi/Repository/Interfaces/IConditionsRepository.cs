@@ -11,11 +11,11 @@ namespace AccApi.Repository.Interfaces
 {
     public interface IConditionsRepository
     {
-        List<ComConditions> GetComConditions(int packSupId);
-        List<TechConditions> GetTechConditions(int packId, string? filter);
-        bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName);
-        bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile);
-        bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile);
+        List<ComConditions> GetComConditions(int packSupId, string CostConn);
+        List<TechConditions> GetTechConditions(int packId, string? filter, string CostConn);
+        bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName, string CostConn);
+        bool UpdateCommercialConditions(int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile);
+        bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile);
         List<TmpComparisonConditionsReply> GetComConditionsReply(int PackageSupliersID, string costDB, int packageId);
         List<TmpComparisonConditionsReply> GetTechConditionsReply(int PackageSupliersID, string costDB , int packageId);
         List<TmpConditionsReply> GetPackageComConditionsReply(int PackageID);
@@ -27,9 +27,9 @@ namespace AccApi.Repository.Interfaces
         bool AddTechConditions(TechConditions techcond);
         bool UpdateTechConditions(TechConditions techcond);
         bool DelTechConditions( int id);
-        List<ConditionsReply> GetComCondReplyByRevision(int revisionid);
-        List<ConditionsReply> GetTechCondReplyByRevision(int revisionid);
-        List<TechConditions> GetTechConditionsByPackage(int packId, int revisionId);
+        List<ConditionsReply> GetComCondReplyByRevision(int revisionid, string CostConn);
+        List<ConditionsReply> GetTechCondReplyByRevision(int revisionid, string CostConn);
+        List<TechConditions> GetTechConditionsByPackage(int packId, int revisionId, string CostConn);
         
     }
 }

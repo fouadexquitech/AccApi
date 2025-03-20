@@ -46,8 +46,10 @@ namespace AccApi.Repository.Managers
             _pdbContext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
         }
 
-        public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
+        public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var supPackRev = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
             int PackageSuppliersID = (int)supPackRev.PrPackSuppId;
 
@@ -515,8 +517,10 @@ namespace AccApi.Repository.Managers
             //return revDtlQry.ToList();
         }
 
-        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate,double discount,byte addedItem)
+        public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate,double discount,byte addedItem, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             if (addedItem != 1)  //add Items to Last Revision
             {
                 int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
@@ -740,8 +744,10 @@ namespace AccApi.Repository.Managers
             return (int)MaxRevisionNumber;
         }
 
-        public bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList)
+        public bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList, string CostConn)
         {
+            AccDbContext _dbContext = new AccDbContext(CostConn);
+
             foreach (var sup in SupPercentList)
             {
                 var revisionDetails = (from a in _dbContext.TblSupplierPackages
@@ -771,9 +777,11 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList, bool isPercent)
+        public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList, bool isPercent, string CostConn)
         {
-           List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
             foreach (var sup in supplierResList)
             {
@@ -841,8 +849,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent)
+        public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
             if (isPercent)
@@ -907,8 +917,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent)
+        public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
             if (isPercent)
@@ -976,9 +988,11 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent)
+        public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent, string CostConn)
         {
-                if (!byBoq)
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            if (!byBoq)
             {
                 foreach (var sup in SupplierGroupList)
                 {
@@ -1119,8 +1133,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent)
+        public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             if (byBoq)
             {
                 if (isPercent)
@@ -1257,8 +1273,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent)
+        public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             foreach (var sup in SupplierBOQList)
             {
                 if (isPercent)
@@ -1410,8 +1428,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachments,  string UserName)
+        public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachments,  string UserName, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             string send = "";
 
             string[] emails = new string[topManagementTemplate.TopManagements.Count];
@@ -1524,8 +1544,10 @@ namespace AccApi.Repository.Managers
                 return "";
         }
 
-        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input,int supId)
+        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input,int supId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             IEnumerable<BoqRessourcesList> condQuery = (from bb in _dbContext.TblSupplierPackageRevisions
                                                         join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                                         join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
@@ -2083,8 +2105,10 @@ namespace AccApi.Repository.Managers
             return levels.OrderBy(x=> x.Items.OrderBy(y=> y.IsNewItem).ThenBy(z => z.IsAlternative)).ToList();
         }
 
-        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId)
+        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             //IEnumerable<BoqRessourcesList> condQuery
             var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
@@ -2645,8 +2669,10 @@ namespace AccApi.Repository.Managers
             return levels;
         }
 
-        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
+        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
                                                         join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
@@ -2768,8 +2794,10 @@ namespace AccApi.Repository.Managers
             return groups;
         }
 
-        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
+        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
                                                         join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                                                         join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
@@ -2890,9 +2918,11 @@ namespace AccApi.Repository.Managers
             return groups;
         }
 
-        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input,0);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input,0, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3166,9 +3196,11 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input,0);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3456,9 +3488,11 @@ namespace AccApi.Repository.Managers
             }
         }
          
-        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3679,9 +3713,11 @@ namespace AccApi.Repository.Managers
             }
         }
   
-        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3907,8 +3943,10 @@ namespace AccApi.Repository.Managers
             var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
             return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
         }
-        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             List<GroupingBoqModel> items;
             List<string> excelList = new List<string>();
 
@@ -3931,17 +3969,19 @@ namespace AccApi.Repository.Managers
             foreach (var sup in querySupp)
             {
                 if (byBoq == 1)
-                    excelList.Add(GenerateSupplierContract_BOQ_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst));
+                    excelList.Add(GenerateSupplierContract_BOQ_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn));
                 else
-                    excelList.Add(GenerateSupplierContract_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst));
+                    excelList.Add(GenerateSupplierContract_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn));
             }
 
             return excelList;
         }
 
-        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input, supId);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -4221,9 +4261,11 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst)
+        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input, supId);
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input, supId, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -4503,8 +4545,10 @@ namespace AccApi.Repository.Managers
             return currencyConverterRepository.GetCurrencyExchange(localCurrency, foreignCurrency);
         }
 
-        public List<AcceptComment> GetRevisionAcceptance(int revId)
+        public List<AcceptComment> GetRevisionAcceptance(int revId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var acceptanceComments = _dbContext.AcceptanceComments.Where(x=>x.Enabled == true).ToList();
             var revAcceptanceComments = _dbContext.RevisionAcceptanceComments.Where(x => x.RevisionId == revId).ToList();
             //var result = (from  a in _dbContext.AcceptanceComments
@@ -4529,7 +4573,9 @@ namespace AccApi.Repository.Managers
             return result;
         }
 
-        public bool ExcludBoq(int packId, string Item, bool isNewItem,bool exclud) {
+        public bool ExcludBoq(int packId, string Item, bool isNewItem,bool exclud, string CostConn) {
+
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
 
             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
@@ -4554,8 +4600,10 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool exclud)
+        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool exclud, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId

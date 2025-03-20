@@ -17,7 +17,7 @@ namespace AccApi.Repository.Interfaces
 
         Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model);
 
-        List<Supplier> GetSupplierList_NotAssignetPackage(int packID);
+        List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn);
 
         Task<ResponseModel<bool>> Register(List<RegisterModel> model);
     }

@@ -39,11 +39,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierList_NotAssignetPackage")]
-        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID)
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
         {
             try
             {
-                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID);
+                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID,  CostConn);
             }
             catch (Exception ex)
             {

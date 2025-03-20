@@ -71,8 +71,10 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID)
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             //Models.MasterModels.TblPackage package = (from p in _mdbcontext.TblPackages
             //                                          where p.PkgeId == packID
             //                                          select p).First();

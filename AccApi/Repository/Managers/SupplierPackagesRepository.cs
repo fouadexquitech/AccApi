@@ -50,8 +50,10 @@ namespace AccApi.Repository.Managers
             _configuration = configuration;
         }
 
-        public SupplierPackagesList GetSupplierPackage(int spId)
+        public SupplierPackagesList GetSupplierPackage(int spId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
@@ -94,8 +96,10 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<boqPackageList> boqPackageList(int packId, byte byboq)
+        public List<boqPackageList> boqPackageList(int packId, byte byboq,  string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var boqList = new List<boqPackageList>();
 
             if (byboq == 1)
@@ -228,8 +232,10 @@ namespace AccApi.Repository.Managers
             return boqList;
         }
 
-        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice)
+        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             //AH0702
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
             //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
@@ -238,7 +244,7 @@ namespace AccApi.Repository.Managers
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
+            var result = boqPackageList(packId, byBoq, CostConn);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -587,12 +593,14 @@ namespace AccApi.Repository.Managers
             //    sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
             //    return true;
         }
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate)
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn)
         {
             var t = await _dbcontext.Database.BeginTransactionAsync();
 
             try
             {
+                AccDbContext _dbcontext = new AccDbContext(CostConn);
+
                 string sent = "";
                 var AttachmentList = new List<string>();
 
@@ -608,7 +616,7 @@ namespace AccApi.Repository.Managers
                 List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
                 AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
 
-                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false);
+                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false,CostConn);
 
                 foreach (var supInput in supInputList)
                 {

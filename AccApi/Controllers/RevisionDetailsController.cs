@@ -41,11 +41,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetRevisionDetails")]
-        public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource)
+        public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetRevisionDetails(RevisionId, itemDesc, resource);
+                return this._revisionDetailsRepository.GetRevisionDetails(RevisionId, itemDesc, resource, CostConn);
             }
             catch (Exception ex)
             {
@@ -61,11 +61,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddRevision")]
-        public bool AddRevision(int PackageSupplierId, string PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate, double discount, byte addedItem)
+        public bool AddRevision(int PackageSupplierId, string PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate, double discount, byte addedItem, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AddRevision(PackageSupplierId, Convert.ToDateTime(PackSuppDate),  ExcelFile, curId,  ExchRate, discount, addedItem);
+                return this._revisionDetailsRepository.AddRevision(PackageSupplierId, Convert.ToDateTime(PackSuppDate),  ExcelFile, curId,  ExchRate, discount, addedItem,CostConn);
             }
             catch (Exception ex)
             {
@@ -81,11 +81,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierPackage")]
-        public bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList)
+        public bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierPackage(packId, SupPercentList);
+                return this._revisionDetailsRepository.AssignSupplierPackage(packId, SupPercentList, CostConn);
             }
             catch (Exception ex)
             {
@@ -141,11 +141,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierRessource")]
-        public bool AssignSupplierRessource(int packId, bool isPercent, List<SupplierResrouces> supplierResList)
+        public bool AssignSupplierRessource(int packId, bool isPercent, List<SupplierResrouces> supplierResList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList, isPercent);
+                return this._revisionDetailsRepository.AssignSupplierRessource(packId, supplierResList, isPercent, CostConn);
             }
             catch (Exception ex)
             {
@@ -161,11 +161,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierBOQ")]
-        public bool AssignSupplierBOQ(int packId, bool isPercent, List<SupplierBOQ> SupplierBOQList)
+        public bool AssignSupplierBOQ(int packId, bool isPercent, List<SupplierBOQ> SupplierBOQList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierBOQ(packId, SupplierBOQList,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierBOQ(packId, SupplierBOQList,  isPercent,  CostConn);
             }
             catch (Exception ex)
             {
@@ -181,11 +181,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListBoqList")]
-        public bool AssignSupplierListBoqList(int packId, bool isPercent, AssignSuppliertBoq item)
+        public bool AssignSupplierListBoqList(int packId, bool isPercent, AssignSuppliertBoq item, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, item,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierListBoqList(packId, item,  isPercent,  CostConn);
             }
             catch (Exception ex)
             {
@@ -201,11 +201,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignSupplierListRessourceList")]
-        public bool AssignSupplierListRessourceList(int packId, bool isPercent, AssignSuppliertRes item)
+        public bool AssignSupplierListRessourceList(int packId, bool isPercent, AssignSuppliertRes item, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, item,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierListRessourceList(packId, item,  isPercent,  CostConn);
             }
             catch (Exception ex)
             {
@@ -221,7 +221,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("SendCompToManagement")]
-        public async Task<bool> SendCompToManagement()
+        public async Task<bool> SendCompToManagement(string CostConn)
         {
             try
             {
@@ -231,7 +231,7 @@ namespace AccApi.Controllers
 
                 List<IFormFile> attachements = formCollection.Files.ToList();
 
-                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachements, topManagementTemplate.UserName);
+                return this._revisionDetailsRepository.SendCompToManagement(topManagementTemplate, attachements, topManagementTemplate.UserName,  CostConn);
 
             }
             catch (Exception ex)
@@ -249,11 +249,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GetComparisonSheet")]
-        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input)
+        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheet(packageId, input,0);
+                return this._revisionDetailsRepository.GetComparisonSheet(packageId, input,0, CostConn);
             }
             catch (Exception ex)
             {
@@ -269,11 +269,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq")]
-        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input)
+        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input,0);
+                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input,0, CostConn);
             }
             catch (Exception ex)
             {
@@ -283,11 +283,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq_Excel")]
-        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
+        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
         {
             try
             {
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1);
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1, CostConn);
                 //AH27022024
                 //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
                 //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
@@ -295,7 +295,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
 
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
             }
             catch (Exception ex)
             {
@@ -311,18 +311,18 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheet_Excel")]
-        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
+        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB,string CostConn)
         {
             try
             {
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0, CostConn);
                 //AH27022024
                 //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
                 //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
                 List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
             }
             catch (Exception ex)
             {
@@ -338,11 +338,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetResourcesByGroup")]
-        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input)
+        public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup(packageId, input);
+                return this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup(packageId, input,  CostConn);
             }
             catch (Exception ex)
             {
@@ -358,7 +358,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetResourcesByGroup_Excel")]
-        public JsonResult GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
+        public JsonResult GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
         {
             try
             {
@@ -368,7 +368,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst, techcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetResourcesByGroup_Excel(packageId, input, comcondRepLst, techcondRepLst, CostConn));
             }
             catch (Exception ex)
             {
@@ -384,11 +384,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetBoqByGroup")]
-        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input)
+        public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheetBoqByGroup(packageId, input);
+                return this._revisionDetailsRepository.GetComparisonSheetBoqByGroup(packageId, input, CostConn);
             }
             catch (Exception ex)
             {
@@ -404,7 +404,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetBoqByGroup_Excel")]
-        public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
+        public JsonResult GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
         {
             try
             {
@@ -414,8 +414,8 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0);
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst));
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0, CostConn);
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
             }
             catch (Exception ex)
             {
@@ -433,11 +433,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignSupplierListGroupList")]
-        public bool AssignSupplierListGroupList(int packId, bool byBoq, bool isPercent, AssignSupplierGroup item)
+        public bool AssignSupplierListGroupList(int packId, bool byBoq, bool isPercent, AssignSupplierGroup item, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierListGroupList(packId, byBoq, item,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierListGroupList(packId, byBoq, item,  isPercent, CostConn);
             }
             catch (Exception ex)
             {
@@ -453,11 +453,11 @@ namespace AccApi.Controllers
         }
       
         [HttpPost("AssignSupplierGroup")]
-        public bool AssignSupplierGroup(int packId, bool byBoq, bool isPercent, List<SupplierGroups> SupplierGroupList)
+        public bool AssignSupplierGroup(int packId, bool byBoq, bool isPercent, List<SupplierGroups> SupplierGroupList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.AssignSupplierGroup(packId, byBoq, SupplierGroupList,  isPercent);
+                return this._revisionDetailsRepository.AssignSupplierGroup(packId, byBoq, SupplierGroupList,  isPercent, CostConn);
             }
             catch (Exception ex)
             {
@@ -474,7 +474,7 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GenerateSuppliersContracts_Excel")]
-        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB)
+        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
         {
             try
             {
@@ -485,7 +485,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
 
-                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst));
+                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst,  CostConn));
                 
             }
             catch (Exception ex)
@@ -559,11 +559,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GetRevisionAcceptance")]
-        public List<AcceptComment> GetRevisionAcceptance(int revId)
+        public List<AcceptComment> GetRevisionAcceptance(int revId, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.GetRevisionAcceptance(revId);
+                return this._revisionDetailsRepository.GetRevisionAcceptance(revId,  CostConn);
             }
             catch (Exception ex)
             {
@@ -579,11 +579,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("ExcludBoq")]
-        public bool ExcludBoq(int packId, string Item, bool isNewItem, bool isExclud)
+        public bool ExcludBoq(int packId, string Item, bool isNewItem, bool isExclud, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.ExcludBoq(packId, Item, isNewItem,isExclud);
+                return this._revisionDetailsRepository.ExcludBoq(packId, Item, isNewItem,isExclud,  CostConn);
             }
             catch (Exception ex)
             {
@@ -599,11 +599,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("ExcludRessource")]
-        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool isExclud)
+        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool isExclud, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.ExcludRessource(packId, boqSeq, isNewItem, isAlternative, isExclud);
+                return this._revisionDetailsRepository.ExcludRessource(packId, boqSeq, isNewItem, isAlternative, isExclud, CostConn);
             }
             catch (Exception ex)
             {

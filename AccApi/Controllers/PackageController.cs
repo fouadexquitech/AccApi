@@ -429,11 +429,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AssignPackages")]
-        public bool AssignPackages(AssignPackages input)
+        public bool AssignPackages(string CostConn,AssignPackages input)
         {
             try
             {
-                return this._packageRepository.AssignPackages(input);
+                return this._packageRepository.AssignPackages(input, CostConn);
             }
             catch (Exception ex)
             {
@@ -449,11 +449,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetPackageSuppliersPrice")]
-        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input)
+        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input, string CostConn)
         {
             try
             {
-                return this._packageRepository.GetPackageSuppliersPrice(IdPkge, input);
+                return this._packageRepository.GetPackageSuppliersPrice(IdPkge, input,  CostConn);
             }
             catch (Exception ex)
             {

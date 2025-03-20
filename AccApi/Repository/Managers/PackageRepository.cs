@@ -699,9 +699,9 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault();
         }
 
-        public bool AssignPackages(AssignPackages input)
+        public bool AssignPackages(AssignPackages input, string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             if (input.AssignOriginalBoqList != null)
             {
@@ -759,9 +759,11 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input)
+        public List<PackageSuppliersPrice> GetPackageSuppliersPrice(int pckgID, SearchInput input, string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            //AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
 
             //get Exchange Rate Now
             var curList = (from b in _mdbcontext.TblCurrencies

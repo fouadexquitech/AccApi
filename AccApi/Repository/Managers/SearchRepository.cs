@@ -26,7 +26,7 @@ namespace AccApi.Repository.Managers
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-        public List<BOQDivList> GetBOQDivList(RessourceLevelsFilter filter)
+        public List<BOQDivList> GetBOQDivList(RessourceLevelsFilter filter, string CostConn)
         {
             List<BOQDivList> results = null;
 
@@ -35,7 +35,8 @@ namespace AccApi.Repository.Managers
             var Level4 = filter.Level4;
             var resType = filter.resType;
 
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+            //AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
 
             if ((Level2 == null || Level2.Count == 0) && (Level3 == null || Level3.Count == 0) && (Level4 == null || Level4.Count == 0))
                 results = (from o in _costDbcontext.TblOriginalBoqVds                         
@@ -56,7 +57,7 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel2List(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel2List(RessourceLevelsFilter filter, string CostConn)
         {
             List<BOQLevelList> results = null;
 
@@ -74,7 +75,7 @@ namespace AccApi.Repository.Managers
 
             //if (resTypeList.Count > 0)
             //{
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             if (resType == null || resType.Count == 0)
                 results = (from o in _costDbcontext.TblOriginalBoqVds 
@@ -130,7 +131,7 @@ namespace AccApi.Repository.Managers
         //    return results;
         //}
 
-        public List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter, string CostConn)
         {
             List<BOQLevelList> results = null;
 
@@ -145,7 +146,7 @@ namespace AccApi.Repository.Managers
             //{
             //    resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
             //}
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             if (resType == null || resType.Count == 0)
             { 
@@ -189,7 +190,7 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter, string CostConn)
         {
             List<BOQLevelList> results = null;
 
@@ -205,7 +206,7 @@ namespace AccApi.Repository.Managers
             //    resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
             //}
 
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             if (resType == null || resType.Count == 0)
                 results = (from o in _costDbcontext.TblOriginalBoqVds
@@ -245,7 +246,7 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter)
+        public List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter, string CostConn)
         {
             List<RESTypeList> results = null;
 
@@ -255,7 +256,7 @@ namespace AccApi.Repository.Managers
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             results = (from b in _costDbcontext.TblBoqVds
                        join i in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals i.ItemO
@@ -333,9 +334,9 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RESDivList> RESDivList()
+        public List<RESDivList> RESDivList(string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             var results = (from b in _costDbcontext.TblBoqVds
                            group b by b.BoqDiv into g
@@ -346,13 +347,13 @@ namespace AccApi.Repository.Managers
         }
 
 
-        public List<Package> GetPackagesList(bool usedPackages)
+        public List<Package> GetPackagesList(bool usedPackages, string CostConn)
         {
             List<Package> results = null;
 
             if (usedPackages)
             {
-                AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+                AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
                 var usedPackO = _costDbcontext.TblOriginalBoqVds.Where(x => x.Scope > 0).Select(p => p.Scope).Distinct().ToList();
                 var usedPackB = _costDbcontext.TblBoqVds.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
@@ -382,9 +383,9 @@ namespace AccApi.Repository.Managers
             return l;
         }
 
-        public List<RESPackageList> RESPackageList()
+        public List<RESPackageList> RESPackageList(string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             var results = (from b in _costDbcontext.TblBoqVds
                            group b by b.BoqPackage into g
@@ -394,9 +395,9 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<SheetDescList> SheetDescList()
+        public List<SheetDescList> SheetDescList( string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             var results = (from b in _costDbcontext.TblOriginalBoqVds
                            group b by b.ObSheetDesc into g
@@ -406,9 +407,9 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter)
+        public List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter, string CostConn)
         {
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             List<Ressource> resList = null;
             List<Ressource> boqResList = null;
@@ -498,7 +499,7 @@ namespace AccApi.Repository.Managers
             return results;
         }
 
-        public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter, string CostConn)
         {
             IQueryable<BOQLevelList> query = null;
 
@@ -509,7 +510,7 @@ namespace AccApi.Repository.Managers
 
             //if (Level2.Count > 0)
             //{
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             query = (from b in _costDbcontext.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(b.L2)) &&
@@ -527,7 +528,7 @@ namespace AccApi.Repository.Managers
             return query.ToList();
         }
 
-        public List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter)
+        public List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter, string CostConn)
         {
             IQueryable<BOQLevelList> query = null;
 
@@ -537,7 +538,7 @@ namespace AccApi.Repository.Managers
             var divO = filter.boqDiv;
 
             //if (Level2.Count > 0)
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             query = (from i in _costDbcontext.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
@@ -563,7 +564,7 @@ namespace AccApi.Repository.Managers
             return query.ToList();
         }
 
-        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter)
+        public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter, string CostConn)
         {
             IQueryable<RessourceList> query = null;
 
@@ -619,7 +620,7 @@ namespace AccApi.Repository.Managers
             //}
             //else if (Level4 != null)
             //{
-            AccDbContext _costDbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            AccDbContext _costDbcontext = new AccDbContext(CostConn );
 
             query = (from b in _costDbcontext.TblBoqVds
                          join c in _costDbcontext.TblResources

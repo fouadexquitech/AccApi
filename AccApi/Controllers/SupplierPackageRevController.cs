@@ -22,11 +22,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierPackagesRevision")]
-        public List<SupplierPackagesRevList> GetSupplierPackagesRevision(int packageSupplierId)
+        public List<SupplierPackagesRevList> GetSupplierPackagesRevision(int packageSupplierId, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRevRepository.GetSupplierPackagesRevList(packageSupplierId);
+                return this._supplierPackagesRevRepository.GetSupplierPackagesRevList(packageSupplierId, CostConn);
             }
             catch (Exception ex)
             {
@@ -42,11 +42,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierPackagesSingleRevision")]
-        public SupplierPackagesRevList GetSupplierPackagesSingleRevision(int revisionId)
+        public SupplierPackagesRevList GetSupplierPackagesSingleRevision(int revisionId, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRevRepository.GetSupplierPackagesRevision(revisionId);
+                return this._supplierPackagesRevRepository.GetSupplierPackagesRevision(revisionId, CostConn);
             }
             catch (Exception ex)
             {
@@ -62,11 +62,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("AddField")]
-        public decimal? AddField(int revId, string lbl, double val, int type)
+        public decimal? AddField(int revId, string lbl, double val, int type, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRevRepository.AddField(revId, lbl, val,type);
+                return this._supplierPackagesRevRepository.AddField(revId, lbl, val,type,  CostConn);
             }
             catch (Exception ex)
             {
@@ -102,11 +102,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("DeleteField")]
-        public bool DeleteField(int fieldId)
+        public bool DeleteField(int fieldId, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRevRepository.DeleteField(fieldId);
+                return this._supplierPackagesRevRepository.DeleteField(fieldId,  CostConn);
             }
             catch (Exception ex)
             {
@@ -122,11 +122,11 @@ namespace AccApi.Controllers
         }
 
        [HttpGet("GetFields")]
-       public List<RevisionFieldsList> GetFields(int revisionid)
+       public List<RevisionFieldsList> GetFields(int revisionid, string CostConn)
         {
             try
             {
-                return this._supplierPackagesRevRepository.GetFields(revisionid);
+                return this._supplierPackagesRevRepository.GetFields(revisionid,  CostConn);
             }
             catch (Exception ex)
             {

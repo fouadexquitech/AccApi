@@ -19,8 +19,8 @@ namespace AccApi.Repository.Interfaces
         public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList);
 
         PackageDetailsModel GetPackageById(int IdPkge);
-        bool AssignPackages(AssignPackages input);
-        List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input);
+        bool AssignPackages(AssignPackages input, string CostConn);
+        List<PackageSuppliersPrice> GetPackageSuppliersPrice(int IdPkge, SearchInput input, string CostConn);
         DataTablesResponse<Package> GetPackages(DataTablesRequest Request);
         bool AddPackage(List<Package> packs);
         bool UpdatePackage(Package pack);
