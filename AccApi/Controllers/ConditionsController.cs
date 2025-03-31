@@ -28,11 +28,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComConditions")]
-        public List<ComConditions> GetComConditions(int packSupId)
+        public List<ComConditions> GetComConditions(int packSupId, string CostConn)
         {
             try
             {
-                return this._conditionsRepository.GetComConditions(packSupId);
+                return this._conditionsRepository.GetComConditions(packSupId,CostConn);
             }
             catch (Exception ex)
             {
@@ -84,11 +84,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditions")]
-        public List<TechConditions> GetTechConditions(int packId, string? filter)
+        public List<TechConditions> GetTechConditions(int packId, string? filter, string CostConn)
         {
             try
             {
-                return  this._conditionsRepository.GetTechConditions(packId, filter);
+                return  this._conditionsRepository.GetTechConditions(packId, filter,  CostConn);
             }
             catch (Exception ex)
             {
@@ -98,11 +98,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechConditionsByPackage")]
-        public List<TechConditions> GetTechConditionsByPackage(int packId, int revisionId)
+        public List<TechConditions> GetTechConditionsByPackage(int packId, int revisionId, string CostConn)
         {
             try
             {
-                return this._conditionsRepository.GetTechConditionsByPackage(packId, revisionId);
+                return this._conditionsRepository.GetTechConditionsByPackage(packId, revisionId, CostConn);
             }
             catch (Exception ex)
             {
@@ -156,11 +156,11 @@ namespace AccApi.Controllers
 
 
         [HttpGet("GetComCondReplies")]
-        public List<DisplayCondition> GetComCondReplies(int packId, string costDB)
+        public List<DisplayCondition> GetComCondReplies(int packId, string costDB, string CostConn)
         {
             try
             {
-                var displayConditions = this._conditionsRepository.GetComConditions(packId).Select(x => new DisplayCondition
+                var displayConditions = this._conditionsRepository.GetComConditions(packId, CostConn).Select(x => new DisplayCondition
                 {
                     Id = x.cmSeq,
                     Description = x.cmDescription,
@@ -168,7 +168,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn);
 
                 listPackageSuppliers.ForEach(sp =>
                 {
@@ -204,12 +204,12 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechCondReplies")]
-        public List<DisplayCondition> GetTechCondReplies(int packId, string costDB)
+        public List<DisplayCondition> GetTechCondReplies(int packId, string costDB, string CostConn)
         {
             try
             {
                 //List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditions(packId, null).Select(x => new DisplayCondition
-                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditionsByPackage(packId, 0).Select(x => new DisplayCondition
+                List<DisplayCondition> displayConditions = this._conditionsRepository.GetTechConditionsByPackage(packId, 0, CostConn).Select(x => new DisplayCondition
                 {
                     Id = x.TcSeq,
                     Description = x.TcDescription,
@@ -217,7 +217,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn);
 
                 listPackageSuppliers.ForEach(sp =>
                 {
@@ -285,11 +285,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("SendTechnicalConditions")]
-        public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName)
+        public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName, string CostConn)
         {
             try
             {
-                return this._conditionsRepository.SendTechnicalConditions(packId, techCondModel,  UserName);
+                return this._conditionsRepository.SendTechnicalConditions(packId, techCondModel,  UserName,  CostConn);
             }
             catch (Exception ex)
             {
@@ -300,11 +300,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("UpdateCommercialConditions")]
-        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile)
+        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile)
         {
             try
             {
-                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersRevisionID, ExcelFile);
+                return this._conditionsRepository.UpdateCommercialConditions(PackageSupliersRevisionID, CostConn, ExcelFile);
             }
             catch (Exception ex)
             {
@@ -314,11 +314,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("UpdateTechnicalConditions")]
-        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile)
         {
             try
             {
-                return this._conditionsRepository.UpdateTechnicalConditions(packageId, PackageSupliersRevisionID, ExcelFile);
+                return this._conditionsRepository.UpdateTechnicalConditions(packageId, PackageSupliersRevisionID,  CostConn, ExcelFile);
             }
             catch (Exception ex)
             {
@@ -328,11 +328,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetComCondReplyByRevision")]
-        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid)
+        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid, string CostConn)
         {
             try
             {
-                return this._conditionsRepository.GetComCondReplyByRevision(revisionid);
+                return this._conditionsRepository.GetComCondReplyByRevision(revisionid, CostConn);
             }
             catch (Exception ex)
             {
@@ -342,11 +342,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetTechCondReplyByRevision")]
-        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid)
+        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid, string CostConn)
         {
             try
             {
-                return this._conditionsRepository.GetTechCondReplyByRevision(revisionid);
+                return this._conditionsRepository.GetTechCondReplyByRevision(revisionid,  CostConn);
             }
             catch (Exception ex)
             {

@@ -39,11 +39,11 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierList_NotAssignetPackage")]
-        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID)
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
         {
             try
             {
-                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID);
+                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID,  CostConn);
             }
             catch (Exception ex)
             {
@@ -138,6 +138,25 @@ namespace AccApi.Controllers
             {
                 _logger.LogError(ex.Message);
                 return false;
+            }
+        }
+
+
+        [HttpPost("Register")]
+        public async Task<ResponseModel<bool>> Register(List<RegisterModel> model)
+        {
+            try
+            {
+                return await _supplierRepository.Register(model);
+            }
+            catch (Exception)
+            {
+                return new ResponseModel<bool>
+                {
+                    Success = false,
+                    Message = "Something went wrong!"
+                };
+
             }
         }
 

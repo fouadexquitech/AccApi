@@ -30,5 +30,7 @@ namespace AccApi.Repository.Models
         public int? StatusId { get; set; }
         [Column("revExpiryDate", TypeName = "date")]
         public DateTime? RevExpiryDate { get; set; }
+        [Column("insertDate", TypeName = "datetime")]
+        public DateTime? InsertDate { get; set; }
     }
 }

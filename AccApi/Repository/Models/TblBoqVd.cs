@@ -128,5 +128,6 @@ namespace AccApi.Repository.Models
         [StringLength(25)]
         public string SubBoq { get; set; }
         public bool? IsSynched { get; set; }
+        public double? BoqUpriceBeforeDisct { get; set; }
     }
 }

@@ -172,6 +172,7 @@ namespace AccApi.Repository.Models
         public string InsertedBy { get; set; }
         [Column("insertedDate", TypeName = "datetime")]
         public DateTime? InsertedDate { get; set; }
+        public string C16 { get; set; }
 
         [InverseProperty(nameof(TblBoqtemp.BoqItemNavigation))]
         public virtual ICollection<TblBoqtemp> TblBoqtemps { get; set; }

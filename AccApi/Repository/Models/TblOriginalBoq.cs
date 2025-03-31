@@ -186,5 +186,6 @@ namespace AccApi.Repository.Models
         [Column("obStatus")]
         [StringLength(50)]
         public string ObStatus { get; set; }
+        public string C16 { get; set; }
     }
 }

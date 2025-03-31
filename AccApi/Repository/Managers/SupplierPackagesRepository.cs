@@ -50,8 +50,10 @@ namespace AccApi.Repository.Managers
             _configuration = configuration;
         }
 
-        public SupplierPackagesList GetSupplierPackage(int spId)
+        public SupplierPackagesList GetSupplierPackage(int spId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
@@ -71,8 +73,10 @@ namespace AccApi.Repository.Managers
             return results.FirstOrDefault();
         }
 
-        public List<SupplierPackagesList> GetSupplierPackagesList(int packageid)
+        public List<SupplierPackagesList> GetSupplierPackagesList(int packageid, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
@@ -92,8 +96,10 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<boqPackageList> boqPackageList(int packId, byte byboq)
+        public List<boqPackageList> boqPackageList(int packId, byte byboq,  string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var boqList = new List<boqPackageList>();
 
             if (byboq == 1)
@@ -226,8 +232,10 @@ namespace AccApi.Repository.Managers
             return boqList;
         }
 
-        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice)
+        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             //AH0702
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
             //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
@@ -236,7 +244,7 @@ namespace AccApi.Repository.Managers
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
+            var result = boqPackageList(packId, byBoq, CostConn);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -513,6 +521,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+
+                //string filePath = "C:\\App\\ExportExcel\\vendan\\" + excelName;
                 xlPackage.SaveAs(excelName);
 
                 package.FilePath = excelName;
@@ -583,12 +593,14 @@ namespace AccApi.Repository.Managers
             //    sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
             //    return true;
         }
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate)
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn)
         {
             var t = await _dbcontext.Database.BeginTransactionAsync();
 
             try
             {
+                AccDbContext _dbcontext = new AccDbContext(CostConn);
+
                 string sent = "";
                 var AttachmentList = new List<string>();
 
@@ -604,7 +616,7 @@ namespace AccApi.Repository.Managers
                 List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
                 AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
 
-                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false);
+                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false,CostConn);
 
                 foreach (var supInput in supInputList)
                 {
@@ -726,7 +738,35 @@ namespace AccApi.Repository.Managers
                                                    NewItemResourceId = d.NewItemResourceId,
                                                    IsNewItem = d.IsNew,
                                                    IsAlternative = d.IsAlternative,
-                                                   UnitPriceAfterDiscount=d.UnitPriceAfterDiscount                                                                                                    
+                                                   UnitPriceAfterDiscount=d.UnitPriceAfterDiscount,
+                                                   UnitO = (d.UnitO == null) ? "" : d.UnitO,
+                                                   BoqCtg = (d.BoqCtg == null) ? "" : d.BoqCtg,
+                                                   BoqUnitMesure = (d.BoqUnitMesure == null) ? "" : d.BoqUnitMesure,
+                                                   L1 = (d.L1 == null) ? "" : d.L1,
+                                                   L2 = (d.L2 == null) ? "" : d.L2,
+                                                   L3 = (d.L3 == null) ? "" : d.L3,
+                                                   L4 = (d.L4 == null) ? "" : d.L4,
+                                                   L5 = (d.L5 == null) ? "" : d.L5,
+                                                   L6 = (d.L6 == null) ? "" : d.L6,
+                                                   L7 = (d.L7 == null) ? "" : d.L7,
+                                                   L8 = (d.L8 == null) ? "" : d.L8,
+                                                   L9 = (d.L9 == null) ? "" : d.L9,
+                                                   L10 = (d.L10 == null) ? "" : d.L10,
+                                                   C1 = (d.C1 == null) ? "" : d.C1,
+                                                   C2 = (d.C2 == null) ? "" : d.C2,
+                                                   C3 = (d.C3 == null) ? "" : d.C3,
+                                                   C4 = (d.C4 == null) ? "" : d.C4,
+                                                   C5 = (d.C5 == null) ? "" : d.C5,
+                                                   C6 = (d.C6 == null) ? "" : d.C6,
+                                                   C7 = (d.C7 == null) ? "" : d.C7,
+                                                   C8 = (d.C8 == null) ? "" : d.C8,
+                                                   C9 = (d.C9 == null) ? "" : d.C9,
+                                                   C10 = (d.C10 == null) ? "" : d.C10,
+                                                   C11 = (d.C11 == null) ? "" : d.C11,
+                                                   C12 = (d.C12 == null) ? "" : d.C12,
+                                                   C13 = (d.C13 == null) ? "" : d.C13,
+                                                   C14 = (d.C14 == null) ? "" : d.C14,
+                                                   C15 = (d.C15 == null) ? "" : d.C15
                                                }).ToList(),
                             CommercialConditions= (from d in LstComCondReply
                                                    select new AddCondModel
@@ -929,6 +969,34 @@ namespace AccApi.Repository.Managers
                             ItemDescription=row.ItemDescription ,
                             UnitPriceAfterDiscount = row.UnitPriceAfterDiscount,
                             TotalPrice= Math.Round((double) (row.RdQuotationQty*row.UnitPriceAfterDiscount),2),
+                            UnitO=row.UnitO,
+                            BoqCtg=row.BoqCtg,
+                            BoqUnitMesure=row.BoqUnitMesure,
+                            L1=row.L1,
+                            L2 = row.L2,
+                            L3 = row.L3,
+                            L4 = row.L4,
+                            L5 = row.L5,
+                            L6 = row.L6,
+                            L7 = row.L7,
+                            L8 = row.L8,
+                            L9 = row.L9,
+                            L10 = row.L10,
+                            C1 = row.C1,
+                            C2 = row.C2,
+                            C3 = row.C3,
+                            C4 = row.C4,
+                            C5 = row.C5,
+                            C6 = row.C6,
+                            C7 = row.C7,
+                            C8 = row.C8,
+                            C9 = row.C9,
+                            C10 = row.C10,
+                            C11 = row.C11,
+                            C12 = row.C12,
+                            C13 = row.C13,
+                            C14 = row.C14,
+                            C15 = row.C15
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
@@ -952,7 +1020,32 @@ namespace AccApi.Repository.Managers
                                   UnitO = o.UnitO,
                                   ScopeQtyO = o.QtyScope,
                                   UnitRateO = o.UnitRate,
-                                  ScopeO = o.Scope
+                                  ScopeO = o.Scope,
+                                  L1 = o.L1,
+                                  L2 = o.L2,
+                                  L3 = o.L3,
+                                  L4 = o.L4,
+                                  L5 = o.L5,
+                                  L6 = o.L6,
+                                  L7 = o.L7,
+                                  L8 = o.L8,
+                                  L9 = o.L9,
+                                  L10 = o.L10,
+                                  C1 = o.C1,
+                                  C2 = o.C2,
+                                  C3 = o.C3,
+                                  C4 = o.C4,
+                                  C5 = o.C5,
+                                  C6 = o.C6,
+                                  C7 = o.C7,
+                                  C8 = o.C8,
+                                  C9 = o.C9,
+                                  C10 = o.C10,
+                                  C11 = o.C11,
+                                  C12 = o.C12,
+                                  C13 = o.C13,
+                                  C14 = o.C14,
+                                  C15 = o.C15
                               }).ToList();
 
                     foreach (var row in result)
@@ -982,6 +1075,34 @@ namespace AccApi.Repository.Managers
                                 ItemDescription = row.DescriptionO,
                                 UnitPriceAfterDiscount = 0,
                                 TotalPrice = 0,
+                                UnitO = row.UnitO,
+                                BoqCtg = row.BoqCtg,
+                                BoqUnitMesure = row.BoqUnitMesure,
+                                L1 = row.L1,
+                                L2 = row.L2,
+                                L3 = row.L3,
+                                L4 = row.L4,
+                                L5 = row.L5,
+                                L6 = row.L6,
+                                L7 = row.L7,
+                                L8 = row.L8,
+                                L9 = row.L9,
+                                L10 = row.L10,
+                                C1 = row.C1,
+                                C2 = row.C2,
+                                C3 = row.C3,
+                                C4 = row.C4,
+                                C5 = row.C5,
+                                C6 = row.C6,
+                                C7 = row.C7,
+                                C8 = row.C8,
+                                C9 = row.C9,
+                                C10 = row.C10,
+                                C11 = row.C11,
+                                C12 = row.C12,
+                                C13 = row.C13,
+                                C14 = row.C14,
+                                C15 = row.C15
                             };
                             LstRevDetails.Add(revdtl);
                         }
@@ -1008,6 +1129,32 @@ namespace AccApi.Repository.Managers
                                   DescriptionO=o.DescriptionO,
                                   ResDescription=r.ResDescription,
                                   ResSeq=r.ResSeq,
+                                  UnitO=o.UnitO,
+                                  L1 = o.L1,
+                                  L2 = o.L2,
+                                  L3 = o.L3,
+                                  L4 = o.L4,
+                                  L5 = o.L5,
+                                  L6 = o.L6,
+                                  L7 = o.L7,
+                                  L8 = o.L8,
+                                  L9 = o.L9,
+                                  L10 = o.L10,
+                                  C1 = o.C1,
+                                  C2 = o.C2,
+                                  C3 = o.C3,
+                                  C4 = o.C4,
+                                  C5 = o.C5,
+                                  C6 = o.C6,
+                                  C7 = o.C7,
+                                  C8 = o.C8,
+                                  C9 = o.C9,
+                                  C10 = o.C10,
+                                  C11 = o.C11,
+                                  C12 = o.C12,
+                                  C13 = o.C13,
+                                  C14 = o.C14,
+                                  C15 = o.C15
                               }).ToList();
 
                     var resourcesGrp = result
@@ -1026,6 +1173,31 @@ namespace AccApi.Repository.Managers
                                 BoqScope = p.First().BoqScope,
                                 DescriptionO = p.First().DescriptionO,
                                 ResDescription = p.First().ResDescription,
+                                L1 = p.First().L1,
+                                L2 = p.First().L2,
+                                L3 = p.First().L3,
+                                L4 = p.First().L4,
+                                L5 = p.First().L5,
+                                L6 = p.First().L6,
+                                L7 = p.First().L7,
+                                L8 = p.First().L8,
+                                L9 = p.First().L9,
+                                L10 = p.First().L10,
+                                C1 = p.First().C1,
+                                C2 = p.First().C2,
+                                C3 = p.First().C3,
+                                C4 = p.First().C4,
+                                C5 = p.First().C5,
+                                C6 = p.First().C6,
+                                C7 = p.First().C7,
+                                C8 = p.First().C8,
+                                C9 = p.First().C9,
+                                C10 = p.First().C10,
+                                C11 = p.First().C11,
+                                C12 = p.First().C12,
+                                C13 = p.First().C13,
+                                C14 = p.First().C14,
+                                C15 = p.First().C15
                             }).ToList();
 
 
@@ -1056,6 +1228,31 @@ namespace AccApi.Repository.Managers
                                 ItemDescription = row.DescriptionO,
                                 UnitPriceAfterDiscount = 0,
                                 TotalPrice = 0,
+                                L1=row.L1,
+                                L2 = row.L2,
+                                L3 = row.L3,
+                                L4 = row.L4,
+                                L5 = row.L5,
+                                L6 = row.L6,
+                                L7 = row.L7,
+                                L8 = row.L8,
+                                L9 = row.L9,
+                                L10 = row.L10,
+                                C1 = row.C1,
+                                C2 = row.C2,
+                                C3 = row.C3,
+                                C4 = row.C4,
+                                C5 = row.C5,
+                                C6 = row.C6,
+                                C7 = row.C7,
+                                C8 = row.C8,
+                                C9 = row.C9,
+                                C10 = row.C10,
+                                C11 = row.C11,
+                                C12 = row.C12,
+                                C13 = row.C13,
+                                C14 = row.C14,
+                                C15 = row.C15
                             };
                             LstRevDetails.Add(revdtl);
                         }

@@ -22,8 +22,10 @@ namespace AccApi.Repository.Managers
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-        public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId)
+        public List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId, string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var curList = (from b in _masterDbContext.TblCurrencies
                            select b).ToList();
 
@@ -60,9 +62,11 @@ namespace AccApi.Repository.Managers
             }
             return results;
         }
-        public SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId)
+        public SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId, string CostConn)
         {
-            var res = (from b in _context.TblSupplierPackageRevisions
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            var res = (from b in _dbcontext.TblSupplierPackageRevisions
                            where b.PrRevId == revisionId
                            
                            select new SupplierPackagesRevList
@@ -76,7 +80,7 @@ namespace AccApi.Repository.Managers
                                PrRevExpDate=b.RevExpiryDate
                            }).FirstOrDefault();
 
-            var fields = _context.TblRevisionFields.Where(x => x.RevisionId == revisionId).ToList();
+            var fields = _dbcontext.TblRevisionFields.Where(x => x.RevisionId == revisionId).ToList();
             if (fields.Count > 0)
             {
                 foreach (var itemFields in fields)
@@ -90,8 +94,11 @@ namespace AccApi.Repository.Managers
 
             return res;
         }
-        public decimal? AddField(int revId, string lbl, double val, int type)
+
+        public decimal? AddField(int revId, string lbl, double val, int type, string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var NewField = new TblRevisionField { RevisionId = revId, Label = lbl, Value = val , Type=type };
             _context.Add(NewField);
             _context.SaveChanges();
@@ -118,8 +125,10 @@ namespace AccApi.Repository.Managers
             return SupplierPackageRev.PrTotPrice;
         }
 
-        public bool DeleteField(int fieldId)
+        public bool DeleteField(int fieldId, string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var field = _context.TblRevisionFields.Where(x => x.Id == fieldId).FirstOrDefault();
             if (field != null)
             {          
@@ -142,9 +151,11 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<RevisionFieldsList> GetFields(int revisionid)
+        public List<RevisionFieldsList> GetFields(int revisionid, string CostConn)
         {
-            var result = (from b in _context.TblRevisionFields
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
+            var result = (from b in _dbcontext.TblRevisionFields
                           where b.RevisionId == revisionid
                           select new RevisionFieldsList
                           {

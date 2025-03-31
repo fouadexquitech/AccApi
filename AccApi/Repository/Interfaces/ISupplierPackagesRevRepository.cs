@@ -5,12 +5,12 @@ namespace AccApi.Repository.Interfaces
 {
    public interface ISupplierPackagesRevRepository
     {
-        List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId);
+        List<SupplierPackagesRevList> GetSupplierPackagesRevList(int PackageSupplierId, string CostConn);
 
-        SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId);
-        decimal? AddField(int revId, string lbl, double val,int type);
+        SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId, string CostConn);
+        decimal? AddField(int revId, string lbl, double val,int type, string CostConn);
         List<CurrencyList> GetCurrencies();
-        bool DeleteField(int fieldId);
-        List<RevisionFieldsList> GetFields(int revisionid);
+        bool DeleteField(int fieldId, string CostConn);
+        List<RevisionFieldsList> GetFields(int revisionid, string CostConn);
     }
 }

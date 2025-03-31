@@ -61,7 +61,7 @@ namespace AccApi.Controllers
                 //string path = @"C:\App\error_log.txt";
                 //using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 //{
-                //    sw.WriteLine(ex.Message);
+                //    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 //}
                 return false;
             }

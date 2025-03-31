@@ -37,8 +37,10 @@ namespace AccApi.Repository.Managers
             _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
         }
 
-        public List<ComConditions> GetComConditions(int packSupId)
+        public List<ComConditions> GetComConditions(int packSupId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var comCond = (from b in _mdbcontext.TblComConds
                          select new ComConditions
                          {
@@ -74,8 +76,10 @@ namespace AccApi.Repository.Managers
             return comCond.ToList();
         }
 
-        public List<TechConditions> GetTechConditions(int packId, string? filter)
+        public List<TechConditions> GetTechConditions(int packId, string? filter, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var techCond = (from b in _mdbcontext.TblTechConds
                             select b).ToList();
                          
@@ -117,8 +121,10 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<TechConditions> GetTechConditionsByPackage(int packId, int revId)
+        public List<TechConditions> GetTechConditionsByPackage(int packId, int revId, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var techCond = (from b in _mdbcontext.TblTechConds.Where(x=> x.TcPackId==packId).OrderBy(p=>p.TcDescription)
                             select new TechConditions
                             {
@@ -280,8 +286,10 @@ namespace AccApi.Repository.Managers
             return list;
         }
 
-        public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName)
+        public bool SendTechnicalConditions(int packId, TechCondModel techCondModel, string UserName, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var package = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
@@ -292,7 +300,7 @@ namespace AccApi.Repository.Managers
 
             //var result =  _mdbcontext.TblTechConds.Where(x => x.TcPackId == packId).ToList();
 
-            var result = GetTechConditions(packId,"");
+            var result = GetTechConditions(packId,"", CostConn);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -350,7 +358,7 @@ namespace AccApi.Repository.Managers
 
                 xlPackage.Save();
                 stream.Position = 0;
-                string excelName = $"{ProjectName}-Technical Conditions-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                string excelName = $" {ProjectName}-Technical Conditions-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 if (File.Exists(excelName))
                     File.Delete(excelName);
@@ -422,10 +430,12 @@ namespace AccApi.Repository.Managers
                 return sent;
             }
         }
-        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, IFormFile ExcelFile)
+        public bool UpdateCommercialConditions(int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
             {
+                AccDbContext _dbcontext = new AccDbContext(CostConn);
+
                 var stream = ExcelFile.OpenReadStream();
                 List<TblSuppComCondReply> LstSuppComCondReply = new List<TblSuppComCondReply>();
 
@@ -495,10 +505,12 @@ namespace AccApi.Repository.Managers
             return true;
 
         }
-        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, IFormFile ExcelFile)
+        public bool UpdateTechnicalConditions(int packageId, int PackageSupliersRevisionID, string CostConn, IFormFile ExcelFile)
         {
             if (ExcelFile?.Length > 0)
             {
+                AccDbContext _dbcontext = new AccDbContext(CostConn);
+
                 var stream = ExcelFile.OpenReadStream();
                 List<TblSuppTechCondReply> LstSuppComCondReply = new List<TblSuppTechCondReply>();
 
@@ -695,8 +707,10 @@ namespace AccApi.Repository.Managers
         }
 
 
-        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid)
+        public List<ConditionsReply> GetComCondReplyByRevision(int revisionid, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var comcond = (from b in _mdbcontext.TblComConds
                            select b).ToList();
 
@@ -716,8 +730,10 @@ namespace AccApi.Repository.Managers
             return result.ToList();
         }
 
-        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid)
+        public List<ConditionsReply> GetTechCondReplyByRevision(int revisionid, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var cond = (from b in _mdbcontext.TblTechConds
                            select b).ToList();
 

@@ -34,5 +34,8 @@ namespace AccApi.Repository.Models
         public string UpdatedBy { get; set; }
         [Column("updatedDate", TypeName = "datetime")]
         public DateTime? UpdatedDate { get; set; }
+        [Column("VendorSAPID")]
+        [StringLength(50)]
+        public string VendorSapid { get; set; }
     }
 }

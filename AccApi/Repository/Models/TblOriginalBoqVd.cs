@@ -186,5 +186,8 @@ namespace AccApi.Repository.Models
         [Column("obStatus")]
         [StringLength(50)]
         public string ObStatus { get; set; }
+        public double? UnitRateBeforeDisct { get; set; }
+        [Column("submittedBeforeDisct")]
+        public double? SubmittedBeforeDisct { get; set; }
     }
 }
