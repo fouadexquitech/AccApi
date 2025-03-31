@@ -1548,155 +1548,169 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            IEnumerable<BoqRessourcesList> condQuery = (from bb in _dbContext.TblSupplierPackageRevisions
-                                                        join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                        join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                        join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqSeq
-                                                        join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
-                                                        where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
-                                                        && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
-                                                        select new BoqRessourcesList
-                                                        {
-                                                            RowNumber = o.RowNumber,
-                                                            SectionO = Convert.ToString(o.SectionO),
-                                                            ItemO = Convert.ToString(o.ItemO),
-                                                            DescriptionO = Convert.ToString(o.DescriptionO),
-                                                            UnitO = Convert.ToString(o.UnitO),
-                                                            QtyO = (double)o.QtyO,
-                                                            UnitRateO = (double)o.UnitRate,
-                                                            ScopeO = o.Scope,
-                                                            BoqSeq = b.BoqSeq,
-                                                            BoqCtg = Convert.ToString(b.BoqCtg),
-                                                            BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
-                                                            BoqQty = (double)b.BoqQty,  //Final Qty
-                                                            BoqScopeQty= (double)c.RdQty,//Quotation Qty
-                                                            BoqUprice = (double)b.BoqUprice,
-                                                            BoqDiv = Convert.ToString(b.BoqDiv),
-                                                            BoqPackage = Convert.ToString(b.BoqPackage),
-                                                            BoqScope = packageId,
-                                                            ResSeq = Convert.ToString(b.BoqResSeq),
-                                                            ResDescription = Convert.ToString(c.ResourceDescription),
-                                                            IsAlternative = false,
-                                                            IsNewItem = false,
-                                                            NewItemId = (int)c.NewItemId,
-                                                            NewItemResourceId = (int)c.NewItemResourceId,
-                                                            ParentItemO = Convert.ToString(c.ParentItemO),
-                                                            ParentResourceId = (int)c.ParentResourceId,
-                                                            IsExcluded = (bool)c.IsExcluded,
-                                                            SupplierId= (int)a.SpSupplierId,
-                                                            L2 = Convert.ToString(o.L2),
-                                                            L3 = Convert.ToString(o.L3),
-                                                            L4 = Convert.ToString(o.L4),
-                                                            L5 = Convert.ToString(o.L5),
-                                                            L6 = Convert.ToString(o.L6),
-                                                            C1 = Convert.ToString(o.C1),
-                                                            C2 = Convert.ToString(o.C2),
-                                                            C3 = Convert.ToString(o.C3),
-                                                            C4 = Convert.ToString(o.C4),
-                                                            C5 = Convert.ToString(o.C5),
-                                                            C6 = Convert.ToString(o.C6)
-                                                        }).Union(from bb in _dbContext.TblSupplierPackageRevisions
-                                                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                 join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                                 join item in _dbContext.NewItems on c.NewItemId equals item.Id
-                                                                 join newr in _dbContext.NewItemResources on c.NewItemResourceId equals newr.Id
-                                                                 where a.SpPackageId == packageId && bb.PrRevNo == 0
-                                                                 select new BoqRessourcesList
-                                                                 {
-                                                                     RowNumber = 0,
-                                                                     SectionO = Convert.ToString(""),
-                                                                     ItemO = Convert.ToString(item.Id),
-                                                                     DescriptionO = Convert.ToString(item.ItemDescription),
-                                                                     UnitO = Convert.ToString(item.UnitO),
-                                                                     QtyO = (double)0,
-                                                                     UnitRateO = (double)0,
-                                                                     ScopeO = packageId,
-                                                                     BoqSeq = (int)c.NewItemResourceId,
-                                                                     BoqCtg = Convert.ToString(newr.ResourceType),
-                                                                     BoqUnitMesure = Convert.ToString(newr.ResourceUnit),
-                                                                     BoqQty = (double)c.RdQty,//Final Qty
-                                                                     BoqScopeQty = (double)c.RdQty,//Quotation Qty
-                                                                     BoqUprice = (double)c.RdPrice,
-                                                                     BoqDiv = Convert.ToString(""),
-                                                                     BoqPackage = Convert.ToString(""),
-                                                                     BoqScope = packageId,
-                                                                     ResSeq = Convert.ToString("0"),
-                                                                     ResDescription = Convert.ToString(c.ResourceDescription),
-                                                                     IsAlternative = false,
-                                                                     IsNewItem = true,
-                                                                     NewItemId = (int)c.NewItemId,
-                                                                     NewItemResourceId = (int)c.NewItemResourceId,
-                                                                     ParentItemO = Convert.ToString(c.ParentItemO),
-                                                                     ParentResourceId = (int)c.ParentResourceId,
-                                                                     IsExcluded = (bool)c.IsExcluded,
-                                                                     SupplierId = (int)a.SpSupplierId,
-                                                                     L2 = Convert.ToString(item.L2),
-                                                                     L3 = Convert.ToString(item.L3),
-                                                                     L4 = Convert.ToString(item.L4),
-                                                                     L5 = Convert.ToString(item.L5),
-                                                                     L6 = Convert.ToString(item.L6),
-                                                                     C1 = Convert.ToString(item.C1),
-                                                                     C2 = Convert.ToString(item.C2),
-                                                                     C3 = Convert.ToString(item.C3),
-                                                                     C4 = Convert.ToString(item.C4),
-                                                                     C5 = Convert.ToString(item.C5),
-                                                                     C6 = Convert.ToString(item.C6)
-                                                                 }).Union(from bb in _dbContext.TblSupplierPackageRevisions
-                                                                    join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                                                    join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                                                    join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
-                                                                    where(a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
-                                                                    select new BoqRessourcesList
-                                                                    {
-                                                                        RowNumber = o.RowNumber,
-                                                                        SectionO = Convert.ToString(o.SectionO),
-                                                                        ItemO = Convert.ToString(o.ItemO),
-                                                                        DescriptionO = Convert.ToString(o.DescriptionO),
-                                                                        UnitO = Convert.ToString(o.UnitO),
-                                                                        QtyO = (double) o.QtyO,
-                                                                        UnitRateO = (double)o.UnitRate,
-                                                                        ScopeO = packageId,
-                                                                        BoqSeq = (int)c.ParentResourceId,
-                                                                        BoqCtg = Convert.ToString(""),
-                                                                        BoqUnitMesure = Convert.ToString(""),
-                                                                        BoqQty = (double)c.RdQty,//Final Qty
-                                                                        BoqScopeQty = (double)c.RdQty,//Quotation Qty
-                                                                        BoqUprice = (double)c.RdPrice,
-                                                                        BoqDiv = Convert.ToString(""),
-                                                                        BoqPackage = Convert.ToString(""),
-                                                                        BoqScope = packageId,
-                                                                        ResSeq = Convert.ToString("0"),
-                                                                        ResDescription = Convert.ToString(c.ResourceDescription),
-                                                                        IsAlternative = true,
-                                                                        IsNewItem = false,
-                                                                        NewItemId = (int)c.NewItemId,
-                                                                        NewItemResourceId = (int)c.NewItemResourceId,
-                                                                        ParentItemO = Convert.ToString(c.ParentItemO),
-                                                                        ParentResourceId = (int)c.ParentResourceId,
-                                                                        IsExcluded = (bool)c.IsExcluded,
-                                                                        SupplierId = (int)a.SpSupplierId,
-                                                                        L2 = Convert.ToString(o.L2),
-                                                                        L3 = Convert.ToString(o.L3),
-                                                                        L4 = Convert.ToString(o.L4),
-                                                                        L5 = Convert.ToString(o.L5),
-                                                                        L6 = Convert.ToString(o.L6),
-                                                                        C1 = Convert.ToString(o.C1),
-                                                                        C2 = Convert.ToString(o.C2),
-                                                                        C3 = Convert.ToString(o.C3),
-                                                                        C4 = Convert.ToString(o.C4),
-                                                                        C5 = Convert.ToString(o.C5),
-                                                                        C6 = Convert.ToString(o.C6)
-                                                                    });
+            //IEnumerable<BoqRessourcesList> condQuery
+            var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqSeq
+                                join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
+                                && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
+                                select new BoqRessourcesList
+                                {
+                                    RowNumber = o.RowNumber,
+                                    SectionO = Convert.ToString(o.SectionO),
+                                    ItemO = Convert.ToString(o.ItemO),
+                                    DescriptionO = Convert.ToString(o.DescriptionO),
+                                    UnitO = Convert.ToString(o.UnitO),
+                                    QtyO = (double)o.QtyO,
+                                    UnitRateO = (double)o.UnitRate,
+                                    ScopeO = o.Scope,
+                                    BoqSeq = b.BoqSeq,
+                                    BoqCtg = Convert.ToString(b.BoqCtg),
+                                    BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
+                                    BoqQty = (double)b.BoqQty,  //Final Qty
+                                    BoqScopeQty = (double)c.RdQty,//Quotation Qty
+                                    BoqUprice = (double)b.BoqUprice,
+                                    BoqDiv = Convert.ToString(b.BoqDiv),
+                                    BoqPackage = Convert.ToString(b.BoqPackage),
+                                    BoqScope = packageId,
+                                    ResSeq = Convert.ToString(b.BoqResSeq),
+                                    ResDescription = Convert.ToString(c.ResourceDescription),
+                                    IsAlternative = false,
+                                    IsNewItem = false,
+                                    NewItemId = (int)c.NewItemId,
+                                    NewItemResourceId = (int)c.NewItemResourceId,
+                                    ParentItemO = Convert.ToString(c.ParentItemO),
+                                    ParentResourceId = (int)c.ParentResourceId,
+                                    IsExcluded = (bool)c.IsExcluded,
+                                    SupplierId = (int)a.SpSupplierId,
+                                    L2 = Convert.ToString(o.L2),
+                                    L3 = Convert.ToString(o.L3),
+                                    L4 = Convert.ToString(o.L4),
+                                    L5 = Convert.ToString(o.L5),
+                                    L6 = Convert.ToString(o.L6),
+                                    C1 = Convert.ToString(o.C1),
+                                    C2 = Convert.ToString(o.C2),
+                                    C3 = Convert.ToString(o.C3),
+                                    C4 = Convert.ToString(o.C4),
+                                    C5 = Convert.ToString(o.C5),
+                                    C6 = Convert.ToString(o.C6)
+                                });
 
-            if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
-            if (!string.IsNullOrEmpty(input.BOQItem)) condQuery = condQuery.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
-            if (!string.IsNullOrEmpty(input.BOQDesc)) condQuery = condQuery.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
-            if (!string.IsNullOrEmpty(input.SheetDesc)) condQuery = condQuery.Where(w => w.ObSheetDesc == input.SheetDesc);
-            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQuery = condQuery.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
-            if (input.Package > 0) condQuery = condQuery.Where(w => w.ScopeO == input.Package);
-            if (input.RESDiv.Length > 0) condQuery = condQuery.Where(w => input.RESDiv.Contains(w.BoqDiv));
-            if (input.RESType.Length > 0) condQuery = condQuery.Where(w => input.RESType.Contains(w.BoqCtg));
-            if (!string.IsNullOrEmpty(input.RESDesc)) condQuery = condQuery.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+            if (input.BOQDiv.Length > 0) condQueryItm = condQueryItm.Where(w => input.BOQDiv.Contains(w.SectionO));
+            if (!string.IsNullOrEmpty(input.BOQItem)) condQueryItm = condQueryItm.Where(w => w.ItemO.ToLower().Contains(input.BOQItem.ToLower()));
+            if (!string.IsNullOrEmpty(input.BOQDesc)) condQueryItm = condQueryItm.Where(w => w.DescriptionO.ToLower().Contains(input.BOQDesc.ToLower()));
+            if (!string.IsNullOrEmpty(input.SheetDesc)) condQueryItm = condQueryItm.Where(w => w.ObSheetDesc == input.SheetDesc);
+            if (!string.IsNullOrEmpty(input.FromRow) && !string.IsNullOrEmpty(input.ToRow)) condQueryItm = condQueryItm.Where(w => w.RowNumber >= int.Parse(input.FromRow) && w.RowNumber <= int.Parse(input.ToRow));
+            if (input.Package > 0) condQueryItm = condQueryItm.Where(w => w.ScopeO == input.Package);
+            if (input.RESDiv.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESDiv.Contains(w.BoqDiv));
+            if (input.RESType.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESType.Contains(w.BoqCtg));
+            if (!string.IsNullOrEmpty(input.RESDesc)) condQueryItm = condQueryItm.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+            var condQueryNew = (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                join item in _dbContext.NewItems on c.NewItemId equals item.Id
+                                join newr in _dbContext.NewItemResources on c.NewItemResourceId equals newr.Id
+                                where a.SpPackageId == packageId && bb.PrRevNo == 0
+                                select new BoqRessourcesList
+                                {
+                                    RowNumber = 0,
+                                    SectionO = Convert.ToString(""),
+                                    ItemO = Convert.ToString(item.Id),
+                                    DescriptionO = Convert.ToString(item.ItemDescription),
+                                    UnitO = Convert.ToString(item.UnitO),
+                                    QtyO = (double)0,
+                                    UnitRateO = (double)0,
+                                    ScopeO = packageId,
+                                    BoqSeq = (int)c.NewItemResourceId,
+                                    BoqCtg = Convert.ToString(newr.ResourceType),
+                                    BoqUnitMesure = Convert.ToString(newr.ResourceUnit),
+                                    BoqQty = (double)c.RdQty,//Final Qty
+                                    BoqScopeQty = (double)c.RdQty,//Quotation Qty
+                                    BoqUprice = (double)c.RdPrice,
+                                    BoqDiv = Convert.ToString(""),
+                                    BoqPackage = Convert.ToString(""),
+                                    BoqScope = packageId,
+                                    ResSeq = Convert.ToString("0"),
+                                    ResDescription = Convert.ToString(c.ResourceDescription),
+                                    IsAlternative = false,
+                                    IsNewItem = true,
+                                    NewItemId = (int)c.NewItemId,
+                                    NewItemResourceId = (int)c.NewItemResourceId,
+                                    ParentItemO = Convert.ToString(c.ParentItemO),
+                                    ParentResourceId = (int)c.ParentResourceId,
+                                    IsExcluded = (bool)c.IsExcluded,
+                                    SupplierId = (int)a.SpSupplierId,
+                                    L2 = Convert.ToString(item.L2),
+                                    L3 = Convert.ToString(item.L3),
+                                    L4 = Convert.ToString(item.L4),
+                                    L5 = Convert.ToString(item.L5),
+                                    L6 = Convert.ToString(item.L6),
+                                    C1 = Convert.ToString(item.C1),
+                                    C2 = Convert.ToString(item.C2),
+                                    C3 = Convert.ToString(item.C3),
+                                    C4 = Convert.ToString(item.C4),
+                                    C5 = Convert.ToString(item.C5),
+                                    C6 = Convert.ToString(item.C6)
+                                }).ToList();
+
+            var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
+                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
+                                where (a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
+                                select new BoqRessourcesList
+                                {
+                                    RowNumber = o.RowNumber,
+                                    SectionO = Convert.ToString(o.SectionO),
+                                    ItemO = Convert.ToString(o.ItemO),
+                                    DescriptionO = Convert.ToString(o.DescriptionO),
+                                    UnitO = Convert.ToString(o.UnitO),
+                                    QtyO = (double)o.QtyO,
+                                    UnitRateO = (double)o.UnitRate,
+                                    ScopeO = packageId,
+                                    BoqSeq = (int)c.ParentResourceId,
+                                    BoqCtg = Convert.ToString(""),
+                                    BoqUnitMesure = Convert.ToString(""),
+                                    BoqQty = (double)c.RdQty,//Final Qty
+                                    BoqScopeQty = (double)c.RdQty,//Quotation Qty
+                                    BoqUprice = (double)c.RdPrice,
+                                    BoqDiv = Convert.ToString(""),
+                                    BoqPackage = Convert.ToString(""),
+                                    BoqScope = packageId,
+                                    ResSeq = Convert.ToString("0"),
+                                    ResDescription = Convert.ToString(c.ResourceDescription),
+                                    IsAlternative = true,
+                                    IsNewItem = false,
+                                    NewItemId = (int)c.NewItemId,
+                                    NewItemResourceId = (int)c.NewItemResourceId,
+                                    ParentItemO = Convert.ToString(c.ParentItemO),
+                                    ParentResourceId = (int)c.ParentResourceId,
+                                    IsExcluded = (bool)c.IsExcluded,
+                                    SupplierId = (int)a.SpSupplierId,
+                                    L2 = Convert.ToString(o.L2),
+                                    L3 = Convert.ToString(o.L3),
+                                    L4 = Convert.ToString(o.L4),
+                                    L5 = Convert.ToString(o.L5),
+                                    L6 = Convert.ToString(o.L6),
+                                    C1 = Convert.ToString(o.C1),
+                                    C2 = Convert.ToString(o.C2),
+                                    C3 = Convert.ToString(o.C3),
+                                    C4 = Convert.ToString(o.C4),
+                                    C5 = Convert.ToString(o.C5),
+                                    C6 = Convert.ToString(o.C6)
+                                }).ToList();
+
+
+            var condQuery = condQueryItm.ToList();
+
+            foreach (var itm in condQueryNew)
+                condQuery.Add(itm);
+            foreach (var itm in condQueryAlt)
+                condQuery.Add(itm);
 
             //var items = condQuery
             //    .GroupBy(x => new { x.RowNumber, x.ItemO, x.DescriptionO, x.UnitO, x.IsNewItem })

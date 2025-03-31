@@ -52,18 +52,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
         }
 
         [HttpPost("GetBoqList")]
-        public List<BoqModel> GetBoqList(string ItemO, SearchInput input)
+        public List<BoqModel> GetBoqList(string ItemO, string CostConn, SearchInput input)
         {
             try
             {
-                return this._packageRepository.GetBoqList(ItemO, input);
+                return this._packageRepository.GetBoqList(ItemO, CostConn, input);
             }
             catch (Exception ex)
             {
@@ -72,18 +72,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
         }
 
         [HttpPost("GetAllBoqList")]
-        public List<BoqModel> GetAllBoqList(string ItemO, SearchInput input)
+        public List<BoqModel> GetAllBoqList(string ItemO, string CostConn, SearchInput input)
         {
             try
             {
-                return this._packageRepository.GetAllBoqList(input);
+                return this._packageRepository.GetAllBoqList( CostConn,input);
             }
             catch (Exception ex)
             {
@@ -92,7 +92,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -113,7 +113,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -138,7 +138,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -158,18 +158,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
         }
 
         [HttpPost("ExportExcelPackagesCost")]
-        public async Task<JsonResult> ExportExcelPackagesCost(string costDB,int withBoq, SearchInput input)
+        public async Task<JsonResult> ExportExcelPackagesCost(string costDB,int withBoq, string CostConn, SearchInput input)
         {
             try
             {
-                return new JsonResult(await this._packageRepository.ExportExcelPackagesCost(withBoq, costDB, input));
+                return new JsonResult(await this._packageRepository.ExportExcelPackagesCost(withBoq, costDB,CostConn ,input));
             }
             catch (Exception ex)
             {
@@ -178,7 +178,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -198,7 +198,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -219,7 +219,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -240,7 +240,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -260,7 +260,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -280,7 +280,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -300,7 +300,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -320,7 +320,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -340,18 +340,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
         }
 
         [HttpPost("updateOriginalBoqQty")]
-        public bool updateOriginalBoqQty(OriginalBoqModel boq)
+        public bool updateOriginalBoqQty(string CostConn,OriginalBoqModel boq)
         {
             try
             {
-                return this._packageRepository.updateOriginalBoqQty(boq);
+                return this._packageRepository.updateOriginalBoqQty(CostConn,boq);
             }
             catch (Exception ex)
             {
@@ -360,18 +360,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
         }
 
         [HttpPost("updateBoqResQty")]
-        public bool updateBoqResQty(BoqModel res)
+        public bool updateBoqResQty(string CostConn, BoqModel res)
         {
             try
             {
-                return this._packageRepository.updateBoqResQty(res);
+                return this._packageRepository.updateBoqResQty(CostConn, res);
             }
             catch (Exception ex)
             {
@@ -380,18 +380,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
         }
 
         [HttpPost("updateBoqTradeDesc")]
-        public bool updateBoqTradeDesc(string tradeDesc, List<OriginalBoqModel> origBoqList)
+        public bool updateBoqTradeDesc(string tradeDesc, string CostConn, List<OriginalBoqModel> origBoqList)
         {
             try
             {
-                return this._packageRepository.updateBoqTradeDesc(tradeDesc, origBoqList);
+                return this._packageRepository.updateBoqTradeDesc(tradeDesc, CostConn, origBoqList);
             }
             catch (Exception ex)
             {
@@ -400,7 +400,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -422,7 +422,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -442,7 +442,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -462,7 +462,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -503,7 +503,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }
@@ -523,7 +523,7 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
@@ -543,18 +543,18 @@ namespace AccApi.Controllers
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return false;
             }
         }
 
         [HttpPost("DeletePackage")]
-        public async Task<ResponseModel<bool>> DeletePackage(int id)
+        public async Task<ResponseModel<bool>> DeletePackage(int id, string CostConn)
         {
             try
             {
-                return await this._packageRepository.DeletePackage(id);
+                return await this._packageRepository.DeletePackage(id, CostConn);
             }
             catch (Exception ex)
             {
@@ -568,7 +568,7 @@ namespace AccApi.Controllers
 
         [HttpPost]
         [Route("GetBoqResourceRecords")]
-        public async Task<IActionResult> GetBoqResourceRecords(dynamic dataTablesParameters)
+        public async Task<IActionResult> GetBoqResourceRecords( string CostConn,dynamic dataTablesParameters)
         {
             try
             {
@@ -593,20 +593,18 @@ namespace AccApi.Controllers
                     Start = start
                 };
 
-                var response = await _packageRepository.GetBoqResourceRecords(request);
+                var response = await _packageRepository.GetBoqResourceRecords( CostConn,request);
                 response.Draw = draw;
-                return Ok(response);
-
-               
+                return Ok(response);             
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                string error = ex.ToString();
+                string error = ex.ToString() + "Function:" + ex.TargetSite.Name;
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return Ok("false");
             }

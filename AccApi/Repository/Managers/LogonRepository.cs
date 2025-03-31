@@ -58,7 +58,6 @@ namespace AccApi.Repository.Managers
             string ConName = conn.DbConnection;
             pdb = _pdbcontext.CreateConnectionFromOut(ConName);
 
-
             string connectionString = conn.DbConnection; ;
             var TSconnection = new SqlConnectionStringBuilder(connectionString);
             string TsConName = TSconnection.ConnectionString.ToString();
@@ -66,7 +65,6 @@ namespace AccApi.Repository.Managers
             _globalLists.SetTimeSheetDbConnectionString(TsConName);
 
             _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
-
 
             var result = (from b in _tsdbcontext.Tblprojects
                          where ((b.PrjCostDatabase != "") && (b.PrjCostDatabase != null)) && (b.PrjVendan=="1")
@@ -119,7 +117,6 @@ namespace AccApi.Repository.Managers
         //fouad
         public User GetLogin(string username, string pass, int projSeq)
         {
-
             //usr = checkCredentials(user, pass);
             _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();

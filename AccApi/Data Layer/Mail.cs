@@ -90,7 +90,7 @@ namespace AccApi.Data_Layer
                 string path = @"C:\App\error_log.txt";
                 using (StreamWriter sw = (File.Exists(path)) ? File.AppendText(path) : File.CreateText(path))
                 {
-                    sw.WriteLine(ex.Message);
+                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
                 return error;
             }
