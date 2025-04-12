@@ -287,7 +287,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 1, CostConn);
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.GetboqPackageList(packageId, 1, CostConn);
                 //AH27022024
                 //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
                 //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
@@ -315,7 +315,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0, CostConn);
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.GetboqPackageList(packageId, 0, CostConn);
                 //AH27022024
                 //List<TmpConditionsReply> comcondRepLst = this._conditionsRepository.GetPackageComConditionsReply(packageId);
                 //List<TmpConditionsReply> techcondRepLst = this._conditionsRepository.GetPackageTechConditionsReply(packageId);
@@ -414,7 +414,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
-                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.boqPackageList(packageId, 0, CostConn);
+                List<boqPackageList> boqPackageList = this._supplierPackagesRepository.GetboqPackageList(packageId, 0, CostConn);
                 return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetBoqByGroup_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
             }
             catch (Exception ex)
