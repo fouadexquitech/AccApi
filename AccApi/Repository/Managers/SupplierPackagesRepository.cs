@@ -96,7 +96,7 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<boqPackageList> boqPackageList(int packId, byte byboq,  string CostConn)
+        public List<boqPackageList> GetboqPackageList(int packId, byte byboq,  string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -104,8 +104,9 @@ namespace AccApi.Repository.Managers
 
             if (byboq == 1)
             {
-                 boqList = (from o in _dbcontext.TblOriginalBoqVds
-                            where o.Scope == packId
+               var  origBoqList = (from o in _dbcontext.TblOriginalBoqVds
+                            join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
+                            where b.BoqScope == packId                            
                             orderby o.RowNumber
                             select new boqPackageList
                             {
@@ -157,6 +158,69 @@ namespace AccApi.Repository.Managers
                                 totalPrice = o.QtyO * o.UnitRate,
                                 exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
                             }).ToList();
+
+                var resCost = from e in _dbcontext.TblBoqVds.Where(x => x.BoqScope == packId)
+                                 group e by e.BoqItem into g
+                                 select new boqPackageList
+                                 {
+                                     item = g.Key,
+                                     resTotalPrice = g.Sum(x => x.BoqQty * x.BoqUprice)
+                                 };
+
+
+                 boqList = (from o in origBoqList
+                            join b in resCost on o.item equals b.item
+                                   select new boqPackageList
+                                   {
+                                       l1 = o.l1,
+                                       l2 = o.l2,
+                                       l3 = o.l3,
+                                       l4 = o.l4,
+                                       l5 = o.l5,
+                                       l6 = o.l6,
+                                       l7 = o.l7,
+                                       l8 = o.l8,
+                                       l9 = o.l9,
+                                       l10 = o.l10,
+                                       l1Ref = o.l1Ref,
+                                       l2Ref = o.l2Ref,
+                                       l3Ref = o.l3Ref,
+                                       l4Ref = o.l4Ref,
+                                       l5Ref = o.l5Ref,
+                                       l6Ref = o.l6Ref,
+                                       l7Ref = o.l7Ref,
+                                       l8Ref = o.l8Ref,
+                                       l9Ref = o.l9Ref,
+                                       l10Ref = o.l10Ref,
+                                       c1 = o.c1,
+                                       c2 = o.c2,
+                                       c3 = o.c3,
+                                       c4 = o.c4,
+                                       c5 = o.c5,
+                                       c6 = o.c6,
+                                       c7 = o.c7,
+                                       c8 = o.c8,
+                                       c9 = o.c9,
+                                       c10 = o.c10,
+                                       c1Ref = o.c1Ref,
+                                       c2Ref = o.c2Ref,
+                                       c3Ref = o.c3Ref,
+                                       c4Ref = o.c4Ref,
+                                       c5Ref = o.c5Ref,
+                                       c6Ref = o.c6Ref,
+                                       c7Ref = o.c7Ref,
+                                       c8Ref = o.c8Ref,
+                                       c9Ref = o.c9Ref,
+                                       c10Ref = o.c10Ref,
+                                       item = o.item,
+                                       boqDesc = o.boqDesc,
+                                       unit = o.unit,
+                                       qty = (double)o.qty,
+                                       unitPrice = b.resTotalPrice / o.qty ,
+                                       totalPrice = b.resTotalPrice,
+                                       exportedToSupplier = o.exportedToSupplier 
+                                   }).ToList();
+
             }
             else
             {
@@ -244,7 +308,7 @@ namespace AccApi.Repository.Managers
             if (package == null) return string.Empty;
             string PackageName = package.PkgeName;
 
-            var result = boqPackageList(packId, byBoq, CostConn);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
+            var result = GetboqPackageList(packId, byBoq, CostConn);  //.Where(x=>x.exportedToSupplier == null || x.exportedToSupplier == 0);
 
             var stream = new MemoryStream();
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
