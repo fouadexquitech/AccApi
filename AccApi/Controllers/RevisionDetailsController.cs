@@ -269,11 +269,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq")]
-        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input, string CostConn)
+        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input, string CostConn, string C)
         {
             try
             {
-                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input,0, CostConn);
+                return this._revisionDetailsRepository.GetComparisonSheetByBoq(packageId, input,0, CostConn,C);
             }
             catch (Exception ex)
             {
