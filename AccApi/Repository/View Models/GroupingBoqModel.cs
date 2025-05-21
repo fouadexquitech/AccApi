@@ -24,12 +24,25 @@ namespace AccApi.Repository.View_Models
         public bool? IsNewItem { get; set; } = false;
         public bool? IsExcluded { get; set; }=false;
         public string? LevelName { get; set; }
+        public string? C { get; set; }
     }
 
     public class GroupingLevelModel
     {
-        public string? LevelName { get; set; }
-
+//AH21052025
+        public string? C_Description { get; set; }
+        public double? C_TotalBudget { get; set; }
+        public List<GroupingPackageSupplierPriceModel>? GroupingSupplierC_Prices { get; set; }
+//AH21052025
         public List<GroupingBoqModel> Items { get; set; }
+        public string? LevelName { get; set; }
     }
-}
+
+    public class SupplierC_Price
+    {
+        public int SupplierId { get; set; }
+        public string SupplierName { get; set; }
+        public double? SupplierTotalPrice { get; set; }
+    }
+
+ }

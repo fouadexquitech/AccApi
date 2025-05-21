@@ -13,6 +13,7 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -1548,6 +1549,10 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
+            //if (C=="1")
+            //    var listC =
+                
+
             //IEnumerable<BoqRessourcesList> condQuery
             var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
@@ -1712,19 +1717,7 @@ namespace AccApi.Repository.Managers
             foreach (var itm in condQueryAlt)
                 condQuery.Add(itm);
 
-            //var items = condQuery
-            //    .GroupBy(x => new { x.RowNumber, x.ItemO, x.DescriptionO, x.UnitO, x.IsNewItem })
-            //    //.Select(p => p.FirstOrDefault())
-            //    .Select(p => new GroupingBoqModel
-            //    {
-            //        ItemO = p.First().ItemO,
-            //        DescriptionO = p.First().DescriptionO,
-            //        IsSelected = false,
-            //        RowNumber = p.First().RowNumber.Value,
-            //        IsNewItem = p.First().IsNewItem,
-            //        IsAlternative = p.Min(x=> x.IsAlternative),
-            //        IsExcluded = p.First().IsExcluded
-            //    }).ToList();
+
 
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
@@ -2119,8 +2112,9 @@ namespace AccApi.Repository.Managers
             return levels.OrderBy(x=> x.Items.OrderBy(y=> y.IsNewItem).ThenBy(z => z.IsAlternative)).ToList();
         }
 
-        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId, string CostConn)
+        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId, string CostConn, string C)
         {
+            C = "1";
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
             //IEnumerable<BoqRessourcesList> condQuery
@@ -2274,6 +2268,7 @@ namespace AccApi.Repository.Managers
             foreach (var itm in condQueryAlt)
                 condQuery.Add(itm);
 
+
             //var items = condQuery
             //.GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.UnitRateO, x.ScopeQtyO, x.IsNewItem, x.IsAlternative, x.IsExcluded })
             //.Select(p => p.FirstOrDefault()).ToList()
@@ -2354,7 +2349,10 @@ namespace AccApi.Repository.Managers
                                  NewItemResourceId = c.NewItemResourceId,
                                  ParentItemO = c.ParentItemO,
                                  ParentResourceId = c.ParentResourceId,
-                                 IsExcluded= c.IsExcluded
+                                 IsExcluded= c.IsExcluded,
+                                 //AH21052025
+                                 C_Description = (C == "1") ? c.C1 : c.C2
+                                 ///AH21052025
                              }).ToList();
 
                 //Get all Suppliers of this revision
@@ -2403,7 +2401,10 @@ namespace AccApi.Repository.Managers
                                                         ParentItemO = c.ParentItemO,
                                                         ParentResourceId = c.ParentResourceId,
                                                         IsExcluded = c.IsExcluded,
-                                                        ItemDescription = c.ItemDescription
+                                                        ItemDescription = c.ItemDescription,
+                                                        //AH21052025
+                                                        C_Description = (C == "1") ? c.C1 : c.C2
+                                                        ///AH21052025
                                                     }).ToList();
 
                 foreach (var sup in supListRevision.OrderBy(x => x.SupName))
@@ -2436,7 +2437,10 @@ namespace AccApi.Repository.Managers
                             ParentItemO = itm.ParentItemO,
                             ParentResourceId = itm.ParentResourceId,
                             isCreatedByThisSupplier = (itm.SupplierId == sup.SupID),
-                            IsExcluded = itm.IsExcluded
+                            IsExcluded = itm.IsExcluded,
+                            //AH21052025
+                            C_Description = itm.C_Description
+                            ///AH21052025
                         };
 
                         PackageSupplierPriceRevDetail.Add(packSupRevDt);
@@ -2510,7 +2514,10 @@ namespace AccApi.Repository.Managers
                                                  ParentItemO = c.ParentItemO,
                                                  ParentResourceId = c.ParentResourceId,
                                                  IsExcluded = c.IsExcluded,
-                                                 ItemDescription=c.ItemDescription
+                                                 ItemDescription=c.ItemDescription,
+                                                 //AH21052025
+                                                 C_Description = (C == "1") ? c.C1 : c.C2
+                                                 ///AH21052025
                                              }).ToList();
 
                 foreach (var sup in supListRevision.OrderBy(x => x.SupName))
@@ -2543,7 +2550,10 @@ namespace AccApi.Repository.Managers
                             ParentItemO = itm.ParentItemO,
                             ParentResourceId = itm.ParentResourceId,
                             isCreatedByThisSupplier = (itm.SupplierId == sup.SupID),
-                            IsExcluded = itm.IsExcluded
+                            IsExcluded = itm.IsExcluded,
+                            //AH21052025
+                            C_Description = itm.C_Description
+                            ///AH21052025
                         };
 
                         PackageSupplierPriceRevDetail.Add(packSupRevDt);
@@ -2597,14 +2607,56 @@ namespace AccApi.Repository.Managers
                                       (x.C3 != null ? "|C3~" + x.C3 : "") +
                                       (x.C4 != null ? "|C4~" + x.C4 : "") +
                                       (x.C5 != null ? "|C5~" + x.C5 : "") +
-                                      (x.C6 != null ? "|C6~" + x.C6 : "")
+                                      (x.C6 != null ? "|C6~" + x.C6 : ""),
+                C_Description =(C == "1") ? x.C1 : x.C2
             }).DistinctBy(x => x.LevelName).OrderBy(x => x.LevelName).ToList();
 
+
+//AH21052025
+            List<GroupingLevelModel> listBudgC = new List<GroupingLevelModel>();
+            List<GroupingPackageSupplierPriceModel> listSuppPriceC=new List<GroupingPackageSupplierPriceModel>(); ;
+
+            if (C == "1")
+            {
+                //Get Total Budget for C
+                var listC1 = condQuery
+                    .GroupBy(x => new { x.C1, x.ItemO, x.QtyO, x.UnitRateO })
+                    .Select(p => p.FirstOrDefault()).ToList()
+                    .Select(p => new GroupingLevelModel
+                    {
+                        C_Description = p.C1,
+                        C_TotalBudget = p.QtyO * p.UnitRateO
+                    }).ToList();
+
+                listBudgC = listC1
+                   .GroupBy(x => new { x.C_Description })
+                   //.Select(p => p.FirstOrDefault()).ToList()
+                   .Select(p => new GroupingLevelModel
+                   {
+                       C_Description = p.First().C_Description,
+                       C_TotalBudget = p.Sum(x => x.C_TotalBudget)
+                   }).ToList();
+
+                //Get Supplier Price for C
+                listSuppPriceC = PackageSupplierPriceRevDetail
+                   .GroupBy(x => new { x.C_Description, x.SupplierName })
+                   //.Select(p => p.FirstOrDefault()).ToList()
+                   .Select(p => new GroupingPackageSupplierPriceModel
+                   {
+                      C_Description = p.First().C_Description,
+                      SupplierName = p.First().SupplierName,
+                      TotalPrice = p.Sum(x => (x.UPriceAfterDiscount * x.Qty * x.ExchRateNow))
+                   }).ToList();
+            }
+            ///AH21052025
 
             if (levels != null)
             {
                 foreach (var level in levels)
                 {
+                    level.C_TotalBudget = listBudgC.Where(x => x.C_Description == level.C_Description).Select(l => l.C_TotalBudget).FirstOrDefault();
+                    level.GroupingSupplierC_Prices = listSuppPriceC.Where(x => x.C_Description == level.C_Description).OrderBy(x => x.SupplierName).ToList();
+
                     level.Items = condQuery
                     .GroupBy(x => new { x.RowNumber, x.SectionO, x.ItemO, x.DescriptionO, x.UnitO, x.QtyO, x.UnitRateO, x.ScopeQtyO, x.IsNewItem, x.IsAlternative, x.IsExcluded })
                     .Select(p => p.FirstOrDefault()).ToList()
@@ -2634,7 +2686,9 @@ namespace AccApi.Repository.Managers
                              (p.C3 != null ? "|C3~" + p.C3 : "") +
                              (p.C4 != null ? "|C4~" + p.C4 : "") +
                              (p.C5 != null ? "|C5~" + p.C5 : "") +
-                             (p.C6 != null ? "|C6~" + p.C6 : "")
+                             (p.C6 != null ? "|C6~" + p.C6 : ""),
+
+                        C= (C=="1") ? p.C1 : p.C2
                     }).Where(x => x.LevelName == level.LevelName).OrderBy(a => a.ItemO).ToList();
 
 
@@ -3214,7 +3268,7 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn);
+            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn,"");
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3995,7 +4049,7 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn);
+            List<GroupingLevelModel> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn,"");
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
