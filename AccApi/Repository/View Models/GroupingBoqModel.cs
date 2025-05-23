@@ -35,6 +35,7 @@ namespace AccApi.Repository.View_Models
         public List<GroupingPackageSupplierPriceModel>? GroupingSupplierC_Prices { get; set; }
 //AH21052025
         public List<GroupingBoqModel> Items { get; set; }
+        public List<GroupingResourceModel>? GroupingResources { get; set; }
         public string? LevelName { get; set; }
     }
 
