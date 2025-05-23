@@ -1545,13 +1545,9 @@ namespace AccApi.Repository.Managers
                 return "";
         }
 
-        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input,int supId, string CostConn)
+        public List<GroupingLevelModel> GetComparisonSheet(int packageId, SearchInput input,int supId, string CostConn, string C)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
-
-            //if (C=="1")
-            //    var listC =
-                
 
             //IEnumerable<BoqRessourcesList> condQuery
             var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
@@ -1589,18 +1585,18 @@ namespace AccApi.Repository.Managers
                                     ParentItemO = Convert.ToString(c.ParentItemO),
                                     ParentResourceId = (int)c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
-                                    SupplierId = (int)a.SpSupplierId,
-                                    L2 = Convert.ToString(o.L2),
-                                    L3 = Convert.ToString(o.L3),
-                                    L4 = Convert.ToString(o.L4),
-                                    L5 = Convert.ToString(o.L5),
-                                    L6 = Convert.ToString(o.L6),
-                                    C1 = Convert.ToString(o.C1),
-                                    C2 = Convert.ToString(o.C2),
-                                    C3 = Convert.ToString(o.C3),
-                                    C4 = Convert.ToString(o.C4),
-                                    C5 = Convert.ToString(o.C5),
-                                    C6 = Convert.ToString(o.C6)
+                                    SupplierId = (int)a.SpSupplierId
+                                    //L2 = Convert.ToString(o.L2),
+                                    //L3 = Convert.ToString(o.L3),
+                                    //L4 = Convert.ToString(o.L4),
+                                    //L5 = Convert.ToString(o.L5),
+                                    //L6 = Convert.ToString(o.L6),
+                                    //C1 = Convert.ToString(o.C1),
+                                    //C2 = Convert.ToString(o.C2),
+                                    //C3 = Convert.ToString(o.C3),
+                                    //C4 = Convert.ToString(o.C4),
+                                    //C5 = Convert.ToString(o.C5),
+                                    //C6 = Convert.ToString(o.C6)
                                 });
 
 
@@ -1648,18 +1644,18 @@ namespace AccApi.Repository.Managers
                                     ParentItemO = Convert.ToString(c.ParentItemO),
                                     ParentResourceId = (int)c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
-                                    SupplierId = (int)a.SpSupplierId,
-                                    L2 = Convert.ToString(item.L2),
-                                    L3 = Convert.ToString(item.L3),
-                                    L4 = Convert.ToString(item.L4),
-                                    L5 = Convert.ToString(item.L5),
-                                    L6 = Convert.ToString(item.L6),
-                                    C1 = Convert.ToString(item.C1),
-                                    C2 = Convert.ToString(item.C2),
-                                    C3 = Convert.ToString(item.C3),
-                                    C4 = Convert.ToString(item.C4),
-                                    C5 = Convert.ToString(item.C5),
-                                    C6 = Convert.ToString(item.C6)
+                                    SupplierId = (int)a.SpSupplierId
+                                    //L2 = Convert.ToString(item.L2),
+                                    //L3 = Convert.ToString(item.L3),
+                                    //L4 = Convert.ToString(item.L4),
+                                    //L5 = Convert.ToString(item.L5),
+                                    //L6 = Convert.ToString(item.L6),
+                                    //C1 = Convert.ToString(item.C1),
+                                    //C2 = Convert.ToString(item.C2),
+                                    //C3 = Convert.ToString(item.C3),
+                                    //C4 = Convert.ToString(item.C4),
+                                    //C5 = Convert.ToString(item.C5),
+                                    //C6 = Convert.ToString(item.C6)
                                 }).ToList();
 
             var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
@@ -1695,18 +1691,18 @@ namespace AccApi.Repository.Managers
                                     ParentItemO = Convert.ToString(c.ParentItemO),
                                     ParentResourceId = (int)c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
-                                    SupplierId = (int)a.SpSupplierId,
-                                    L2 = Convert.ToString(o.L2),
-                                    L3 = Convert.ToString(o.L3),
-                                    L4 = Convert.ToString(o.L4),
-                                    L5 = Convert.ToString(o.L5),
-                                    L6 = Convert.ToString(o.L6),
-                                    C1 = Convert.ToString(o.C1),
-                                    C2 = Convert.ToString(o.C2),
-                                    C3 = Convert.ToString(o.C3),
-                                    C4 = Convert.ToString(o.C4),
-                                    C5 = Convert.ToString(o.C5),
-                                    C6 = Convert.ToString(o.C6)
+                                    SupplierId = (int)a.SpSupplierId
+                                    //L2 = Convert.ToString(o.L2),
+                                    //L3 = Convert.ToString(o.L3),
+                                    //L4 = Convert.ToString(o.L4),
+                                    //L5 = Convert.ToString(o.L5),
+                                    //L6 = Convert.ToString(o.L6),
+                                    //C1 = Convert.ToString(o.C1),
+                                    //C2 = Convert.ToString(o.C2),
+                                    //C3 = Convert.ToString(o.C3),
+                                    //C4 = Convert.ToString(o.C4),
+                                    //C5 = Convert.ToString(o.C5),
+                                    //C6 = Convert.ToString(o.C6)
                                 }).ToList();
 
 
@@ -1767,7 +1763,8 @@ namespace AccApi.Repository.Managers
                                  Qty = c.RdQty,
                                  UnitPrice = c.RdPrice,
                                  TotalPrice = (c.RdAssignedQty * c.RdPrice),
-                                 BoqResourceId = c.RdResourceSeq,
+                                 ResourceDescription=c.ResourceDescription,
+                                 BoqResourceId = c.RdResourceSeq,   //RdResourceSeq  = boqSeq from tblBoq_Vd
                                  OriginalCurrency = cur.CurCode,
                                  ExchRate = b.PrExchRate,
                                  ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
@@ -1816,6 +1813,7 @@ namespace AccApi.Repository.Managers
                                                     Qty = c.RdQty,
                                                     UnitPrice = c.RdPrice,
                                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
+                                                    ResourceDescription = c.ResourceDescription,
                                                     BoqResourceId = c.NewItemResourceId,
                                                     OriginalCurrency = cur.CurCode,
                                                     ExchRate = b.PrExchRate,
@@ -1850,6 +1848,7 @@ namespace AccApi.Repository.Managers
                         Qty = itm.Qty,
                         UnitPrice = itm.UnitPrice,
                         TotalPrice = itm.TotalPrice,
+                        ResourceDescription = itm.ResourceDescription,
                         BoqResourceId = itm.BoqResourceId,
                         OriginalCurrency = itm.OriginalCurrency,
                         ExchRate = itm.ExchRate,
@@ -1891,6 +1890,7 @@ namespace AccApi.Repository.Managers
                                                     Qty = c.RdQty,
                                                     UnitPrice = c.RdPrice,
                                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
+                                                    ResourceDescription = c.ResourceDescription,
                                                     BoqResourceId = c.ParentResourceId,
                                                     OriginalCurrency = cur.CurCode,
                                                     ExchRate = b.PrExchRate,
@@ -1926,6 +1926,7 @@ namespace AccApi.Repository.Managers
                         UnitPrice = (itm.SupplierId == sup.SupID) ? itm.UnitPrice : 0,
                         TotalPrice = (itm.SupplierId == sup.SupID) ? itm.TotalPrice : 0,
                         OriginalCurrency = itm.OriginalCurrency,
+                        ResourceDescription = itm.ResourceDescription,
                         BoqResourceId = itm.BoqResourceId,
                         ExchRate = itm.ExchRate,
                         ExchRateNow = itm.ExchRateNow,
@@ -1950,17 +1951,7 @@ namespace AccApi.Repository.Managers
 
             var levels = condQuery.Select(x => new GroupingLevelModel
             {
-                LevelName = (x.L2 != null ? "L2~" + x.L2 : "") +
-                          (x.L3 != null ? "|L3~" + x.L3 : "") +
-                          (x.L4 != null ? "|L4~" + x.L4 : "") +
-                          (x.L5 != null ? "|L5~" + x.L5 : "") +
-                          (x.L6 != null ? "|L6~" + x.L6 : "") +
-                          (x.C1 != null ? "|C1~" + x.C1 : "") +
-                          (x.C2 != null ? "|C2~" + x.C2 : "") +
-                          (x.C3 != null ? "|C3~" + x.C3 : "") +
-                          (x.C4 != null ? "|C4~" + x.C4 : "") +
-                          (x.C5 != null ? "|C5~" + x.C5 : "") +
-                          (x.C6 != null ? "|C6~" + x.C6 : "")
+                LevelName = ""
             }).DistinctBy(x => x.LevelName).OrderBy(x => x.LevelName).ToList();
 
 
@@ -1968,70 +1959,58 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var level in levels)
                 {
-                    //        foreach (var item in items)
-                    //{
-
-                    level.Items = condQuery
-                        .GroupBy(x => new { x.RowNumber, x.ItemO, x.DescriptionO, x.UnitO, x.IsNewItem })
+                    level.GroupingResources = condQuery
+                        .GroupBy(x => new { x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem })
                         //.Select(p => p.FirstOrDefault())
-                        .Select(p => new GroupingBoqModel
+                        .Select(p => new GroupingResourceModel
                         {
-                            ItemO = p.First().ItemO,
-                            DescriptionO = p.First().DescriptionO,
-                            IsSelected = false,
-                            RowNumber = p.First().RowNumber.Value,
+                            ResourceDescription = p.First().ResDescription,
+                            Unit=p.First().BoqUnitMesure,
+                            UnitPrice=p.First().BoqUprice,
+                            Qty = p.Sum(x => x.BoqQty),
+                            TotalPrice = p.Sum(x => x.BoqQty * x.BoqUprice),
+                            IsSelected = false,                        
                             IsNewItem = p.First().IsNewItem,
                             IsAlternative = p.Min(x => x.IsAlternative),
-                            IsExcluded = p.First().IsExcluded,
-                            LevelName = (p.First().L2 != null ? "L2~" + p.First().L2 : "") +
-                             (p.First().L3 != null ? "|L3~" + p.First().L3 : "") +
-                             (p.First().L4 != null ? "|L4~" + p.First().L4 : "") +
-                             (p.First().L5 != null ? "|L5~" + p.First().L5 : "") +
-                             (p.First().L6 != null ? "|L6~" + p.First().L6 : "") +
-                             (p.First().C1 != null ? "|C1~" + p.First().C1 : "") +
-                             (p.First().C2 != null ? "|C2~" + p.First().C2 : "") +
-                             (p.First().C3 != null ? "|C3~" + p.First().C3 : "") +
-                             (p.First().C4 != null ? "|C4~" + p.First().C4 : "") +
-                             (p.First().C5 != null ? "|C5~" + p.First().C5 : "") +
-                             (p.First().C6 != null ? "|C6~" + p.First().C6 : "")
-                        }).Where(x => x.LevelName == level.LevelName).OrderBy(a => a.ItemO).ToList();
+                            IsExcluded = p.First().IsExcluded                    
+                        }).OrderBy(a => a.ResourceDescription).ToList();
 
-                    foreach (var item in level.Items)
+
+                    level.GroupingResources = condQuery
+                    .GroupBy(x => new {x.ResSeq, x.IsAlternative, x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
+                    //.Select(p => p.FirstOrDefault()).ToList()
+                    .Select(y => new GroupingResourceModel
                     {
-                        item.GroupingResources = condQuery.Where(x => x.ItemO == item.ItemO)
-                        .GroupBy(x => new { x.ItemO, x.BoqSeq, x.ResSeq, x.IsAlternative, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
-                        .Select(p => p.FirstOrDefault()).ToList()
-                        .Select(y => new GroupingResourceModel
-                        {
-                            BoqSeq = y.BoqSeq,
-                            ResourceSeq = y.ResSeq,
-                            ResourceDescription = y.ResDescription,
-                            Unit = y.BoqUnitMesure,
-                            Qty = y.BoqQty,
-                            UnitPrice = y.BoqUprice,
-                            TotalPrice = (y.BoqQty * y.BoqUprice),
-                            ValidPerc = true,
-                            IsSelected = false,
-                            GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.BoqResourceId == y.BoqSeq && ((x.IsAlternative == false && x.IsAlternative == y.IsAlternative) || (x.IsAlternative == true && x.IsAlternative == y.IsAlternative && x.SupplierId == y.SupplierId))).OrderBy(x => x.SupplierName).ToList(),
-                            QuotationQty = y.BoqScopeQty,
-                            QuotationAmt = (y.BoqUprice * y.BoqScopeQty),
-                            IsNewItem = y.IsNewItem,
-                            IsAlternative = y.IsAlternative,
-                            IsExcluded = y.IsExcluded
-                        }).ToList();
+                        //BoqSeq = y.First().BoqSeq,
+                        ResourceSeq = y.First().ResSeq,
+                        ResourceDescription = y.First().ResDescription,
+                        Unit = y.First().BoqUnitMesure,
+                        Qty = y.Sum(x=> x.BoqQty),
+                        UnitPrice = y.Sum(x => x.BoqUprice),
+                        TotalPrice = y.Sum(x => x.BoqQty * x.BoqUprice),
+                        ValidPerc = true,
+                        IsSelected = false,
+                        GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.ResourceDescription == y.First().ResDescription && ((x.IsAlternative == false && x.IsAlternative == y.First().IsAlternative) || (x.IsAlternative == true && x.IsAlternative == y.First().IsAlternative && x.SupplierId == y.First().SupplierId))).OrderBy(x => x.SupplierName).ToList(),
+                        QuotationQty = y.Sum(x => x.BoqScopeQty),
+                        QuotationAmt = y.Sum(x => x.BoqUprice * x.BoqScopeQty),
+                        IsNewItem = y.First().IsNewItem,
+                        IsAlternative = y.First().IsAlternative,
+                        IsExcluded = y.First().IsExcluded
+                    }).ToList();
 
-
-                    if (supId == 0)
+                    foreach (var res in level.GroupingResources)
+                    {
+                        if (supId == 0)
                     {
                         byte byBoq;
                         byBoq = PackageSupplierPriceRevDetail.FirstOrDefault().byBoq;
 
                         if (byBoq == 1)
                         {
-                            var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
-                            var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
+                            var minPrice = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
+                            var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
 
-                            item.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                                res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
                             {
                                 SupplierId = 0,
                                 SupplierName = "Ideal",
@@ -2060,8 +2039,8 @@ namespace AccApi.Repository.Managers
                         }
                         else
                         {
-                            foreach (var res in item.GroupingResources)
-                            {
+                            //foreach (var res in item.GroupingResources)
+                            //{
                                 double minPrice = 0;
                                 if (res.IsAlternative == true)
                                     minPrice = (double)res.GroupingPackageSuppliersPrices.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
@@ -2073,35 +2052,35 @@ namespace AccApi.Repository.Managers
 
                                     var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
 
-                                    if (minPrice != null)
-                                    res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
-                                    {
-                                        SupplierId = 0,
-                                        SupplierName = "Ideal",
-                                        LastRevisionDate = null,
-                                        AssignedPercentage = IdealItem.AssignedPercentage,
-                                        AssignedQty = IdealItem.Qty,
-                                        MissedPrice = IdealItem.MissedPrice,
-                                        OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
-                                        Qty = IdealItem.Qty,
-                                        UnitPrice = IdealItem.UnitPrice,
-                                        TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
-                                        BoqItemO = IdealItem.BoqItemO,
-                                        OriginalCurrency = IdealItem.OriginalCurrency,
-                                        ExchRate = IdealItem.ExchRate,
-                                        ExchRateNow = IdealItem.ExchRateNow,
-                                        BoqResourceId = IdealItem.BoqResourceId,
-                                        byBoq = byBoq,
-                                        Discount = IdealItem.Discount,
-                                        UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
-                                        IsAlternative = IdealItem.IsAlternative,
-                                        IsNewItem = IdealItem.IsNewItem,
-                                        NewItemId = IdealItem.NewItemId,
-                                        NewItemResourceId = IdealItem.NewItemResourceId,
-                                        ParentItemO = IdealItem.ParentItemO,
-                                        ParentResourceId = IdealItem.ParentResourceId
-                                    });
-                            }
+                                    if (IdealItem != null && minPrice != null)
+                                        res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                                        {
+                                            SupplierId = 0,
+                                            SupplierName = "Ideal",
+                                            LastRevisionDate = null,
+                                            AssignedPercentage = IdealItem.AssignedPercentage,
+                                            AssignedQty = IdealItem.Qty,
+                                            MissedPrice = IdealItem.MissedPrice,
+                                            OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
+                                            Qty = IdealItem.Qty,
+                                            UnitPrice = IdealItem.UnitPrice,
+                                            TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
+                                            BoqItemO = IdealItem.BoqItemO,
+                                            OriginalCurrency = IdealItem.OriginalCurrency,
+                                            ExchRate = IdealItem.ExchRate,
+                                            ExchRateNow = IdealItem.ExchRateNow,
+                                            BoqResourceId = IdealItem.BoqResourceId,
+                                            byBoq = byBoq,
+                                            Discount = IdealItem.Discount,
+                                            UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                                            IsAlternative = IdealItem.IsAlternative,
+                                            IsNewItem = IdealItem.IsNewItem,
+                                            NewItemId = IdealItem.NewItemId,
+                                            NewItemResourceId = IdealItem.NewItemResourceId,
+                                            ParentItemO = IdealItem.ParentItemO,
+                                            ParentResourceId = IdealItem.ParentResourceId
+                                        });
+                            //}
                         }
                     }
 
@@ -2109,12 +2088,12 @@ namespace AccApi.Repository.Managers
                 }
             }
 
-            return levels.OrderBy(x=> x.Items.OrderBy(y=> y.IsNewItem).ThenBy(z => z.IsAlternative)).ToList();
+            return levels.OrderBy(x=> x.GroupingResources.OrderBy(y=> y.IsNewItem).ThenBy(z => z.IsAlternative)).ToList();
         }
 
         public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId, string CostConn, string C)
         {
-            C = "1";
+            //C = "1";
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
             //IEnumerable<BoqRessourcesList> condQuery
@@ -2615,11 +2594,12 @@ namespace AccApi.Repository.Managers
 //AH21052025
             List<GroupingLevelModel> listBudgC = new List<GroupingLevelModel>();
             List<GroupingPackageSupplierPriceModel> listSuppPriceC=new List<GroupingPackageSupplierPriceModel>(); ;
+            var listC1 = new List<GroupingLevelModel>();
 
             if (C == "1")
             {
                 //Get Total Budget for C
-                var listC1 = condQuery
+                listC1 = condQuery
                     .GroupBy(x => new { x.C1, x.ItemO, x.QtyO, x.UnitRateO })
                     .Select(p => p.FirstOrDefault()).ToList()
                     .Select(p => new GroupingLevelModel
@@ -2627,27 +2607,39 @@ namespace AccApi.Repository.Managers
                         C_Description = p.C1,
                         C_TotalBudget = p.QtyO * p.UnitRateO
                     }).ToList();
-
-                listBudgC = listC1
-                   .GroupBy(x => new { x.C_Description })
-                   //.Select(p => p.FirstOrDefault()).ToList()
-                   .Select(p => new GroupingLevelModel
-                   {
-                       C_Description = p.First().C_Description,
-                       C_TotalBudget = p.Sum(x => x.C_TotalBudget)
-                   }).ToList();
-
-                //Get Supplier Price for C
-                listSuppPriceC = PackageSupplierPriceRevDetail
-                   .GroupBy(x => new { x.C_Description, x.SupplierName })
-                   //.Select(p => p.FirstOrDefault()).ToList()
-                   .Select(p => new GroupingPackageSupplierPriceModel
-                   {
-                      C_Description = p.First().C_Description,
-                      SupplierName = p.First().SupplierName,
-                      TotalPrice = p.Sum(x => (x.UPriceAfterDiscount * x.Qty * x.ExchRateNow))
-                   }).ToList();
             }
+            else
+            {
+                listC1 = condQuery
+                    .GroupBy(x => new { x.C2, x.ItemO, x.QtyO, x.UnitRateO })
+                    .Select(p => p.FirstOrDefault()).ToList()
+                    .Select(p => new GroupingLevelModel
+                    {
+                        C_Description = p.C2,
+                        C_TotalBudget = p.QtyO * p.UnitRateO
+                    }).ToList();
+            }
+
+            listBudgC = listC1
+               .GroupBy(x => new { x.C_Description })
+               //.Select(p => p.FirstOrDefault()).ToList()
+               .Select(p => new GroupingLevelModel
+               {
+                   C_Description = p.First().C_Description,
+                   C_TotalBudget = p.Sum(x => x.C_TotalBudget)
+               }).ToList();
+
+            //Get Supplier Price for C
+            listSuppPriceC = PackageSupplierPriceRevDetail
+               .GroupBy(x => new { x.C_Description, x.SupplierName })
+               //.Select(p => p.FirstOrDefault()).ToList()
+               .Select(p => new GroupingPackageSupplierPriceModel
+               {
+                   C_Description = p.First().C_Description,
+                   SupplierName = p.First().SupplierName,
+                   TotalPrice = p.Sum(x => (x.UPriceAfterDiscount * x.Qty * x.ExchRateNow))
+               }).ToList();
+        
             ///AH21052025
 
             if (levels != null)
@@ -2990,7 +2982,7 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input,0, CostConn);
+            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input,0, CostConn,"1");
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -4333,7 +4325,7 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input, supId, CostConn);
+            List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input, supId, CostConn,"1");
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
