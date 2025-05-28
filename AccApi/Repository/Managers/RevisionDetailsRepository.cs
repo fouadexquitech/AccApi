@@ -227,25 +227,25 @@ namespace AccApi.Repository.Managers
                 var revDtl = (from bb in _dbContext.TblSupplierPackageRevisions 
                              join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                              join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                             join c in _dbContext.TblBoqVds on b.RdResourceSeq equals c.BoqSeq
-                             join o in _dbContext.TblOriginalBoqVds on c.BoqItem equals o.ItemO
-                             join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
+                              //join c in _dbContext.TblBoqVds on b.RdResourceSeq equals c.BoqResSeq
+                              //join o in _dbContext.TblOriginalBoqVds on c.BoqItem equals o.ItemO
+                              //join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
                              where (b.RdRevisionId == RevisionId) 
-                             && (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
-                             && (resource == null || e.ResDescription.ToUpper().Contains(resource.ToUpper()))
+                             //&& (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
+                             && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
                              select new RevisionDetailsList
                              {
                                  RdRevisionId = b.RdRevisionId,
                                  RdResourceSeq = b.RdResourceSeq,
                                  RdPrice = b.RdPrice,
                                  RdMissedPrice = b.RdMissedPrice,
-                                 RdBoqItem = o.ItemO,
-                                 RdBoqItemDescription = o.DescriptionO,
-                                 RdItemDescription = e.ResDescription,
+                                 RdBoqItem = "", //ItemO,
+                                 RdBoqItemDescription = "",//o.DescriptionO,
+                                 RdItemDescription = b.ResourceDescription,
                                  RdQty = b.RdQty,
                                  RdQuotationQty = b.RdQuotationQty,
-                                 RdUnitRate = c.BoqUprice,
-                                 RdTotalBudget = (b.RdQty) * (c.BoqUprice),
+                                 RdUnitRate = b.RdBudUnitPrice,//c.BoqUprice,
+                                 RdTotalBudget = (b.RdQty) * b.RdBudUnitPrice,//(c.BoqUprice),
                                  ExchangeRate = bb.PrExchRate,
                                  RdOriginalPrice = b.RdPriceOrigCurrency,
                                  TotalSupplierPrice = b.RdAssignedPrice,
@@ -262,20 +262,19 @@ namespace AccApi.Repository.Managers
                                  NewItemResourceId = b.NewItemResourceId,
                                  ParentItemO = b.ParentItemO,
                                  ParentResourceId = b.ParentResourceId,
-                                 Unit = o.UnitO,
+                                 Unit = b.BoqUnitMesure,
                                  Comments = b.RdComment,
-                                 //L1 = o.L1,
-                                 L2 = o.L2,
-                                 L3 = o.L3,
-                                 L4 = o.L4,
-                                 L5 = o.L5,
-                                 L6 = o.L6,
-                                 C1 = o.C1,
-                                 C2 = o.C2,
-                                 C3 = o.C3,
-                                 C4 = o.C4,
-                                 C5 = o.C5,
-                                 C6 = o.C6
+                                 //L2 = o.L2,
+                                 //L3 = o.L3,
+                                 //L4 = o.L4,
+                                 //L5 = o.L5,
+                                 //L6 = o.L6,
+                                 //C1 = o.C1,
+                                 //C2 = o.C2,
+                                 //C3 = o.C3,
+                                 //C4 = o.C4,
+                                 //C5 = o.C5,
+                                 //C6 = o.C6
                              }).ToList();
 
                 var revDtlNew= (from bb in _dbContext.TblSupplierPackageRevisions
@@ -319,18 +318,17 @@ namespace AccApi.Repository.Managers
                                     ParentResourceId = b.ParentResourceId,
                                     Unit = newr.ResourceUnit,
                                     Comments = b.RdComment,
-                                    //L1 = item.L1,
-                                    L2 = item.L2,
-                                    L3 = item.L3,
-                                    L4 = item.L4,
-                                    L5 = item.L5,
-                                    L6 = item.L6,
-                                    C1 = item.C1,
-                                    C2 = item.C2,
-                                    C3 = item.C3,
-                                    C4 = item.C4,
-                                    C5 = item.C5,
-                                    C6 = item.C6
+                                    //L2 = item.L2,
+                                    //L3 = item.L3,
+                                    //L4 = item.L4,
+                                    //L5 = item.L5,
+                                    //L6 = item.L6,
+                                    //C1 = item.C1,
+                                    //C2 = item.C2,
+                                    //C3 = item.C3,
+                                    //C4 = item.C4,
+                                    //C5 = item.C5,
+                                    //C6 = item.C6
                                 }).ToList();
 
                 var revDtlNewRes=(from bb in _dbContext.TblSupplierPackageRevisions 
@@ -374,18 +372,17 @@ namespace AccApi.Repository.Managers
                                     ParentResourceId = b.ParentResourceId,
                                     Unit = o.UnitO,
                                     Comments = b.RdComment,
-                                    //L1 = o.L1,
-                                    L2 = o.L2,
-                                    L3 = o.L3,
-                                    L4 = o.L4,
-                                    L5 = o.L5,
-                                    L6 = o.L6,
-                                    C1 = o.C1,
-                                    C2 = o.C2,
-                                    C3 = o.C3,
-                                    C4 = o.C4,
-                                    C5 = o.C5,
-                                    C6 = o.C6
+                                    //L2 = o.L2,
+                                    //L3 = o.L3,
+                                    //L4 = o.L4,
+                                    //L5 = o.L5,
+                                    //L6 = o.L6,
+                                    //C1 = o.C1,
+                                    //C2 = o.C2,
+                                    //C3 = o.C3,
+                                    //C4 = o.C4,
+                                    //C5 = o.C5,
+                                    //C6 = o.C6
                                 }).ToList();
 
                 var revDtlAlt = (from bb in _dbContext.TblSupplierPackageRevisions
@@ -426,18 +423,17 @@ namespace AccApi.Repository.Managers
                                      ParentResourceId = b.ParentResourceId,
                                      Unit = o.UnitO,
                                      Comments = b.RdComment,
-                                     //L1 = o.L1,
-                                     L2 = o.L2,
-                                     L3 = o.L3,
-                                     L4 = o.L4,
-                                     L5 = o.L5,
-                                     L6 = o.L6,
-                                     C1 = o.C1,
-                                     C2 = o.C2,
-                                     C3 = o.C3,
-                                     C4 = o.C4,
-                                     C5 = o.C5,
-                                     C6 = o.C6
+                                     //L2 = o.L2,
+                                     //L3 = o.L3,
+                                     //L4 = o.L4,
+                                     //L5 = o.L5,
+                                     //L6 = o.L6,
+                                     //C1 = o.C1,
+                                     //C2 = o.C2,
+                                     //C3 = o.C3,
+                                     //C4 = o.C4,
+                                     //C5 = o.C5,
+                                     //C6 = o.C6
                                  }).ToList();
 
                  revDetailList = revDtl;
@@ -624,7 +620,7 @@ namespace AccApi.Repository.Managers
                                             var revdtl = new TblRevisionDetail()
                                             {
                                                 RdRevisionId = revId,
-                                                RdResourceSeq = 0,
+                                                RdResourceSeq = "0",
                                                 RdBoqItem = boqRef,
                                                 RdPrice = Math.Round(Price * (ExchRate > 0 ? ExchRate : 1),3),
                                                 RdPriceOrigCurrency = Math.Round(Price, 3),
@@ -650,18 +646,18 @@ namespace AccApi.Repository.Managers
                                             discount = (worksheet.Cells[row, 12].Value == null) ? 0 : (double)worksheet.Cells[row, 12].Value;
                                         resComment = worksheet.Cells[row, 15].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
 
-                                        int resSeq = 0;
+                                        string resSeq = "0";
                                         string boqItem = boqRef == "" ? oldBoqRef : boqRef;
 
                                         resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
 
                                         var result = _dbContext.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
                                         if (result != null)
-                                            resSeq = result.BoqSeq;
+                                            resSeq = result.BoqResSeq;
 
                                         byte missPrice = 0;
                                         //Insert missing prices
-                                        if (Price <= 0 && resSeq != 0)
+                                        if (Price <= 0 && resSeq != "0")
                                         {
                                             //var missPrice = new TblMissingPrice()
                                             //{
@@ -1004,7 +1000,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
+                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1035,7 +1031,7 @@ namespace AccApi.Repository.Managers
                             var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
+                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1214,7 +1210,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
+                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1245,7 +1241,7 @@ namespace AccApi.Repository.Managers
                         var revisionDetails = (from a in _dbContext.TblSupplierPackages
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
+                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1347,7 +1343,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public void UpdateRevDtlAssignedQty(int revisionId, int resourceID, double assignpercent, double assignQty, double assignPrice)
+        public void UpdateRevDtlAssignedQty(int revisionId, string resourceID, double assignpercent, double assignQty, double assignPrice)
         {
             var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);
             if (result != null)
@@ -1553,30 +1549,30 @@ namespace AccApi.Repository.Managers
             var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                 join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqSeq
-                                join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                //join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqResSeq
+                                //join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                                 where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
                                 && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
                                 select new BoqRessourcesList
                                 {
-                                    RowNumber = o.RowNumber,
-                                    SectionO = Convert.ToString(o.SectionO),
-                                    ItemO = Convert.ToString(o.ItemO),
-                                    DescriptionO = Convert.ToString(o.DescriptionO),
-                                    UnitO = Convert.ToString(o.UnitO),
-                                    QtyO = (double)o.QtyO,
-                                    UnitRateO = (double)o.UnitRate,
-                                    ScopeO = o.Scope,
-                                    BoqSeq = b.BoqSeq,
-                                    BoqCtg = Convert.ToString(b.BoqCtg),
-                                    BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
-                                    BoqQty = (double)b.BoqQty,  //Final Qty
+                                    //RowNumber = o.RowNumber,
+                                    //SectionO = Convert.ToString(o.SectionO),
+                                    //ItemO = Convert.ToString(o.ItemO),
+                                    //DescriptionO = Convert.ToString(o.DescriptionO),
+                                    //UnitO = Convert.ToString(o.UnitO),
+                                    //QtyO = (double)o.QtyO,
+                                    //UnitRateO = (double)o.UnitRate,
+                                    //ScopeO = o.Scope,
+                                    //BoqSeq = b.BoqSeq,
+                                    //BoqCtg = Convert.ToString(b.BoqCtg),
+                                    BoqUnitMesure = Convert.ToString(c.BoqUnitMesure),
+                                    BoqQty = (double)c.RdQty, //b.BoqQty,  //Final Qty
                                     BoqScopeQty = (double)c.RdQty,//Quotation Qty
-                                    BoqUprice = (double)b.BoqUprice,
-                                    BoqDiv = Convert.ToString(b.BoqDiv),
-                                    BoqPackage = Convert.ToString(b.BoqPackage),
+                                    BoqUprice = (double)c.RdBudUnitPrice,
+                                    //BoqDiv = Convert.ToString(b.BoqDiv),
+                                    //BoqPackage = Convert.ToString(b.BoqPackage),
                                     BoqScope = packageId,
-                                    ResSeq = Convert.ToString(b.BoqResSeq),
+                                    ResSeq = Convert.ToString(c.RdResourceSeq),
                                     ResDescription = Convert.ToString(c.ResourceDescription),
                                     IsAlternative = false,
                                     IsNewItem = false,
@@ -1586,6 +1582,7 @@ namespace AccApi.Repository.Managers
                                     ParentResourceId = (int)c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
                                     SupplierId = (int)a.SpSupplierId
+                                    
                                     //L2 = Convert.ToString(o.L2),
                                     //L3 = Convert.ToString(o.L3),
                                     //L4 = Convert.ToString(o.L4),
@@ -1661,17 +1658,17 @@ namespace AccApi.Repository.Managers
             var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                 join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
+                                //join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
                                 where (a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
                                 select new BoqRessourcesList
                                 {
-                                    RowNumber = o.RowNumber,
-                                    SectionO = Convert.ToString(o.SectionO),
-                                    ItemO = Convert.ToString(o.ItemO),
-                                    DescriptionO = Convert.ToString(o.DescriptionO),
-                                    UnitO = Convert.ToString(o.UnitO),
-                                    QtyO = (double)o.QtyO,
-                                    UnitRateO = (double)o.UnitRate,
+                                    //RowNumber = o.RowNumber,
+                                    //SectionO = Convert.ToString(o.SectionO),
+                                    //ItemO = Convert.ToString(o.ItemO),
+                                    //DescriptionO = Convert.ToString(o.DescriptionO),
+                                    //UnitO = Convert.ToString(o.UnitO),
+                                    //QtyO = (double)o.QtyO,
+                                    //UnitRateO = (double)o.UnitRate,
                                     ScopeO = packageId,
                                     BoqSeq = (int)c.ParentResourceId,
                                     BoqCtg = Convert.ToString(""),
@@ -1713,6 +1710,22 @@ namespace AccApi.Repository.Managers
             foreach (var itm in condQueryAlt)
                 condQuery.Add(itm);
 
+            //condQuery = condQuery
+            //    .GroupBy(x => new { x.ResDescription, x.BoqUnitMesure,x.BoqUprice, x.IsNewItem,x.BoqQty })
+            //    //.Select(p => p.FirstOrDefault())
+            //    .Select(p => new BoqRessourcesList
+            //    {
+            //        ResDescription = p.First().ResDescription,
+            //        BoqUnitMesure = p.First().BoqUnitMesure,
+            //        BoqUprice = p.First().BoqUprice,
+            //        BoqQty = p.First().BoqQty,
+            //        BoqBillQty = p.First().BoqBillQty,
+            //        BoqScopeQty = p.First().BoqScopeQty,
+            //        BoqTotalPrice = p.First().BoqQty * p.First().BoqUprice,
+            //        IsNewItem = p.First().IsNewItem,
+            //        IsAlternative = p.Min(x => x.IsAlternative),
+            //        IsExcluded = p.First().IsExcluded
+            //    }).OrderBy(a => a.ResDescription).ToList();
 
 
             var curList = (from b in _mdbContext.TblCurrencies
@@ -1814,7 +1827,7 @@ namespace AccApi.Repository.Managers
                                                     UnitPrice = c.RdPrice,
                                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
                                                     ResourceDescription = c.ResourceDescription,
-                                                    BoqResourceId = c.NewItemResourceId,
+                                                    BoqResourceId = c.NewItemResourceId.ToString(),
                                                     OriginalCurrency = cur.CurCode,
                                                     ExchRate = b.PrExchRate,
                                                     ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
@@ -1891,7 +1904,7 @@ namespace AccApi.Repository.Managers
                                                     UnitPrice = c.RdPrice,
                                                     TotalPrice = (c.RdAssignedQty * c.RdPrice),
                                                     ResourceDescription = c.ResourceDescription,
-                                                    BoqResourceId = c.ParentResourceId,
+                                                    BoqResourceId =c.ParentResourceId.ToString(),
                                                     OriginalCurrency = cur.CurCode,
                                                     ExchRate = b.PrExchRate,
                                                     ExchRateNow = ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow,
@@ -1959,22 +1972,21 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var level in levels)
                 {
-                    level.GroupingResources = condQuery
-                        .GroupBy(x => new { x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem })
-                        //.Select(p => p.FirstOrDefault())
-                        .Select(p => new GroupingResourceModel
-                        {
-                            ResourceDescription = p.First().ResDescription,
-                            Unit=p.First().BoqUnitMesure,
-                            UnitPrice=p.First().BoqUprice,
-                            Qty = p.Sum(x => x.BoqQty),
-                            TotalPrice = p.Sum(x => x.BoqQty * x.BoqUprice),
-                            IsSelected = false,                        
-                            IsNewItem = p.First().IsNewItem,
-                            IsAlternative = p.Min(x => x.IsAlternative),
-                            IsExcluded = p.First().IsExcluded                    
-                        }).OrderBy(a => a.ResourceDescription).ToList();
-
+                    //level.GroupingResources = condQuery
+                    //    .GroupBy(x => new { x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem })
+                    //    //.Select(p => p.FirstOrDefault())
+                    //    .Select(p => new GroupingResourceModel
+                    //    {
+                    //        ResourceDescription = p.First().ResDescription,
+                    //        Unit=p.First().BoqUnitMesure,
+                    //        UnitPrice=p.First().BoqUprice,
+                    //        Qty = p.Sum(x => x.BoqQty),
+                    //        TotalPrice = p.Sum(x => x.BoqQty * x.BoqUprice),
+                    //        IsSelected = false,                        
+                    //        IsNewItem = p.First().IsNewItem,
+                    //        IsAlternative = p.Min(x => x.IsAlternative),
+                    //        IsExcluded = p.First().IsExcluded                    
+                    //    }).OrderBy(a => a.ResourceDescription).ToList();
 
                     level.GroupingResources = condQuery
                     .GroupBy(x => new {x.ResSeq, x.IsAlternative, x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
@@ -1985,14 +1997,14 @@ namespace AccApi.Repository.Managers
                         ResourceSeq = y.First().ResSeq,
                         ResourceDescription = y.First().ResDescription,
                         Unit = y.First().BoqUnitMesure,
-                        Qty = y.Sum(x=> x.BoqQty),
-                        UnitPrice = y.Sum(x => x.BoqUprice),
-                        TotalPrice = y.Sum(x => x.BoqQty * x.BoqUprice),
+                        UnitPrice = y.First().BoqUprice,
+                        Qty = y.First().BoqQty,
+                        TotalPrice = y.First().BoqQty * y.First().BoqUprice,
                         ValidPerc = true,
                         IsSelected = false,
                         GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.ResourceDescription == y.First().ResDescription && ((x.IsAlternative == false && x.IsAlternative == y.First().IsAlternative) || (x.IsAlternative == true && x.IsAlternative == y.First().IsAlternative && x.SupplierId == y.First().SupplierId))).OrderBy(x => x.SupplierName).ToList(),
-                        QuotationQty = y.Sum(x => x.BoqScopeQty),
-                        QuotationAmt = y.Sum(x => x.BoqUprice * x.BoqScopeQty),
+                        QuotationQty = y.First().BoqScopeQty,
+                        QuotationAmt = y.First().BoqUprice * y.First().BoqScopeQty,
                         IsNewItem = y.First().IsNewItem,
                         IsAlternative = y.First().IsAlternative,
                         IsExcluded = y.First().IsExcluded
@@ -2043,14 +2055,14 @@ namespace AccApi.Repository.Managers
                             //{
                                 double minPrice = 0;
                                 if (res.IsAlternative == true)
-                                    minPrice = (double)res.GroupingPackageSuppliersPrices.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
+                                    minPrice = (double)res.GroupingPackageSuppliersPrices.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
                                 else
                                     if (PackageSupplierPriceRevDetail.Where(p => p.UPriceAfterDiscount > 0).FirstOrDefault() == null)
                                         minPrice = 0;
                                     else
-                                        minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
+                                        minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
 
-                                    var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.BoqSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
+                                    var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
 
                                     if (IdealItem != null && minPrice != null)
                                         res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
@@ -2431,7 +2443,7 @@ namespace AccApi.Repository.Managers
                         var revdtl = new TblRevisionDetail()
                         {
                             RdRevisionId = (int)sup.RevisionId,
-                            RdResourceSeq = 0,
+                            RdResourceSeq = "0",
                             RdBoqItem = itm.BoqItemO,
                             RdPrice = itm.UnitPrice,
                             RdPriceOrigCurrency = itm.OriginalCurrencyPrice,
@@ -2544,7 +2556,7 @@ namespace AccApi.Repository.Managers
                             var revdtl = new TblRevisionDetail()
                             {
                                 RdRevisionId =(int) sup.RevisionId,
-                                RdResourceSeq = 0,
+                                RdResourceSeq = "0",
                                 RdBoqItem = itm.BoqItemO,
                                 RdPrice = itm.UnitPrice,
                                 RdPriceOrigCurrency = itm.OriginalCurrencyPrice,
@@ -2937,7 +2949,7 @@ namespace AccApi.Repository.Managers
                              join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqSeq
+                             join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
                              join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
@@ -3037,16 +3049,13 @@ namespace AccApi.Repository.Managers
 
                 foreach (var level in levels)
                 {
-                    if (level.Items.Count > 0)
+                    if (level.GroupingResources.Count > 0)
                     {
-                        GroupingBoqModel item1 = level.Items.First();
-                        GroupingResourceModel sup = item1.GroupingResources.First();
-                        string boq = item1.ItemO;
+                        GroupingResourceModel item1 = level.GroupingResources.First();
+                        //GroupingResourceModel sup = item1.GroupingPackageSuppliersPrices.First();
+                        string boq = item1.ResourceSeq;
 
-                        //var lst = item1.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == boq).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                        //var lst1 = lst.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-
-                        var SupList = sup.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                        var SupList = item1.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
 
                         int col = 7;
                         int m = 7;
@@ -3082,21 +3091,18 @@ namespace AccApi.Repository.Managers
 
                     row = 9;
                     j = 0;
-                    foreach (var item in level.Items)
-                    {
-                        //var lst = item.GroupingPackageSuppliersPrices.OrderByDescending(s => s.GroupId).OrderByDescending(s => s.BoqItemO).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
-                        //foreach (var sup in item.GroupingPackageSuppliersPrices)
-                        //{
-                        worksheet.Cells[row, 1].Value = j++;
-                        worksheet.Column(2).Width = 70;
-                        worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
-                        worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
-                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                        worksheet.Columns[2].Style.WrapText = true;
+                    //foreach (var item in level.Items)
+                    //{
+                    //    worksheet.Cells[row, 1].Value = j++;
+                    //    worksheet.Column(2).Width = 70;
+                    //    worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
+                    //    worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
+                    //    worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    //    worksheet.Columns[2].Style.WrapText = true;
 
-                        row++;
+                    //    row++;
 
-                        foreach (var res in item.GroupingResources)
+                        foreach (var res in level.GroupingResources)
                         {
                             worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
                             worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
@@ -3115,7 +3121,7 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[7, 9 + col].Value = "P.T.";
                                 }
 
-                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
+                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.ResourceSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
                                     worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
@@ -3126,9 +3132,8 @@ namespace AccApi.Repository.Managers
                             }
                             row++;
                         }
-                        //}
-                        row++;
-                    }
+                    //    row++;
+                    //}
 
                     row++;
                 }
@@ -4380,13 +4385,13 @@ namespace AccApi.Repository.Managers
 
                 foreach (var level in levels)
                 {
-                    if (level.Items.Count > 0)
+                    if (level.GroupingResources.Count > 0)
                     {
-                        GroupingBoqModel item1 = level.Items.First();
-                        GroupingResourceModel sup = item1.GroupingResources.First();
-                        string boq = item1.ItemO;
+                        GroupingResourceModel item1 = level.GroupingResources.First();
+                        //GroupingResourceModel sup = item1.GroupingResources.First();
+                        string boq = item1.ResourceSeq;
 
-                        var SupList = sup.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
+                        var SupList = item1.GroupingPackageSuppliersPrices.OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).ToList();
 
                         int col = 7;
                         int m = 7;
@@ -4422,18 +4427,18 @@ namespace AccApi.Repository.Managers
 
                     row = 9;
                     j = 0;
-                    foreach (var item in level.Items)
-                    {
-                        worksheet.Cells[row, 1].Value = j++;
-                        worksheet.Column(2).Width = 70;
-                        worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
-                        worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
-                        worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
-                        worksheet.Columns[2].Style.WrapText = true;
+                    //foreach (var item in level.Items)
+                    //{
+                    //    worksheet.Cells[row, 1].Value = j++;
+                    //    worksheet.Column(2).Width = 70;
+                    //    worksheet.Cells[row, 1].Value = (item.ItemO) == null ? "" : item.ItemO;
+                    //    worksheet.Cells[row, 2].Value = (item.DescriptionO) == null ? "" : item.DescriptionO;
+                    //    worksheet.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+                    //    worksheet.Columns[2].Style.WrapText = true;
 
-                        row++;
+                    //    row++;
 
-                        foreach (var res in item.GroupingResources)
+                        foreach (var res in level.GroupingResources)
                         {
                             worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
                             worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
@@ -4452,7 +4457,7 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[7, 9 + col].Value = "P.T.";
                                 }
 
-                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.BoqSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
+                                var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.ResourceSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
                                     worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
@@ -4464,8 +4469,8 @@ namespace AccApi.Repository.Managers
                             row++;
                         }
                         row++;
-                    }
-                    row++;
+                    //}
+                    //row++;
                 }
 
                 row++;
@@ -4660,7 +4665,7 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool exclud, string CostConn)
+        public bool ExcludRessource(int packId, string boqResSeq, bool isNewItem, bool isAlternative, bool exclud, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -4668,8 +4673,8 @@ namespace AccApi.Repository.Managers
                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                    where (a.SpPackageId == packId && b.PrRevNo == 0 && 
-                                   ((isNewItem == true && c.NewItemResourceId == boqSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId == boqSeq && c.IsAlternative == isAlternative)
-                                   || (isNewItem == false && isAlternative==false && c.RdResourceSeq == boqSeq) ))
+                                   ((isNewItem == true && c.NewItemResourceId.ToString() == boqResSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId.ToString() == boqResSeq && c.IsAlternative == isAlternative)
+                                   || (isNewItem == false && isAlternative==false && c.RdResourceSeq == boqResSeq) ))
                                    select new GroupingPackageSupplierPriceModel
                                    {
                                        BoqItemO = c.RdBoqItem,
@@ -4687,8 +4692,8 @@ namespace AccApi.Repository.Managers
             foreach (var rev in revisionDetails)
             {
                 var result = _dbContext.TblRevisionDetails.SingleOrDefault(c => c.RdRevisionId == rev.RevisionId &&
-                ((isNewItem == true && c.NewItemResourceId == boqSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId == boqSeq && c.IsAlternative == isAlternative)
-                || (isNewItem == false && isAlternative == false && c.RdResourceSeq == boqSeq && c.RdBoqItem == rev.BoqItemO)));
+                ((isNewItem == true && c.NewItemResourceId.ToString() == boqResSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId.ToString() == boqResSeq && c.IsAlternative == isAlternative)
+                || (isNewItem == false && isAlternative == false && c.RdResourceSeq == boqResSeq && c.RdBoqItem == rev.BoqItemO)));
                 
                 if (result != null)
                 {

@@ -34,6 +34,7 @@ namespace AccApi.Repository
             return context;
         }
 
+
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
@@ -183,6 +184,15 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOriginalBoqall> ViewOriginalBoqalls { get; set; }
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
+
+//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//        {
+//            if (!optionsBuilder.IsConfigured)
+//            {
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=RamhanIsland_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+//            }
+//        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -586,6 +596,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LastUserUpdate).IsUnicode(false);
 
+                entity.Property(e => e.TrCostMangmnt).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TrDiv).IsUnicode(false);
 
                 entity.Property(e => e.TrQty).HasDefaultValueSql("((0))");
@@ -802,6 +814,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Luser).IsUnicode(false);
             });
@@ -1702,6 +1716,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
 
+                entity.Property(e => e.InsertedDate).HasDefaultValueSql("(getdate())");
+
                 entity.Property(e => e.L1).IsUnicode(false);
 
                 entity.Property(e => e.L10).IsUnicode(false);
@@ -2584,6 +2600,10 @@ namespace AccApi.Repository
             {
                 entity.HasKey(e => new { e.RdRevisionId, e.RdResourceSeq, e.RdBoqItem });
 
+                entity.Property(e => e.RdResourceSeq)
+                    .IsUnicode(false)
+                    .HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.RdBoqItem)
                     .IsUnicode(false)
                     .HasDefaultValueSql("((0))");
@@ -2613,6 +2633,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdAssignedPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdBudUnitPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdDiscount).HasDefaultValueSql("((0))");
 
@@ -2870,6 +2892,12 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.Remarks).IsUnicode(false);
 
+                entity.Property(e => e.Submitted).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SubmittedAmtCum).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SubmittedAmtPrev).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TaAbv).IsUnicode(false);
 
                 entity.Property(e => e.TaAddTotBudget).HasDefaultValueSql("((0))");
@@ -2912,8 +2940,6 @@ namespace AccApi.Repository
                 entity.Property(e => e.BillNo).IsUnicode(false);
 
                 entity.Property(e => e.Description).IsUnicode(false);
-
-                entity.Property(e => e.PtPrefix).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblUserCounter>(entity =>
@@ -3080,6 +3106,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.Seq).ValueGeneratedOnAdd();
 
+                entity.Property(e => e.AdvancePayment).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.BuildingNo).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Client).IsUnicode(false);
@@ -3092,9 +3120,13 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.ConstPeriod).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.ContractType).IsUnicode(false);
+
                 entity.Property(e => e.Country).IsUnicode(false);
 
                 entity.Property(e => e.CoveredArea).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.Currency).IsUnicode(false);
 
                 entity.Property(e => e.DieselGalon).HasDefaultValueSql("((0))");
 
@@ -3107,6 +3139,10 @@ namespace AccApi.Repository
                 entity.Property(e => e.FloorsSubStruct).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.FloorsSuperStruct).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.GuaranteeNo).IsUnicode(false);
+
+                entity.Property(e => e.IssuedBy).IsUnicode(false);
 
                 entity.Property(e => e.Location).IsUnicode(false);
 
@@ -3124,13 +3160,19 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.OperatorsFactor).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.PerformanceBondAmt).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.PrelimsValue).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RetentionPercent).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.SubTotalDry).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TsprojId).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TypeOfConst).IsUnicode(false);
+
+                entity.Property(e => e.ValueEngineering).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Vat).HasDefaultValueSql("((0))");
             });
@@ -3232,6 +3274,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.SecEng).IsUnicode(false);
 
                 entity.Property(e => e.SiteEngineer).IsUnicode(false);
+
+                entity.Property(e => e.SubArea).IsUnicode(false);
 
                 entity.Property(e => e.SubContractor).IsUnicode(false);
 

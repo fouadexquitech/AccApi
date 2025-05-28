@@ -58,5 +58,7 @@ namespace AccApi.Repository.Models
         public DateTime? LastUpdate { get; set; }
         [Column("trQty")]
         public byte? TrQty { get; set; }
+        [Column("trCostMangmnt")]
+        public double? TrCostMangmnt { get; set; }
     }
 }

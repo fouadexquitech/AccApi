@@ -19,15 +19,15 @@ namespace AccApi.Repository.Models
         public string Div { get; set; }
         [Column("week")]
         public int? Week { get; set; }
-        [StringLength(25)]
+        [StringLength(50)]
         public string Ref { get; set; }
-        [StringLength(20)]
+        [StringLength(50)]
         public string Item { get; set; }
-        [StringLength(1000)]
+        [StringLength(5000)]
         public string Description { get; set; }
         public double? EstQty { get; set; }
         public double? Submitted { get; set; }
-        [StringLength(10)]
+        [StringLength(50)]
         public string Unit { get; set; }
         public double? UnitRate { get; set; }
         [StringLength(100)]
@@ -52,7 +52,7 @@ namespace AccApi.Repository.Models
         public double? AmtCum { get; set; }
         public byte? PaymentType { get; set; }
         [Column("ptPrefix")]
-        [StringLength(10)]
+        [StringLength(50)]
         public string PtPrefix { get; set; }
         [Column("ptRowNumber")]
         public short? PtRowNumber { get; set; }

@@ -953,33 +953,33 @@ namespace AccApi.Repository.Managers
                                              join b in _costDbcontext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                              join a in _costDbcontext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                              join c in _costDbcontext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                             join d in _costDbcontext.TblBoqVds on c.RdResourceSeq equals d.BoqSeq
-                                             join e in _costDbcontext.TblResources on d.BoqResSeq equals e.ResSeq
-                                             join o in _costDbcontext.TblOriginalBoqVds on d.BoqItem equals o.ItemO
+                                             //join d in _costDbcontext.TblBoqVds on c.RdResourceSeq equals d.BoqResSeq
+                                             //join e in _costDbcontext.TblResources on d.BoqResSeq equals e.ResSeq
+                                             //join o in _costDbcontext.TblOriginalBoqVds on d.BoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 &&
                                              (c.IsNew == false || c.IsNew == null) && (c.IsAlternative == false || c.IsAlternative == null))
                                              select new RevisionDetails
                                              {
                                                  resourceID = c.RdResourceSeq,
-                                                 ResDescription = e.ResDescription,
-                                                 resourceUnit = d.BoqUnitMesure,
+                                                 ResDescription = c.ResourceDescription,
+                                                 resourceUnit = c.BoqUnitMesure,
                                                  resourceQty = c.RdQty,
                                                  price = c.RdPrice,
                                                  perc = c.RdAssignedPerc,
                                                  missedPrice = c.RdMissedPrice,
                                                  priceOrigCur = c.RdPriceOrigCurrency,
-                                                 ItemO = o.ItemO,
-                                                 DescriptionO = o.DescriptionO,
-                                                 SectionO = o.SectionO,
-                                                 Scope = o.Scope,
-                                                 BoqDiv = o.SectionO,
-                                                 ObSheetDesc = o.ObSheetDesc,
-                                                 RowNumber = o.RowNumber,
-                                                 BoqPackage = d.BoqPackage,
-                                                 BoqScope = d.BoqScope,
-                                                 ResDiv = d.BoqDiv,
-                                                 ResCtg = d.BoqCtg,
+                                                 //ItemO = o.ItemO,
+                                                 //DescriptionO = o.DescriptionO,
+                                                 //SectionO = o.SectionO,
+                                                 Scope = pckgID,
+                                                 //BoqDiv = o.SectionO,
+                                                 //ObSheetDesc = o.ObSheetDesc,
+                                                 //RowNumber = o.RowNumber,
+                                                 //BoqPackage = d.BoqPackage,
+                                                 //BoqScope = d.BoqScope,
+                                                 //ResDiv = d.BoqDiv,
+                                                 //ResCtg = d.BoqCtg,
                                                  AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
@@ -1057,13 +1057,13 @@ namespace AccApi.Repository.Managers
                                                                join b in _costDbcontext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _costDbcontext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                                                join c in _costDbcontext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                               join d in _costDbcontext.TblBoqVds on c.ParentResourceId equals d.BoqSeq
+                                                               //join d in _costDbcontext.TblBoqVds on c.ParentResourceId equals d.BoqSeq
                                                                where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsAlternative==true && c.UnitPriceAfterDiscount > 0)
                                                                select new RevisionDetails
                                                                {
                                                                    resourceID = c.RdResourceSeq,
                                                                    ResDescription = c.ResourceDescription,
-                                                                   resourceUnit = d.BoqUnitMesure,
+                                                                   resourceUnit = c.BoqUnitMesure,
                                                                    resourceQty = c.RdQty,
                                                                    price = c.RdPrice,
                                                                    perc = c.RdAssignedPerc,
@@ -1071,15 +1071,15 @@ namespace AccApi.Repository.Managers
                                                                    priceOrigCur = c.RdPriceOrigCurrency,
                                                                    ItemO = c.RdBoqItem,
                                                                    DescriptionO = c.ItemDescription,
-                                                                   SectionO = d.BoqDiv,
+                                                                   //SectionO = d.BoqDiv,
                                                                    Scope = pckgID,
-                                                                   BoqDiv = d.BoqDiv,
+                                                                   //BoqDiv = d.BoqDiv,
                                                                    ObSheetDesc = "",
                                                                    RowNumber =0,
-                                                                   BoqPackage = d.BoqPackage,
-                                                                   BoqScope = d.BoqScope,
-                                                                   ResDiv = d.BoqDiv,
-                                                                   ResCtg = d.BoqCtg,
+                                                                   //BoqPackage = d.BoqPackage,
+                                                                   BoqScope = pckgID,
+                                                                   //ResDiv = d.BoqDiv,
+                                                                   //ResCtg = d.BoqCtg,
                                                                    AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,
@@ -1106,13 +1106,14 @@ namespace AccApi.Repository.Managers
                             }
 
                             revDtlQryIdeal = revDtl.Where(x => x.totalPriceAfterExchange > 0)
-                            .GroupBy(x => new { x.ItemO,x.resourceID, x.IsExcluded, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
+                            .GroupBy(x => new { x.resourceID, x.IsExcluded, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
                             .Select(p => new RevisionDetails
                             {
-                                ItemO = p.First().ItemO,
-                                DescriptionO = p.First().DescriptionO,
-                                UnitO = p.First().UnitO,
-                                QtyO = p.First().QtyO,
+                                //ItemO = p.First().ItemO,
+                                resourceID=p.First().resourceID,
+                                ResDescription = p.First().ResDescription,
+                                BoqUnitMesure = p.First().BoqUnitMesure,
+                                BoqQty = p.First().BoqQty,
                                 priceOrigCur = p.Min(c => (c.IsExcluded == true) ? 0 : c.priceOrigCur),
                                 AssignedQty = p.First().AssignedQty,
                                 OriginalCurrency = p.First().OriginalCurrency,
@@ -1245,8 +1246,8 @@ namespace AccApi.Repository.Managers
                                              join b in _costDbcontext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                              join a in _costDbcontext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                              join c in _costDbcontext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                             join d in _costDbcontext.TblBoqVds on c.RdResourceSeq equals d.BoqSeq
-                                             join o in _costDbcontext.TblOriginalBoqVds on d.BoqItem equals o.ItemO
+                                             //join d in _costDbcontext.TblBoqVds on c.RdResourceSeq equals d.BoqResSeq
+                                             //join o in _costDbcontext.TblOriginalBoqVds on d.BoqItem equals o.ItemO
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == pckgID && b.PrRevNo == 0 && a.SpSupplierId == item.SupplierId
                                              && (c.IsNew == false || c.IsNew == null) && (c.IsAlternative == false || c.IsAlternative == null))
@@ -1254,23 +1255,23 @@ namespace AccApi.Repository.Managers
                                              {
                                                  resourceID = c.RdResourceSeq,
                                                  ResDescription = c.ResourceDescription == null ? "" : c.ResourceDescription,
-                                                 resourceUnit = d.BoqUnitMesure,
+                                                 //resourceUnit = d.BoqUnitMesure,
                                                  resourceQty = c.RdQty,
                                                  price = c.RdPrice,
                                                  perc = c.RdAssignedPerc,
                                                  missedPrice = c.RdMissedPrice,
                                                  priceOrigCur = c.RdPriceOrigCurrency,
-                                                 ItemO = o.ItemO,
-                                                 DescriptionO = o.DescriptionO == null ? "" : o.DescriptionO,
-                                                 SectionO = o.SectionO,
-                                                 Scope = o.Scope,
-                                                 BoqDiv = o.SectionO,
-                                                 ObSheetDesc = o.ObSheetDesc,
-                                                 RowNumber = o.RowNumber,
-                                                 BoqPackage = d.BoqPackage,
-                                                 BoqScope = d.BoqScope,
-                                                 ResDiv = d.BoqDiv,
-                                                 ResCtg = d.BoqCtg,
+                                                 //ItemO = o.ItemO,
+                                                 //DescriptionO = o.DescriptionO == null ? "" : o.DescriptionO,
+                                                 //SectionO = o.SectionO,
+                                                 Scope = pckgID,
+                                                 //BoqDiv = o.SectionO,
+                                                 //ObSheetDesc = o.ObSheetDesc,
+                                                 //RowNumber = o.RowNumber,
+                                                 //BoqPackage = d.BoqPackage,
+                                                 //BoqScope = d.BoqScope,
+                                                 //ResDiv = d.BoqDiv,
+                                                 //ResCtg = d.BoqCtg,
                                                  AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                  OriginalCurrency = cur.CurCode,
                                                  AssignedQty = c.RdAssignedQty,
@@ -1348,14 +1349,14 @@ namespace AccApi.Repository.Managers
                                                                join b in _costDbcontext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                                                                join a in _costDbcontext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                                                                join c in _costDbcontext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                               join d in _costDbcontext.TblBoqVds on c.ParentResourceId equals d.BoqSeq
+                                                               //join d in _costDbcontext.TblBoqVds on c.ParentResourceId equals d.BoqSeq
                                                                join sup in supList on a.SpSupplierId equals sup.SupCode
                                                                where (a.SpPackageId == pckgID && b.PrRevNo == 0 && c.IsAlternative == true)
                                                                select new RevisionDetails
                                                                {
                                                                    resourceID = c.RdResourceSeq,
                                                                    ResDescription = c.ResourceDescription,
-                                                                   resourceUnit = d.BoqUnitMesure,
+                                                                   //resourceUnit = d.BoqUnitMesure,
                                                                    resourceQty = c.RdQty,
                                                                    price = c.RdPrice,
                                                                    perc = c.RdAssignedPerc,
@@ -1363,15 +1364,15 @@ namespace AccApi.Repository.Managers
                                                                    priceOrigCur = c.RdPriceOrigCurrency,
                                                                    ItemO = c.RdBoqItem,
                                                                    DescriptionO = c.ItemDescription,
-                                                                   SectionO = d.BoqDiv,
+                                                                   //SectionO = d.BoqDiv,
                                                                    Scope = pckgID,
-                                                                   BoqDiv = d.BoqDiv,
+                                                                   //BoqDiv = d.BoqDiv,
                                                                    ObSheetDesc = "",
                                                                    RowNumber = 0,
-                                                                   BoqPackage = d.BoqPackage,
-                                                                   BoqScope = d.BoqScope,
-                                                                   ResDiv = d.BoqDiv,
-                                                                   ResCtg = d.BoqCtg,
+                                                                   //BoqPackage = d.BoqPackage,
+                                                                   //BoqScope = d.BoqScope,
+                                                                   //ResDiv = d.BoqDiv,
+                                                                   //ResCtg = d.BoqCtg,
                                                                    AssignedToSupplier = ((c.RdAssignedQty == null || c.RdAssignedQty == 0)) ? false : true,
                                                                    OriginalCurrency = cur.CurCode,
                                                                    AssignedQty = c.RdAssignedQty,

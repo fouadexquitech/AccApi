@@ -18,7 +18,7 @@ namespace AccApi.Repository.Models
         [Column("week")]
         public int Week { get; set; }
         [Key]
-        [StringLength(20)]
+        [StringLength(50)]
         public string Item { get; set; }
         public double? Qty { get; set; }
         public float? Per { get; set; }
@@ -26,7 +26,7 @@ namespace AccApi.Repository.Models
         public double? CertifiedQty { get; set; }
         public float? CertifiedPer { get; set; }
         public float? SellingPrice { get; set; }
-        [StringLength(2)]
+        [StringLength(50)]
         public string Div { get; set; }
         [Column("SubmittedQty_Cum")]
         public double? SubmittedQtyCum { get; set; }
@@ -38,7 +38,7 @@ namespace AccApi.Repository.Models
         public float? CertifiedPerCum { get; set; }
         [StringLength(1000)]
         public string Description { get; set; }
-        [StringLength(10)]
+        [StringLength(50)]
         public string Unit { get; set; }
         public double? EstQty { get; set; }
         public double? UnitRate { get; set; }
@@ -62,10 +62,10 @@ namespace AccApi.Repository.Models
         public double? CertifiedAmtPrev { get; set; }
         [StringLength(100)]
         public string Sheet { get; set; }
-        [StringLength(25)]
+        [StringLength(50)]
         public string Ref { get; set; }
         [Column("LUser")]
-        [StringLength(25)]
+        [StringLength(50)]
         public string Luser { get; set; }
         [Column("LDate", TypeName = "datetime")]
         public DateTime? Ldate { get; set; }

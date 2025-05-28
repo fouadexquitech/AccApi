@@ -39,6 +39,6 @@ namespace AccApi.Repository.Interfaces
 
         List<AcceptComment> GetRevisionAcceptance(int revId, string CostConn);
         bool ExcludBoq(int packId, string Item,bool isNewItem, bool exclud, string CostConn);
-        bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool isExclud, string CostConn);
+        bool ExcludRessource(int packId, string boqResSeq, bool isNewItem, bool isAlternative, bool isExclud, string CostConn);
     }
 }

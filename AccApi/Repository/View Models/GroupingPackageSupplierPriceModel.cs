@@ -7,7 +7,7 @@ namespace AccApi.Repository.View_Models
         public int SupplierId { get; set; }
         public string SupplierName { get; set; }
 
-        public int? BoqResourceId { get; set; }
+        public string? BoqResourceId { get; set; }
 
         public string? BoqItemO { get; set; }
 

@@ -224,7 +224,7 @@ namespace AccApi.Repository.Managers
             }
             else
             {
-                boqList = (from o in _dbcontext.TblOriginalBoqVds
+                var boqList1 = (from o in _dbcontext.TblOriginalBoqVds
                             join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                             join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                             where b.BoqScope == packId
@@ -262,6 +262,22 @@ namespace AccApi.Repository.Managers
                                 boqScopeQty = b.BoqQtyScope,
                                 exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
                             }).ToList();
+
+                //AH26052025
+                boqList = boqList1
+                              .GroupBy(x => new { x.resDesc,x.unitPrice,x.unit })
+                              .Select(p => new boqPackageList
+                              {
+                                  resDesc = p.First().resDesc,
+                                  resUnit = p.First().resUnit,     
+                                  boqBillQty = p.Sum(c => c.boqBillQty),
+                                  boqQty = p.Sum(c => c.boqQty),
+                                  resUnitPrice = p.First().resUnitPrice,
+                                  resTotalPrice = p.Sum(c => c.boqQty * c.resUnitPrice),
+                                  boqScopeQty = p.Sum(c => c.boqScopeQty),
+                                  exportedToSupplier = (byte)p.Max(c => ((c.exportedToSupplier == null) ? 0 : c.exportedToSupplier))
+                              }).ToList();
+                //26052025
             }
 
             //Calculate Discount
@@ -960,7 +976,7 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private string GetRessourceDescription(byte ByBoq,int boqSeq, string resourceDescription, bool isAlternative)
+        private string GetRessourceDescription(byte ByBoq,string boqResSeq, string resourceDescription, bool isAlternative)
         {
             string resDesc = "";
 
@@ -973,17 +989,10 @@ namespace AccApi.Repository.Managers
             }
             else
             {
-                var result = from a in _dbcontext.TblBoqVds
-                             join b in _dbcontext.TblResources on a.BoqResSeq equals b.ResSeq
-                             where a.BoqSeq == boqSeq
-                             select new RessourceList
-                             {
-                                 resSeq = a.BoqResSeq,
-                                 resDesc = b.ResDescription
-                             };
-
+                var result = _dbcontext.TblResources.Where(x => x.ResSeq == boqResSeq).FirstOrDefault();
+                            
                 if (result != null)
-                    resDesc = result.FirstOrDefault().resDesc;
+                    resDesc = result.ResDescription;
             }
 
             return resDesc;
@@ -1119,7 +1128,7 @@ namespace AccApi.Repository.Managers
                             var revdtl = new TblRevisionDetail()
                             {
                                 RdRevisionId = revId,
-                                RdResourceSeq = 0,
+                                RdResourceSeq = "0",
                                 RdBoqItem = row.ItemO,
                                 RdPrice = 0,
                                 RdPriceOrigCurrency = 0,
@@ -1191,38 +1200,39 @@ namespace AccApi.Repository.Managers
                                   BoqPackage = b.BoqPackage,
                                   BoqScope = b.BoqScope,
                                   DescriptionO=o.DescriptionO,
+                                  BoqResSeq=b.BoqResSeq,
                                   ResDescription=r.ResDescription,
                                   ResSeq=r.ResSeq,
-                                  UnitO=o.UnitO,
-                                  L1 = o.L1,
-                                  L2 = o.L2,
-                                  L3 = o.L3,
-                                  L4 = o.L4,
-                                  L5 = o.L5,
-                                  L6 = o.L6,
-                                  L7 = o.L7,
-                                  L8 = o.L8,
-                                  L9 = o.L9,
-                                  L10 = o.L10,
-                                  C1 = o.C1,
-                                  C2 = o.C2,
-                                  C3 = o.C3,
-                                  C4 = o.C4,
-                                  C5 = o.C5,
-                                  C6 = o.C6,
-                                  C7 = o.C7,
-                                  C8 = o.C8,
-                                  C9 = o.C9,
-                                  C10 = o.C10,
-                                  C11 = o.C11,
-                                  C12 = o.C12,
-                                  C13 = o.C13,
-                                  C14 = o.C14,
-                                  C15 = o.C15
+                                  //UnitO=o.UnitO,
+                                  //L1 = o.L1,
+                                  //L2 = o.L2,
+                                  //L3 = o.L3,
+                                  //L4 = o.L4,
+                                  //L5 = o.L5,
+                                  //L6 = o.L6,
+                                  //L7 = o.L7,
+                                  //L8 = o.L8,
+                                  //L9 = o.L9,
+                                  //L10 = o.L10,
+                                  //C1 = o.C1,
+                                  //C2 = o.C2,
+                                  //C3 = o.C3,
+                                  //C4 = o.C4,
+                                  //C5 = o.C5,
+                                  //C6 = o.C6,
+                                  //C7 = o.C7,
+                                  //C8 = o.C8,
+                                  //C9 = o.C9,
+                                  //C10 = o.C10,
+                                  //C11 = o.C11,
+                                  //C12 = o.C12,
+                                  //C13 = o.C13,
+                                  //C14 = o.C14,
+                                  //C15 = o.C15
                               }).ToList();
 
                     var resourcesGrp = result
-                            .GroupBy(x => new { x.ResSeq, x.BoqUnitMesure,x.BoqUprice,x.BoqScope  ,x.ResDescription })
+                            .GroupBy(x => new { x.BoqResSeq, x.ResDescription, x.BoqUnitMesure,x.BoqUprice,x.BoqScope })
                             .Select(p => new BoqRessourcesList
                             {
                                 RowNumber = 0,
@@ -1235,33 +1245,34 @@ namespace AccApi.Repository.Managers
                                 BoqDiv = p.First().BoqDiv,
                                 BoqPackage = p.First().BoqPackage,
                                 BoqScope = p.First().BoqScope,
-                                DescriptionO = p.First().DescriptionO,
-                                ResDescription = p.First().ResDescription,
-                                L1 = p.First().L1,
-                                L2 = p.First().L2,
-                                L3 = p.First().L3,
-                                L4 = p.First().L4,
-                                L5 = p.First().L5,
-                                L6 = p.First().L6,
-                                L7 = p.First().L7,
-                                L8 = p.First().L8,
-                                L9 = p.First().L9,
-                                L10 = p.First().L10,
-                                C1 = p.First().C1,
-                                C2 = p.First().C2,
-                                C3 = p.First().C3,
-                                C4 = p.First().C4,
-                                C5 = p.First().C5,
-                                C6 = p.First().C6,
-                                C7 = p.First().C7,
-                                C8 = p.First().C8,
-                                C9 = p.First().C9,
-                                C10 = p.First().C10,
-                                C11 = p.First().C11,
-                                C12 = p.First().C12,
-                                C13 = p.First().C13,
-                                C14 = p.First().C14,
-                                C15 = p.First().C15
+                                BoqResSeq = p.First().BoqResSeq,
+                                //DescriptionO = p.First().DescriptionO,
+                                ResDescription = p.First().ResDescription
+                                //L1 = p.First().L1,
+                                //L2 = p.First().L2,
+                                //L3 = p.First().L3,
+                                //L4 = p.First().L4,
+                                //L5 = p.First().L5,
+                                //L6 = p.First().L6,
+                                //L7 = p.First().L7,
+                                //L8 = p.First().L8,
+                                //L9 = p.First().L9,
+                                //L10 = p.First().L10,
+                                //C1 = p.First().C1,
+                                //C2 = p.First().C2,
+                                //C3 = p.First().C3,
+                                //C4 = p.First().C4,
+                                //C5 = p.First().C5,
+                                //C6 = p.First().C6,
+                                //C7 = p.First().C7,
+                                //C8 = p.First().C8,
+                                //C9 = p.First().C9,
+                                //C10 = p.First().C10,
+                                //C11 = p.First().C11,
+                                //C12 = p.First().C12,
+                                //C13 = p.First().C13,
+                                //C14 = p.First().C14,
+                                //C15 = p.First().C15
                             }).ToList();
 
 
@@ -1272,9 +1283,10 @@ namespace AccApi.Repository.Managers
                             var revdtl = new TblRevisionDetail()
                             {
                                 RdRevisionId = revId,
-                                RdResourceSeq = row.BoqSeq,
+                                RdResourceSeq = row.BoqResSeq,
                                 RdBoqItem = row.BoqItem,
                                 RdPrice = 0,
+                                BoqUnitMesure = row.BoqUnitMesure,
                                 RdQty = row.BoqScopeQty,
                                 RdQuotationQty = row.BoqScopeQty,
                                 RdComment = "",
@@ -1292,31 +1304,32 @@ namespace AccApi.Repository.Managers
                                 ItemDescription = row.DescriptionO,
                                 UnitPriceAfterDiscount = 0,
                                 TotalPrice = 0,
-                                L1=row.L1,
-                                L2 = row.L2,
-                                L3 = row.L3,
-                                L4 = row.L4,
-                                L5 = row.L5,
-                                L6 = row.L6,
-                                L7 = row.L7,
-                                L8 = row.L8,
-                                L9 = row.L9,
-                                L10 = row.L10,
-                                C1 = row.C1,
-                                C2 = row.C2,
-                                C3 = row.C3,
-                                C4 = row.C4,
-                                C5 = row.C5,
-                                C6 = row.C6,
-                                C7 = row.C7,
-                                C8 = row.C8,
-                                C9 = row.C9,
-                                C10 = row.C10,
-                                C11 = row.C11,
-                                C12 = row.C12,
-                                C13 = row.C13,
-                                C14 = row.C14,
-                                C15 = row.C15
+                                RdBudUnitPrice = row.BoqUprice,
+                                //L1=row.L1,
+                                //L2 = row.L2,
+                                //L3 = row.L3,
+                                //L4 = row.L4,
+                                //L5 = row.L5,
+                                //L6 = row.L6,
+                                //L7 = row.L7,
+                                //L8 = row.L8,
+                                //L9 = row.L9,
+                                //L10 = row.L10,
+                                //C1 = row.C1,
+                                //C2 = row.C2,
+                                //C3 = row.C3,
+                                //C4 = row.C4,
+                                //C5 = row.C5,
+                                //C6 = row.C6,
+                                //C7 = row.C7,
+                                //C8 = row.C8,
+                                //C9 = row.C9,
+                                //C10 = row.C10,
+                                //C11 = row.C11,
+                                //C12 = row.C12,
+                                //C13 = row.C13,
+                                //C14 = row.C14,
+                                //C15 = row.C15
                             };
                             LstRevDetails.Add(revdtl);
                         }
