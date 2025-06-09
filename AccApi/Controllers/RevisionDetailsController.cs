@@ -269,7 +269,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq")]
-        public List<GroupingLevelModel> GetComparisonSheetByBoq(int packageId, SearchInput input, string CostConn, string C)
+        public List<C> GetComparisonSheetByBoq(int packageId, SearchInput input, string CostConn, string C)
         {
             try
             {
@@ -599,11 +599,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("ExcludRessource")]
-        public bool ExcludRessource(int packId, int boqSeq, bool isNewItem, bool isAlternative, bool isExclud, string CostConn)
+        public bool ExcludRessource(int packId, string boqResSeq, bool isNewItem, bool isAlternative, bool isExclud, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.ExcludRessource(packId, boqSeq, isNewItem, isAlternative, isExclud, CostConn);
+                return this._revisionDetailsRepository.ExcludRessource(packId, boqResSeq, isNewItem, isAlternative, isExclud, CostConn);
             }
             catch (Exception ex)
             {

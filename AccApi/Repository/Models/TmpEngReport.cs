@@ -88,5 +88,8 @@ namespace AccApi.Repository.Models
         [StringLength(150)]
         public string SubWbs { get; set; }
         public double? TotalQty { get; set; }
+        [Column("Sub-Area")]
+        [StringLength(500)]
+        public string SubArea { get; set; }
     }
 }

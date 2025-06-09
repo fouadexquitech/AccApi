@@ -7,7 +7,7 @@ namespace AccApi.Repository.View_Models
 {
     public class AssignRevisionDetails
     {
-        public int resourceID { get; set; }
+        public string resourceID { get; set; }
         public string resourceName { get; set; }
        
         public int? GroupId { get; set; }
@@ -42,7 +42,7 @@ namespace AccApi.Repository.View_Models
 
     public class SupplierResrouces
     {
-        public int resourceID { get; set; }
+        public string resourceID { get; set; }
         public List<SupplierQty> supplierQtys { get; set; }
         public List<SupplierPercent> supplierPercents { get; set; }
         public bool? IsAlternative { get; set; } = false;
@@ -79,7 +79,7 @@ namespace AccApi.Repository.View_Models
 
     public class ressourceItem
     {
-        public int resId { get; set; }
+        public string resId { get; set; }
     }
 
     public class AssignSuppliertBoq

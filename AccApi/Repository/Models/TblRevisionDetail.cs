@@ -16,10 +16,11 @@ namespace AccApi.Repository.Models
         public int RdRevisionId { get; set; }
         [Key]
         [Column("rdResourceSeq")]
-        public int RdResourceSeq { get; set; }
+        [StringLength(14)]
+        public string RdResourceSeq { get; set; }
         [Key]
         [Column("rdBoqItem")]
-        [StringLength(100)]
+        [StringLength(25)]
         public string RdBoqItem { get; set; }
         [Column("rdPrice")]
         public double? RdPrice { get; set; }
@@ -56,7 +57,7 @@ namespace AccApi.Repository.Models
         public int? NewItemId { get; set; }
         public int? NewItemResourceId { get; set; }
         [Column("parentItemO")]
-        [StringLength(100)]
+        [StringLength(25)]
         public string ParentItemO { get; set; }
         [Column("parentResourceId")]
         public int? ParentResourceId { get; set; }
@@ -102,5 +103,7 @@ namespace AccApi.Repository.Models
         public string L7 { get; set; }
         public string L8 { get; set; }
         public string L9 { get; set; }
+        [Column("rdBudUnitPrice")]
+        public double? RdBudUnitPrice { get; set; }
     }
 }

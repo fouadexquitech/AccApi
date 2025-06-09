@@ -51,7 +51,7 @@ namespace AccApi.Repository.View_Models
         public string BoqPackage { get; set; }
         public int? BoqScope { get; set; }
         public string ResDescription { get; set; }
-        public int resourceID { get; set; }
+        public string resourceID { get; set; }
         public string resourceUnit { get; set; }
         public double? resourceQty { get; set; }
         public double? price { get; set; }

@@ -6,7 +6,7 @@ namespace AccApi.Repository.View_Models
 {
     public class AddRevisionDetailModel
     {
-        public int? BoqResourceSeq { get; set; }
+        public string? BoqResourceSeq { get; set; }
         public string? ResourceDescription { get; set; }
         public string? ItemO { get; set; }
         public string? ItemDescription { get; set; }

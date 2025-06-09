@@ -118,5 +118,27 @@ namespace AccApi.Repository.Models
         public DateTime? CommencementDate { get; set; }
         [Column("ConstFinishAC")]
         public float? ConstFinishAc { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? PerformanceBondAmt { get; set; }
+        [StringLength(500)]
+        public string IssuedBy { get; set; }
+        [StringLength(500)]
+        public string GuaranteeNo { get; set; }
+        [StringLength(50)]
+        public string ContractType { get; set; }
+        [Column("currency")]
+        [StringLength(50)]
+        public string Currency { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? StartingDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? CompletionDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? RevisedCompletionDate { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? ValueEngineering { get; set; }
+        public double? RetentionPercent { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? AdvancePayment { get; set; }
     }
 }

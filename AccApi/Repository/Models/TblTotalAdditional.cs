@@ -68,5 +68,11 @@ namespace AccApi.Repository.Models
         public bool? TaAddTotBudget { get; set; }
         [Column("taVORefId")]
         public int? TaVorefId { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? Submitted { get; set; }
+        [Column("SubmittedAmt_Cum", TypeName = "money")]
+        public decimal? SubmittedAmtCum { get; set; }
+        [Column("SubmittedAmt_Prev", TypeName = "money")]
+        public decimal? SubmittedAmtPrev { get; set; }
     }
 }
