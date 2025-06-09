@@ -17,7 +17,6 @@ namespace AccApi.Repository.View_Models
         public bool IsSelected { get; set; }
         public double? QuotationQty { get; set; }
         public double? QuotationAmt { get; set; }
-
         public List<GroupingResourceModel>? GroupingResources { get; set; }
         public List<GroupingPackageSupplierPriceModel>? GroupingPackageSuppliersPrices { get; set; }
         public bool? IsAlternative { get; set; } = false;
@@ -27,16 +26,23 @@ namespace AccApi.Repository.View_Models
         public string? C { get; set; }
     }
 
+
+//AH21052025
+    public class C
+    {
+        public string? C_Description { get; set; }
+        public double? C_TotalBudget { get; set; }   
+        public List<GroupingPackageSupplierPriceModel>? GroupingSupplierC_Prices { get; set; }
+        public List<GroupingLevelModel> GroupingLevels { get; set; }
+    }
+//AH21052025
+
     public class GroupingLevelModel
     {
-//AH21052025
-        public string? C_Description { get; set; }
-        public double? C_TotalBudget { get; set; }
-        public List<GroupingPackageSupplierPriceModel>? GroupingSupplierC_Prices { get; set; }
-//AH21052025
         public List<GroupingBoqModel> Items { get; set; }
         public List<GroupingResourceModel>? GroupingResources { get; set; }
         public string? LevelName { get; set; }
+        public string? C_Description { get; set; }
     }
 
     public class SupplierC_Price

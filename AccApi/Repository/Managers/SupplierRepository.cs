@@ -131,7 +131,7 @@ namespace AccApi.Repository.Managers
 
             var totalRecords = result.Count;
 
-            if (dtRequest.SearchVal != null)
+            if (dtRequest.SearchVal != null && dtRequest.SearchVal != "")
             {
                 result = result.Where(x => string.Concat(x.SupName.ToUpper()).Contains(dtRequest.SearchVal.ToUpper())).ToList();
             }
