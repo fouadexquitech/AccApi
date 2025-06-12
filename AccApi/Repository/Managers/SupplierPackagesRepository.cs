@@ -675,6 +675,7 @@ namespace AccApi.Repository.Managers
         }
         public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn)
         {
+            
             var t = await _dbcontext.Database.BeginTransactionAsync();
 
             try
@@ -720,6 +721,7 @@ namespace AccApi.Repository.Managers
                             SpByBoq = ByBoq,
                             ProjectCode = proj.PrjCode,
                             ProjectName = proj.PrjName,
+                            TecCondSent= false
                         });
                     }
                     else
@@ -813,7 +815,7 @@ namespace AccApi.Repository.Managers
                                                    IsSynched = false,
                                                    ProjectCode = proj.PrjCode,
                                                    ParentItemO = d.ParentItemO,
-                                                   ParentResourceId = d.ParentResourceId,
+                                                   ParentResourceId = d.ParentResourceId.ToString(),
                                                    NewItemId = d.NewItemId,
                                                    NewItemResourceId = d.NewItemResourceId,
                                                    IsNewItem = d.IsNew,
@@ -1203,32 +1205,32 @@ namespace AccApi.Repository.Managers
                                   BoqResSeq=b.BoqResSeq,
                                   ResDescription=r.ResDescription,
                                   ResSeq=r.ResSeq,
-                                  //UnitO=o.UnitO,
-                                  //L1 = o.L1,
-                                  //L2 = o.L2,
-                                  //L3 = o.L3,
-                                  //L4 = o.L4,
-                                  //L5 = o.L5,
-                                  //L6 = o.L6,
-                                  //L7 = o.L7,
-                                  //L8 = o.L8,
-                                  //L9 = o.L9,
-                                  //L10 = o.L10,
-                                  //C1 = o.C1,
-                                  //C2 = o.C2,
-                                  //C3 = o.C3,
-                                  //C4 = o.C4,
-                                  //C5 = o.C5,
-                                  //C6 = o.C6,
-                                  //C7 = o.C7,
-                                  //C8 = o.C8,
-                                  //C9 = o.C9,
-                                  //C10 = o.C10,
-                                  //C11 = o.C11,
-                                  //C12 = o.C12,
-                                  //C13 = o.C13,
-                                  //C14 = o.C14,
-                                  //C15 = o.C15
+                                  UnitO = o.UnitO,
+                                  L1 = o.L1,
+                                  L2 = o.L2,
+                                  L3 = o.L3,
+                                  L4 = o.L4,
+                                  L5 = o.L5,
+                                  L6 = o.L6,
+                                  L7 = o.L7,
+                                  L8 = o.L8,
+                                  L9 = o.L9,
+                                  L10 = o.L10,
+                                  C1 = o.C1,
+                                  C2 = o.C2,
+                                  C3 = o.C3,
+                                  C4 = o.C4,
+                                  C5 = o.C5,
+                                  C6 = o.C6,
+                                  C7 = o.C7,
+                                  C8 = o.C8,
+                                  C9 = o.C9,
+                                  C10 = o.C10,
+                                  C11 = o.C11,
+                                  C12 = o.C12,
+                                  C13 = o.C13,
+                                  C14 = o.C14,
+                                  C15 = o.C15
                               }).ToList();
 
                     var resourcesGrp = result
@@ -1246,7 +1248,7 @@ namespace AccApi.Repository.Managers
                                 BoqPackage = p.First().BoqPackage,
                                 BoqScope = p.First().BoqScope,
                                 BoqResSeq = p.First().BoqResSeq,
-                                //DescriptionO = p.First().DescriptionO,
+                                DescriptionO = p.First().ResDescription,
                                 ResDescription = p.First().ResDescription
                                 //L1 = p.First().L1,
                                 //L2 = p.First().L2,

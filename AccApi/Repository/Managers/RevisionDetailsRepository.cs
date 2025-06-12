@@ -2660,6 +2660,7 @@ namespace AccApi.Repository.Managers
                     c.C_TotalBudget = listBudgC.Where(x => x.C_Description == c.C_Description).Select(l => l.C_TotalBudget).FirstOrDefault();
                     c.GroupingSupplierC_Prices = listSuppPriceC.Where(x => x.C_Description == c.C_Description).OrderBy(x => x.SupplierName).ToList();
                     c.GroupingLevels = levels.Where(x => x.C_Description == c.C_Description).ToList();
+                    c.GroupingSupplierC_Prices.Add(new GroupingPackageSupplierPriceModel { SupplierName="Ideal" ,C_Description= c.C_Description, TotalPrice=0 });
 
                     foreach (var groupingLevel in c.GroupingLevels)
                     {

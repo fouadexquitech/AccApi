@@ -1389,7 +1389,6 @@ namespace AccApi.Repository.Managers
                                                                    SupplierId = (int)a.SpSupplierId
                                                                }).ToList();
 
-
                                 revDtl = revDtlQry.ToList();
 
                                 foreach (var itm in revDtlQryNew)

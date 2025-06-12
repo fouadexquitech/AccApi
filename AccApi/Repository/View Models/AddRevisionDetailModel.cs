@@ -24,7 +24,7 @@ namespace AccApi.Repository.View_Models
         public int? NewItemId { get; set; }
         public int? NewItemResourceId { get; set; }
         public string? ParentItemO { get; set; }
-        public int? ParentResourceId { get; set; }
+        public string? ParentResourceId { get; set; }
         public double? UnitPriceAfterDiscount { get; set; }=0;
 
         public string UnitO { get; set; } = "";
