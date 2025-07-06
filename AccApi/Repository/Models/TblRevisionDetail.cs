@@ -60,7 +60,8 @@ namespace AccApi.Repository.Models
         [StringLength(25)]
         public string ParentItemO { get; set; }
         [Column("parentResourceId")]
-        public int? ParentResourceId { get; set; }
+        [StringLength(14)]
+        public string ParentResourceId { get; set; }
         public string ResourceDescription { get; set; }
         public string ItemDescription { get; set; }
         [Column("rdQuotationQty")]

@@ -26,14 +26,14 @@ namespace AccApi.Repository.View_Models
         public string? GroupName { get; set; }
 
         public int? BurRev { get; set; }
-        public int BoqSeq { get; set; }
-        public string BoqCtg { get; set; }
-        public string BoqUnitMesure { get; set; }
+        public int? BoqSeq { get; set; }
+        public string? BoqCtg { get; set; }
+        public string? BoqUnitMesure { get; set; }
         public double? BoqUprice { get; set; }
-        public string BoqDiv { get; set; }
-        public string BoqSubDiv { get; set; }
-        public string BoqTrade { get; set; }
-        public string BoqPackage { get; set; }
+        public string? BoqDiv { get; set; }
+        public string? BoqSubDiv { get; set; }
+        public string? BoqTrade { get; set; }
+        public string? BoqPackage { get; set; }
         public int? BoqScope { get; set; }
         public string ResSeq { get; set; }
         public string ResDescription { get; set; }
@@ -50,7 +50,7 @@ namespace AccApi.Repository.View_Models
         public int? NewItemId { get; set; }
         public int? NewItemResourceId { get; set; }
         public string? ParentItemO { get; set; }
-        public int? ParentResourceId { get; set; }
+        public string? ParentResourceId { get; set; }
         public bool? IsExcluded { get; set; } = false;
         public int SupplierId { get; set; }
 
