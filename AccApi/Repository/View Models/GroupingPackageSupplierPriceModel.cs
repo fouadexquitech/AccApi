@@ -42,7 +42,7 @@ namespace AccApi.Repository.View_Models
         public int? NewItemId { get; set; }
         public int? NewItemResourceId { get; set; }
         public string? ParentItemO { get; set; }
-        public int? ParentResourceId { get; set; }
+        public string? ParentResourceId { get; set; }
         public bool isCreatedByThisSupplier { get; set; } = false;
         public bool? IsExcluded { get; set; } = false;
         public string ItemDescription { get; set; }
