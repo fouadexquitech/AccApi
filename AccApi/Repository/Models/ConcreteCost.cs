@@ -34,5 +34,18 @@ namespace AccApi.Repository.Models
         public decimal? Hrs { get; set; }
         [Column(TypeName = "money")]
         public decimal? Cost { get; set; }
+        [Column("username")]
+        [StringLength(100)]
+        public string Username { get; set; }
+        [Column("subcSubDivQtyCum")]
+        public double? SubcSubDivQtyCum { get; set; }
+        [Column("subcTradeQtyCum")]
+        public double? SubcTradeQtyCum { get; set; }
+        [Column("subcHrsW")]
+        public double? SubcHrsW { get; set; }
+        [Column("subcHrsCum")]
+        public double? SubcHrsCum { get; set; }
+        public double? CstAccSupervW { get; set; }
+        public double? CstAccSupervCum { get; set; }
     }
 }

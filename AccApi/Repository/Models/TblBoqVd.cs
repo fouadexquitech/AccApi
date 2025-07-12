@@ -129,5 +129,13 @@ namespace AccApi.Repository.Models
         public string SubBoq { get; set; }
         public bool? IsSynched { get; set; }
         public double? BoqUpriceBeforeDisct { get; set; }
+        [Column("boqInsertedFromVendan")]
+        public byte? BoqInsertedFromVendan { get; set; }
+        [Column("boqInsertedFromVendanBy")]
+        [StringLength(50)]
+        public string BoqInsertedFromVendanBy { get; set; }
+        [Column("boqInsertedFromVendanDate", TypeName = "datetime")]
+        public DateTime? BoqInsertedFromVendanDate { get; set; }
+        public double? BoqUpriceDiscounted { get; set; }
     }
 }

@@ -17,6 +17,7 @@ using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using File = System.IO.File;
 using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
+using AccApi.Repository.Models;
 
 namespace AccApi.Repository.Managers
 {
@@ -701,6 +702,7 @@ namespace AccApi.Repository.Managers
                         };
             return query.FirstOrDefault();
         }
+        
 
         public bool AssignPackages(AssignPackages input, string CostConn)
         {
@@ -1618,24 +1620,24 @@ namespace AccApi.Repository.Managers
                     worksheet.Column(8).Width = 10;
                     worksheet.Cells[i, 9].Value = "Vd Res Total Price";
                     worksheet.Column(9).Width = 10;
-                    worksheet.Cells[i, 10].Value = "ST Res Div";
+                    //worksheet.Cells[i, 10].Value = "ST Res Div";
+                    //worksheet.Column(10).Width = 10;
+                    //worksheet.Cells[i, 11].Value = "ST Res Type";
+                    //worksheet.Column(11).Width = 10;
+                    //worksheet.Cells[i, 12].Value = "ST Res Unit";
+                    //worksheet.Column(12).Width = 10;
+                    //worksheet.Cells[i, 13].Value = "ST Res Qty";
+                    //worksheet.Column(13).Width = 10;
+                    worksheet.Cells[i, 10].Value = "ST Res Unit Price";
                     worksheet.Column(10).Width = 10;
-                    worksheet.Cells[i, 11].Value = "ST Res Type";
+                    worksheet.Cells[i, 11].Value = "ST Res Total Price";
                     worksheet.Column(11).Width = 10;
-                    worksheet.Cells[i, 12].Value = "ST Res Unit";
-                    worksheet.Column(124).Width = 10;
-                    worksheet.Cells[i, 13].Value = "ST Res Qty";
-                    worksheet.Column(13).Width = 10;
-                    worksheet.Cells[i, 14].Value = "ST Res Unit Price";
-                    worksheet.Column(14).Width = 10;
-                    worksheet.Cells[i, 15].Value = "ST Res Total Price";
-                    worksheet.Column(15).Width = 10;
 
-                    worksheet.SelectedRange[i, 1, i, 15].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.SelectedRange[i, 1, i, 11].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                     worksheet.SelectedRange[i, 1, i, 9].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                    worksheet.SelectedRange[i, 10, i, 15].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                    worksheet.SelectedRange[i, 10, i, 11].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
 
-                    i = 4;
+                    i = 2;
                     foreach (var x in lstBoq)
                     {
                         worksheet.Cells[i, 1].Value = (x.ItemO == null) ? "" : x.ItemO;
@@ -1650,18 +1652,21 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 9].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
                         worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
 
-                        worksheet.Cells[i, 10].Value = (x.BoqDiv_st == null) ? "" : x.BoqDiv_st;
-                        worksheet.Cells[i, 11].Value = (x.BoqCtg_st == null) ? "" : x.BoqCtg_st;
-                        worksheet.Cells[i, 12].Value = (x.BoqUnitMesure_st == null) ? "" : x.BoqUnitMesure_st;
-                        worksheet.Cells[i, 13].Value = (x.BoqQty_st == null) ? "" : x.BoqQty_st;
-                        worksheet.Cells[i, 14].Value = (x.BoqUprice_st == null) ? "" : x.BoqUprice_st;
-                        worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[i, 15].Value = (x.BoqTotalPrice_st == null) ? "" : x.BoqTotalPrice_st;
-                        worksheet.Cells[i, 15].Style.Numberformat.Format = "#,##0.0";
+                        //worksheet.Cells[i, 10].Value = (x.BoqDiv_st == null) ? "" : x.BoqDiv_st;
+                        //worksheet.Cells[i, 11].Value = (x.BoqCtg_st == null) ? "" : x.BoqCtg_st;
+                        //worksheet.Cells[i, 12].Value = (x.BoqUnitMesure_st == null) ? "" : x.BoqUnitMesure_st;
+                        //worksheet.Cells[i, 13].Value = (x.BoqQty_st == null) ? "" : x.BoqQty_st;
+                        worksheet.Cells[i, 10].Value = (x.BoqUprice_st == null) ? "" : x.BoqUprice_st;
+                        worksheet.Cells[i, 10].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 11].Value = (x.BoqTotalPrice_st == null) ? "" : x.BoqTotalPrice_st;
+                        worksheet.Cells[i, 11].Style.Numberformat.Format = "#,##0.0";
 
-                        worksheet.SelectedRange[i, 1, i, 15].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        worksheet.Cells[i, 12].Value = (x.BoqTotalPrice_st == null || x.BoqTotalPrice == null) ? 0 : (x.BoqTotalPrice/x.BoqTotalPrice_st);
+                        worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.00";
+
+                        worksheet.SelectedRange[i, 1, i, 11].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
                         worksheet.SelectedRange[i, 1, i, 9].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGray);
-                        worksheet.SelectedRange[i, 10, i, 15].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
+                        worksheet.SelectedRange[i, 10, i, 11].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
 
                         i++;
                     }
@@ -2632,7 +2637,80 @@ namespace AccApi.Repository.Managers
             return response;
         }
 
-    }
 
-    
+        public bool AddNewBoqRessource(string CostConn, AddNewBoqRessourceModel NewRes, string userName)
+        {
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            if ((NewRes.boqList.AssignOriginalBoqList.Count > 0) && (NewRes.newRessource != null))
+            {
+                string resSeq;
+                var r = _costDbcontext.TblResources.Where(x => x.ResDescription == NewRes.newRessource.ResDescription).FirstOrDefault();
+                if (r != null)
+                {
+                    resSeq = r.ResSeq;
+                }
+                else
+                {
+                    var maxresseq = _costDbcontext.TblResources.Max(x => x.ResSeq);
+                    long number = Convert.ToInt64(maxresseq);
+
+                    var tblnewres = new TblResource { ResSeq = Convert.ToString(number + 1), ResDescription = NewRes.newRessource.ResDescription };
+                    _costDbcontext.Add<TblResource>(tblnewres);
+                    _costDbcontext.SaveChanges();
+
+                    resSeq = tblnewres.ResSeq;
+                }
+
+                var lstBoqo = (from a in NewRes.boqList.AssignOriginalBoqList
+                               join b in _costDbcontext.TblOriginalBoqVds on a.ItemO equals b.ItemO
+                               select b).ToList();
+
+                var maxseq = _costDbcontext.TblBoqVds.Max(x => x.BoqSeq);
+
+                if (lstBoqo != null)
+                {
+                    foreach (var item in NewRes.boqList.AssignOriginalBoqList)
+                    {
+                        maxseq = maxseq + 1;
+                        var res = new TblBoqVd {
+                            BoqSeq = maxseq,
+                            BoqRivision = 1,
+                            BoqItem = item.ItemO,
+                            BoqResSeq = resSeq,
+                            BoqCtg = NewRes.newRessource.BoqCtg,
+                            BoqDiv= NewRes.newRessource.BoqDiv,
+                            BoqProject = "D3",
+                            BoqUnit= NewRes.newRessource.BoqUnitMesure,
+                            BoqQty = NewRes.newRessource.BoqQty,
+                            BoqBillQty = NewRes.newRessource.BoqQty,
+                            BoqQtyScope= NewRes.newRessource.BoqQty,
+                            BoqUprice = NewRes.newRessource.boqUpriceDisc,
+                            BoqUpriceBeforeDisct = NewRes.newRessource.BoqUprice,
+                            BoqProduction = 1,
+                            BoqUnitMesure = NewRes.newRessource.BoqUnitMesure,
+                            BoqInsertedFromVendan=1,
+                            BoqInsertedFromVendanBy= userName,
+                            BoqInsertedFromVendanDate=DateTime.Now
+                        };
+                        _costDbcontext.Add<TblBoqVd>(res);
+                        //_costDbcontext.SaveChanges();
+
+                        var originalBoq = _costDbcontext.TblOriginalBoqVds.Where(x => x.ItemO == item.ItemO).FirstOrDefault();
+                        var newtotalPrice = originalBoq.Submitted + (NewRes.newRessource.BoqQty * NewRes.newRessource.boqUpriceDisc);
+                        var newUnitPrice = newtotalPrice / originalBoq.QtyO;
+                        originalBoq.Submitted = newtotalPrice;
+                        originalBoq.UnitRate = newUnitPrice;
+                        _costDbcontext.TblOriginalBoqVds.Update(originalBoq);
+                       
+                    }
+                    _costDbcontext.SaveChanges();
+
+                }
+            }
+
+            return true;
+        }
+
+    }
 }

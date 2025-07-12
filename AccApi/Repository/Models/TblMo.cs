@@ -47,5 +47,15 @@ namespace AccApi.Repository.Models
         [Column("insertDate", TypeName = "datetime")]
         public DateTime? InsertDate { get; set; }
         public byte? OnOffSite { get; set; }
+        [Column("deliveryNoteRef")]
+        [StringLength(100)]
+        public string DeliveryNoteRef { get; set; }
+        [Column("deliveryNoteDate", TypeName = "datetime")]
+        public DateTime? DeliveryNoteDate { get; set; }
+        [Column("MIRRef")]
+        [StringLength(100)]
+        public string Mirref { get; set; }
+        [Column("MIRDate", TypeName = "datetime")]
+        public DateTime? Mirdate { get; set; }
     }
 }

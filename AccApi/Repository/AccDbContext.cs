@@ -245,6 +245,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.DivSubDiv).IsUnicode(false);
 
                 entity.Property(e => e.SubDiv).IsUnicode(false);
+
+                entity.Property(e => e.Username).IsUnicode(false);
             });
 
             modelBuilder.Entity<ConcreteCostTotal>(entity =>
@@ -252,6 +254,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.DivSubDiv).IsUnicode(false);
 
                 entity.Property(e => e.SubDiv).IsUnicode(false);
+
+                entity.Property(e => e.Username).IsUnicode(false);
             });
 
             modelBuilder.Entity<Div03>(entity =>
@@ -597,6 +601,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.TrCostMangmnt).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.TrCostTarget).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TrDiv).IsUnicode(false);
 
                 entity.Property(e => e.TrQty).HasDefaultValueSql("((0))");
@@ -604,6 +610,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.TrSubDiv).IsUnicode(false);
 
                 entity.Property(e => e.TrSubTrade).IsUnicode(false);
+
+                entity.Property(e => e.TrTarget).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TrTrade).IsUnicode(false);
 
@@ -804,11 +812,17 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.BoqSeq).ValueGeneratedNever();
 
+                entity.Property(e => e.BoqInsertedFromVendan).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqInsertedFromVendanBy).IsUnicode(false);
+
                 entity.Property(e => e.BoqPackage).IsUnicode(false);
 
                 entity.Property(e => e.BoqUnitMesure).IsUnicode(false);
 
                 entity.Property(e => e.BoqUpriceBeforeDisct).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.BoqUpriceDiscounted).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
 
@@ -1439,6 +1453,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.AmtMat).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.DeliveryNoteRef).IsUnicode(false);
+
                 entity.Property(e => e.Description).IsUnicode(false);
 
                 entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
@@ -1450,6 +1466,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.Ldate).HasDefaultValueSql("(getdate())");
 
                 entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.Mirref).IsUnicode(false);
 
                 entity.Property(e => e.OnOffSite).HasDefaultValueSql("((0))");
 
@@ -2746,6 +2764,10 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.SubDivision).IsUnicode(false);
 
+                entity.Property(e => e.SubcHrsUnitPrice).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SubcOhdPrfPerc).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.Trade).IsUnicode(false);
 
                 entity.Property(e => e.UpdatedBy).IsUnicode(false);
@@ -2902,6 +2924,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.TaAddTotBudget).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TaDiv).IsUnicode(false);
+
+                entity.Property(e => e.TaPer).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TaSkipTotPayment).HasDefaultValueSql("((0))");
 

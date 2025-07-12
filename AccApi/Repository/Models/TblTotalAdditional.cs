@@ -74,5 +74,7 @@ namespace AccApi.Repository.Models
         public decimal? SubmittedAmtCum { get; set; }
         [Column("SubmittedAmt_Prev", TypeName = "money")]
         public decimal? SubmittedAmtPrev { get; set; }
+        [Column("taPer")]
+        public double? TaPer { get; set; }
     }
 }
