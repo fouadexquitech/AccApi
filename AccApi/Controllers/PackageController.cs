@@ -394,12 +394,12 @@ namespace AccApi.Controllers
         }
 
 
-        [HttpPost("updateBoqResQty")]
-        public bool updateBoqResQty(string CostConn, BoqModel res)
+        [HttpPost("updateBoqRes")]
+        public bool updateBoqRes(string CostConn, BoqModel res, int type)
         {
             try
             {
-                return this._packageRepository.updateBoqResQty(CostConn, res);
+                return this._packageRepository.updateBoqRes(CostConn, res,  type);
             }
             catch (Exception ex)
             {

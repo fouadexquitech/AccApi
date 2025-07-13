@@ -550,7 +550,8 @@ namespace AccApi.Repository.Managers
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
                                                    AssignedPackage = "",
-                                                   TotalUnitPrice= (b.BoqUprice * b.BoqQty)/ o.UnitRate
+                                                   TotalUnitPrice= (b.BoqUprice * b.BoqQty)/ o.UnitRate,
+                                                   BoqInsertedFromVendan = b.BoqInsertedFromVendan
                                                });
 
 
@@ -647,7 +648,8 @@ namespace AccApi.Repository.Managers
                                                    L2 = ((o.L2 == null) ? "" : o.L2),
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
-                                                   AssignedPackage = ""
+                                                   AssignedPackage = "",
+                                                   BoqInsertedFromVendan=b.BoqInsertedFromVendan
                                                });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -1978,12 +1980,16 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
-        public bool updateBoqResQty(string CostConn, BoqModel res)
+        public bool updateBoqRes(string CostConn, BoqModel res,int type)
         {
             AccDbContext _context = new AccDbContext(CostConn);
 
             var result = _context.TblBoqVds.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
-            result.BoqQtyScope = res.BoqScopeQty;
+
+            if (type==1)
+                result.BoqQtyScope = res.BoqScopeQty;
+            else
+                result.BoqUprice = res.BoqUprice;
 
             if (result != null)
             {

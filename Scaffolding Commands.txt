@@ -13,7 +13,7 @@ Scaffold-DbContext "Data Source=10.10.2.123;Initial Catalog=RamhanIsland_CostDat
 
 **************After Scaffold AccDbContext : copy below code to the AccDbContext  *******************
   	
-	private readonly string _connectionString;
+	    private readonly string _connectionString;
 
         public AccDbContext(string connectionString)
         {
