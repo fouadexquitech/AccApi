@@ -1,4 +1,5 @@
 ﻿
+using AccApi.Repository.View_Models.Request;
 using System;
 using System.Collections.Generic;
 
@@ -38,11 +39,15 @@ namespace AccApi.Repository.View_Models
         public double? BoqQty { get; set; }
         public double? BoqBillQty { get; set; }
         public double? BoqScopeQty { get; set; }
-
         public bool IsSelected { get; set; }
-
         public double? TotalUnitPrice { get; set; }
-        
+        public double? boqUpriceDisc { get; set; }
+        public byte? BoqInsertedFromVendan { get; set; }
+    }
 
+    public class AddNewBoqRessourceModel
+    {
+        public BoqModel newRessource { get; set; }
+        public AssignPackages boqList { get; set; }
     }
 }

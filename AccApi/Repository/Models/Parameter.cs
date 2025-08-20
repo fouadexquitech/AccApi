@@ -116,5 +116,7 @@ namespace AccApi.Repository.Models
         public double? TxtFwActual { get; set; }
         [Column("txtPLActual")]
         public double? TxtPlactual { get; set; }
+        [Column("perM3")]
+        public double? PerM3 { get; set; }
     }
 }

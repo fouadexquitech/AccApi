@@ -848,7 +848,8 @@ namespace AccApi.Repository.Managers
                                                    C12 = (d.C12 == null) ? "" : d.C12,
                                                    C13 = (d.C13 == null) ? "" : d.C13,
                                                    C14 = (d.C14 == null) ? "" : d.C14,
-                                                   C15 = (d.C15 == null) ? "" : d.C15
+                                                   C15 = (d.C15 == null) ? "" : d.C15,
+                                                   BoqRefNumber= (d.RdBoqRefNumber == null) ? "" : d.RdBoqRefNumber,
                                                }).ToList(),
                             CommercialConditions= (from d in LstComCondReply
                                                    select new AddCondModel
@@ -1071,7 +1072,8 @@ namespace AccApi.Repository.Managers
                             C12 = row.C12,
                             C13 = row.C13,
                             C14 = row.C14,
-                            C15 = row.C15
+                            C15 = row.C15,
+                            RdBoqRefNumber = row.RdBoqRefNumber
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
@@ -1120,7 +1122,8 @@ namespace AccApi.Repository.Managers
                                   C12 = o.C12,
                                   C13 = o.C13,
                                   C14 = o.C14,
-                                  C15 = o.C15
+                                  C15 = o.C15,
+                                  BoqRefNumber=o.RefNumber
                               }).ToList();
 
                     foreach (var row in result)
@@ -1177,7 +1180,8 @@ namespace AccApi.Repository.Managers
                                 C12 = row.C12,
                                 C13 = row.C13,
                                 C14 = row.C14,
-                                C15 = row.C15
+                                C15 = row.C15,
+                                RdBoqRefNumber=row.BoqRefNumber
                             };
                             LstRevDetails.Add(revdtl);
                         }
@@ -1230,7 +1234,8 @@ namespace AccApi.Repository.Managers
                                   C12 = o.C12,
                                   C13 = o.C13,
                                   C14 = o.C14,
-                                  C15 = o.C15
+                                  C15 = o.C15,
+                                  BoqRefNumber=o.RefNumber
                               }).ToList();
 
                     var resourcesGrp = result
@@ -1249,7 +1254,8 @@ namespace AccApi.Repository.Managers
                                 BoqScope = p.First().BoqScope,
                                 BoqResSeq = p.First().BoqResSeq,
                                 DescriptionO = p.First().ResDescription,
-                                ResDescription = p.First().ResDescription
+                                ResDescription = p.First().ResDescription,
+                                BoqRefNumber = p.First().BoqRefNumber
                                 //L1 = p.First().L1,
                                 //L2 = p.First().L2,
                                 //L3 = p.First().L3,
@@ -1307,6 +1313,7 @@ namespace AccApi.Repository.Managers
                                 UnitPriceAfterDiscount = 0,
                                 TotalPrice = 0,
                                 RdBudUnitPrice = row.BoqUprice,
+                                RdBoqRefNumber = row.BoqRefNumber,
                                 //L1=row.L1,
                                 //L2 = row.L2,
                                 //L3 = row.L3,

@@ -15,7 +15,7 @@ namespace AccApi.Repository.Interfaces
         Task<string> ExportExcelVerification(SearchInput input, string costDB, string userName);
         Task<string> ExportNotAssigned(string costDB);
         public bool updateOriginalBoqQty(string CostConn,OriginalBoqModel boq);
-        public bool updateBoqResQty(string CostConn, BoqModel res);
+        public bool updateBoqRes(string CostConn, BoqModel res, int type);
         public bool updateBoqTradeDesc(string tradeDesc, string CostConn, List<OriginalBoqModel> origBoqList);
 
         PackageDetailsModel GetPackageById(int IdPkge);
@@ -27,5 +27,7 @@ namespace AccApi.Repository.Interfaces
         Task<ResponseModel<bool>> DeletePackage(int id, string CostConn);
         Task<string> ExportExcelPackagesCost(int withBoq,string costDB,string CostConn, SearchInput input);
         Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(string CostConn,DataTablesRequest dtRequest);
+
+        public bool AddNewBoqRessource(string CostConn, AddNewBoqRessourceModel NewRes, string userName);
     }
 }

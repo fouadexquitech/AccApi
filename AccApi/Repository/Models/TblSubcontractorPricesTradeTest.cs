@@ -43,5 +43,9 @@ namespace AccApi.Repository.Models
         public string UpdatedBy { get; set; }
         [Column("updatedDate", TypeName = "datetime")]
         public DateTime? UpdatedDate { get; set; }
+        [Column("subcOhdPrfPerc")]
+        public double? SubcOhdPrfPerc { get; set; }
+        [Column("subcHrsUnitPrice")]
+        public double? SubcHrsUnitPrice { get; set; }
     }
 }

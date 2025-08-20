@@ -60,5 +60,15 @@ namespace AccApi.Repository.Models
         public byte? TrQty { get; set; }
         [Column("trCostMangmnt")]
         public double? TrCostMangmnt { get; set; }
+        [Column("trTarget")]
+        public double? TrTarget { get; set; }
+        [Column("trCostTarget")]
+        public double? TrCostTarget { get; set; }
+        [Column("trHr/m3")]
+        public double? TrHrM3 { get; set; }
+        [Column("trCost/m3")]
+        public double? TrCostM3 { get; set; }
+        [Column("trCost/m3_mgmt")]
+        public int? TrCostM3Mgmt { get; set; }
     }
 }

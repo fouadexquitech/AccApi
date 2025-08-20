@@ -7,4 +7,6 @@ namespace AccApi.Repository.View_Models.Request
         public List<AssignOriginalBoqList> AssignOriginalBoqList { get; set; }
         public List<AssignBoqList> AssignBoqList { get; set; }
     }
+
+
 }

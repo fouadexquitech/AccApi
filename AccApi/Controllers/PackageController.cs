@@ -17,6 +17,7 @@ using AccApi.Repository.View_Models.Common;
 using System.Linq;
 using AccApi.Repository.Managers;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace AccApi.Controllers
 {
@@ -124,7 +125,7 @@ namespace AccApi.Controllers
         {
             try
             {
-                bool hasPerm = this._logonRepository.hasPermission(userName, "validateBOQ_TS_VD");
+                bool hasPerm = this._logonRepository.hasPermission(userName, "vdValidateBOQ_TS_VD");
 
                 if (hasPerm) 
                     return new JsonResult(await this._packageRepository.ExportExcelVerification(input, costDB, userName));
@@ -366,12 +367,39 @@ namespace AccApi.Controllers
             }
         }
 
-        [HttpPost("updateBoqResQty")]
-        public bool updateBoqResQty(string CostConn, BoqModel res)
+        [HttpPost("AddNewBoqRessource")]
+        public bool AddNewBoqRessource(string CostConn, AddNewBoqRessourceModel NewRes, string userName)
         {
             try
             {
-                return this._packageRepository.updateBoqResQty(CostConn, res);
+                bool hasPerm = this._logonRepository.hasPermission(userName, "vdAddNewRessource");
+
+                if (hasPerm)
+                    return this._packageRepository.AddNewBoqRessource(CostConn, NewRes, userName);
+                else
+                    return false;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return false;
+            }
+        }
+
+
+        [HttpPost("updateBoqRes")]
+        public bool updateBoqRes(string CostConn, BoqModel res, int type)
+        {
+            try
+            {
+                return this._packageRepository.updateBoqRes(CostConn, res,  type);
             }
             catch (Exception ex)
             {

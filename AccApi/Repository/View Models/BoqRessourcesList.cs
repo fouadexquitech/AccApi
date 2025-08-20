@@ -87,6 +87,9 @@ namespace AccApi.Repository.View_Models
         public string BoqDiv_st { get; set; }
         public double? BoqQty_st { get; set; }
         public double? BoqTotalPrice_st { get; set; }
+        public byte? BoqInsertedFromVendan { get; set; }
+        public double? BoqUpriceBeforeDisct { get; set; }
+        public string BoqRefNumber { get; set; } = "";
 
     }
 

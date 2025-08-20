@@ -106,5 +106,8 @@ namespace AccApi.Repository.Models
         public string L9 { get; set; }
         [Column("rdBudUnitPrice")]
         public double? RdBudUnitPrice { get; set; }
+        [Column("rdBoqRefNumber")]
+        [StringLength(100)]
+        public string RdBoqRefNumber { get; set; }
     }
 }
