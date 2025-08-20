@@ -122,5 +122,7 @@ namespace AccApi.Repository.Models
         public byte? ReadyVenDan { get; set; }
         [Column("simsomProjId")]
         public int? SimsomProjId { get; set; }
+        [Column("perM3")]
+        public double? PerM3 { get; set; }
     }
 }

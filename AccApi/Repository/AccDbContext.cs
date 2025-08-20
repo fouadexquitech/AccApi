@@ -106,6 +106,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblMissingItemsList> TblMissingItemsLists { get; set; }
         public virtual DbSet<TblMissingPrice> TblMissingPrices { get; set; }
         public virtual DbSet<TblMo> TblMos { get; set; }
+        public virtual DbSet<TblModify> TblModifies { get; set; }
         public virtual DbSet<TblOriginalBoq> TblOriginalBoqs { get; set; }
         public virtual DbSet<TblOriginalBoqCont> TblOriginalBoqConts { get; set; }
         public virtual DbSet<TblOriginalBoqSub> TblOriginalBoqSubs { get; set; }
@@ -159,6 +160,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblVohdr> TblVohdrs { get; set; }
         public virtual DbSet<TblWbsMap> TblWbsMaps { get; set; }
         public virtual DbSet<TblWeeklyFormanByArea> TblWeeklyFormanByAreas { get; set; }
+        public virtual DbSet<Tblm3ReportBudget> Tblm3ReportBudgets { get; set; }
         public virtual DbSet<Tblproject> Tblprojects { get; set; }
         public virtual DbSet<Temp> Temps { get; set; }
         public virtual DbSet<TempImportAcc> TempImportAccs { get; set; }
@@ -184,14 +186,6 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
-//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-//        {
-//            if (!optionsBuilder.IsConfigured)
-//            {
-//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=RamhanIsland_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
-//            }
-//        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -245,6 +239,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.DivSubDiv).IsUnicode(false);
 
                 entity.Property(e => e.SubDiv).IsUnicode(false);
+
+                entity.Property(e => e.SubcSubDivCstCum).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Username).IsUnicode(false);
             });
@@ -475,6 +471,8 @@ namespace AccApi.Repository
 
             modelBuilder.Entity<Parameter>(entity =>
             {
+                entity.Property(e => e.PerM3).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TxtAffairActual).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TxtAffairEstimated).HasDefaultValueSql("((0))");
@@ -599,11 +597,17 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.LastUserUpdate).IsUnicode(false);
 
+                entity.Property(e => e.TrCostM3).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.TrCostM3Mgmt).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.TrCostMangmnt).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TrCostTarget).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TrDiv).IsUnicode(false);
+
+                entity.Property(e => e.TrHrM3).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.TrQty).HasDefaultValueSql("((0))");
 
@@ -825,6 +829,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.BoqUpriceDiscounted).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.BoqWbs).IsUnicode(false);
+
+                entity.Property(e => e.DisountedByUser).IsUnicode(false);
 
                 entity.Property(e => e.InsertedBy).IsUnicode(false);
 
@@ -1482,6 +1488,15 @@ namespace AccApi.Repository
                 entity.Property(e => e.Unit).IsUnicode(false);
 
                 entity.Property(e => e.Urate).HasDefaultValueSql("((0))");
+            });
+
+            modelBuilder.Entity<TblModify>(entity =>
+            {
+                entity.Property(e => e.Luser).IsUnicode(false);
+
+                entity.Property(e => e.ModId).ValueGeneratedOnAdd();
+
+                entity.Property(e => e.ModUsrId).IsUnicode(false);
             });
 
             modelBuilder.Entity<TblOriginalBoq>(entity =>
@@ -2232,6 +2247,8 @@ namespace AccApi.Repository
 
                 entity.Property(e => e.MobileAllowC).HasDefaultValueSql("((0))");
 
+                entity.Property(e => e.PerM3).HasDefaultValueSql("((0))");
+
                 entity.Property(e => e.PolicySource).IsUnicode(false);
 
                 entity.Property(e => e.ProjAyappId).HasDefaultValueSql("((0))");
@@ -2650,6 +2667,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.RdAssignedPrice).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.RdAssignedQty).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.RdBoqRefNumber).IsUnicode(false);
 
                 entity.Property(e => e.RdBudUnitPrice).HasDefaultValueSql("((0))");
 
@@ -3121,6 +3140,18 @@ namespace AccApi.Repository
                 entity.Property(e => e.WfaSubDiv).IsUnicode(false);
 
                 entity.Property(e => e.WfaTradeCode).IsUnicode(false);
+            });
+
+            modelBuilder.Entity<Tblm3ReportBudget>(entity =>
+            {
+                entity.HasKey(e => e.Seq)
+                    .HasName("PK__tblm3Rep__DDDFBCBEE27328B0");
+
+                entity.Property(e => e.M3Trade).IsUnicode(false);
+
+                entity.Property(e => e.M3TradeDesc).IsUnicode(false);
+
+                entity.Property(e => e.M3code).IsUnicode(false);
             });
 
             modelBuilder.Entity<Tblproject>(entity =>

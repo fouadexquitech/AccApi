@@ -137,5 +137,10 @@ namespace AccApi.Repository.Models
         [Column("boqInsertedFromVendanDate", TypeName = "datetime")]
         public DateTime? BoqInsertedFromVendanDate { get; set; }
         public double? BoqUpriceDiscounted { get; set; }
+        [StringLength(50)]
+        public string DisountedByUser { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? DiscountedDate { get; set; }
+        public double? Discountedvalue { get; set; }
     }
 }
