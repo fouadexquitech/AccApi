@@ -54,6 +54,7 @@ namespace AccApi.Repository.View_Models
         public string C14 { get; set; } = "";
         public string C15 { get; set; } = "";
         public string BoqRefNumber { get; set; } = "";
+        public string AccComment { get; set; } = "";
     }
 
     public class AddCondModel

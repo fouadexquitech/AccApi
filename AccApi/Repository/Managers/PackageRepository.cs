@@ -191,7 +191,8 @@ namespace AccApi.Repository.Managers
                             C2 = (string)x["C2"],
                             C3 = (string)x["C3"],
                             C4 = (string)x["C4"],
-                            BoqRefNumber=(string)x["RefNumber"]
+                            BoqRefNumber=(string)x["RefNumber"],
+                            ObTradeDesc=(string)x["ObTradeDesc"],
                         });
                     break;
 
@@ -559,7 +560,8 @@ namespace AccApi.Repository.Managers
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
                                                    AssignedPackage = "",
                                                    TotalUnitPrice = (b.BoqUprice * b.BoqQty) / o.UnitRate,
-                                                   BoqInsertedFromVendan = b.BoqInsertedFromVendan
+                                                   BoqInsertedFromVendan = b.BoqInsertedFromVendan,
+                                                   BoqWBS=b.BoqWbs,
                                                });
 
 
@@ -2044,6 +2046,20 @@ namespace AccApi.Repository.Managers
                 _context.TblOriginalBoqVds.UpdateRange(lstBoqo);
                 _context.SaveChanges();
             }
+            return true;
+        }
+
+        public bool updateBoqComment(string boqItem, string comments, string CostConn)
+        {
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var Item =  _context.TblOriginalBoqVds.FirstOrDefault(x => x.ItemO == boqItem);
+            if (boqItem == null) return false;
+
+            Item.ObTradeDesc = comments;
+            _context.TblOriginalBoqVds.Update(Item);
+            _context.SaveChanges();               
+            
             return true;
         }
 

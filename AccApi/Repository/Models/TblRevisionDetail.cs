@@ -109,5 +109,7 @@ namespace AccApi.Repository.Models
         [Column("rdBoqRefNumber")]
         [StringLength(100)]
         public string RdBoqRefNumber { get; set; }
+        [Column("rdAccComment")]
+        public string RdAccComment { get; set; }
     }
 }

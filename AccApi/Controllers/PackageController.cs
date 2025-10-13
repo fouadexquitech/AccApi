@@ -428,6 +428,25 @@ namespace AccApi.Controllers
             }
         }
 
+        [HttpGet("updateBoqComment")]
+        public bool updateBoqComment(string boqItem, string comments, string CostConn)
+        {
+            try
+            {
+                return this._packageRepository.updateBoqComment(boqItem,  comments,  CostConn);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return false;
+            }
+        }
 
         #region Packages 
         [HttpGet("GetPackageById")]
