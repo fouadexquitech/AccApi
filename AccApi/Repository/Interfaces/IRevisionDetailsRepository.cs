@@ -1,14 +1,9 @@
-﻿using AccApi.Data_Layer;
-using AccApi.Repository.Models;
-using AccApi.Repository.Models.MasterModels;
+﻿using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AccApi.Repository.Interfaces
 {
@@ -31,11 +26,11 @@ namespace AccApi.Repository.Interfaces
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input, string CostConn);
         List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input, string CostConn);
         
-        string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
+        string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C);
         string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
         string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
         string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
-        List<string> GenerateSuppliersContracts_Excel(int packageId,SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
+        List<string> GenerateSuppliersContracts_Excel(int packageId,SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C);
 
         List<AcceptComment> GetRevisionAcceptance(int revId, string CostConn);
         bool ExcludBoq(int packId, string Item,bool isNewItem, bool exclud, string CostConn);

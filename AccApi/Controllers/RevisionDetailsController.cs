@@ -283,7 +283,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq_Excel")]
-        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
+        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn, string C)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
 
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn,C));
             }
             catch (Exception ex)
             {
@@ -474,7 +474,7 @@ namespace AccApi.Controllers
 
 
         [HttpPost("GenerateSuppliersContracts_Excel")]
-        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn)
+        public JsonResult GenerateSuppliersContracts_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn ,string C)
         {
             try
             {
@@ -485,7 +485,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
 
-                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst,  CostConn));
+                return new JsonResult(this._revisionDetailsRepository.GenerateSuppliersContracts_Excel(packageId,input,comcondRepLst,techcondRepLst,  CostConn,C));
                 
             }
             catch (Exception ex)

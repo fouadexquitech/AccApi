@@ -3,27 +3,18 @@ using System.Linq;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
 using AccApi.Repository.View_Models;
-using AccApi.Repository.View_Models.Request;
 using System.IO;
 using OfficeOpenXml;
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System.Xml.Linq;
-using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq.Dynamic.Core;
 using System.Net.Http;
-using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using System.Text;
 using System.Threading.Tasks;
-using AccApi.Repository.Models.MasterModels;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 using AccApi.Data_Layer;
-using System.Reflection.Emit;
-using System.Net.Mail;
 
 namespace AccApi.Repository.Managers
 {
@@ -80,19 +71,38 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
+            //var results = from b in supList                         
+            //              join c in _dbcontext.TblSupplierPackages on b.SupCode equals c.SpSupplierId
+            //              where c.SpPackageId == packageid
+            //              orderby c.SpPackSuppId
+            //              select new SupplierPackagesList
+            //              {
+            //                  PsId = c.SpPackSuppId,
+            //                  PsPackId = c.SpPackageId,
+            //                  PsSuppId = c.SpSupplierId,
+            //                  PsSupName = b.SupName,
+            //                  PsByBoq = c.SpByBoq,
+            //                  TecCondSent = c.TecCondSent
+            //              };
+
             var results = from b in supList
                           join c in _dbcontext.TblSupplierPackages on b.SupCode equals c.SpSupplierId
+                          join s in _dbcontext.TblSupplierPackageRevisions on c.SpPackSuppId equals s.PrPackSuppId
                           where c.SpPackageId == packageid
-                          orderby c.SpPackSuppId
+                          group new { b, c, s } by new { c.SpSupplierId, b.SupName } into g
                           select new SupplierPackagesList
                           {
-                              PsId = c.SpPackSuppId,
-                              PsPackId = c.SpPackageId,
-                              PsSuppId = c.SpSupplierId,
-                              PsSupName = b.SupName,
-                              PsByBoq = c.SpByBoq,
-                              TecCondSent = c.TecCondSent
+                              PsSuppId = g.Key.SpSupplierId,
+                              PsSupName = g.Key.SupName,
+                              RevisionStatus = g.Max(x => x.s.StatusId),
+                              SupSubmitted= g.Max(x => x.s.StatusId) ==3 ? true : false,
+                              PsId = g.Max(x => x.c.SpPackSuppId),
+                              PsPackId = g.Max(x => x.c.SpPackageId),
+                              PsByBoq = g.Max(x => x.c.SpByBoq),
+                              TecCondSent = g.Max(x => x.c.TecCondSent)
                           };
+
+
             return results.ToList();
         }
 
@@ -265,7 +275,7 @@ namespace AccApi.Repository.Managers
 
                 //AH26052025
                 boqList = boqList1
-                              .GroupBy(x => new { x.resDesc,x.unitPrice,x.unit })
+                              .GroupBy(x => new { x.resDesc,x.resUnitPrice, x.resUnit })
                               .Select(p => new boqPackageList
                               {
                                   resDesc = p.First().resDesc,
@@ -337,62 +347,65 @@ namespace AccApi.Repository.Managers
                 if (!withPrice)
                   worksheet.Protection.IsProtected = true;
 
-                    int i, j;
+                int i, j;
                 string Boq = "", OldBoq = "", C = "", OldC = "", l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
-
                 i = 1;
-                worksheet.Cells[i, 1].Value = "Item";
-                worksheet.Column(1).Width = 40;
-                worksheet.Cells[i, 2].Value = "Level";
-                worksheet.Column(3).Width = 50;
-                worksheet.Columns[3].Style.WrapText = true;
-                worksheet.Column(3).AutoFit();
-                worksheet.Cells[i, 3].Value = "Bill Description";
-                worksheet.Cells[i, 4].Value = "Unit";
-                worksheet.Cells[i, 5].Value = "Qty";
-                worksheet.Columns[5].Style.WrapText = true;
-                worksheet.Column(5).AutoFit();
-
-                if (withPrice)
-                { 
-                    worksheet.Cells[i, 6].Value = "Unit Price";
-                    worksheet.Cells[i, 7].Value = "Total Price";
-                }
+                double total = 0;
 
                 if (byBoq == 1)
                 {
-                    if (!withPrice)
+                    worksheet.Cells[i, 1].Value = "Item";
+                    worksheet.Column(1).Width = 40;
+                    worksheet.Cells[i, 2].Value = "Level";
+                    worksheet.Column(3).Width = 50;
+                    worksheet.Columns[3].Style.WrapText = true;
+                    //worksheet.Column(3).AutoFit();
+                    worksheet.Cells[i, 3].Value = "Bill Description";
+                    worksheet.Cells[i, 4].Value = "Unit";
+                    worksheet.Cells[i, 5].Value = "Qty";
+                    worksheet.Columns[5].Style.WrapText = true;
+                    //worksheet.Column(5).AutoFit();
+
+                    if (withPrice)
                     {
+                        worksheet.Cells[i, 6].Value = "Unit Price";
+                        worksheet.Cells[i, 7].Value = "Total Price";
                         worksheet.Cells[i, 8].Value = "Comments";
                         worksheet.Column(8).Width = 50;
                         worksheet.Columns[8].Style.WrapText = true;
-                        //worksheet.Column(7).AutoFit();
+                    }
+                    else
+                    { 
+                        worksheet.Cells[i, 6].Value = "Comments";
+                        worksheet.Column(6).Width = 50;
+                        worksheet.Columns[6].Style.WrapText = true;
                     }
                 }
                 else
                 {
-                    worksheet.Cells[i, 8].Value = "Ressource Type";
-                    worksheet.Cells[i, 9].Value = "Ressource Code";
-                    worksheet.Cells[i, 10].Value = "Ressource Description";
-                    worksheet.Column(10).Width = 50;
-                    worksheet.Columns[10].Style.WrapText = true;
-                    worksheet.Column(10).AutoFit();
-                    worksheet.Cells[i, 11].Value = "ResUnit";
-                    worksheet.Columns[11].Style.WrapText = true;
-                    worksheet.Column(11).AutoFit();
-                    worksheet.Cells[i, 12].Value = "ResQty";
-                    worksheet.Columns[12].Style.WrapText = true;
-                    worksheet.Column(12).AutoFit();
+                    worksheet.Cells[i, 1].Value = "Ressource Type";
+                    worksheet.Cells[i, 2].Value = "Ressource Code";
+                    worksheet.Cells[i, 3].Value = "Ressource Description";
+                    worksheet.Column(3).Width = 50;
+                    worksheet.Columns[3].Style.WrapText = true;
+                    //worksheet.Column(3).AutoFit();
+                    worksheet.Cells[i, 4].Value = "ResUnit";
+                    worksheet.Columns[4].Style.WrapText = true;
+                    //worksheet.Column(4).AutoFit();
+                    worksheet.Cells[i, 5].Value = "ResQty";
+                    worksheet.Columns[5].Style.WrapText = true;
+                    //worksheet.Column(5).AutoFit();
 
                     if (withPrice)
                     {
-                        worksheet.Cells[i, 13].Value = "ResUnitPrice";
-                        worksheet.Column(13).AutoFit();
-                        worksheet.Cells[i, 14].Value = "ResTotalPrice";
-                        worksheet.Column(14).AutoFit();
-                        worksheet.Cells[i, 15].Value = "Comments";
-                        worksheet.Column(15).Width = 50;
-                        worksheet.Columns[15].Style.WrapText = true;
+                        worksheet.Cells[i, 6].Value = "ResUnitPrice";
+                        //worksheet.Column(6).AutoFit();
+                        worksheet.Cells[i, 7].Value = "ResTotalPrice";
+                        worksheet.Column(7).Width = 25;
+                        //worksheet.Column(7).AutoFit();
+                        worksheet.Cells[i, 8].Value = "Comments";
+                        worksheet.Column(8).Width = 50;
+                        worksheet.Columns[8].Style.WrapText = true;
                     }
                     //worksheet.Column(12).AutoFit();                   
                 }
@@ -410,159 +423,163 @@ namespace AccApi.Repository.Managers
                     l5 = (x.l5 == null) ? "" : x.l5;
                     l6 = (x.l6 == null) ? "" : x.l6;
 
-                    if ((Boq != OldBoq) || (OldBoq == ""))
+                    if (byBoq == 1)
                     {
-                        if ((l1 != "") && (l1 != oldl1))
+                        if ((Boq != OldBoq) || (OldBoq == ""))
                         {
-                            worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref;
-                            worksheet.Cells[i, 2].Value = "1";
-                            worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl1 = x.l1;
-                            i = i + 2;
-                        }
-                        if ((l2 != "") && (l2 != oldl2))
-                        {
-                            worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
-                            worksheet.Cells[i, 2].Value = "2";
-                            worksheet.Cells[i, 3].Value = (x.l2 == null) ? "" : x.l2;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl2 = x.l2;
-                            i = i + 2;
-                        }
-                        if ((l3 != "") && (l3 != oldl3))
-                        {
-                            worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
-                            worksheet.Cells[i, 2].Value = "3";
-                            worksheet.Cells[i, 3].Value = (x.l3 == null) ? "" : x.l3;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl3 = x.l3;
-                            i = i + 2;
-                        }
-                        if ((l4 != "") && (l4 != oldl4))
-                        {
-                            worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
-                            worksheet.Cells[i, 2].Value = "4";
-                            worksheet.Cells[i, 3].Value = (x.l4 == null) ? "" : x.l4;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl4 = x.l4;
-                            i = i + 2;
-                        }
-                        if ((l5 != "") && (l5 != oldl5))
-                        {
-                            worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
-                            worksheet.Cells[i, 2].Value = "5";
-                            worksheet.Cells[i, 3].Value = (x.l5 == null) ? "" : x.l5;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl5 = x.l5;
-                            i = i + 2;
-                        }
-                        if ((l6 != "") && (l6 != oldl6))
-                        {
-                            worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
-                            worksheet.Cells[i, 2].Value = "6";
-                            worksheet.Cells[i, 3].Value = (x.l6 == null) ? "" : x.l6;
-                            worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                            oldl6 = x.l6;
-                            i = i + 2;
-                        }
+                            if ((l1 != "") && (l1 != oldl1))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l1Ref == null) ? "" : x.l1Ref;
+                                worksheet.Cells[i, 2].Value = "1";
+                                worksheet.Cells[i, 3].Value = (x.l1 == null) ? "" : x.l1;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl1 = x.l1;
+                                i = i + 2;
+                            }
+                            if ((l2 != "") && (l2 != oldl2))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l2Ref == null) ? "" : x.l2Ref;
+                                worksheet.Cells[i, 2].Value = "2";
+                                worksheet.Cells[i, 3].Value = (x.l2 == null) ? "" : x.l2;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl2 = x.l2;
+                                i = i + 2;
+                            }
+                            if ((l3 != "") && (l3 != oldl3))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l3Ref == null) ? "" : x.l3Ref;
+                                worksheet.Cells[i, 2].Value = "3";
+                                worksheet.Cells[i, 3].Value = (x.l3 == null) ? "" : x.l3;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl3 = x.l3;
+                                i = i + 2;
+                            }
+                            if ((l4 != "") && (l4 != oldl4))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l4Ref == null) ? "" : x.l4Ref;
+                                worksheet.Cells[i, 2].Value = "4";
+                                worksheet.Cells[i, 3].Value = (x.l4 == null) ? "" : x.l4;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl4 = x.l4;
+                                i = i + 2;
+                            }
+                            if ((l5 != "") && (l5 != oldl5))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l5Ref == null) ? "" : x.l5Ref;
+                                worksheet.Cells[i, 2].Value = "5";
+                                worksheet.Cells[i, 3].Value = (x.l5 == null) ? "" : x.l5;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl5 = x.l5;
+                                i = i + 2;
+                            }
+                            if ((l6 != "") && (l6 != oldl6))
+                            {
+                                worksheet.Cells[i, 1].Value = (x.l6Ref == null) ? "" : x.l6Ref;
+                                worksheet.Cells[i, 2].Value = "6";
+                                worksheet.Cells[i, 3].Value = (x.l6 == null) ? "" : x.l6;
+                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                oldl6 = x.l6;
+                                i = i + 2;
+                            }
 
-                        if ((C != OldC) | (OldC == ""))
-                        {
-                            if (((x.c1 == null) ? "" : x.c1) != "")
+                            if ((C != OldC) | (OldC == ""))
                             {
-                                worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c1 == null) ? "" : x.c1;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                                OldC = C;
+                                if (((x.c1 == null) ? "" : x.c1) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c1Ref == null) ? "" : x.c1Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c1 == null) ? "" : x.c1;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                    OldC = C;
+                                }
+                                if (((x.c2 == null) ? "" : x.c2) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c2 == null) ? "" : x.c2;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c3 == null) ? "" : x.c3) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c3 == null) ? "" : x.c3;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c4 == null) ? "" : x.c4) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c4 == null) ? "" : x.c4;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c5 == null) ? "" : x.c5) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
+                                if (((x.c6 == null) ? "" : x.c6) != "")
+                                {
+                                    worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
+                                    worksheet.Cells[i, 2].Value = "C";
+                                    worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
+                                    worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
+                                    i = i + 2;
+                                }
                             }
-                            if (((x.c2 == null) ? "" : x.c2) != "")
-                            {
-                                worksheet.Cells[i, 1].Value = (x.c2Ref == null) ? "" : x.c2Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c2 == null) ? "" : x.c2;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                            }
-                            if (((x.c3 == null) ? "" : x.c3) != "")
-                            {
-                                worksheet.Cells[i, 1].Value = (x.c3Ref == null) ? "" : x.c3Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c3 == null) ? "" : x.c3;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                            }
-                            if (((x.c4 == null) ? "" : x.c4) != "")
-                            {
-                                worksheet.Cells[i, 1].Value = (x.c4Ref == null) ? "" : x.c4Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c4 == null) ? "" : x.c4;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                            }
-                            if (((x.c5 == null) ? "" : x.c5) != "")
-                            {
-                                worksheet.Cells[i, 1].Value = (x.c5Ref == null) ? "" : x.c5Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                            }
-                            if (((x.c6 == null) ? "" : x.c6) != "")
-                            {
-                                worksheet.Cells[i, 1].Value = (x.c6Ref == null) ? "" : x.c6Ref;
-                                worksheet.Cells[i, 2].Value = "C";
-                                worksheet.Cells[i, 3].Value = (x.c5 == null) ? "" : x.c5;
-                                worksheet.SelectedRange[i, 3].Style.Font.Bold = true;
-                                i = i + 2;
-                            }
-                        }
 
-                        worksheet.Cells[i, 1].Value = (x.item == null) ? "" : x.item;
-                        worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
-                        worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
-                        worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
+                            worksheet.Cells[i, 1].Value = (x.item == null) ? "" : x.item;
+                            worksheet.Cells[i, 3].Value = (x.boqDesc == null) ? "" : x.boqDesc;
+                            worksheet.Cells[i, 4].Value = (x.unit == null) ? "" : x.unit;
+                            worksheet.Cells[i, 5].Value = (x.qty == null) ? "" : x.qty;
+                            worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
+
+                            if (withPrice)
+                            {
+                                worksheet.Cells[i, 6].Value = (x.unitPrice == null) ? "" : x.unitPrice;
+                                worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
+                                worksheet.Cells[i, 7].Value = (x.totalPrice == null) ? "" : x.totalPrice;
+                                worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
+                                total += (double)((x.resTotalPrice == null) ? 0 : x.resTotalPrice);
+                            }
+
+                            if (byBoq == 1)
+                            {
+                                //worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
+                                //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
+                                //worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
+                                //worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
+                                //worksheet.Cells[i, 6].Style.Locked = false;
+                                //worksheet.Cells[i, 7].Style.Locked = false;
+                                //worksheet.Cells[i, 10].Style.Locked = false;
+                            }
+                            i = i + 1;
+                            OldBoq = Boq;
+                        }
+                    }
+                    else  //by Res.                   
+                    {
+                        worksheet.Cells[i, 1].Value = (x.resType == null) ? "" : x.resType;
+                        worksheet.Cells[i, 2].Value = (x.resCode == null) ? "" : x.resCode;
+                        worksheet.Cells[i, 3].Value = (x.resDesc == null) ? "" : x.resDesc;
+                        worksheet.Cells[i, 4].Value = (x.resUnit == null) ? "" : x.resUnit;
+                        worksheet.Cells[i, 5].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
                         worksheet.Cells[i, 5].Style.Numberformat.Format = "#,##0.0";
 
                         if (withPrice)
                         {
-                            worksheet.Cells[i, 6].Value = (x.unitPrice == null) ? "" : x.unitPrice;
+                            worksheet.Cells[i, 6].Value = (x.resUnitPrice == null) ? "" : x.resUnitPrice;
                             worksheet.Cells[i, 6].Style.Numberformat.Format = "#,##0.0";
-                            worksheet.Cells[i, 7].Value = (x.totalPrice == null) ? "" : x.totalPrice;
+                            worksheet.Cells[i, 7].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
                             worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
-                        }
-
-                        if (byBoq == 1)
-                        {
-                            //worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
-                            //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
-                            //worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
-                            //worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
-                            //worksheet.Cells[i, 6].Style.Locked = false;
-                            //worksheet.Cells[i, 7].Style.Locked = false;
-                            //worksheet.Cells[i, 10].Style.Locked = false;
-                        }
-                        i = i + 1;
-                        OldBoq = Boq;
-                    }
-
-                    if (byBoq != 1)
-                    {
-                        worksheet.Cells[i, 8].Value = (x.resType == null) ? "" : x.resType;
-                        worksheet.Cells[i, 9].Value = (x.resCode == null) ? "" : x.resCode;
-                        worksheet.Cells[i, 10].Value = (x.resDesc == null) ? "" : x.resDesc;
-                        worksheet.Cells[i, 11].Value = (x.resUnit == null) ? "" : x.resUnit;
-                        worksheet.Cells[i, 12].Value = (x.boqScopeQty == null) ? "" : x.boqScopeQty;
-                        worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.0";
-
-                        if (withPrice)
-                        {
-                            worksheet.Cells[i, 13].Value = (x.resUnitPrice == null) ? "" : x.resUnitPrice;
-                            worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
-                            worksheet.Cells[i, 14].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
-                            worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
+                            total += (double)((x.resTotalPrice == null) ? 0 : x.resTotalPrice);
                         }
                         //worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
                         //worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
@@ -573,6 +590,14 @@ namespace AccApi.Repository.Managers
                         //worksheet.Cells[i, 15].Style.Locked = false;
                     }
                     i++;
+                }
+
+                if (withPrice)
+                {
+                    worksheet.Row(i + 1).Style.Font.Bold = true;
+                    worksheet.Cells[i + 1, 6].Value = "Total :";
+                    worksheet.Cells[i + 1, 7].Style.Numberformat.Format = "#,##0.0";
+                    worksheet.Cells[i + 1, 7].Value = total;
                 }
 
                 //Update Exported BOQ
@@ -691,6 +716,7 @@ namespace AccApi.Repository.Managers
                 //Get User Email Signature
                 User user = _logonRepository.GetUser(UserName);
                 string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+                string usrEmail = (user.UsrEmail == null) ? "" : user.UsrEmail;
 
                 int PackageSupplierId = 0;
                 List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
@@ -754,13 +780,13 @@ namespace AccApi.Repository.Managers
 
                     if (Rev1 != null)
                     {
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate };
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate , InsertedBy = UserName, InsertedByEmail = usrEmail };
                         rev1Id = Rev1.PrRevId;
                     }
                     else
                     {
                         int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate };
+                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate,InsertedBy= UserName,InsertedByEmail= usrEmail };
                         rev1Id = 0;
                     }
                     _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
@@ -808,7 +834,7 @@ namespace AccApi.Repository.Managers
                                                    Quantity = d.RdQty,
                                                    QuotationQty = d.RdQuotationQty,
                                                    UnitPrice = d.RdPrice,
-                                                   TotalPrice = (d.RdQuotationQty) * (d.UnitPriceAfterDiscount),
+                                                   TotalPrice = (d.RdQty) * (d.UnitPriceAfterDiscount),
                                                    DiscountPerc = d.RdDiscount,
                                                    Comments = d.RdComment,
                                                    CreatedOn = DateTime.Now,
@@ -904,6 +930,9 @@ namespace AccApi.Repository.Managers
                         mylistTo.Add(SupEmail);
 
                         List<string> mylistCC = new List<string>();
+                        if (usrEmail !="")
+                            mylistCC.Add(usrEmail);
+
                         if (supInput.mailCC != null)
                         {
                             foreach (var ccMail in supInput.mailCC)
@@ -1087,7 +1116,8 @@ namespace AccApi.Repository.Managers
                 if (byBoq == 1)
                 {
                     result = (from o in _dbcontext.TblOriginalBoqVds
-                              where o.Scope == packId
+                              join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
+                              where b.BoqScope == packId
                               select new BoqRessourcesList
                               {
                                   RowNumber = o.RowNumber,
@@ -1098,6 +1128,9 @@ namespace AccApi.Repository.Managers
                                   ScopeQtyO = o.QtyScope,
                                   UnitRateO = o.UnitRate,
                                   ScopeO = o.Scope,
+                                  BoqUprice=b.BoqUprice,
+                                  BoqQty=b.BoqQty,
+                                  BoqCtg="",
                                   L1 = o.L1,
                                   L2 = o.L2,
                                   L3 = o.L3,
@@ -1126,7 +1159,52 @@ namespace AccApi.Repository.Managers
                                   BoqRefNumber=o.RefNumber
                               }).ToList();
 
-                    foreach (var row in result)
+                    //AH102025
+                    var boqGrp = result
+                            .GroupBy(x => new { x.ItemO })
+                            .Select(p => new BoqRessourcesList
+                            {
+                                RowNumber = p.First().RowNumber,
+                                SectionO = p.First().SectionO,
+                                ItemO = p.First().ItemO,
+                                DescriptionO = p.First().DescriptionO,
+                                UnitO = p.First().UnitO,
+                                ScopeQtyO = p.First().ScopeQtyO,
+                                UnitRateO = p.First().UnitRateO,
+                                ScopeO = p.First().ScopeO,
+                                BoqRefNumber = p.First().BoqRefNumber,
+                                BoqCtg = p.First().BoqCtg,
+                                BoqQty = p.Sum(c => c.BoqQty),
+                                BoqTotalPrice= p.Sum(c => c.BoqQty  *  c.BoqUprice),
+                                L1 = p.First().L1,
+                                L2 = p.First().L2,
+                                L3 = p.First().L3,
+                                L4 = p.First().L4,
+                                L5 = p.First().L5,
+                                L6 = p.First().L6,
+                                L7 = p.First().L7,
+                                L8 = p.First().L8,
+                                L9 = p.First().L9,
+                                L10 = p.First().L10,
+                                C1 = p.First().C1,
+                                C2 = p.First().C2,
+                                C3 = p.First().C3,
+                                C4 = p.First().C4,
+                                C5 = p.First().C5,
+                                C6 = p.First().C6,
+                                C7 = p.First().C7,
+                                C8 = p.First().C8,
+                                C9 = p.First().C9,
+                                C10 = p.First().C10,
+                                C11 = p.First().C11,
+                                C12 = p.First().C12,
+                                C13 = p.First().C13,
+                                C14 = p.First().C14,
+                                C15 = p.First().C15
+                            }).ToList();
+                    ///AH102025
+
+                    foreach (var row in boqGrp)
                     {
                         if ((row.ItemO != "") && (row.ScopeQtyO > 0))
                         {
@@ -1155,6 +1233,7 @@ namespace AccApi.Repository.Managers
                                 TotalPrice = 0,
                                 UnitO = row.UnitO,
                                 BoqCtg = row.BoqCtg,
+                                RdBudUnitPrice = (row.BoqTotalPrice / row.ScopeQtyO),
                                 BoqUnitMesure = row.BoqUnitMesure,
                                 L1 = row.L1,
                                 L2 = row.L2,

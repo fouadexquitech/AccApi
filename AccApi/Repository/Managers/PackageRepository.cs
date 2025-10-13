@@ -718,36 +718,25 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
-            if (input.AssignOriginalBoqList != null)
-            {
-                //foreach (var item in input.AssignOriginalBoqList)
-                //{
-                //    var data = _context.TblOriginalBoqVds.Where(x => x.RowNumber == item.RowNumber).FirstOrDefault();
-                //    data.Scope = item.Scope;
+            //AH102025  as Per mr. Sami request on 01-10-2025 no need to assign on tblOriginalBoq
+            //if (input.AssignOriginalBoqList != null)
+            //{        
+            //    var lstBoqo = (from a in input.AssignOriginalBoqList
+            //                   join b in _costDbcontext.TblOriginalBoqVds on a.ItemO equals b.ItemO
+            //                   select b).ToList();
 
-                //    _context.TblOriginalBoqVds.Update(data);               
-                //}
-                //_context.SaveChanges();
-
-                //AH06022024
-                //var lstBoqo = (from a in input.AssignOriginalBoqList
-                //               join b in _context.TblOriginalBoqVds on a.RowNumber equals b.RowNumber
-                //               select b).ToList();          
-                var lstBoqo = (from a in input.AssignOriginalBoqList
-                               join b in _costDbcontext.TblOriginalBoqVds on a.ItemO equals b.ItemO
-                               select b).ToList();
-
-                //AH06022024
-                if (lstBoqo != null)
-                {
-                    foreach (var item in input.AssignOriginalBoqList)
-                    {
-                        lstBoqo.Where(d => d.ItemO == item.ItemO).First().Scope = item.Scope;
-                    }
-                    _context.TblOriginalBoqVds.UpdateRange(lstBoqo);
-                    _context.SaveChanges();
-                }
-            }
+            //    
+            //    if (lstBoqo != null)
+            //    {
+            //        foreach (var item in input.AssignOriginalBoqList)
+            //        {
+            //            lstBoqo.Where(d => d.ItemO == item.ItemO).First().Scope = item.Scope;
+            //        }
+            //        _context.TblOriginalBoqVds.UpdateRange(lstBoqo);
+            //        _context.SaveChanges();
+            //    }
+            //}
+            ///AH102025 
 
             if (input.AssignBoqList != null)
             {
@@ -762,6 +751,7 @@ namespace AccApi.Repository.Managers
 
                 var lstBoq = (from a in input.AssignBoqList
                               join b in _costDbcontext.TblBoqVds on a.BoqSeq equals b.BoqSeq
+                              join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                               select b).ToList();
 
                 foreach (var item in input.AssignBoqList)
@@ -877,7 +867,7 @@ namespace AccApi.Repository.Managers
                                                  Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
                                                  UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                                                  totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                 IsExcluded = c.IsExcluded
+                                                 IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded,                                                 
                                              });
 
                                 if (input.BOQDiv.Length > 0) revDtlQry = revDtlQry.Where(w => input.BOQDiv.Contains(w.BoqDiv));
@@ -918,7 +908,7 @@ namespace AccApi.Repository.Managers
                                                         Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
                                                         UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                                                         totalPriceAfterExchange = Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                        IsExcluded = c.IsExcluded
+                                                        IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded
                                                     }).ToList();
 
                                 var revDtlQryAlt = (from cur in curList
@@ -948,7 +938,7 @@ namespace AccApi.Repository.Managers
                                                         Discount = c.RdDiscount == null ? 0 : c.RdDiscount,
                                                         UPriceAfterDiscount = c.UnitPriceAfterDiscount == null ? 0 : Math.Round((double)(c.UnitPriceAfterDiscount), 2),//  Math.Round((double)(c.RdPriceOrigCurrency - (c.RdPriceOrigCurrency * ((c.RdDiscount == null) ? 0 : c.RdDiscount) / 100)), 2)
                                                         totalPriceAfterExchange = c.UnitPriceAfterDiscount == null ? 0 : Convert.ToDecimal(c.RdQty) * Convert.ToDecimal(c.UnitPriceAfterDiscount) * Convert.ToDecimal(ExchNowList.Find(x => x.fromCurrency == cur.CurCode).ExchRateNow),
-                                                        IsExcluded = c.IsExcluded
+                                                        IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded
                                                     }).ToList();
 
                                 revDtl = revDtlQry.ToList();
@@ -981,6 +971,7 @@ namespace AccApi.Repository.Managers
                                                  perc = c.RdAssignedPerc,
                                                  missedPrice = c.RdMissedPrice,
                                                  priceOrigCur = c.RdPriceOrigCurrency,
+                                                 QtyO=0,
                                                  //ItemO = o.ItemO,
                                                  //DescriptionO = o.DescriptionO,
                                                  //SectionO = o.SectionO,
@@ -1004,7 +995,7 @@ namespace AccApi.Repository.Managers
                                                  NewItemResourceId = c.NewItemResourceId,
                                                  ParentItemO = c.ParentItemO,
                                                  ParentResourceId = c.ParentResourceId,
-                                                 IsExcluded = c.IsExcluded,
+                                                 IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded,
                                                  SupplierId = (int)a.SpSupplierId
                                              });
 
@@ -1037,6 +1028,7 @@ namespace AccApi.Repository.Managers
                                                         perc = c.RdAssignedPerc,
                                                         missedPrice = c.RdMissedPrice,
                                                         priceOrigCur = c.RdPriceOrigCurrency,
+                                                        QtyO = 0,
                                                         ItemO = Convert.ToString(c.NewItemId),
                                                         DescriptionO = c.ItemDescription,
                                                         SectionO = Convert.ToString(""),
@@ -1060,7 +1052,7 @@ namespace AccApi.Repository.Managers
                                                         NewItemResourceId = c.NewItemResourceId,
                                                         ParentItemO = c.ParentItemO,
                                                         ParentResourceId = c.ParentResourceId,
-                                                        IsExcluded = c.IsExcluded,
+                                                        IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded,
                                                         SupplierId = (int)a.SpSupplierId
                                                     }).ToList();
 
@@ -1081,6 +1073,7 @@ namespace AccApi.Repository.Managers
                                                         perc = c.RdAssignedPerc,
                                                         missedPrice = c.RdMissedPrice,
                                                         priceOrigCur = c.RdPriceOrigCurrency,
+                                                        QtyO = 0,
                                                         ItemO = c.RdBoqItem,
                                                         DescriptionO = c.ItemDescription,
                                                         //SectionO = d.BoqDiv,
@@ -1104,7 +1097,7 @@ namespace AccApi.Repository.Managers
                                                         NewItemResourceId = c.NewItemResourceId,
                                                         ParentItemO = c.ParentItemO,
                                                         ParentResourceId = c.ParentResourceId,
-                                                        IsExcluded = c.IsExcluded,
+                                                        IsExcluded = (c.IsExcluded == null) ? false : c.IsExcluded,
                                                         SupplierId = (int)a.SpSupplierId
                                                     }).ToList();
 
@@ -1118,19 +1111,20 @@ namespace AccApi.Repository.Managers
                             }
 
                             revDtlQryIdeal = revDtl.Where(x => x.totalPriceAfterExchange > 0)
-                            .GroupBy(x => new { x.resourceID, x.IsExcluded, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
+                            .GroupBy(x => new {ItemO= (byboq == 1 ? x.ItemO : ""), x.resourceID, x.IsExcluded, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
                             .Select(p => new RevisionDetails
                             {
-                                //ItemO = p.First().ItemO,
+                                ItemO = (byboq == 1 ? p.First().ItemO : ""),
+                                QtyO= p.Min(c => c.QtyO),
                                 resourceID = p.First().resourceID,
                                 ResDescription = p.First().ResDescription,
                                 BoqUnitMesure = p.First().BoqUnitMesure,
-                                BoqQty = p.First().BoqQty,
+                                BoqQty = p.Min(c=> c.resourceQty),
                                 priceOrigCur = p.Min(c => (c.IsExcluded == true) ? 0 : c.priceOrigCur),
                                 AssignedQty = p.First().AssignedQty,
                                 OriginalCurrency = p.First().OriginalCurrency,
                                 UPriceAfterDiscount = p.Min(c => (c.IsExcluded == true) ? 0 : c.UPriceAfterDiscount),
-                                totalPriceAfterExchange = p.Min(c => (c.IsExcluded == true) ? 0 : c.totalPriceAfterExchange)
+                                totalPriceAfterExchange =(decimal) (p.Min(c => (c.IsExcluded == true) ? 0 : c.UPriceAfterDiscount) * p.Min(c => (byboq == 1 ? c.QtyO : c.resourceQty))) , // p.Min(c => (c.IsExcluded == true) ? 0 : c.totalPriceAfterExchange)
                             }).ToList();
 
                             packageSuppliersPrice.revisionDetails = revDtlQryIdeal.ToList();
@@ -1464,8 +1458,12 @@ namespace AccApi.Repository.Managers
                 }
             }
 
+            result = result
+            .OrderBy(x => x.SupplierName == "Ideal" ? 1 : 0)  // put "Ideal" last
+            .ThenBy(x => x.SupplierName)                      // sort others alphabetically
+            .ToList();
+
             return result;
-            //return result.OrderBy(x => x.SupplierName).ToList();
         }
 
         private double GetExchange(string foreignCurrency, string CostConn)
@@ -2233,8 +2231,8 @@ namespace AccApi.Repository.Managers
                             {
                                 Boq = y.ItemO;
 
-                                if ((Boq != OldBoq) || (OldBoq == ""))
-                                {                                    
+                                //if ((Boq != OldBoq) || (OldBoq == ""))
+                                //{                                    
                                     worksheet.Cells[r, 1].Value = simsomProjID;
                                     worksheet.Cells[r, 2].Value = (x.PkgeName == null) ? "" : x.PkgeId;
                                     worksheet.Cells[r, 3].Value = (x.PkgeName == null) ? "" : x.PkgeName;
@@ -2319,7 +2317,7 @@ namespace AccApi.Repository.Managers
 
                                     OldBoq = Boq;
                                     r++;
-                                }
+                                //}
                             }
                         }
                         //////////////

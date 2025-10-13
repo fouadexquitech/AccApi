@@ -34,6 +34,7 @@ namespace AccApi.Repository
             return context;
         }
 
+
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
@@ -122,6 +123,7 @@ namespace AccApi.Repository
         public virtual DbSet<TblPrelimsHistogram> TblPrelimsHistograms { get; set; }
         public virtual DbSet<TblQuotation> TblQuotations { get; set; }
         public virtual DbSet<TblReadyMixHdr> TblReadyMixHdrs { get; set; }
+        public virtual DbSet<TblRemarkDivision> TblRemarkDivisions { get; set; }
         public virtual DbSet<TblResource> TblResources { get; set; }
         public virtual DbSet<TblResourcesInDirect> TblResourcesInDirects { get; set; }
         public virtual DbSet<TblResourcesInDirectBoq> TblResourcesInDirectBoqs { get; set; }
@@ -186,6 +188,14 @@ namespace AccApi.Repository
         public virtual DbSet<ViewOtherAmount> ViewOtherAmounts { get; set; }
         public virtual DbSet<ViewOtherAmountsByCc> ViewOtherAmountsByCcs { get; set; }
 
+//        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+//        {
+//            if (!optionsBuilder.IsConfigured)
+//            {
+//#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+//                optionsBuilder.UseSqlServer("Data Source=10.10.2.123;Initial Catalog=RamhanIsland_CostData;Persist Security Info=True;User ID=accdb;Password=db@TSs15;Integrated Security=False");
+//            }
+//        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -2376,6 +2386,13 @@ namespace AccApi.Repository
                 entity.Property(e => e.RmRequestByName).IsUnicode(false);
             });
 
+            modelBuilder.Entity<TblRemarkDivision>(entity =>
+            {
+                entity.Property(e => e.DivCode).IsUnicode(false);
+
+                entity.Property(e => e.DivRemark).IsUnicode(false);
+            });
+
             modelBuilder.Entity<TblResource>(entity =>
             {
                 entity.HasKey(e => e.ResSeq)
@@ -2846,6 +2863,10 @@ namespace AccApi.Repository
             modelBuilder.Entity<TblSupplierPackageRevision>(entity =>
             {
                 entity.Property(e => e.InsertDate).HasDefaultValueSql("(getdate())");
+
+                entity.Property(e => e.InsertedBy).IsUnicode(false);
+
+                entity.Property(e => e.InsertedByEmail).IsUnicode(false);
 
                 entity.Property(e => e.IsSynched).HasDefaultValueSql("((0))");
 

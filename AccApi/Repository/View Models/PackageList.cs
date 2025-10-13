@@ -11,5 +11,7 @@ namespace AccApi.Repository.View_Models
         public bool? Standard { get; set; }
         public short? Trade { get; set; }
         public string FilePath { get; set; }
+        public bool? SuplierSubmitted { get; set; }
+        
     }
 }

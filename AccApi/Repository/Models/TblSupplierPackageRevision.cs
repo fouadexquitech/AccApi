@@ -32,5 +32,11 @@ namespace AccApi.Repository.Models
         public DateTime? RevExpiryDate { get; set; }
         [Column("insertDate", TypeName = "datetime")]
         public DateTime? InsertDate { get; set; }
+        [Column("insertedBy")]
+        [StringLength(50)]
+        public string InsertedBy { get; set; }
+        [Column("insertedByEmail")]
+        [StringLength(100)]
+        public string InsertedByEmail { get; set; }
     }
 }
