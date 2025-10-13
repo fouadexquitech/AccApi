@@ -102,7 +102,6 @@ namespace AccApi.Repository.Managers
                               TecCondSent = g.Max(x => x.c.TecCondSent)
                           };
 
-
             return results.ToList();
         }
 
