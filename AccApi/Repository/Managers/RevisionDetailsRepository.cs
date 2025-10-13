@@ -9,19 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Nancy.Extensions;
 using OfficeOpenXml;
-using OfficeOpenXml.FormulaParsing.Excel.Functions.Database;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Net.Mail;
-using System.Runtime.ConstrainedExecution;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace AccApi.Repository.Managers
 {
@@ -2127,7 +2118,7 @@ namespace AccApi.Repository.Managers
                              join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
                              join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
                              join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                             where a.SpPackageId == packageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
+                             where a.SpPackageId == packageId && b.BoqScope == a.SpPackageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
                              && (c.IsAlternative == false || c.IsAlternative == null) && (supId == 0 || a.SpSupplierId == supId)
                                 select new BoqRessourcesList
                              {
@@ -2137,14 +2128,14 @@ namespace AccApi.Repository.Managers
                                  DescriptionO = Convert.ToString(o.DescriptionO),
                                  UnitO = Convert.ToString(o.UnitO),
                                  QtyO = o.QtyO,
-                                 ScopeQtyO = o.QtyScope,
+                                 ScopeQtyO = c.RdQty,
                                  UnitRateO = o.UnitRate,
                                  ScopeO = o.Scope,
                                  BoqSeq = b.BoqSeq,
                                  BoqCtg = Convert.ToString(b.BoqCtg),
                                  BoqUnitMesure = Convert.ToString(b.BoqUnitMesure),
                                  BoqQty = b.BoqQty,
-                                 BoqUprice = o.UnitRate,
+                                 BoqUprice = b.BoqUprice,
                                  BoqDiv = Convert.ToString(b.BoqDiv),
                                  BoqPackage = Convert.ToString(b.BoqPackage),
                                  BoqScope = b.BoqScope,
@@ -2175,6 +2166,87 @@ namespace AccApi.Repository.Managers
             if (input.RESDiv.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESDiv.Contains(w.BoqDiv));
             if (input.RESType.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESDesc)) condQueryItm = condQueryItm.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
+
+            var condQueryItm1 = condQueryItm.ToList()
+                            .GroupBy(x => new { x.ItemO,x.ResSeq })
+                            .Select(p => new BoqRessourcesList
+                            {                                                                                                                            
+                                RowNumber = p.First().RowNumber,
+                                SectionO = p.First().SectionO,
+                                ItemO = p.First().ItemO,
+                                DescriptionO = p.First().DescriptionO,
+                                UnitO = p.First().UnitO,
+                                QtyO = p.First().QtyO,
+                                ScopeQtyO = p.First().ScopeQtyO,
+                                UnitRateO = p.First().UnitRateO,
+                                ScopeO = packageId,
+                                BoqSeq = p.First().BoqSeq,
+                                BoqCtg = p.First().BoqCtg,
+                                BoqUnitMesure = p.First().BoqUnitMesure,
+                                BoqQty = p.First().BoqQty,
+                                BoqUprice = p.First().BoqUprice,
+                                BoqDiv ="",
+                                BoqPackage ="",
+                                BoqScope = packageId,
+                                ResSeq = p.First().ResSeq,
+                                ResDescription = p.First().ResDescription,
+                                IsAlternative = false,
+                                IsNewItem = false,
+                                IsExcluded = p.First().IsExcluded,                                
+                                BoqTotalPrice = p.Sum(c => c.BoqQty * c.BoqUprice),
+                                L1 = p.First().L1,
+                                L2 = p.First().L2,
+                                L3 = p.First().L3,
+                                L4 = p.First().L4,
+                                L5 = p.First().L5,
+                                L6 = p.First().L6,                               
+                                C1 = p.First().C1,
+                                C2 = p.First().C2,
+                                C3 = p.First().C3,
+                                C4 = p.First().C4,
+                                C5 = p.First().C5,
+                                C6 = p.First().C6,                               
+                            }).ToList();
+
+            var condQueryItmGrp = condQueryItm1
+                            .GroupBy(x => new { x.ItemO })
+                            .Select(p => new BoqRessourcesList
+                            {
+                                RowNumber = p.First().RowNumber,
+                                SectionO = p.First().SectionO,
+                                ItemO = p.First().ItemO,
+                                DescriptionO = p.First().DescriptionO,
+                                UnitO = p.First().UnitO,
+                                QtyO = p.First().QtyO,
+                                ScopeQtyO = p.First().ScopeQtyO,
+                                UnitRateO = p.Sum(c => c.BoqQty * c.BoqUprice) / (p.First().QtyO),
+                                ScopeO = packageId,
+                                BoqSeq = 0,
+                                BoqCtg = "",
+                                BoqUnitMesure ="",
+                                BoqQty = 0,
+                                BoqUprice = 0,
+                                BoqDiv = "",
+                                BoqPackage = "",
+                                BoqScope = packageId,
+                                ResSeq = "",
+                                ResDescription = "",
+                                IsAlternative = false,
+                                IsNewItem = false,
+                                IsExcluded = p.First().IsExcluded,
+                                L1 = p.First().L1,
+                                L2 = p.First().L2,
+                                L3 = p.First().L3,
+                                L4 = p.First().L4,
+                                L5 = p.First().L5,
+                                L6 = p.First().L6,
+                                C1 = p.First().C1,
+                                C2 = p.First().C2,
+                                C3 = p.First().C3,
+                                C4 = p.First().C4,
+                                C5 = p.First().C5,
+                                C6 = p.First().C6,
+                            }).ToList();
 
             //New Items
             var condQueryNew = (from bb in _dbContext.TblSupplierPackageRevisions
@@ -2264,7 +2336,7 @@ namespace AccApi.Repository.Managers
                                     C6 = o.C6
                                 }).ToList();
 
-            var condQuery = condQueryItm.ToList();
+            var condQuery = condQueryItmGrp.ToList();
 
             foreach (var itm in condQueryNew)
                 condQuery.Add(itm);
@@ -2709,6 +2781,7 @@ namespace AccApi.Repository.Managers
                             C = (C == "1") ? p.C1 : p.C2
                         }).Where(x => x.LevelName == groupingLevel.LevelName).OrderBy(a => a.ItemO).ToList();
 
+                        double totPrice = 0;
 
                         foreach (var item in groupingLevel.Items)
                         {
@@ -2718,6 +2791,8 @@ namespace AccApi.Repository.Managers
                             {
                                 var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
                                 var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
+                                var minQty = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount > 0).Min(p => p.Qty);
+                                var IdealItemQty = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.Qty == minQty).FirstOrDefault();
 
                                 if (IdealItem != null)
                                 {
@@ -2730,9 +2805,9 @@ namespace AccApi.Repository.Managers
                                         AssignedQty = (IdealItem.IsExcluded == true) ? 0 : IdealItem.Qty,
                                         MissedPrice = IdealItem.MissedPrice,
                                         OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
-                                        Qty = (IdealItem.IsExcluded == true) ? 0 : IdealItem.Qty,
+                                        Qty = (IdealItem.IsExcluded == true) ? 0 : IdealItemQty.Qty,
                                         UnitPrice = IdealItem.UnitPrice,
-                                        TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
+                                        TotalPrice = IdealItemQty.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
                                         BoqItemO = IdealItem.BoqItemO,
                                         OriginalCurrency = IdealItem.OriginalCurrency,
                                         ExchRate = IdealItem.ExchRate,
@@ -2744,12 +2819,18 @@ namespace AccApi.Repository.Managers
                                         NewItemId = IdealItem.NewItemId,
                                         NewItemResourceId = IdealItem.NewItemResourceId,
                                         ParentItemO = IdealItem.ParentItemO,
-                                        ParentResourceId = IdealItem.ParentResourceId
+                                        ParentResourceId = IdealItem.ParentResourceId,
+                                        C_Description= IdealItem.C_Description
                                     });
+
+                                     totPrice +=(double) ( IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow) ;
                                 }
                             }
                         }
-                    }                 
+
+                        //totPrice = (double)groupingLevel.Items.Where(x => x.C_Description == IdealItem.C_Description && x.SupplierName == "Ideal").Sum(x => (double?)x.TotalPrice ?? 0);
+                        c.GroupingSupplierC_Prices.Where(x => x.C_Description == c.C_Description && x.SupplierName == "Ideal").FirstOrDefault().TotalPrice = totPrice;
+                    }                                
                 }
             }
 
@@ -3031,7 +3112,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int row=0, j, c;
 
@@ -3041,7 +3122,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Value = "Comparison Sheet ";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -3086,8 +3167,8 @@ namespace AccApi.Repository.Managers
                                 worksheet.Columns[m].Style.WrapText = true;
                                 worksheet.Column(m).AutoFit();
                                 worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                worksheet.Cells[6, m, 6, m + 2].Merge = true;
-                                m = m + 3;
+                                worksheet.Cells[6, m, 6, m + 5].Merge = true;
+                                m = m + 6;
                                 if (!suppliers.Contains(l.SupplierName))
                                     suppliers.Add(l.SupplierName.ToString());
 
@@ -3100,12 +3181,12 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[row, 2].Value = "Description";
                         worksheet.Column(2).Width = 70;
                         worksheet.Columns[2].Style.WrapText = true;
-                        worksheet.Column(2).AutoFit();
-                        worksheet.Cells[row, 3].Value = "U.";
+                        //worksheet.Column(2).AutoFit();
+                        worksheet.Cells[row, 3].Value = "Unit";
                         worksheet.Cells[row, 4].Value = "Qty Total";
-                        worksheet.Cells[row, 5].Value = "P.U.";
-                        worksheet.Cells[row, 6].Value = "P.T.";
-
+                        worksheet.Cells[row, 5].Value = "Unit Price";
+                        worksheet.Cells[row, 6].Value = "Total Price";
+                        worksheet.Column(6).Width = 20;
                         worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
                         worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
@@ -3127,8 +3208,11 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
                             worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
                             worksheet.Cells[row, 4].Value = (res.Qty) == null ? "" : res.Qty;
+                            worksheet.Cells[row, 4].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[row, 5].Value = (res.UnitPrice) == null ? "" : res.UnitPrice;
+                            worksheet.Cells[row, 5].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[row, 6].Value = (res.TotalPrice) == null ? "" : res.TotalPrice;
+                            worksheet.Cells[row, 6].Style.Numberformat.Format = "#,##0.0";
 
                             int col = 0;
                             foreach (var suplier in suppliers)
@@ -3137,18 +3221,31 @@ namespace AccApi.Repository.Managers
                                 if (v == null)
                                 {
                                     worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
-                                    worksheet.Cells[7, 8 + col].Value = "P.U.";
-                                    worksheet.Cells[7, 9 + col].Value = "P.T.";
+                                    worksheet.Cells[7, 8 + col].Value = "Supp. Qty";
+                                    worksheet.Cells[7, 9 + col].Value = "Unit Price";
+                                    worksheet.Cells[7, 10 + col].Value = "Disc %";
+                                    worksheet.Cells[7, 11 + col].Value = "Final Unit Price";
+                                    worksheet.Column(11 + col).Width = 15;
+                                    worksheet.Cells[7, 12 + col].Value = "Total Price";
+                                    worksheet.Column(12 + col).Width = 20;
                                 }
 
                                 var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.ResourceSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
                                     worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
-                                    worksheet.Cells[row, 8 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
-                                    worksheet.Cells[row, 9 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 7 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 8 + col].Value = (supReply.Qty) == null ? "" : supReply.Qty;
+                                    worksheet.Cells[row, 8 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 9 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 10 + col].Value = supReply.Discount;
+                                    worksheet.Cells[row, 11 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row ,12 + col].Value =  supReply.Qty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" :
+                                    worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
                                 }
-                                col = col + 3;
+                                col = col + 6;
                             }
                             row++;
                         }
@@ -3159,7 +3256,37 @@ namespace AccApi.Repository.Managers
                     //row++;
                 }
 
+                //Grand Price of Supplier
+                if (levels.Count > 0)
+                {
+                    //row++;
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 11].Value = "Grand Total :";
+
+                    foreach (var suplier in suppliers)
+                    {
+                        double totPrice = 0;
+
+                        foreach (var levelC in levels)
+                        {
+                            foreach (var g in levelC.GroupingLevels)
+                            {
+                                foreach (var res in g.GroupingResources)
+                                {
+                                    totPrice += res.GroupingPackageSuppliersPrices.Where(x => x.SupplierName == suplier).Sum(x => (double)((x.Qty ?? 0) * (x.UPriceAfterDiscount ?? 0) * (x.ExchRateNow ?? 0)));
+                                }
+                            }                                                    
+                        }
+                        worksheet.Cells[row, 12 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 12 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
+
+                }
+
                 //Commercial Conditions
+                row++;
                 var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var replies = comcondRep.GroupBy(x => new { x.CondDesc,x.AccCond })
@@ -3207,9 +3334,9 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
-                row++;
 
                 //Technical Conditions
+                row++;
                 var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var treplies = techcondRep.GroupBy(x => new { x.CondDesc, x.AccCond })
@@ -3280,11 +3407,11 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<C> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn,"");
+            List<C> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -3303,7 +3430,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int row=0, j, c;
 
@@ -3313,7 +3440,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Value = "Comparison Sheet";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -3366,8 +3493,8 @@ namespace AccApi.Repository.Managers
                                 worksheet.Columns[m].Style.WrapText = true;
                                 worksheet.Column(m).AutoFit();
                                 worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                worksheet.Cells[6, m, 6, m + 4].Merge = true;
-                                m = m + 5;
+                                worksheet.Cells[6, m, 6, m + 5].Merge = true;
+                                m = m + 6;
                                 if (!suppliers.Contains(l.SupplierName))
                                     suppliers.Add(l.SupplierName.ToString());
 
@@ -3380,14 +3507,14 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[7, 2].Value = "Description";
                         worksheet.Column(2).Width = 70;
                         worksheet.Columns[2].Style.WrapText = true;
-                        worksheet.Column(2).AutoFit();
+                        //worksheet.Column(2).AutoFit();
                         worksheet.Cells[7, 3].Value = "Unit";
                         worksheet.Cells[7, 4].Value = "Final Qty";
-                        worksheet.Cells[7, 5].Value = "Price U.";
-                        worksheet.Cells[7, 6].Value = "Price T.";
+                        worksheet.Cells[7, 5].Value = "Unit Price";
+                        worksheet.Cells[7, 6].Value = "Total Price";
 
-                        worksheet.Cells[7, 7].Value = "Q. Qty";
-                        worksheet.Cells[7, 8].Value = "Price T.";
+                        worksheet.Cells[7, 7].Value = "Quot. Qty";
+                        worksheet.Cells[7, 8].Value = "Total Price";
 
                         worksheet.Cells[7, 1].EntireRow.Style.Font.Bold = true;
                         worksheet.Cells[7, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
@@ -3425,10 +3552,12 @@ namespace AccApi.Repository.Managers
                                     if (v == null)
                                     {
                                         worksheet.Cells[7, 9 + col].Value = "Assigned Qty";
-                                        worksheet.Cells[7, 10 + col].Value = "Price U.";
-                                        worksheet.Cells[7, 11 + col].Value = "Disc %";
-                                        worksheet.Cells[7, 12 + col].Value = "Final P.U.";
-                                        worksheet.Cells[7, 13 + col].Value = "Price T.";
+                                        worksheet.Cells[7, 10 + col].Value = "Supp. Qty";
+                                        worksheet.Cells[7, 11 + col].Value = "Unit Price";
+                                        worksheet.Cells[7, 12 + col].Value = "Disc %";
+                                        worksheet.Cells[7, 13 + col].Value = "Final Unit Price";
+                                        worksheet.Cells[7, 14 + col].Value = "Total Price";
+                                        worksheet.Column(14 + col).Width = 20;
                                     }
 
                                     var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
@@ -3436,25 +3565,68 @@ namespace AccApi.Repository.Managers
                                     {
                                         worksheet.Cells[row, 9 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
                                         worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 10 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                        worksheet.Cells[row, 10 + col].Value = (supReply.Qty) == null ? "" : supReply.Qty;
                                         worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
-                                        //worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : (double)(supReply.UPriceAfterDiscount * supReply.ExchRateNow);
-                                        worksheet.Cells[row, 13 + col].Value = quotQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice; 
+                                        worksheet.Cells[row, 11 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                        worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                        worksheet.Cells[row, 12 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
+                                        worksheet.Cells[row, 13 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : (double)(supReply.UPriceAfterDiscount * supReply.ExchRateNow);
                                         worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
+                                        worksheet.Cells[row, 14 + col].Value = supReply.Qty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice; 
+                                        worksheet.Cells[row, 14 + col].Style.Numberformat.Format = "#,##0.0";
+
+                                        worksheet.Cells[row, 14 + col].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                        worksheet.Cells[row, 14 + col].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightBlue);
                                     }
-                                    col = col + 5;
+                                    col = col + 6;
                                 }
                             }
                             row++;
                         }
                         //row++;
                     }
+
+                    //Total Price of C
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 13].Value = "Total :";
+
+                    foreach (var suplier in suppliers)         
+                    {
+                        var totPrice = (double)levelC.GroupingSupplierC_Prices.Where(x =>  x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 14 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
+
                 }
-  
+
+                //Grand Price of Supplier
+                if (levels.Count>0)
+                {
+                    row++;
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 13].Value = "Grand Total :";
+
+                    foreach (var suplier in suppliers)
+                    {
+                        double totPrice = 0;
+
+                        foreach (var levelC in levels)
+                        {
+                            totPrice+= (double)levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                        }
+                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 14 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
+
+                }
+
 
                 //Commercial Conditions
+                row++;
                 var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var replies = comcondRep.GroupBy(x => new { x.CondDesc ,x.AccCond})
@@ -3502,9 +3674,8 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
-                row++;
-
                 //Technical Conditions
+                row++;
                 var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var treplies = techcondRep.GroupBy(x => new { x.CondDesc,x.AccCond })
@@ -3598,7 +3769,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("Recap");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int row, j, c;
 
@@ -3608,7 +3779,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Value = "Comparison Sheet";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -3665,7 +3836,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[row, 2].Value = "Description";
                 worksheet.Column(2).Width = 70;
                 worksheet.Columns[2].Style.WrapText = true;
-                worksheet.Column(2).AutoFit();
+                //worksheet.Column(2).AutoFit();
                 worksheet.Cells[row, 3].Value = "Qty";
                 worksheet.Cells[row, 4].Value = "Total";
                 worksheet.Cells[row, 5].Value = "Material";
@@ -3833,7 +4004,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé des Offres/Feuille de Comparaison";
+                worksheet.Cells[2, 1].Value = "Comparison Sheet";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -3890,7 +4061,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[row, 2].Value = "Description";
                 worksheet.Column(2).Width = 70;
                 worksheet.Columns[2].Style.WrapText = true;
-                worksheet.Column(2).AutoFit();
+                //worksheet.Column(2).AutoFit();
                 worksheet.Cells[row, 3].Value = "Qty";
                 worksheet.Cells[row, 4].Value = "Total";
                 worksheet.Cells[row, 5].Value = "Material";
@@ -4030,7 +4201,7 @@ namespace AccApi.Repository.Managers
             var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
             return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
         }
-        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
+        public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -4056,19 +4227,19 @@ namespace AccApi.Repository.Managers
             foreach (var sup in querySupp)
             {
                 if (byBoq == 1)
-                    excelList.Add(GenerateSupplierContract_BOQ_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn));
+                    excelList.Add(GenerateSupplierContract_BOQ_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn,C));
                 else
-                    excelList.Add(GenerateSupplierContract_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn));
+                    excelList.Add(GenerateSupplierContract_Excel(packageId, sup.SupplierId, input, comcondRepLst, techcondRepLst,  CostConn,C));
             }
 
             return excelList;
         }
 
-        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
+        public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<C> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn,"");
+            List<C> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -4087,7 +4258,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("Sheet1");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int row=0, j, c;
 
@@ -4097,7 +4268,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé de Offre";
+                worksheet.Cells[2, 1].Value = "Offer Summary";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -4164,15 +4335,15 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[7, 2].Value = "Description";
                         worksheet.Column(2).Width = 70;
                         worksheet.Columns[2].Style.WrapText = true;
-                        worksheet.Column(2).AutoFit();
-                        worksheet.Cells[7, 3].Value = "U.";
+                        //worksheet.Column(2).AutoFit();
+                        worksheet.Cells[7, 3].Value = "Unit";
                         worksheet.Cells[7, 4].Value = "Final Qty";
-                        worksheet.Cells[7, 5].Value = "P.U.";
-                        worksheet.Cells[7, 6].Value = "P.T.";
+                        worksheet.Cells[7, 5].Value = "Unit Price";
+                        worksheet.Cells[7, 6].Value = "Total Price";
 
-                        worksheet.Cells[7, 7].Value = "Q. Qty";
-                        worksheet.Cells[7, 8].Value = "Price T.";
-
+                        worksheet.Cells[7, 7].Value = "Quot. Qty";
+                        worksheet.Cells[7, 8].Value = "Total Price";
+                        worksheet.Column(8).Width = 20;
                         worksheet.Cells[7, 1].EntireRow.Style.Font.Bold = true;
                         worksheet.Cells[7, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
@@ -4210,10 +4381,13 @@ namespace AccApi.Repository.Managers
                                     if (v == null)
                                     {
                                         worksheet.Cells[7, 9 + col].Value = "Assigned Qty";
-                                        worksheet.Cells[7, 10 + col].Value = "P.U.";
-                                        worksheet.Cells[7, 11 + col].Value = "Disc %";
-                                        worksheet.Cells[7, 12 + col].Value = "Final P.U.";
-                                        worksheet.Cells[7, 13 + col].Value = "P.T.";
+                                        worksheet.Cells[7, 10 + col].Value = "Supp. Qty";
+                                        worksheet.Cells[7, 11 + col].Value = "Unit Price";
+                                        worksheet.Cells[7, 12 + col].Value = "Disc %";
+                                        worksheet.Cells[7, 13 + col].Value = "Final Unit Price";
+                                        worksheet.Column(13 + col).Width = 15;
+                                        worksheet.Cells[7, 14 + col].Value = "Total Price";
+                                        worksheet.Column(14 + col).Width = 20;
                                     }
 
                                     var supReply = item.GroupingPackageSuppliersPrices.Where(x => x.BoqItemO == sup.BoqItemO && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
@@ -4221,24 +4395,65 @@ namespace AccApi.Repository.Managers
                                     {
                                         worksheet.Cells[row, 9 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
                                         worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 10 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                        worksheet.Cells[row, 10 + col].Value = (supReply.Qty) == null ? "" : supReply.Qty;
                                         worksheet.Cells[row, 10 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 11 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
+                                        worksheet.Cells[row, 11 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                        worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                        worksheet.Cells[row, 12 + col].Value = (supReply.Discount) == null ? "" : supReply.Discount;
                                         //worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
-                                        worksheet.Cells[row, 12 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
-                                        worksheet.Cells[row, 13 + col].Value = item.QuotationQty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
-                                        worksheet.Cells[row, 13 + col].Style.Numberformat.Format = "#,##0.0";
+                                        worksheet.Cells[row, 13 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                        worksheet.Cells[row, 14 + col].Value = supReply.Qty * supReply.UPriceAfterDiscount * supReply.ExchRateNow; //(supReply.TotalPrice) == null ? "" : supReply.TotalPrice;
+                                        worksheet.Cells[row, 14 + col].Style.Numberformat.Format = "#,##0.0";
                                     }
-                                    col = col + 5;
+                                    col = col + 6;
                                 }
                             }
                             row++;
                         }
                         //row++;
                     }
+
+                    //Total Price of C
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 13].Value = "Total :";
+
+                    foreach (var suplier in suppliers)
+                    {
+                        var totPrice = (double)levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 14 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
                 }
 
+
+                //Grand Price of Supplier
+                if (levels.Count > 0)
+                {
+                    row++;
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 13].Value = "Grand Total :";
+
+                    foreach (var suplier in suppliers)
+                    {
+                        double totPrice = 0;
+
+                        foreach (var levelC in levels)
+                        {
+                            totPrice += (double)levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                        }
+                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 14 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
+
+                }
+
+
                 //Commercial Conditions
+                row++;
                 var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var replies = comcondRep.GroupBy(x => new { x.CondDesc,x.AccCond })
@@ -4286,9 +4501,9 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
-                row++;
 
                 //Technical Conditions
+                row++;
                 var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var treplies = techcondRep.GroupBy(x => new { x.CondDesc,x.AccCond })
@@ -4352,11 +4567,11 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
+        public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
-            List<C> levels = GetComparisonSheet(packageId, input, supId, CostConn,"1");
+            List<C> levels = GetComparisonSheet(packageId, input, supId, CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
@@ -4375,7 +4590,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = false;
+                worksheet.Protection.IsProtected = true;
 
                 int row=0, j, c;
 
@@ -4385,7 +4600,7 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells["A4:C4"].Merge = true;
                 worksheet.Cells["A5:C5"].Merge = true;
 
-                worksheet.Cells[2, 1].Value = "Résumé de Offre";
+                worksheet.Cells[2, 1].Value = "Offer Summary";
                 worksheet.Cells[2, 1].Style.Font.Bold = true;
                 worksheet.Cells[2, 1].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Cells[3, 1].Value = "Project:" + ProjectName;
@@ -4428,10 +4643,10 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[6, m].Value = l.SupplierName == "Ideal" ? l.SupplierName : l.SupplierName + " " + DateTime.Parse(l.LastRevisionDate.ToString()).ToString("dd/MM/yyyy");
                                 worksheet.Cells[6, m].Style.Font.Bold = true;
                                 worksheet.Columns[m].Style.WrapText = true;
-                                worksheet.Column(m).AutoFit();
+                                //worksheet.Column(m).AutoFit();
                                 worksheet.Cells[6, m].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
-                                worksheet.Cells[6, m, 6, m + 2].Merge = true;
-                                m = m + 3;
+                                worksheet.Cells[6, m, 6, m + 5].Merge = true;
+                                m = m + 6;
                                 if (!suppliers.Contains(l.SupplierName))
                                     suppliers.Add(l.SupplierName.ToString());
 
@@ -4444,12 +4659,12 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[row, 2].Value = "Description";
                         worksheet.Column(2).Width = 70;
                         worksheet.Columns[2].Style.WrapText = true;
-                        worksheet.Column(2).AutoFit();
-                        worksheet.Cells[row, 3].Value = "U.";
+                        //worksheet.Column(2).AutoFit();
+                        worksheet.Cells[row, 3].Value = "Unit";
                         worksheet.Cells[row, 4].Value = "Qty Total";
-                        worksheet.Cells[row, 5].Value = "P.U.";
-                        worksheet.Cells[row, 6].Value = "P.T.";
-
+                        worksheet.Cells[row, 5].Value = "Unit Price";
+                        worksheet.Cells[row, 6].Value = "Total Price";
+                        worksheet.Column(6).Width = 15;
                         worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
                         worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
@@ -4471,8 +4686,11 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[row, 2].Value = (res.ResourceDescription) == null ? "" : res.ResourceDescription;
                             worksheet.Cells[row, 3].Value = (res.Unit) == null ? "" : res.Unit;
                             worksheet.Cells[row, 4].Value = (res.Qty) == null ? "" : res.Qty;
+                            worksheet.Cells[row, 4].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[row, 5].Value = (res.UnitPrice) == null ? "" : res.UnitPrice;
+                            worksheet.Cells[row, 5].Style.Numberformat.Format = "#,##0.0";
                             worksheet.Cells[row, 6].Value = (res.TotalPrice) == null ? "" : res.TotalPrice;
+                            worksheet.Cells[row, 6].Style.Numberformat.Format = "#,##0.0";
 
                             int col = 0;
                             foreach (var suplier in suppliers)
@@ -4481,18 +4699,31 @@ namespace AccApi.Repository.Managers
                                 if (v == null)
                                 {
                                     worksheet.Cells[7, 7 + col].Value = "Assigned Qty";
-                                    worksheet.Cells[7, 8 + col].Value = "P.U.";
-                                    worksheet.Cells[7, 9 + col].Value = "P.T.";
+                                    worksheet.Cells[7, 8 + col].Value = "Supp. Qty";
+                                    worksheet.Cells[7, 9 + col].Value = "Unit Price";
+                                    worksheet.Cells[7, 10 + col].Value = "Disc %";
+                                    worksheet.Cells[7, 11 + col].Value = "Final Unit Price";
+                                    worksheet.Column(11 + col).Width = 15;
+                                    worksheet.Cells[7, 12 + col].Value = "Total Price";
+                                    worksheet.Column(12 + col).Width = 20;
                                 }
 
                                 var supReply = res.GroupingPackageSuppliersPrices.Where(x => x.BoqResourceId == res.ResourceSeq && x.SupplierName == suplier.ToString()).OrderByDescending(s => s.SupplierName).OrderByDescending(s => s.LastRevisionDate).FirstOrDefault();
                                 if (supReply != null)
                                 {
                                     worksheet.Cells[row, 7 + col].Value = (supReply.AssignedQty) == null ? "" : supReply.AssignedQty;
-                                    worksheet.Cells[row, 8 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
-                                    worksheet.Cells[row, 9 + col].Value = (supReply.TotalPrice) == null ? "" : supReply.AssignedQty * supReply.OriginalCurrencyPrice * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 7 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 8 + col].Value = (supReply.Qty) == null ? "" : supReply.Qty;
+                                    worksheet.Cells[row, 8 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 9 + col].Value = (supReply.UnitPrice) == null ? "" : supReply.UnitPrice * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 9 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 10 + col].Value = supReply.Discount;
+                                    worksheet.Cells[row, 11 + col].Value = (supReply.UPriceAfterDiscount) == null ? "" : supReply.UPriceAfterDiscount * supReply.ExchRateNow;
+                                    worksheet.Cells[row, 11 + col].Style.Numberformat.Format = "#,##0.0";
+                                    worksheet.Cells[row, 12 + col].Value = supReply.Qty * supReply.UPriceAfterDiscount * supReply.ExchRateNow;  //(supReply.TotalPrice) == null ? "" :
+                                    worksheet.Cells[row, 12 + col].Style.Numberformat.Format = "#,##0.0";
                                 }
-                                col = col + 3;
+                                col = col + 6;
                             }
                             row++;
                         }
@@ -4503,7 +4734,36 @@ namespace AccApi.Repository.Managers
                     //row++;
                 }
 
+                //Grand Price of Supplier
+                if (levels.Count > 0)
+                {
+                    //row++;
+                    int colt = 0;
+                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
+                    worksheet.Cells[row, 11].Value = "Grand Total :";
+
+                    foreach (var suplier in suppliers)
+                    {
+                        double totPrice = 0;
+                        foreach (var levelC in levels)
+                        {
+                            foreach (var g in levelC.GroupingLevels)
+                            {
+                                foreach (var res in g.GroupingResources)
+                                {
+                                    totPrice += res.GroupingPackageSuppliersPrices.Where(x => x.SupplierName == suplier).Sum(x => (double)((x.Qty ?? 0) * (x.UPriceAfterDiscount ?? 0) * (x.ExchRateNow ?? 0)));
+                                }
+                            }
+                        }
+                        worksheet.Cells[row, 12 + colt].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[row, 12 + colt].Value = totPrice;
+                        colt = colt + 6;
+                    }
+                }
+
+
                 //Commercial Conditions
+                row++;
                 var comcondRep = comcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var replies = comcondRep.GroupBy(x => new { x.CondDesc,x.AccCond })
@@ -4551,9 +4811,10 @@ namespace AccApi.Repository.Managers
                     }
                 }
 
-                row++;
+
 
                 //Technical Conditions
+                row++;
                 var techcondRep = techcondRepLst.OrderBy(r => r.CondDesc).ToList();
 
                 var treplies = techcondRep.GroupBy(x => new { x.CondDesc, x.AccCond })

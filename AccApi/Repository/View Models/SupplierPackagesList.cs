@@ -13,6 +13,8 @@ namespace AccApi.Repository.View_Models
         public byte? PsByBoq { get; set; }
         public string? PsSupName { get; set; }
         public bool? TecCondSent { get; set; }
+        public int? RevisionStatus { get; set; }
+        public bool? SupSubmitted { get; set; }
     }
 
 }

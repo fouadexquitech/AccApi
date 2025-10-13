@@ -1,12 +1,7 @@
 ﻿
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using AccApi.Repository.Interfaces;
-using AccApi.Repository.View_Models;
-using Nancy.Json;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace AccApi.Repository.Managers
@@ -44,7 +39,10 @@ namespace AccApi.Repository.Managers
                 conversionRate = Double.Parse(id);
                 }
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                conversionRate = 1;
+            }
 
             return conversionRate;
         }

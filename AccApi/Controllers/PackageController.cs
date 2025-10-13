@@ -2,22 +2,16 @@
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Request;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using static System.Reflection.Metadata.BlobBuilder;
-using System.Reflection;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using AccApi.Repository.View_Models.Common;
 using System.Linq;
-using AccApi.Repository.Managers;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace AccApi.Controllers
 {

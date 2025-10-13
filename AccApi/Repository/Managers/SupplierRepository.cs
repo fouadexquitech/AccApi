@@ -147,7 +147,6 @@ namespace AccApi.Repository.Managers
             };
         }
 
-
         public bool AddSupplier(List<Supplier> sups)
         {
             foreach (var item in sups)
@@ -206,7 +205,6 @@ namespace AccApi.Repository.Managers
             _mdbcontext.TblSuppliers.UpdateRange(suppliers);
             await _mdbcontext.SaveChangesAsync();
             return true;
-
         }
 
 
