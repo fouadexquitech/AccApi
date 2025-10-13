@@ -3,6 +3,7 @@ using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace AccApi.Repository.Interfaces
 {
@@ -27,7 +28,7 @@ namespace AccApi.Repository.Interfaces
         Task<ResponseModel<bool>> DeletePackage(int id, string CostConn);
         Task<string> ExportExcelPackagesCost(int withBoq,string costDB,string CostConn, SearchInput input);
         Task<DataTablesResponse<BoqModel>> GetBoqResourceRecords(string CostConn,DataTablesRequest dtRequest);
-
         public bool AddNewBoqRessource(string CostConn, AddNewBoqRessourceModel NewRes, string userName);
+        public bool updateBoqComment(string boqItem,string comments, string CostConn);
     }
 }

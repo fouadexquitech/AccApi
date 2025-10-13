@@ -108,7 +108,6 @@ namespace AccApi.Repository.Managers
         public List<boqPackageList> GetboqPackageList(int packId, byte byboq,  string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
-
             var boqList = new List<boqPackageList>();
 
             if (byboq == 1)
@@ -165,7 +164,8 @@ namespace AccApi.Repository.Managers
                                 qty = (double)o.QtyScope,
                                 unitPrice = o.UnitRate,
                                 totalPrice = o.QtyO * o.UnitRate,
-                                exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier)
+                                exportedToSupplier = (byte)((o.ExportedToSupplier == null) ? 0 : o.ExportedToSupplier),
+                                obTradeDesc=o.ObTradeDesc,
                             }).ToList();
 
                 var resCost = from e in _dbcontext.TblBoqVds.Where(x => x.BoqScope == packId)
@@ -227,7 +227,8 @@ namespace AccApi.Repository.Managers
                                        qty = (double)o.qty,
                                        unitPrice = b.resTotalPrice / o.qty ,
                                        totalPrice = b.resTotalPrice,
-                                       exportedToSupplier = o.exportedToSupplier 
+                                       exportedToSupplier = o.exportedToSupplier ,
+                                       obTradeDesc=o.obTradeDesc
                                    }).ToList();
 
             }
@@ -551,6 +552,7 @@ namespace AccApi.Repository.Managers
 
                             if (byBoq == 1)
                             {
+                                worksheet.Cells[i, 8].Value = (x.obTradeDesc == null) ? "" : x.obTradeDesc;
                                 //worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
                                 //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                                 //worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
@@ -875,6 +877,7 @@ namespace AccApi.Repository.Managers
                                                    C14 = (d.C14 == null) ? "" : d.C14,
                                                    C15 = (d.C15 == null) ? "" : d.C15,
                                                    BoqRefNumber= (d.RdBoqRefNumber == null) ? "" : d.RdBoqRefNumber,
+                                                   AccComment= (d.RdAccComment == null) ? "" : d.RdAccComment,
                                                }).ToList(),
                             CommercialConditions= (from d in LstComCondReply
                                                    select new AddCondModel
@@ -978,7 +981,6 @@ namespace AccApi.Repository.Managers
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
                 supplierPackageRevisionModel.RevisionModels = revisionModelList;
-
 
                 //Post the portal API (Create supplier package and revision on portal)
                 var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
@@ -1101,7 +1103,8 @@ namespace AccApi.Repository.Managers
                             C13 = row.C13,
                             C14 = row.C14,
                             C15 = row.C15,
-                            RdBoqRefNumber = row.RdBoqRefNumber
+                            RdBoqRefNumber = row.RdBoqRefNumber,
+                            RdAccComment= row.RdAccComment,
                         };
                         LstRevDetails.Add(revdtl);
                     }                  
@@ -1155,7 +1158,8 @@ namespace AccApi.Repository.Managers
                                   C13 = o.C13,
                                   C14 = o.C14,
                                   C15 = o.C15,
-                                  BoqRefNumber=o.RefNumber
+                                  BoqRefNumber=o.RefNumber,
+                                  ObTradeDesc=o.ObTradeDesc,
                               }).ToList();
 
                     //AH102025
@@ -1199,7 +1203,8 @@ namespace AccApi.Repository.Managers
                                 C12 = p.First().C12,
                                 C13 = p.First().C13,
                                 C14 = p.First().C14,
-                                C15 = p.First().C15
+                                C15 = p.First().C15,
+                                ObTradeDesc = p.First().ObTradeDesc,
                             }).ToList();
                     ///AH102025
 
@@ -1259,7 +1264,8 @@ namespace AccApi.Repository.Managers
                                 C13 = row.C13,
                                 C14 = row.C14,
                                 C15 = row.C15,
-                                RdBoqRefNumber=row.BoqRefNumber
+                                RdBoqRefNumber=row.BoqRefNumber,
+                                RdAccComment=row.ObTradeDesc
                             };
                             LstRevDetails.Add(revdtl);
                         }

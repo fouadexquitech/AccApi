@@ -69,5 +69,6 @@ namespace AccApi.Repository.View_Models
         public double? boqScopeQty { get; set; }
         public double? resTotalPrice { get; set; }
         public byte exportedToSupplier { get; set; }
+        public string obTradeDesc { get; set; }
     }
 }

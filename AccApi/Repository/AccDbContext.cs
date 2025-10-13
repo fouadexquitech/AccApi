@@ -34,7 +34,6 @@ namespace AccApi.Repository
             return context;
         }
 
-
         public virtual DbSet<AaaBoqDiv03> AaaBoqDiv03s { get; set; }
         public virtual DbSet<AcceptanceComment> AcceptanceComments { get; set; }
         public virtual DbSet<AccountingCostCode> AccountingCostCodes { get; set; }
@@ -2676,6 +2675,8 @@ namespace AccApi.Repository
                 entity.Property(e => e.ParentItemO).IsUnicode(false);
 
                 entity.Property(e => e.ParentResourceId).IsUnicode(false);
+
+                entity.Property(e => e.RdAccComment).IsUnicode(false);
 
                 entity.Property(e => e.RdAddedItem).HasDefaultValueSql("((0))");
 

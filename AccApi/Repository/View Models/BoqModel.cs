@@ -43,6 +43,7 @@ namespace AccApi.Repository.View_Models
         public double? TotalUnitPrice { get; set; }
         public double? boqUpriceDisc { get; set; }
         public byte? BoqInsertedFromVendan { get; set; }
+        public string? BoqWBS { get; set; }
     }
 
     public class AddNewBoqRessourceModel
