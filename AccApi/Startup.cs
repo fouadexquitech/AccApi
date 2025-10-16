@@ -3,7 +3,6 @@ using AccApi.Repository.Interfaces;
 using AccApi.Repository.Managers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,15 +54,14 @@ namespace AccApi
             services.AddTransient<IConditionsRepository, ConditionsRepository>();
             services.AddTransient<IComparisonGroupRepository, ComparisonGroupRepository>();
             services.AddTransient<ICurrencyConverterRepository, CurrencyConverterRepository>();
-
-           
             services.AddAutoMapper(typeof(AutoMapperProfile).Assembly);
-
 
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "AccApi", Version = "v1" });
             });
+
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("Ngo9BigBOggjHTQxAR8/V1JFaF5cXGRCf1NpR2JGfV5ycUVEal9TTnJZUiweQnxTdEBiWX5acHZWRGRaUUF0XkleYg==");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

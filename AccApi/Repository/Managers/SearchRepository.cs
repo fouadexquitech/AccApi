@@ -2,6 +2,7 @@
 using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Collections;
@@ -10,6 +11,7 @@ using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
+using System.Linq.Dynamic.Core;
 
 namespace AccApi.Repository.Managers
 {
@@ -18,12 +20,14 @@ namespace AccApi.Repository.Managers
         private readonly AccDbContext _context;
         private MasterDbContext _mdbContext;
         private readonly GlobalLists _globalLists;
+        private PolicyDbContext _pdbContext;
 
         public SearchRepository(AccDbContext context, MasterDbContext mdbContext, GlobalLists globalLists)
         {
             _globalLists = globalLists;
             _mdbContext = mdbContext;
             _context = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _pdbContext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
         }
 
         public List<BOQDivList> GetBOQDivList(RessourceLevelsFilter filter, string CostConn)
@@ -665,6 +669,52 @@ namespace AccApi.Repository.Managers
 
             return query.ToList();
         }
+
+        public DataTablesResponse<Wbs> GetWbsList(DataTablesRequest dtRequest, string CostConn)
+        {
+            var sortColumnName = dtRequest.SortCol;
+            var sortDirection = dtRequest.SortDirVal;
+            var skip = dtRequest.Start;
+            var take = dtRequest.Length;
+
+            var _costDbcontext = new AccDbContext(CostConn);
+            var p = _costDbcontext.TblParameters.FirstOrDefault();
+            var proj = _pdbContext.Tblprojects.FirstOrDefault(x => x.Seq == p.TsProjId);
+
+            var result = (from w in _pdbContext.TblWbs
+                          where w.ProjId == proj.Seq && w.WbsLevel == 3
+                          orderby w.Div, w.WbsCode
+                          select new Wbs
+                          {
+                              Div = w.Div,
+                              WbsCode = w.WbsCode,
+                              WbsDesc = w.WbsDesc,
+                          }).ToList();
+
+            var totalRecords = result.Count;
+
+            if (!string.IsNullOrEmpty(dtRequest.SearchVal))
+            {
+                result = result
+                    .Where(x => x.WbsDesc != null &&
+                                x.WbsDesc.ToUpper().Contains(dtRequest.SearchVal.ToUpper()))
+                    .ToList();
+            }
+
+            var list = result.AsQueryable()
+                .OrderBy($"{sortColumnName} {sortDirection}")
+                .Skip(skip)
+                .Take(take);
+
+            return new DataTablesResponse<Wbs>
+            {
+                Data = list.ToList(),
+                RecordsTotal = totalRecords,
+                RecordsFiltered = result.Count
+            };
+        }
+
+    
 
     }
 }

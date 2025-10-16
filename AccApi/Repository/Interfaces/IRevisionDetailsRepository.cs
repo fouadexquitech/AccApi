@@ -26,8 +26,8 @@ namespace AccApi.Repository.Interfaces
         List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input, string CostConn);
         List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input, string CostConn);
         
-        string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C);
-        string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
+        string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C, bool Pdf);
+        string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, bool Pdf);
         string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
         string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn);
         List<string> GenerateSuppliersContracts_Excel(int packageId,SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C);

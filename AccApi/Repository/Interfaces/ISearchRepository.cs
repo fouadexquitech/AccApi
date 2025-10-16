@@ -1,4 +1,5 @@
 ﻿using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using System.Collections.Generic;
 
 namespace AccApi.Repository.Interfaces
@@ -20,5 +21,6 @@ namespace AccApi.Repository.Interfaces
         List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter, string CostConn);
         List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter, string CostConn);
         List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter, string CostConn);
+        DataTablesResponse<Wbs> GetWbsList(DataTablesRequest Request,string CostConn);
     }
 }
