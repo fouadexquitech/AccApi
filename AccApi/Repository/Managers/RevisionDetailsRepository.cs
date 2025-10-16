@@ -11,15 +11,23 @@ using Nancy.Extensions;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-using System.IO;
+
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+using Syncfusion.XlsIO;
+using Syncfusion.XlsIORenderer;
+using Syncfusion.Pdf;
+
+using System.IO;
 
 namespace AccApi.Repository.Managers
 {
     public class RevisionDetailsRepository : IRevisionDetailsRepository
     {
         private AccDbContext _dbContext;
-        private PolicyDbContext _pdbContext;
+        //private PolicyDbContext _pdbContext;
         private MasterDbContext _mdbContext;
         private readonly IlogonRepository _logonRepository;
         private readonly GlobalLists _globalLists;
@@ -35,7 +43,7 @@ namespace AccApi.Repository.Managers
             _logonRepository = logonRepository;
             _globalLists = globalLists;
             _dbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
-            _pdbContext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
+            //_pdbContext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
         }
 
         public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource, string CostConn)
@@ -3086,8 +3094,9 @@ namespace AccApi.Repository.Managers
             return groups;
         }
 
-        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
+        public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, bool Pdf)
         {
+            
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
             //AH16062025
@@ -3396,18 +3405,31 @@ namespace AccApi.Repository.Managers
                 //    Directory.CreateDirectory(path);
                 //}
                 //string FullPath = path + excelName;
-
+                excelName = excelName.Replace("/", "-");
                 if (File.Exists(excelName))
                     File.Delete(excelName);
-
-                excelName = excelName.Replace("/", "-");
+                
                 xlPackage.SaveAs(excelName);
 
-                return excelName;
+                if (Pdf)
+                {
+                    string pdfName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.pdf";
+                    pdfName = pdfName.Replace("/", "-");
+                    if (File.Exists(pdfName))
+                        File.Delete(pdfName);
+                    ExportExcelToPdf(excelName,pdfName);
+
+                    return pdfName;
+                }
+                else
+                {
+                    return excelName;
+                }
+
             }
         }
 
-        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
+        public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C, bool Pdf)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -3739,13 +3761,95 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
-                excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("/", "-");        
                 xlPackage.SaveAs(excelName);
 
-                return excelName;
+
+                if (Pdf)
+                {
+                    string pdfName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.pdf";
+                    pdfName = pdfName.Replace("/", "-");
+                    if (File.Exists(pdfName))
+                        File.Delete(pdfName);
+                    ExportExcelToPdf(excelName, pdfName);
+
+                    return pdfName;
+                }
+                else
+                {
+                    return excelName;
+                }
+
             }
         }
-         
+
+        public string ExportExcelToPdf(string excelName, string pdfName)
+        {
+            using (ExcelEngine excelEngine = new ExcelEngine())
+            {
+                IApplication application = excelEngine.Excel;
+                application.DefaultVersion = ExcelVersion.Xlsx;
+
+                // Open the Excel file
+                FileStream excelStream = new FileStream(excelName, FileMode.Open, FileAccess.Read);
+                IWorkbook workbook = application.Workbooks.Open(excelStream);
+                IWorksheet sheet = workbook.Worksheets[0];
+
+                // Set up page orientation in Excel
+                sheet.PageSetup.Orientation = ExcelPageOrientation.Landscape;
+
+                // Set A3 page size (this sets the paper size for the Excel sheet)
+                sheet.PageSetup.PaperSize = ExcelPaperSize.A3ExtraPaper;
+
+                // Initialize XlsIORenderer settings
+                XlsIORendererSettings settings = new XlsIORendererSettings();
+                settings.LayoutOptions = LayoutOptions.FitAllColumnsOnOnePage;
+
+                // Initialize XlsIO renderer
+                XlsIORenderer renderer = new XlsIORenderer();
+
+                // Convert Excel document to PDF
+                PdfDocument pdfDocument = renderer.ConvertToPDF(workbook, settings);
+
+                // Set PDF page orientation if needed
+                pdfDocument.PageSettings.Orientation = PdfPageOrientation.Landscape;
+
+                // Set PDF page size to A3
+                pdfDocument.PageSettings.Size = PdfPageSize.A3;
+
+                // Save the PDF document
+                Stream stream = new FileStream(pdfName, FileMode.Create, FileAccess.ReadWrite);
+                pdfDocument.Save(stream);
+
+                excelStream.Dispose();
+                stream.Dispose();
+            }
+
+            //using (ExcelEngine excelEngine = new ExcelEngine())
+            //{
+            //    //Initialize IApplication.
+            //    IApplication application = excelEngine.Excel;
+            //    //Set the default version as Xlsx.
+            //    application.DefaultVersion = ExcelVersion.Xlsx;
+            //    //Load an existing workbook into IWorkbook.
+            //    FileStream excelStream = new FileStream(fileStream, FileMode.Open, FileAccess.Read);
+            //    IWorkbook workbook = application.Workbooks.Open(excelStream);
+            //    //Initialize XlsIO renderer
+            //    XlsIORenderer renderer = new XlsIORenderer();
+            //    //Initialize PDF document
+            //    //using (var pdfDocument = new PdfDocument())
+            //    //{
+            //    //Convert Excel document into PDF document
+            //    PdfDocument pdfDocumentt = renderer.ConvertToPDF(workbook);
+            //    //Save the PDF document to stream.
+            //    Stream stream = new FileStream("Output.pdf", FileMode.Create, FileAccess.ReadWrite);
+            //    pdfDocumentt.Save(stream);
+            //    //}
+            //}
+
+            return "";
+        }
+
         public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);

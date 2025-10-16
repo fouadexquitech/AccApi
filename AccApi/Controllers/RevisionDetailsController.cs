@@ -283,7 +283,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheetByBoq_Excel")]
-        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn, string C)
+        public JsonResult GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB, string CostConn, string C, bool Pdf)
         {
             try
             {
@@ -295,7 +295,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
 
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn,C));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheetByBoq_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn,C,Pdf));
             }
             catch (Exception ex)
             {
@@ -311,7 +311,7 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetComparisonSheet_Excel")]
-        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB,string CostConn)
+        public JsonResult GetComparisonSheet_Excel(int packageId, SearchInput input, int PackageSupliersID, string costDB,string CostConn, bool Pdf)
         {
             try
             {
@@ -322,7 +322,7 @@ namespace AccApi.Controllers
                 List<TmpComparisonConditionsReply> comcondRepLst = this._conditionsRepository.GetComConditionsReply(PackageSupliersID, costDB, packageId);
                 List<TmpComparisonConditionsReply> techcondRepLst = this._conditionsRepository.GetTechConditionsReply(PackageSupliersID, costDB, packageId);
                 //AH27022024
-                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn));
+                return new JsonResult(this._revisionDetailsRepository.GetComparisonSheet_Excel(packageId, input, boqPackageList, comcondRepLst, techcondRepLst, CostConn, Pdf));
             }
             catch (Exception ex)
             {

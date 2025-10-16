@@ -535,7 +535,6 @@ namespace AccApi.Controllers
                 var response = _packageRepository.GetPackages(request);
                 response.Draw = draw;
                 return Ok(response);
-
             }
             catch (Exception ex)
             {

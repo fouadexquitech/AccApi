@@ -1,8 +1,11 @@
 ﻿using AccApi.Repository;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.View_Models;
+using AccApi.Repository.View_Models.Common;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -288,6 +291,67 @@ namespace AccApi.Controllers
                 return null;
             }
         }
+
+
+        //[HttpGet("GetWbsList")]
+        //public List<Wbs> GetWbsList( string CostConn)
+        //{
+        //    try
+        //    {
+        //        return this._searchRepository.GetWbsList( CostConn);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        string error = ex.ToString();
+        //        string path = @"C:\App\error_log.txt";
+        //        using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+        //        {
+        //            sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+        //        }
+        //        return null;
+        //    }
+        //}
+
+        [HttpPost("GetWbsList")]
+        public IActionResult GetWbsList(dynamic dataTablesParameters, string CostConn)
+        {
+            try
+            {
+                JObject rest = JsonConvert.DeserializeObject(Convert.ToString(dataTablesParameters));
+                int draw = (int)rest["draw"];
+                int start = (int)rest["start"];
+                int length = (int)rest["length"];
+                int colIndex = (int)rest["order"][0]["column"];
+                string sortCol = (string)rest["columns"][colIndex]["name"];
+                string sortColDir = (string)rest["order"][0]["dir"];
+                string searchVal = (string)rest["search"]["value"];
+                var request = new DataTablesRequest
+                {
+                    Length = length,
+                    SearchVal = searchVal,
+                    SortCol = sortCol,
+                    SortDirVal = sortColDir,
+                    Start = start
+                };
+
+                var response = _searchRepository.GetWbsList(request,  CostConn);
+                response.Draw = draw;
+                return Ok(response);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return null;
+            }
+        }
+
 
     }
 }
