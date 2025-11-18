@@ -944,6 +944,7 @@ namespace AccApi.Repository.Managers
                         }
 
                         List<string> mylistBCC = new List<string>();
+                        mylistBCC.Add("sdasuki@accsal.com");
                         if (user.UsrEmail != "")
                             mylistBCC.Add(user.UsrEmail);
 
