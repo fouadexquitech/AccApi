@@ -20,8 +20,10 @@ namespace AccApi.Data_Layer
 
                 SmtpClient client = new SmtpClient();
                 client.Port = Int32.Parse(config["MailSettings:SMTPPort"]);
-                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                client.EnableSsl = true;
                 client.UseDefaultCredentials = false;
+                client.DeliveryMethod = SmtpDeliveryMethod.Network;
+                
                 client.Host = config["MailSettings:SMTPHost"];
                 client.Credentials = new System.Net.NetworkCredential(config["MailSettings:SMTPUserName"], config["MailSettings:SMTPPassword"]);
 

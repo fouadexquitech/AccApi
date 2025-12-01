@@ -11,7 +11,7 @@ namespace AccApi.Repository.Interfaces
     {
         List<ProjectCountries> GetProjectCountries();
         List<Project> GetProjects(int dbSeq);
-        User GetLogin(string user, string pass, int projSeq);
+        LoginResponse GetLogin(string user, string pass, int projSeq);
         ProjectCurrency GetProjectCurrency(int projSeq);
         List<EmailTemplate> GetSuppliersEmailTemplate(string Lang, int packId, string projName, string revExpiryDate);
         bool SaveEmailTemplate(int id, string emailbody);

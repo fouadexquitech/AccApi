@@ -699,20 +699,23 @@ namespace AccApi.Repository.Managers
             //    sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
             //    return true;
         }
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn)
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn,string TSConn)
         {
-            
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
             var t = await _dbcontext.Database.BeginTransactionAsync();
 
             try
             {
-                AccDbContext _dbcontext = new AccDbContext(CostConn);
+                var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
+                string PackageName = package.PkgeName;
 
-                string sent = "";
+                var mailListForSending = new List<MailForSending>();
                 var AttachmentList = new List<string>();
+                string sent = "";
 
                 var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
-                var proj = await _pdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
+                var proj = await _TSdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
 
                 //Get User Email Signature
                 User user = _logonRepository.GetUser(UserName);
@@ -734,8 +737,8 @@ namespace AccApi.Repository.Managers
                     if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
                     {
                         var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
-                        _dbcontext.Add<TblSupplierPackage>(spack);
-                        _dbcontext.SaveChanges();
+                        await _dbcontext.AddAsync<TblSupplierPackage>(spack);
+                        await _dbcontext.SaveChangesAsync();
 
                         PackageSupplierId = spack.SpPackSuppId;
 
@@ -759,21 +762,31 @@ namespace AccApi.Repository.Managers
 
                     //2.Add Revision
                     int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+                    
                     if (LastRevNo != -1)
                     {
                         int i = LastRevNo;
-                        do
+                        //check if last revision is submitted by supp or rejected or expired
+                        if (_dbcontext.TblSupplierPackageRevisions.Any(a => (a.PrRevNo == i) && (a.PrPackSuppId == PackageSupplierId) && ((a.StatusId ?? 0) < 3)))
                         {
-                            var res = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
-                            if (res != null)
-                            {
-                                res.PrRevNo = i + 1;
-                                await _dbcontext.SaveChangesAsync();
-                            }
-                            i--;
+                            throw new Exception("Revision not returned from Supplier !");
                         }
-                        while (i >= 0);
+                        else
+                        {
+                            do
+                            {
+                                var res = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
+                                if (res != null)
+                                {
+                                    res.PrRevNo = i + 1;
+                                    await _dbcontext.SaveChangesAsync();
+                                }
+                                i--;
+                            }
+                            while (i >= 0);
+                        }
                     }
+
 
                     var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
                     var supPackRev = new TblSupplierPackageRevision();
@@ -790,8 +803,8 @@ namespace AccApi.Repository.Managers
                         supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate,InsertedBy= UserName,InsertedByEmail= usrEmail };
                         rev1Id = 0;
                     }
-                    _dbcontext.Add<TblSupplierPackageRevision>(supPackRev);
-                    _dbcontext.SaveChanges();
+                    await _dbcontext.AddAsync<TblSupplierPackageRevision>(supPackRev);
+                    await _dbcontext.SaveChangesAsync();
 
                     //Get inserted Revison ID
                     var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
@@ -800,7 +813,12 @@ namespace AccApi.Repository.Managers
                     var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
                     byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id);
+                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id, _dbcontext);
+                    if (LstRevDetails.Count() > 0)
+                    {
+                        await _dbcontext.AddRangeAsync(LstRevDetails);
+                        await _dbcontext.SaveChangesAsync();
+                    }
 
                     //Insert ComConditions Conditions Revision
                     List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList);
@@ -926,57 +944,84 @@ namespace AccApi.Repository.Managers
                     if (Sup != null)
                         SupEmail = Sup.SupEmail;
 
-                    if (SupEmail != "")
+                    if (!string.IsNullOrEmpty(SupEmail))
                     {
-                        List<string> mylistTo = new List<string>();
-                        mylistTo.Add(SupEmail);
+                        var mail = new MailForSending();
+                        mail.To.Add(SupEmail);
 
-                        List<string> mylistCC = new List<string>();
-                        if (usrEmail !="")
-                            mylistCC.Add(usrEmail);
+                        //List<string> mylistTo = new List<string>();
+                        //mylistTo.Add(SupEmail);
+
+                        //List<string> mylistCC = new List<string>();
+                        //if (usrEmail !="")
+                        //    mylistCC.Add(usrEmail);
+
+                        //if (supInput.mailCC != null)
+                        //{
+                        //    foreach (var ccMail in supInput.mailCC)
+                        //    {
+                        //        mylistCC.Add(ccMail);
+                        //    }
+                        //}
+
+                        //List<string> mylistBCC = new List<string>();
+                        //mylistBCC.Add("sdasuki@accsal.com");
+
+                        //string MailBody;
+                        //if (supInput.EmailTemplate != "")
+                        //{
+                        //    MailBody = supInput.EmailTemplate;
+                        //}
+                        //else
+                        //{
+                        //    MailBody = "Dear Sir,";
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += "Kindly find attachments , and fill the price ";
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += Environment.NewLine;
+                        //    MailBody += "Best regards";
+                        //}
+                        //if (userSignature != "")
+                        //{
+                        //    MailBody += @"<br><br>";
+                        //    MailBody += userSignature;
+                        //}                     
+
+                        //Mail m = new Mail();
+                        //sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+
+                        if (!string.IsNullOrEmpty(usrEmail))
+                            mail.Cc.Add(usrEmail);
 
                         if (supInput.mailCC != null)
                         {
                             foreach (var ccMail in supInput.mailCC)
                             {
-                                mylistCC.Add(ccMail);
+                                mail.Cc.Add(ccMail);
                             }
                         }
 
-                        List<string> mylistBCC = new List<string>();
-                        mylistBCC.Add("sdasuki@accsal.com");
-                        if (user.UsrEmail != "")
-                            mylistBCC.Add(user.UsrEmail);
+                        if (!string.IsNullOrEmpty(_configuration["mailBcc1"]))
+                            mail.Bcc.Add(_configuration["mailBcc1"]);
+                        if (!string.IsNullOrEmpty(_configuration["mailBcc2"]))
+                            mail.Bcc.Add(_configuration["mailBcc2"]);
 
-                        string Subject = "Procurement";
+                        string Subject = $"Job in Hand-{proj.PrjName}-{PackageName}";
+                        mail.Subject = Subject;
+                     
+                        mail.Body = !string.IsNullOrEmpty(supInput.EmailTemplate)
+                                    ? supInput.EmailTemplate
+                                    : @"Dear Sir,<br><br>Kindly find attachments and fill the price.<br><br>Best regards";
 
-                        string MailBody;
+                        if (!string.IsNullOrEmpty(userSignature))
+                            mail.Body += "<br><br>" + userSignature;
 
-                        if (supInput.EmailTemplate != "")
-                        {
-                            MailBody = supInput.EmailTemplate;
-                        }
-                        else
-                        {
-                            MailBody = "Dear Sir,";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Kindly find attachments , and fill the price ";
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += Environment.NewLine;
-                            MailBody += "Best regards";
-                        }
+                        mail.Attachments = AttachmentList;
 
-                        if (userSignature != "")
-                        {
-                            MailBody += @"<br><br>";
-                            MailBody += userSignature;
-                        }
-
-                        Mail m = new Mail();
-                        sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
+                        mailListForSending.Add(mail);
                     }
                 }
 
@@ -995,8 +1040,21 @@ namespace AccApi.Repository.Managers
                 var content = await response.Content.ReadAsStringAsync();
                 if (content == "true")
                 {
-                    await t.CommitAsync();
-                    return true;
+                    //Send email to suppliers
+                    foreach (var email in mailListForSending)
+                    {
+                        var mail = new Mail();
+
+                        sent = mail.SendMail(email.To, email.Cc,email.Bcc,email.Subject,email.Body,email.Attachments,email.IsBodyHtml,attachments);
+                    }
+
+                    if (sent == "sent")
+                    {
+                        await t.CommitAsync();
+                        return true;
+                    }
+                    else
+                        throw new Exception("Email didn't sent !");
                 }
                 else
                 {
@@ -1042,8 +1100,9 @@ namespace AccApi.Repository.Managers
                 return result.DescriptionO;
         }
 
-        private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq, int rev1Id)
+        private async Task<List<TblRevisionDetail>> InsertRevisionDetail(int revId, int packId, byte byBoq, int rev1Id, AccDbContext _dbcontext)
         {
+            //AccDbContext _dbcontext = new AccDbContext(CostConn);
             List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
 
             if (rev1Id>0)  //In case of previous revision exists , so you have to insert new details from pervious
@@ -1431,12 +1490,14 @@ namespace AccApi.Repository.Managers
                 }
             }
 
-            if (LstRevDetails.Count() > 0)
-                {
-                    await _dbcontext.AddRangeAsync(LstRevDetails);
-                    await _dbcontext.SaveChangesAsync();
-                }               
-
+//AH23112025
+            //if (LstRevDetails.Count() > 0)
+            //    {
+            //        await _dbcontext.AddRangeAsync(LstRevDetails);
+            //        await _dbcontext.SaveChangesAsync();
+            //    }               
+///AH23112025
+///
             return LstRevDetails;
         }
 

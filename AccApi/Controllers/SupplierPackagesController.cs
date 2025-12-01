@@ -149,7 +149,7 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public async Task<bool> AssignPackageSuppliers(string CostConn)
+        public async Task<bool> AssignPackageSuppliers(string CostConn, string TSConn)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace AccApi.Controllers
                 var assignPackageTemplate = JsonConvert.DeserializeObject<AssignPackageTemplateModel>(assignPackageTemplateStr[0]);
 
                 List<IFormFile> FileAttachments = formCollection.Files.ToList();
-                return await this._supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments, assignPackageTemplate.RevisionExpiryDate, CostConn);
+                return await this._supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments, assignPackageTemplate.RevisionExpiryDate, CostConn,  TSConn);
             }
             catch (Exception ex)
             {

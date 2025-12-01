@@ -149,8 +149,10 @@ namespace AccApi.Controllers
             {
                 return await _supplierRepository.Register(model);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
+
                 return new ResponseModel<bool>
                 {
                     Success = false,

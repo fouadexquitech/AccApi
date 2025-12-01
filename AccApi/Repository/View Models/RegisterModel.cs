@@ -11,8 +11,6 @@ namespace AccApi.Repository.View_Models
         public string Email { get; set; }
         public int SupplierId { get; set; }
         public bool LockoutEnabled { get; set; }
-
-        [DataType(DataType.EmailAddress)]
         public string ProcEngEmail { get; set; }
     }
 }

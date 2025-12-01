@@ -114,9 +114,11 @@ namespace AccApi.Repository.Managers
         }
 
         //fouad
-        public User GetLogin(string username, string pass, int projSeq)
+        public LoginResponse GetLogin(string username, string pass, int projSeq)
         {
             //usr = checkCredentials(user, pass);
+            LoginResponse resp =new LoginResponse();
+
             _tsdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             var result = _tsdbcontext.TblUsers.Where(x => x.UsrId == username && x.UsrPwd == pass).FirstOrDefault();
 
@@ -131,8 +133,11 @@ namespace AccApi.Repository.Managers
             }   
             else
             {
-                usr = null;
-                return usr;
+                resp.Success = false;
+                resp.User = null;
+                resp.Message = "Invalid Credential";
+
+                return resp;
             }
 
             bool isAdmin = (bool)(usr.UsrAdmin==null ? false : usr.UsrAdmin);
@@ -144,8 +149,11 @@ namespace AccApi.Repository.Managers
                     var query = _tsdbcontext.TblUsersProjects.Where(x => x.UpUserId == username && x.UpProject == projSeq).FirstOrDefault();
                     if (query == null)
                     {
-                        usr = null;
-                        return usr;
+                        resp.Success = false;
+                        resp.User = null;
+                        resp.Message = "You have no permission to access this Project.";
+
+                        return resp;
                     }
                 }
                 //if (!checkAccessProject(username, projSeq))
@@ -158,8 +166,14 @@ namespace AccApi.Repository.Managers
             string connString = connectToProject(projSeq);
 
             if (connString=="")
-                usr = null; 
-            
+            { 
+                resp.Success = false;
+                resp.User = null;
+                resp.Message = "Connection error";
+
+                return resp;
+            }
+
             if (usr != null)
             {
                 var prj = _tsdbcontext.Tblprojects.Where(x => x.Seq == projSeq).FirstOrDefault();
@@ -169,9 +183,14 @@ namespace AccApi.Repository.Managers
                   usr.usrLoggedConnString = connString;
                   usr.usrLoggedCostDB = prj.PrjCostDatabase;
                   usr.usrLoggedTSConnString = _globalLists.GetTimeSheetDbconnectionString();
-                } 
+                }
+
+                resp.Success = true;
+                resp.User = usr;
+                resp.Message = "";
             }
-            return usr;
+
+            return resp;
         }
 
         private string  connectToProject(int projSeq)

@@ -65,23 +65,32 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("GetLogin")]
-        public User GetLogin(string user,string pass,int projSeq)
+        public LoginResponse GetLogin(string user,string pass,int projSeq)
         {
             try
             {
-                return this._logonRepository.GetLogin( user,  pass, projSeq);
+                bool hasPerm = this._logonRepository.hasPermission(user, "VendanUser");
+
+                if (hasPerm)
+                    return this._logonRepository.GetLogin(user, pass, projSeq);
+                else
+                    return new LoginResponse
+                    {
+                        Success = false,
+                        User = null,
+                        Message = "you have no permission to access Vendan"
+                    };
+
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                string error = ex.ToString();
-                string path = @"C:\App\error_log.txt";
-                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                return new LoginResponse
                 {
-                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
-                }
-                //return error;
-                return null;
+                    Success = false,
+                    User = null,
+                    Message = "Error :" + ex.Message
+                };
             }
         }
 
@@ -118,13 +127,6 @@ namespace AccApi.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                string error = ex.ToString();
-                string path = @"C:\App\error_log.txt";
-                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
-                {
-                    sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
-                }
-                //return error;
                 return null;
             }
         }
