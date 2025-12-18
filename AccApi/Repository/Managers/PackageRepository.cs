@@ -199,7 +199,7 @@ namespace AccApi.Repository.Managers
                 case 2:
                 case 3:
                 case 4:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -233,7 +233,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 5:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
                         x => new BoqRessourcesList
                         {
                             ScopeO = (int)x["ScopeO"]
@@ -241,7 +241,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 6:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -1659,6 +1659,7 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 6].Value = (x.BoqCtg == null) ? "" : x.BoqCtg;
                         worksheet.Cells[i, 7].Value = (x.BoqUnitMesure == null) ? "" : x.BoqUnitMesure;
                         worksheet.Cells[i, 8].Value = (x.BoqQty == null) ? "" : x.BoqQty;
+                        worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0000";
                         worksheet.Cells[i, 9].Value = (x.BoqUprice == null) ? "" : x.BoqUprice;
                         //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[i, 10].Value = (x.BoqTotalPrice == null) ? "" : x.BoqTotalPrice;
@@ -1668,7 +1669,7 @@ namespace AccApi.Repository.Managers
                         //worksheet.Cells[i, 12].Value = (x.BoqUnitMesure_st == null) ? "" : x.BoqUnitMesure_st;
                         //worksheet.Cells[i, 13].Value = (x.BoqQty_st == null) ? "" : x.BoqQty_st;
                         worksheet.Cells[i, 11].Value =(x.BoqInsertedFromVendan==1) ? (x.BoqUpriceBeforeDisct) :  ( (x.BoqUprice_st == null) ? "" : x.BoqUprice_st);
-                        worksheet.Cells[i, 11].Style.Numberformat.Format = "#,##0.0";
+                        worksheet.Cells[i, 11].Style.Numberformat.Format = "#,##0.0000";
                         worksheet.Cells[i, 12].Value = (x.BoqInsertedFromVendan == 1) ? (x.BoqQty * x.BoqUpriceBeforeDisct) : ((x.BoqTotalPrice_st == null) ? "" : x.BoqTotalPrice_st);
                         worksheet.Cells[i, 12].Style.Numberformat.Format = "#,##0.0";
 

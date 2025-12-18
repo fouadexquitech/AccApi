@@ -149,7 +149,8 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public async Task<bool> AssignPackageSuppliers(string CostConn, string TSConn)
+        //public async Task<bool> AssignPackageSuppliers(string CostConn, string TSConn)
+        public async Task<IActionResult> AssignPackageSuppliers(string CostConn, string TSConn)
         {
             try
             {
@@ -158,7 +159,13 @@ namespace AccApi.Controllers
                 var assignPackageTemplate = JsonConvert.DeserializeObject<AssignPackageTemplateModel>(assignPackageTemplateStr[0]);
 
                 List<IFormFile> FileAttachments = formCollection.Files.ToList();
-                return await this._supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments, assignPackageTemplate.RevisionExpiryDate, CostConn,  TSConn);
+                var result = await _supplierPackagesRepository.AssignPackageSuppliers(assignPackageTemplate.packId, assignPackageTemplate.supInputList, assignPackageTemplate.ByBoq, assignPackageTemplate.UserName, FileAttachments, assignPackageTemplate.RevisionExpiryDate, CostConn,  TSConn);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = result
+                });
             }
             catch (Exception ex)
             {
@@ -169,7 +176,12 @@ namespace AccApi.Controllers
                 {
                     sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
                 }
-                return false;
+
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message
+                });
             }
         }
 
