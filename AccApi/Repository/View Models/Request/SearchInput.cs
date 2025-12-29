@@ -20,6 +20,8 @@ namespace AccApi.Repository.View_Models.Request
         //public string boqLevel3 { get; set; }
         public string[] boqLevel3 { get; set; }
         public string[] boqLevel4 { get; set; }
+        public string[] boqLevel5 { get; set; }
+        public string[] boqLevel6 { get; set; }
         public string obTradeDesc { get; set; }
         public int isItemsAssigned { get; set; }
         public string[] boqResourceSeq { get; set; }

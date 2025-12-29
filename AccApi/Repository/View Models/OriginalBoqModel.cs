@@ -19,6 +19,8 @@ namespace AccApi.Repository.View_Models
         public string L2 { get; set; }
         public string L3 { get; set; }
         public string L4 { get; set; }
+        public string L5 { get; set; }
+        public string L6 { get; set; }
         public string C1 { get; set; }
         public string C2 { get; set; }
         public string C3 { get; set; }

@@ -55,6 +55,8 @@ namespace AccApi.Repository.Managers
             if (input.boqLevel2.Length > 0) blankInput = false;
             if (input.boqLevel3.Length > 0) blankInput = false;
             if (input.boqLevel4.Length > 0) blankInput = false;
+            if (input.boqLevel5.Length > 0) blankInput = false;
+            if (input.boqLevel6.Length > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.obTradeDesc)) blankInput = false;
             if (input.isItemsAssigned > 0) blankInput = false;
             if (input.boqResourceSeq.Length > 0) blankInput = false;
@@ -87,11 +89,25 @@ namespace AccApi.Repository.Managers
             dtL3.Columns.Add("L3", typeof(string));
             foreach (var val in input.boqLevel3)
                 dtL3.Rows.Add(val == null ? "" : val.ToString());
+            
             //L4_List
             var dtL4 = new DataTable();
             dtL4.Columns.Add("L4", typeof(string));
             foreach (var val in input.boqLevel4)
                 dtL4.Rows.Add(val == null ? "" : val.ToString());
+
+            //L5_List
+            var dtL5 = new DataTable();
+            dtL5.Columns.Add("L5", typeof(string));
+            foreach (var val in input.boqLevel5)
+                dtL5.Rows.Add(val == null ? "" : val.ToString());
+
+            //L6_List
+            var dtL6 = new DataTable();
+            dtL6.Columns.Add("L6", typeof(string));
+            foreach (var val in input.boqLevel6)
+                dtL6.Rows.Add(val == null ? "" : val.ToString());
+
             //Resources_List
             var dtRes = new DataTable();
             dtRes.Columns.Add("Resources", typeof(string));
@@ -138,6 +154,12 @@ namespace AccApi.Repository.Managers
             var p18 = new SqlParameter("@boqStatus", (input.boqStatus == "") ? "" : input.boqStatus);
             var p19 = new SqlParameter("@BOQRefNumber", (input.BOQRefNumber == null) ? "" : input.BOQRefNumber);
 
+            var p20 = new SqlParameter("@L5_List", SqlDbType.Structured);
+            p20.TypeName = "[dbo].[L5_List]"; p20.SqlValue = dtL5;
+
+            var p21 = new SqlParameter("@L6_List", SqlDbType.Structured);
+            p21.TypeName = "[dbo].[L6_List]"; p21.SqlValue = dtL6;
+
             //////////////////
             /////methode SP 1
             List<SqlParameter> parameters = new List<SqlParameter>();
@@ -161,6 +183,8 @@ namespace AccApi.Repository.Managers
             parameters.Add(p17);
             parameters.Add(p18);
             parameters.Add(p19);
+            parameters.Add(p20);
+            parameters.Add(p21);
 
             ExecuteRawSP executeRawSP = new ExecuteRawSP();
             List<BoqRessourcesList> result = new List<BoqRessourcesList>();
@@ -169,7 +193,7 @@ namespace AccApi.Repository.Managers
             switch (type)
             {
                 case 1:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
                         x => new BoqRessourcesList
                         {
                             RowNumber = (int)x["RowNumber"],
@@ -187,6 +211,8 @@ namespace AccApi.Repository.Managers
                             L2 = (string)x["L2"],
                             L3 = (string)x["L3"],
                             L4 = (string)x["L4"],
+                            L5 = (string)x["L5"],
+                            L6 = (string)x["L6"],
                             C1 = (string)x["C1"],
                             C2 = (string)x["C2"],
                             C3 = (string)x["C3"],
@@ -199,7 +225,7 @@ namespace AccApi.Repository.Managers
                 case 2:
                 case 3:
                 case 4:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -223,6 +249,8 @@ namespace AccApi.Repository.Managers
                           L2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
                           L3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
                           L4 = x["L3"] != DBNull.Value ? (string)x["L4"] : null,
+                          L5 = (string)x["L5"],
+                          L6 = (string)x["L6"],
                           C1 = (string)x["C1"],
                           C2 = (string)x["C2"],
                           C3 = (string)x["C3"],
@@ -233,7 +261,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 5:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
                         x => new BoqRessourcesList
                         {
                             ScopeO = (int)x["ScopeO"]
@@ -241,7 +269,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 6:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -265,6 +293,8 @@ namespace AccApi.Repository.Managers
                           L2 = x["L2"] != DBNull.Value ? (string)x["L2"] : null,
                           L3 = x["L3"] != DBNull.Value ? (string)x["L3"] : null,
                           L4 = x["L3"] != DBNull.Value ? (string)x["L4"] : null,
+                          L5 = (string)x["L5"],
+                          L6 = (string)x["L6"],
                           C1 = (string)x["C1"],
                           C2 = (string)x["C2"],
                           C3 = (string)x["C3"],
@@ -2181,25 +2211,34 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[r, 23].Value = "Level 4";
                     worksheet.Column(23).Width = 50;
                     worksheet.Columns[23].Style.WrapText = true;
-                    worksheet.Cells[r, 24].Value = "C 1";
+
+                    worksheet.Cells[r, 24].Value = "Level 5";
                     worksheet.Column(24).Width = 50;
                     worksheet.Columns[24].Style.WrapText = true;
-                    worksheet.Cells[r, 25].Value = "C 2";
+
+                    worksheet.Cells[r, 25].Value = "Level 6";
                     worksheet.Column(25).Width = 50;
                     worksheet.Columns[25].Style.WrapText = true;
-                    worksheet.Cells[r, 26].Value = "C 3";
+
+                    worksheet.Cells[r, 26].Value = "C 1";
                     worksheet.Column(26).Width = 50;
                     worksheet.Columns[26].Style.WrapText = true;
-                    worksheet.Cells[r, 27].Value = "C 4";
+                    worksheet.Cells[r, 27].Value = "C 2";
                     worksheet.Column(27).Width = 50;
                     worksheet.Columns[27].Style.WrapText = true;
-
-                    worksheet.Cells[r, 28].Value = "Res Div";
+                    worksheet.Cells[r, 28].Value = "C 3";
+                    worksheet.Column(28).Width = 50;
                     worksheet.Columns[28].Style.WrapText = true;
-                    worksheet.Cells[r, 29].Value = "Res SubDiv";
+                    worksheet.Cells[r, 29].Value = "C 4";
+                    worksheet.Column(29).Width = 50;
                     worksheet.Columns[29].Style.WrapText = true;
-                    worksheet.Cells[r, 30].Value = "Res Trade";
+
+                    worksheet.Cells[r, 30].Value = "Res Div";
                     worksheet.Columns[30].Style.WrapText = true;
+                    worksheet.Cells[r, 31].Value = "Res SubDiv";
+                    worksheet.Columns[31].Style.WrapText = true;
+                    worksheet.Cells[r, 32].Value = "Res Trade";
+                    worksheet.Columns[32].Style.WrapText = true;
                 }
 
                 r = 2;
@@ -2323,14 +2362,15 @@ namespace AccApi.Repository.Managers
                                     worksheet.Cells[r, 21].Value = (y.L2 == null) ? "" : y.L2;
                                     worksheet.Cells[r, 22].Value = (y.L3 == null) ? "" : y.L3;
                                     worksheet.Cells[r, 23].Value = (y.L4 == null) ? "" : y.L4;
-                                    worksheet.Cells[r, 24].Value = (y.C1 == null) ? "" : y.C1;
-                                    worksheet.Cells[r, 25].Value = (y.C2 == null) ? "" : y.C2;
-                                    worksheet.Cells[r, 26].Value = (y.C3 == null) ? "" : y.C3;
-                                    worksheet.Cells[r, 27].Value = (y.C4 == null) ? "" : y.C4;
-
-                                    worksheet.Cells[r, 28].Value = y.BoqDiv;
-                                    worksheet.Cells[r, 29].Value = y.BoqSubDiv;
-                                    worksheet.Cells[r, 30].Value = y.BoqTrade;
+                                    worksheet.Cells[r, 24].Value = (y.L5 == null) ? "" : y.L5;
+                                    worksheet.Cells[r, 25].Value = (y.L6 == null) ? "" : y.L6;
+                                    worksheet.Cells[r, 26].Value = (y.C1 == null) ? "" : y.C1;
+                                    worksheet.Cells[r, 27].Value = (y.C2 == null) ? "" : y.C2;
+                                    worksheet.Cells[r, 28].Value = (y.C3 == null) ? "" : y.C3;
+                                    worksheet.Cells[r, 29].Value = (y.C4 == null) ? "" : y.C4;
+                                    worksheet.Cells[r, 30].Value = y.BoqDiv;
+                                    worksheet.Cells[r, 31].Value = y.BoqSubDiv;
+                                    worksheet.Cells[r, 32].Value = y.BoqTrade;
 
                                     OldBoq = Boq;
                                     r++;

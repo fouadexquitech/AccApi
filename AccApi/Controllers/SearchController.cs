@@ -119,6 +119,45 @@ namespace AccApi.Controllers
             }
         }
 
+
+        [HttpPost("GetBOQLevel5List")]
+        public List<BOQLevelList> GetBOQLevel5List(RessourceLevelsFilter filter, string CostConn)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel5List(filter, CostConn);
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return null;
+            }
+        }
+
+        [HttpPost("GetBOQLevel6List")]
+        public List<BOQLevelList> GetBOQLevel6List(RessourceLevelsFilter filter, string CostConn)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel6List(filter, CostConn);
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return null;
+            }
+        }
+
         [HttpPost("GetBOQLevel3ListByLevel2")]
         public List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter, string CostConn)
         {
@@ -152,6 +191,44 @@ namespace AccApi.Controllers
                 using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
                 {
                     sw.WriteLine(ex.Message+ "  Function:" + ex.TargetSite.Name);
+                }
+                return null;
+            }
+        }
+
+        [HttpPost("GetBOQLevel5ListByLevel4")]
+        public List<BOQLevelList> GetBOQLevel5ListByLevel4(RessourceLevelsFilter filter, string CostConn)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel5ListByLevel4(filter, CostConn);
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
+                }
+                return null;
+            }
+        }
+
+        [HttpPost("GetBOQLevel6ListByLevel5")]
+        public List<BOQLevelList> GetBOQLevel6ListByLevel5(RessourceLevelsFilter filter, string CostConn)
+        {
+            try
+            {
+                return this._searchRepository.GetBOQLevel6ListByLevel5(filter, CostConn);
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+                string path = @"C:\App\error_log.txt";
+                using (StreamWriter sw = (System.IO.File.Exists(path)) ? System.IO.File.AppendText(path) : System.IO.File.CreateText(path))
+                {
+                    sw.WriteLine(ex.Message + "  Function:" + ex.TargetSite.Name);
                 }
                 return null;
             }

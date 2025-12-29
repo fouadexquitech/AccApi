@@ -120,6 +120,8 @@ namespace AccApi.Repository.View_Models
 
         public List<string> Level4 { get; set; }
 
+        public List<string> Level5 { get; set; }
+        public List<string> Level6 { get; set; }
         public List<string> resType { get; set; }
 
         public List<string> boqDiv { get; set; }

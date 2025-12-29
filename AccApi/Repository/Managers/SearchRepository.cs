@@ -37,6 +37,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
 
             AccDbContext _costDbcontext = new AccDbContext(CostConn);
@@ -53,6 +55,8 @@ namespace AccApi.Repository.Managers
                        where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                             (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                             (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                              (resType.Count == 0 || resType.Contains(b.BoqCtg))
                        group o.SectionO by o.SectionO into g
                            orderby g.Key
@@ -68,6 +72,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
@@ -85,7 +91,9 @@ namespace AccApi.Repository.Managers
                 results = (from o in _costDbcontext.TblOriginalBoqVds 
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                          (Level3.Count == 0 || Level3.Contains(o.L3)) &&
-                         (Level4.Count == 0 || Level4.Contains(o.L4)) &&                        
+                         (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                         (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                         (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                          (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L2 by o.L2 into g
                            orderby g.Key
@@ -100,6 +108,8 @@ namespace AccApi.Repository.Managers
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                          (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                          (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                         (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                         (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                          (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
                          (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L2 by o.L2 into g
@@ -142,6 +152,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
@@ -158,6 +170,8 @@ namespace AccApi.Repository.Managers
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                               (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L3 by o.L3 into g
                            orderby g.Key
@@ -172,6 +186,8 @@ namespace AccApi.Repository.Managers
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                               (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
                               (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L3 by o.L3 into g
@@ -201,14 +217,10 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
-
-            //List<resourcesType> resTypeList = new List<resourcesType>();
-            //foreach (var item in resType)
-            //{
-            //    resTypeList.Add(new resourcesType() { resourceType = item.ToString() });
-            //}
 
             AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
@@ -217,6 +229,8 @@ namespace AccApi.Repository.Managers
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                               (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L4 by o.L4 into g
                            orderby g.Key
@@ -230,6 +244,8 @@ namespace AccApi.Repository.Managers
                            where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(o.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
                               (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
                               (divO.Count == 0 || divO.Contains(o.SectionO))
                            group o.L4 by o.L4 into g
@@ -238,14 +254,102 @@ namespace AccApi.Repository.Managers
                            {
                                Level = g.Key
                            }).ToList();
-            //}
-            //else
-            //    results = (from b in _costDbcontext.TblOriginalBoqVds
-            //               where (divO.Count == 0 || divO.Contains(b.SectionO))
-            //               group b.L4 by b.L4 into g
-            //               orderby g.Key
-            //               select new BOQLevelList { Level = g.Key }).ToList();
 
+            return results;
+        }
+
+        public List<BOQLevelList> GetBOQLevel5List(RessourceLevelsFilter filter, string CostConn)
+        {
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
+            var resType = filter.resType;
+            var divO = filter.boqDiv;
+
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            if (resType == null || resType.Count == 0)
+                results = (from o in _costDbcontext.TblOriginalBoqVds
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                               (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                               (Level6.Count == 0 || Level6.Contains(o.L6)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L5 by o.L5 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+            else
+                results = (from b in _costDbcontext.TblBoqVds
+                           join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
+                              (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L5 by o.L5 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+
+            return results;
+        }
+
+        public List<BOQLevelList> GetBOQLevel6List(RessourceLevelsFilter filter, string CostConn)
+        {
+            List<BOQLevelList> results = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
+            var resType = filter.resType;
+            var divO = filter.boqDiv;
+
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            if (resType == null || resType.Count == 0)
+                results = (from o in _costDbcontext.TblOriginalBoqVds
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L6 by o.L6 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
+            else
+                results = (from b in _costDbcontext.TblBoqVds
+                           join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                           where (Level2.Count == 0 || Level2.Contains(o.L2)) &&
+                              (Level3.Count == 0 || Level3.Contains(o.L3)) &&
+                              (Level4.Count == 0 || Level4.Contains(o.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(o.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(o.L6)) &&
+                              (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
+                              (divO.Count == 0 || divO.Contains(o.SectionO))
+                           group o.L6 by o.L6 into g
+                           orderby g.Key
+                           select new BOQLevelList
+                           {
+                               Level = g.Key
+                           }).ToList();
 
             return results;
         }
@@ -257,6 +361,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
@@ -267,6 +373,8 @@ namespace AccApi.Repository.Managers
                        where    (Level2.Count==0 || Level2.Contains(i.L2)) &&
                                 (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                                 (Level4.Count == 0 || Level4.Contains(i.L4)) &&
+                                (Level5.Count == 0 || Level5.Contains(i.L5)) &&
+                                (Level6.Count == 0 || Level6.Contains(i.L6)) &&
                                 (divO.Count == 0 || divO.Contains(i.SectionO))
                        group b by b.BoqCtg into g
                        orderby g.Key
@@ -436,6 +544,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
@@ -462,6 +572,8 @@ namespace AccApi.Repository.Managers
                               where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                               (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                               (Level4.Count == 0 || Level4.Contains(i.L4)) &&
+                              (Level5.Count == 0 || Level5.Contains(i.L5)) &&
+                              (Level6.Count == 0 || Level6.Contains(i.L6)) &&
                               (divO.Count == 0 || divO.Contains(i.SectionO))
                               group b by b.BoqResSeq into g
                               orderby g.Key
@@ -524,6 +636,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var divO = filter.boqDiv;
 
             //if (Level2.Count > 0)
@@ -532,6 +646,9 @@ namespace AccApi.Repository.Managers
 
             query = (from b in _costDbcontext.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(b.L2)) &&
+                               (Level4.Count == 0 || Level4.Contains(b.L4)) &&
+                               (Level5.Count == 0 || Level5.Contains(b.L5)) &&
+                               (Level6.Count == 0 || Level6.Contains(b.L6)) &&
                                (divO.Count == 0 || divO.Contains(b.SectionO))
                          group b.L3 by b.L3 into g
                          orderby g.Key
@@ -553,6 +670,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var divO = filter.boqDiv;
 
             //if (Level2.Count > 0)
@@ -561,6 +680,8 @@ namespace AccApi.Repository.Managers
             query = (from i in _costDbcontext.TblOriginalBoqVds
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                                (Level3.Count == 0 || Level3.Contains(i.L3)) &&
+                               (Level5.Count == 0 || Level5.Contains(i.L5)) &&
+                               (Level6.Count == 0 || Level6.Contains(i.L6)) &&
                                (divO.Count == 0 || divO.Contains(i.SectionO))
                          group i.L4 by i.L4 into g
                          orderby g.Key
@@ -582,6 +703,57 @@ namespace AccApi.Repository.Managers
             return query.ToList();
         }
 
+        public List<BOQLevelList> GetBOQLevel5ListByLevel4(RessourceLevelsFilter filter, string CostConn)
+        {
+            IQueryable<BOQLevelList> query = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
+            var divO = filter.boqDiv;
+
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            query = (from i in _costDbcontext.TblOriginalBoqVds
+                     where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
+                           (Level3.Count == 0 || Level3.Contains(i.L3)) &&
+                           (Level4.Count == 0 || Level4.Contains(i.L4)) &&
+                           (divO.Count == 0 || divO.Contains(i.SectionO))
+                     group i.L5 by i.L5 into g
+                     orderby g.Key
+                     select new BOQLevelList { Level = g.Key }).Distinct();
+
+            return query.ToList();
+        }
+
+        public List<BOQLevelList> GetBOQLevel6ListByLevel5(RessourceLevelsFilter filter, string CostConn)
+        {
+            IQueryable<BOQLevelList> query = null;
+
+            var Level2 = filter.Level2;
+            var Level3 = filter.Level3;
+            var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
+            var divO = filter.boqDiv;
+
+            AccDbContext _costDbcontext = new AccDbContext(CostConn);
+
+            query = (from i in _costDbcontext.TblOriginalBoqVds
+                     where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
+                           (Level3.Count == 0 || Level3.Contains(i.L3)) &&
+                           (Level4.Count == 0 || Level4.Contains(i.L4)) &&
+                           (Level5.Count == 0 || Level5.Contains(i.L5)) &&
+                           (divO.Count == 0 || divO.Contains(i.SectionO))
+                     group i.L6 by i.L6 into g
+                     orderby g.Key
+                     select new BOQLevelList { Level = g.Key }).Distinct();
+
+            return query.ToList();
+        }
+
         public List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter, string CostConn)
         {
             IQueryable<RessourceList> query = null;
@@ -589,6 +761,8 @@ namespace AccApi.Repository.Managers
             var Level2 = filter.Level2;
             var Level3 = filter.Level3;
             var Level4 = filter.Level4;
+            var Level5 = filter.Level5;
+            var Level6 = filter.Level6;
             var resType = filter.resType;
             var divO = filter.boqDiv;
 
@@ -647,6 +821,8 @@ namespace AccApi.Repository.Managers
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                                (Level3.Count == 0 || Level3.Contains(i.L3)) &&
                                (Level4.Count == 0 || Level4.Contains(i.L4)) &&
+                               (Level5.Count == 0 || Level5.Contains(i.L5)) &&
+                               (Level6.Count == 0 || Level6.Contains(i.L6)) &&
                                (resType.Count == 0 || resType.Contains(b.BoqCtg)) &&
                                (divO.Count == 0 || divO.Contains(i.SectionO))
                                orderby c.ResDescription

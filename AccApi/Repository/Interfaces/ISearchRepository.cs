@@ -12,6 +12,8 @@ namespace AccApi.Repository.Interfaces
         //List<BOQLevelList> GetBOQLevel2ListBy(RessourceLevelsFilter filter);
         List<BOQLevelList> GetBOQLevel3List(RessourceLevelsFilter filter, string CostConn);
         List<BOQLevelList> GetBOQLevel4List(RessourceLevelsFilter filter, string CostConn);
+        List<BOQLevelList> GetBOQLevel5List(RessourceLevelsFilter filter, string CostConn);
+        List<BOQLevelList> GetBOQLevel6List(RessourceLevelsFilter filter, string CostConn);
         List<RESDivList> RESDivList(string CostConn);
         List<RESTypeList> GetResTypeList(RessourceLevelsFilter filter, string CostConn);
         List<Package> GetPackagesList(bool usedPackages, string CostConn);
@@ -20,6 +22,8 @@ namespace AccApi.Repository.Interfaces
         List<RessourceList> GetRessourcesList(RessourceLevelsFilter filter, string CostConn);
         List<BOQLevelList> GetBOQLevel3ListByLevel2(RessourceLevelsFilter filter, string CostConn);
         List<BOQLevelList> GetBOQLevel4ListByLevel3(RessourceLevelsFilter filter, string CostConn);
+        List<BOQLevelList> GetBOQLevel5ListByLevel4(RessourceLevelsFilter filter, string CostConn);
+        List<BOQLevelList> GetBOQLevel6ListByLevel5(RessourceLevelsFilter filter, string CostConn);
         List<RessourceList> GetRessourcesListByLevels(RessourceLevelsFilter filter, string CostConn);
         DataTablesResponse<Wbs> GetWbsList(DataTablesRequest Request,string CostConn);
     }
