@@ -168,7 +168,7 @@ namespace AccApi.Controllers
                     Replies = new List<DisplayCondReply>()
                 }).ToList();
 
-                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn);
+                var listPackageSuppliers = this._supplierPackagesRepository.GetSupplierPackagesList(packId, CostConn).OrderBy(x=>x.PsSupName).ToList();
 
                 listPackageSuppliers.ForEach(sp =>
                 {
@@ -186,6 +186,7 @@ namespace AccApi.Controllers
                                 Reply = x.CondReply,
                                 AccCondValue=x.AccCond
                             };
+                          
                             var cond = displayConditions.Where(x => x.Id == displayReply.ConditionId).FirstOrDefault();
                             cond.Replies.Add(displayReply);
                             cond.AccCondition = displayReply.AccCondValue;
@@ -194,6 +195,13 @@ namespace AccApi.Controllers
                 });
 
                 displayConditions.RemoveAll(x => x.Replies.Count() == 0);
+
+                foreach (var x in displayConditions)
+                {
+                    DisplayCondReply displayReplyIdeal = new DisplayCondReply { SupplierId = 0, SupplierName = "Ideal", ConditionId = x.Id, Reply = "", AccCondValue = x.AccCondition };
+                    x.Replies.Add(displayReplyIdeal);
+                }
+
                 return displayConditions;
             }
             catch (Exception ex)

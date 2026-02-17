@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.Intrinsics.Arm;
 using System.Security.Cryptography;
 using System.Linq.Dynamic.Core;
+using Syncfusion.XlsIO.Implementation.Security;
 
 namespace AccApi.Repository.Managers
 {
@@ -451,6 +452,7 @@ namespace AccApi.Repository.Managers
             AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             var results = (from b in _costDbcontext.TblBoqVds
+                           join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            group b by b.BoqDiv into g
                            orderby g.Key
                            select new RESDivList { BoqDiv = g.Key }).ToList();
@@ -468,10 +470,17 @@ namespace AccApi.Repository.Managers
                 AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
                 var usedPackO = _costDbcontext.TblOriginalBoqVds.Where(x => x.Scope > 0).Select(p => p.Scope).Distinct().ToList();
-                var usedPackB = _costDbcontext.TblBoqVds.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
+                //var usedPackB = _costDbcontext.TblBoqVds.Where(x => x.BoqScope > 0).Select(p => p.BoqScope).Distinct().ToList();
+                var usedPackB = (from b in _costDbcontext.TblBoqVds
+                                 join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                 where b.BoqScope > 0
+                                 select b.BoqScope)
+                                .Distinct()
+                                .ToList();
+
                 var usedPack = usedPackO.Union(usedPackB).ToList();
 
-                 results = (from b in _mdbContext.TblPackages
+                results = (from b in _mdbContext.TblPackages
                                where usedPack.Contains(b.PkgeId)
                                orderby b.PkgeName
                                select new Package
@@ -514,6 +523,7 @@ namespace AccApi.Repository.Managers
             AccDbContext _costDbcontext = new AccDbContext(CostConn);
 
             var results = (from b in _costDbcontext.TblBoqVds
+                           join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            group b by b.BoqPackage into g
                            orderby g.Key
                            select new RESPackageList { BoqPackage = g.Key }).ToList();
@@ -558,6 +568,7 @@ namespace AccApi.Repository.Managers
             if (resTypeList.Count > 0)
                 resList = (from l in resTypeList
                            join b in _costDbcontext.TblBoqVds on l.resourceType equals b.BoqCtg
+                           join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                            group b by b.BoqResSeq into g
                            orderby g.Key
                            select new Ressource
@@ -815,8 +826,7 @@ namespace AccApi.Repository.Managers
             AccDbContext _costDbcontext = new AccDbContext(CostConn );
 
             query = (from b in _costDbcontext.TblBoqVds
-                         join c in _costDbcontext.TblResources
-                         on b.BoqResSeq equals c.ResSeq
+                         join c in _costDbcontext.TblResources on b.BoqResSeq equals c.ResSeq
                          join i in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals i.ItemO
                          where (Level2.Count == 0 || Level2.Contains(i.L2)) &&
                                (Level3.Count == 0 || Level3.Contains(i.L3)) &&

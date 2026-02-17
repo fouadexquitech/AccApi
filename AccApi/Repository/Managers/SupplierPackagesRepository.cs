@@ -168,16 +168,25 @@ namespace AccApi.Repository.Managers
                                 obTradeDesc=o.ObTradeDesc,
                             }).ToList();
 
-                var resCost = from e in _dbcontext.TblBoqVds.Where(x => x.BoqScope == packId)
-                                 group e by e.BoqItem into g
-                                 select new boqPackageList
-                                 {
-                                     item = g.Key,
-                                     resTotalPrice = g.Sum(x => x.BoqQty * x.BoqUprice)
-                                 };
+                //var resCost = from e in _dbcontext.TblBoqVds.Where(x => x.BoqScope == packId)
+                //                 group e by e.BoqItem into g
+                //                 select new boqPackageList
+                //                 {
+                //                     item = g.Key,
+                //                     resTotalPrice = g.Sum(x => x.BoqQty * x.BoqUprice)
+                //                 };
 
+                var resCost =   from e in _dbcontext.TblBoqVds
+                                join o in _dbcontext.TblOriginalBoqVds on e.BoqItem equals o.ItemO
+                                where e.BoqScope == packId
+                                group e by e.BoqItem into g
+                                select new boqPackageList
+                                {
+                                    item = g.Key,
+                                    resTotalPrice = g.Sum(x => x.BoqQty * x.BoqUprice)
+                                };
 
-                 boqList = (from o in origBoqList
+                boqList = (from o in origBoqList
                             join b in resCost on o.item equals b.item
                                    select new boqPackageList
                                    {

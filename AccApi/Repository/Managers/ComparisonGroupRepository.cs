@@ -89,6 +89,7 @@ namespace AccApi.Repository.Managers
 
             List<BoqModel> list = (from c in _dbContext.ComparisonPackageGroups
                                    join g in _dbContext.TblBoqVds on c.Id equals g.GroupId
+                                   join o in _dbContext.TblOriginalBoqVds on g.BoqItem equals o.ItemO
                                    where c.PackageId == packageId && g.GroupId == groupId
                                    select new BoqModel
                                    {
@@ -191,7 +192,12 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblBoqVds.Where(x => x.BoqSeq == r.BoqSeq).FirstOrDefault();
+                var boq = (from o in _dbContext.TblOriginalBoqVds
+                           join b in _dbContext.TblBoqVds
+                           on o.ItemO equals b.BoqItem
+                           where b.BoqSeq == r.BoqSeq 
+                           select b).FirstOrDefault();
+
                 if (boq != null)
                 {
                     boq.GroupId = groupId;
@@ -221,7 +227,11 @@ namespace AccApi.Repository.Managers
         {
             foreach (var r in list)
             {
-                var boq = _dbContext.TblBoqVds.Where(x => x.BoqSeq == r.BoqSeq && x.GroupId == groupId).FirstOrDefault();
+                var boq = (from o in _dbContext.TblOriginalBoqVds
+                           join b in _dbContext.TblBoqVds
+                           on o.ItemO equals b.BoqItem
+                           where b.BoqSeq == r.BoqSeq && b.GroupId == groupId
+                           select b).FirstOrDefault();
                 if (boq != null)
                 {
                     boq.GroupId = null;

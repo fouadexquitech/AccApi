@@ -62,6 +62,7 @@ namespace AccApi.Repository.Managers
             if (input.boqResourceSeq.Length > 0) blankInput = false;
             if (input.isRessourcesAssigned > 0) blankInput = false;
             if (!string.IsNullOrEmpty(input.BOQRefNumber)) blankInput = false;
+            if (input.voItems > 0) blankInput = false;
 
             if (blankInput && type != 3 && type != 5 && type != 6)
             {
@@ -160,6 +161,8 @@ namespace AccApi.Repository.Managers
             var p21 = new SqlParameter("@L6_List", SqlDbType.Structured);
             p21.TypeName = "[dbo].[L6_List]"; p21.SqlValue = dtL6;
 
+            var p22 = new SqlParameter("@voItems", (input.voItems == null) ? 0 : input.voItems);
+
             //////////////////
             /////methode SP 1
             List<SqlParameter> parameters = new List<SqlParameter>();
@@ -185,6 +188,7 @@ namespace AccApi.Repository.Managers
             parameters.Add(p19);
             parameters.Add(p20);
             parameters.Add(p21);
+            parameters.Add(p22);
 
             ExecuteRawSP executeRawSP = new ExecuteRawSP();
             List<BoqRessourcesList> result = new List<BoqRessourcesList>();
@@ -193,7 +197,7 @@ namespace AccApi.Repository.Managers
             switch (type)
             {
                 case 1:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List,@voItems", parameters,
                         x => new BoqRessourcesList
                         {
                             RowNumber = (int)x["RowNumber"],
@@ -217,15 +221,16 @@ namespace AccApi.Repository.Managers
                             C2 = (string)x["C2"],
                             C3 = (string)x["C3"],
                             C4 = (string)x["C4"],
-                            BoqRefNumber=(string)x["RefNumber"],
-                            ObTradeDesc=(string)x["ObTradeDesc"],
+                            BoqRefNumber = (string)x["RefNumber"],
+                            ObTradeDesc = (string)x["ObTradeDesc"],
+                            isVO = (bool)x["isVO"]
                         });
                     break;
 
                 case 2:
                 case 3:
                 case 4:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List,@voItems", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -261,7 +266,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 5:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List,@voItems", parameters,
                         x => new BoqRessourcesList
                         {
                             ScopeO = (int)x["ScopeO"]
@@ -269,7 +274,7 @@ namespace AccApi.Repository.Managers
                     break;
 
                 case 6:
-                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List", parameters,
+                    result = await executeRawSP.ExecuteRawStoredProcedure(_mdbcontext, "sp_GetOriginalBoqList @Type,@DB,@BOQDivList,@ResDivList,@L2_List,@L3_List,@L4_List,@BoqResList,@ResTypeList,@BOQItem,@BOQDesc,@SheetDesc,@FromRow,@ToRow,@Package,@ResDesc,@isItemsAssigned,@isRessourcesAssigned,@boqStatus,@BOQRefNumber,@L5_List,@L6_List,@voItems", parameters,
                       x => new BoqRessourcesList
                       {
                           ItemO = (string)x["ItemO"],
@@ -689,7 +694,9 @@ namespace AccApi.Repository.Managers
                                                    L3 = ((o.L3 == null) ? "" : o.L3),
                                                    L4 = ((o.L4 == null) ? "" : o.L4),
                                                    AssignedPackage = "",
-                                                   BoqInsertedFromVendan = b.BoqInsertedFromVendan
+                                                   BoqInsertedFromVendan = b.BoqInsertedFromVendan,
+                                                   BoqWBS = b.BoqWbs,
+                                                   //boqVoSeq=b.boqVoSeq
                                                });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -783,7 +790,7 @@ namespace AccApi.Repository.Managers
 
                 var lstBoq = (from a in input.AssignBoqList
                               join b in _costDbcontext.TblBoqVds on a.BoqSeq equals b.BoqSeq
-                              join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                              join o in _costDbcontext.TblOriginalBoqVds on new { Item = b.BoqItem, Project = b.BoqProject } equals new { Item = o.ItemO, Project = o.ProjectO }
                               select b).ToList();
 
                 foreach (var item in input.AssignBoqList)
@@ -2024,7 +2031,13 @@ namespace AccApi.Repository.Managers
         {
             AccDbContext _context = new AccDbContext(CostConn);
 
-            var result = _context.TblBoqVds.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
+            //var result = _context.TblBoqVds.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
+
+            var result = (from b in _context.TblBoqVds
+                         join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                         where b.BoqSeq == res.BoqSeq
+                         select b)
+                        .FirstOrDefault();
 
             if (type == 1)
                 result.BoqQtyScope = res.BoqScopeQty;
@@ -2036,7 +2049,12 @@ namespace AccApi.Repository.Managers
                 _context.TblBoqVds.Update(result);
                 _context.SaveChanges();
 
-                var totalPrice = _context.TblBoqVds.Where(x => x.BoqItem == result.BoqItem).Sum(x => x.BoqQty * x.BoqUprice).Value;
+                //var totalPrice = _context.TblBoqVds.Where(x => x.BoqItem == result.BoqItem).Sum(x => x.BoqQty * x.BoqUprice).Value;
+                var totalPrice = (from b in _context.TblBoqVds
+                                 join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                 where b.BoqItem == result.BoqItem
+                                 select b.BoqQty * b.BoqUprice)
+                                .Sum();
 
                 var origboq = _context.TblOriginalBoqVds.Where(x => x.ItemO == result.BoqItem).FirstOrDefault();
                 origboq.Submitted = totalPrice;
@@ -2119,8 +2137,10 @@ namespace AccApi.Repository.Managers
             //        TotalBudget = p.Sum(c => c.BoqQty * c.BoqUprice)
             //    }).ToList();
 
-            var pckgesCost = from e in _costDbcontext.TblBoqVds.Where(x => x.BoqScope > 0)
-                             group e by e.BoqScope into g
+            var pckgesCost = from b in _costDbcontext.TblBoqVds
+                             join o in _costDbcontext.TblOriginalBoqVds
+                             on b.BoqItem equals o.ItemO where b.BoqScope>0
+                             group b by b.BoqScope into g
                              select new packagesList
                              {
                                  PkgeId = g.Key,
@@ -2473,7 +2493,12 @@ namespace AccApi.Repository.Managers
 
             var packList = await _context.TblSupplierPackages.Where(x => x.SpPackageId == id).ToListAsync();
             var packOriginalBoq = await _context.TblOriginalBoqVds.Where(x => x.Scope == id).ToListAsync();
-            var packBoq = await _context.TblBoqVds.Where(x => x.BoqScope == id).ToListAsync();
+
+            //var packBoq = await _context.TblBoqVds.Where(x => x.BoqScope == id).ToListAsync();
+            var packBoq = await (from b in _context.TblBoqVds
+                                 join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                 where b.BoqScope == id
+                                 select b).ToListAsync();
 
             if (!packList.Any() && !packOriginalBoq.Any() && !packBoq.Any())
             {
@@ -2637,7 +2662,10 @@ namespace AccApi.Repository.Managers
                                join b in _costDbcontext.TblOriginalBoqVds on a.ItemO equals b.ItemO
                                select b).ToList();
 
-                var maxseq = _costDbcontext.TblBoqVds.Max(x => x.BoqSeq);
+                //var maxseq = _costDbcontext.TblBoqVds.Max(x => x.BoqSeq);
+                var maxseq = (from b in _costDbcontext.TblBoqVds
+                             join o in _costDbcontext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                             select b.BoqSeq).Max();
 
                 if (lstBoqo != null)
                 {

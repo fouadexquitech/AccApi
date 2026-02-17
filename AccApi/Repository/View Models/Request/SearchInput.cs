@@ -28,6 +28,7 @@ namespace AccApi.Repository.View_Models.Request
         public int isRessourcesAssigned { get; set; }
         public string boqStatus { get; set; }
         public string BOQRefNumber { get; set; }
+        public int voItems { get; set; } = 0;
 
     }
 }

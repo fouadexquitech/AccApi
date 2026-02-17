@@ -87,7 +87,8 @@ namespace AccApi.Repository.View_Models
         public byte? BoqInsertedFromVendan { get; set; }
         public double? BoqUpriceBeforeDisct { get; set; }
         public string BoqRefNumber { get; set; } = "";
-
+        public int? boqVoSeq { get; set; }= 0;
+        public bool isVO { get; set; } = false;
     }
 
 

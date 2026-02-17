@@ -11,15 +11,10 @@ using Nancy.Extensions;
 using OfficeOpenXml;
 using System;
 using System.Collections.Generic;
-
 using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
 using Syncfusion.XlsIO;
 using Syncfusion.XlsIORenderer;
 using Syncfusion.Pdf;
-
 using System.IO;
 
 namespace AccApi.Repository.Managers
@@ -650,7 +645,12 @@ namespace AccApi.Repository.Managers
 
                                         resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
 
-                                        var result = _dbContext.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+                                        //var result = _dbContext.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+                                        var result = (from b in _dbContext.TblBoqVds
+                                                     join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                                     where b.BoqItem == boqItem && b.BoqPackage == resCode
+                                                     select b).SingleOrDefault();
+
                                         if (result != null)
                                             resSeq = result.BoqResSeq;
 
@@ -1000,6 +1000,7 @@ namespace AccApi.Repository.Managers
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                    join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                                   join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1031,6 +1032,7 @@ namespace AccApi.Repository.Managers
                                                    join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                    join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                                   join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1210,6 +1212,7 @@ namespace AccApi.Repository.Managers
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                               join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1241,6 +1244,7 @@ namespace AccApi.Repository.Managers
                                                join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                               join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -3054,6 +3058,7 @@ namespace AccApi.Repository.Managers
                              join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
                              join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                             join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                              join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
