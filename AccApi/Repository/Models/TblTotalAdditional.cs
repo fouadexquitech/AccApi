@@ -76,5 +76,35 @@ namespace AccApi.Repository.Models
         public decimal? SubmittedAmtPrev { get; set; }
         [Column("taPer")]
         public double? TaPer { get; set; }
+        [Column("CertifiedAmt_Cum", TypeName = "money")]
+        public decimal? CertifiedAmtCum { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? CertifiedAmount { get; set; }
+        [Column("CertifiedAmt_Prev", TypeName = "money")]
+        public decimal? CertifiedAmtPrev { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? CertifiedPer { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? CertifiedQty { get; set; }
+        [Column("CertifiedPer_Cum", TypeName = "money")]
+        public decimal? CertifiedPerCum { get; set; }
+        [Column("CertifiedQty_Cum", TypeName = "money")]
+        public decimal? CertifiedQtyCum { get; set; }
+        [Column("CertifiedPer_Prev", TypeName = "money")]
+        public decimal? CertifiedPerPrev { get; set; }
+        [Column("CertifiedQty_Prev", TypeName = "money")]
+        public decimal? CertifiedQtyPrev { get; set; }
+        [Column("taVORef")]
+        [StringLength(500)]
+        public string TaVoref { get; set; }
+        [Column("SubmittedPer_Prev")]
+        public double? SubmittedPerPrev { get; set; }
+        public double? Per { get; set; }
+        [Column("SubmittedPer_Cum")]
+        public double? SubmittedPerCum { get; set; }
+        [Column("paymentNo")]
+        public int? PaymentNo { get; set; }
+        [Column("status")]
+        public byte? Status { get; set; }
     }
 }

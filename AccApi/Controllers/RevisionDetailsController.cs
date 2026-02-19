@@ -101,11 +101,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("UpdateRevisionDetailsPrice")]
-        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
+        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.UpdateRevisionDetailsPrice(revisionDetailsList);
+                return this._revisionDetailsRepository.UpdateRevisionDetailsPrice(revisionDetailsList, CostConn);
             }
             catch (Exception ex)
             {
@@ -121,11 +121,11 @@ namespace AccApi.Controllers
         }
 
         [HttpPost("UpdateRevisionDetailsPriceByBoq")]
-        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
+        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList, string CostConn)
         {
             try
             {
-                return this._revisionDetailsRepository.UpdateRevisionDetailsPriceByBoq(revisionDetailsList);
+                return this._revisionDetailsRepository.UpdateRevisionDetailsPriceByBoq(revisionDetailsList ,CostConn);
             }
             catch (Exception ex)
             {

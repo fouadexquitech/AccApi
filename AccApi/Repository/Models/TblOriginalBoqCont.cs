@@ -46,5 +46,20 @@ namespace AccApi.Repository.Models
         [Column("contractItem")]
         [StringLength(50)]
         public string ContractItem { get; set; }
+        [Column("isProvisionalSum")]
+        public bool? IsProvisionalSum { get; set; }
+        [Column("boqSN")]
+        [StringLength(100)]
+        public string BoqSn { get; set; }
+        [Column("excelFilePath")]
+        public string ExcelFilePath { get; set; }
+        [Column("execQtyThisMonth")]
+        public double? ExecQtyThisMonth { get; set; }
+        [Column("execQtyThisMonthPerc")]
+        public double? ExecQtyThisMonthPerc { get; set; }
+        [Column("execQtyCum")]
+        public double? ExecQtyCum { get; set; }
+        [Column("execQtyCumPerc")]
+        public double? ExecQtyCumPerc { get; set; }
     }
 }

@@ -57,5 +57,11 @@ namespace AccApi.Repository.Models
         public string Mirref { get; set; }
         [Column("MIRDate", TypeName = "datetime")]
         public DateTime? Mirdate { get; set; }
+        [Column("paymNo")]
+        public int? PaymNo { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? CertifiedAmtCum { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? CertifiedAmtMat { get; set; }
     }
 }

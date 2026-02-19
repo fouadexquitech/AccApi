@@ -187,5 +187,9 @@ namespace AccApi.Repository.Models
         [StringLength(50)]
         public string ObStatus { get; set; }
         public string C16 { get; set; }
+        [Column("insertedFromVo")]
+        public byte? InsertedFromVo { get; set; }
+        [Column("voSeq")]
+        public int? VoSeq { get; set; }
     }
 }

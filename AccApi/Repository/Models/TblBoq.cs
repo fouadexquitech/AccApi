@@ -128,5 +128,13 @@ namespace AccApi.Repository.Models
         [StringLength(25)]
         public string SubBoq { get; set; }
         public bool? IsSynched { get; set; }
+        [Column("insertedFromVo")]
+        public byte? InsertedFromVo { get; set; }
+        [Column("boqVoBkdSeq")]
+        public int? BoqVoBkdSeq { get; set; }
+        [Column("boqVoUnitRate")]
+        public double? BoqVoUnitRate { get; set; }
+        [Column("boqVoSeq")]
+        public int? BoqVoSeq { get; set; }
     }
 }

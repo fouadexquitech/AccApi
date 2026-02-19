@@ -24,9 +24,6 @@ namespace AccApi.Repository.Models
         [Column("rnsCod")]
         [StringLength(50)]
         public string RnsCod { get; set; }
-        [Column("rnsDsc")]
-        [StringLength(255)]
-        public string RnsDsc { get; set; }
         [Column("rnsSel")]
         public byte? RnsSel { get; set; }
         [Column("rnsBaseUnit")]
@@ -60,5 +57,26 @@ namespace AccApi.Repository.Models
         [Key]
         [Column("rnsSeq")]
         public int RnsSeq { get; set; }
+        [Column("grp1")]
+        [StringLength(1000)]
+        public string Grp1 { get; set; }
+        [Column("grp2")]
+        [StringLength(1000)]
+        public string Grp2 { get; set; }
+        [Column("grp3")]
+        [StringLength(1000)]
+        public string Grp3 { get; set; }
+        [Column("grp4")]
+        [StringLength(1000)]
+        public string Grp4 { get; set; }
+        [Column("grp5")]
+        [StringLength(1000)]
+        public string Grp5 { get; set; }
+        [Column("rnsDsc")]
+        public string RnsDsc { get; set; }
+        [Column("amt1")]
+        public double? Amt1 { get; set; }
+        [Column("amt2")]
+        public double? Amt2 { get; set; }
     }
 }

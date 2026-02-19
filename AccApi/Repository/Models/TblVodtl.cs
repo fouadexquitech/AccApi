@@ -25,8 +25,6 @@ namespace AccApi.Repository.Models
         public double? BudUnitRate { get; set; }
         public double? BudQty { get; set; }
         public double? Submitted { get; set; }
-        [Column("addOmit")]
-        public byte? AddOmit { get; set; }
         public double? AddQty { get; set; }
         public double? AddAmt { get; set; }
         public double? OmitQty { get; set; }
@@ -39,7 +37,6 @@ namespace AccApi.Repository.Models
         [Column("insertDate", TypeName = "datetime")]
         public DateTime? InsertDate { get; set; }
         public float? Per { get; set; }
-        public double? UnitRate { get; set; }
         public double? CertifiedQty { get; set; }
         public float? CertifiedPer { get; set; }
         public float? SellingPrice { get; set; }
@@ -97,6 +94,51 @@ namespace AccApi.Repository.Models
         public double? OmitQtyOh { get; set; }
         public double? OmitUnitRateOh { get; set; }
         public double? OmitAmtOh { get; set; }
+        [Column("AddQty_Cert", TypeName = "money")]
+        public decimal? AddQtyCert { get; set; }
+        [Column("AddAmt_Cert", TypeName = "money")]
+        public decimal? AddAmtCert { get; set; }
+        [Column("OmitQty_Cert", TypeName = "money")]
+        public decimal? OmitQtyCert { get; set; }
+        [Column("OmitAmt_Cert", TypeName = "money")]
+        public decimal? OmitAmtCert { get; set; }
+        [Column("itemType")]
+        public int? ItemType { get; set; }
+        [StringLength(100)]
+        public string BoqClass { get; set; }
+        [Column("notes", TypeName = "ntext")]
+        public string Notes { get; set; }
+        [Column("subcAmount", TypeName = "money")]
+        public decimal? SubcAmount { get; set; }
+        [Column("subcAmount_Cert", TypeName = "money")]
+        public decimal? SubcAmountCert { get; set; }
+        [Column("risk")]
+        public int? Risk { get; set; }
+        [Column("realizablPerc")]
+        public double? RealizablPerc { get; set; }
+        [Column("addOmit")]
+        public byte? AddOmit { get; set; }
+        [Column(TypeName = "money")]
+        public decimal? EmployerAmt { get; set; }
+        [Column("realizablAmt", TypeName = "money")]
+        public decimal? RealizablAmt { get; set; }
+        [Column("realizablSubcAmt", TypeName = "money")]
+        public decimal? RealizablSubcAmt { get; set; }
+        public double? OmitQtyOth { get; set; }
+        public double? OmitUnitRateOth { get; set; }
+        public double? OmitAmtOth { get; set; }
+        public double? ConsUnitRate { get; set; }
+        public double? EmployerUnitRate { get; set; }
+        public int? VoItemStatus { get; set; }
+        [Column("finalApprovalPerc")]
+        public double? FinalApprovalPerc { get; set; }
+        [Column("finalApprovalAmt")]
+        public double? FinalApprovalAmt { get; set; }
+        [Column("finalApprovalSubcAmt")]
+        public double? FinalApprovalSubcAmt { get; set; }
+        public double? EmployerCertifiedQty { get; set; }
+        [Column("EmployerSubcAmount_Cert")]
+        public double? EmployerSubcAmountCert { get; set; }
 
         [ForeignKey(nameof(SeqHdr))]
         [InverseProperty(nameof(TblVohdr.TblVodtls))]

@@ -36,6 +36,8 @@ namespace AccApi.Repository.Models
         public double? BurBillQty { get; set; }
         [Column("burBillSubmitted")]
         public double? BurBillSubmitted { get; set; }
+        [Column("voSeq")]
+        public int? VoSeq { get; set; }
 
         [ForeignKey(nameof(BurBackUpDate))]
         [InverseProperty(nameof(TblBoqbackUp.TblBoqunitRates))]

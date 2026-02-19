@@ -52,5 +52,7 @@ namespace AccApi.Repository.Models
         [Column("subwBoq")]
         [StringLength(25)]
         public string SubwBoq { get; set; }
+        [Column("voSeq")]
+        public int? VoSeq { get; set; }
     }
 }

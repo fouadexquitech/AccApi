@@ -77,5 +77,14 @@ namespace AccApi.Repository.Models
         [Column("billingNo")]
         [StringLength(500)]
         public string BillingNo { get; set; }
+        [StringLength(200)]
+        public string SectionNo { get; set; }
+        [Column("paymentNo")]
+        public int? PaymentNo { get; set; }
+        [Column("boqSeq")]
+        public int? BoqSeq { get; set; }
+        [Column("Item_Contract")]
+        [StringLength(50)]
+        public string ItemContract { get; set; }
     }
 }

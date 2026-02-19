@@ -564,8 +564,12 @@ namespace AccApi.Repository.Managers
                                                join b in _costDbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                                                where b.BoqItem == ItemO
                                                join r in _costDbcontext.TblResources on b.BoqResSeq equals r.ResSeq
-                                               //join p in packList on b.BoqScope equals p.PkgeId into gj
-                                               //from pk in gj.DefaultIfEmpty()
+                                               // LEFT JOIN tblVoDtlBkd
+                                               join v in _costDbcontext.TblVoDtlBkds
+                                                   on b.BoqVoBkdSeq equals v.BSeq into vj
+                                               from vd in vj.DefaultIfEmpty()   // 👈 LEFT JOIN
+                                                //join p in packList on b.BoqScope equals p.PkgeId into gj
+                                                //from pk in gj.DefaultIfEmpty()
                                                select new BoqModel()
                                                {
                                                    RowNumber = o.RowNumber,
@@ -597,6 +601,10 @@ namespace AccApi.Repository.Managers
                                                    TotalUnitPrice = (b.BoqUprice * b.BoqQty) / o.UnitRate,
                                                    BoqInsertedFromVendan = b.BoqInsertedFromVendan,
                                                    BoqWBS=b.BoqWbs,
+                                                   boqVoSeq = b.BoqVoSeq,
+                                                   boqVoBkdSeq = b.BoqVoBkdSeq,
+                                                   // ✅ LEFT JOIN RESULT
+                                                   isExternal = vd != null ? (bool)vd.BisExternal : false
                                                });
 
 
@@ -617,6 +625,7 @@ namespace AccApi.Repository.Managers
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
             if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
+            if (input.voItems > 0) condQuery = condQuery.Where(w => w.BoqSeq > 0);
 
             switch (input.isRessourcesAssigned)
             {
@@ -664,8 +673,10 @@ namespace AccApi.Repository.Managers
             IEnumerable<BoqModel> condQuery = (from o in _costDbcontext.TblOriginalBoqVds
                                                join b in _costDbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                                                join r in _costDbcontext.TblResources on b.BoqResSeq equals r.ResSeq
-                                               //join p in packList on b.BoqScope equals p.PkgeId into gj
-                                               //from pk in gj.DefaultIfEmpty()
+                                               // LEFT JOIN tblVoDtlBkd
+                                               join v in _costDbcontext.TblVoDtlBkds
+                                                   on b.BoqVoBkdSeq equals v.BSeq into vj
+                                               from vd in vj.DefaultIfEmpty()   // 👈 LEFT JOIN
                                                select new BoqModel()
                                                {
                                                    RowNumber = o.RowNumber,
@@ -696,7 +707,10 @@ namespace AccApi.Repository.Managers
                                                    AssignedPackage = "",
                                                    BoqInsertedFromVendan = b.BoqInsertedFromVendan,
                                                    BoqWBS = b.BoqWbs,
-                                                   //boqVoSeq=b.boqVoSeq
+                                                   boqVoSeq = b.BoqVoSeq,
+                                                   boqVoBkdSeq=b.BoqVoBkdSeq,
+                                                   // ✅ LEFT JOIN RESULT
+                                                   isExternal = vd != null ? (bool)vd.BisExternal : false
                                                });
 
             if (input.BOQDiv.Length > 0) condQuery = condQuery.Where(w => input.BOQDiv.Contains(w.SectionO));
@@ -716,6 +730,7 @@ namespace AccApi.Repository.Managers
             if (input.boqLevel4.Length > 0) condQuery = condQuery.Where(w => input.boqLevel4.Contains(w.L4));
             if (!string.IsNullOrEmpty(input.obTradeDesc)) condQuery = condQuery.Where(w => w.ObTradeDesc.ToLower().Contains(input.obTradeDesc.ToLower()));
             if (input.boqResourceSeq.Length > 0) condQuery = condQuery.Where(w => input.boqResourceSeq.Contains(w.BoqResSeq));
+            if (input.voItems > 0) condQuery = condQuery.Where(w => w.BoqSeq>0);
 
             switch (input.isRessourcesAssigned)
             {
@@ -788,18 +803,52 @@ namespace AccApi.Repository.Managers
                 //}
                 //_context.SaveChanges();
 
-                var lstBoq = (from a in input.AssignBoqList
-                              join b in _costDbcontext.TblBoqVds on a.BoqSeq equals b.BoqSeq
-                              join o in _costDbcontext.TblOriginalBoqVds on new { Item = b.BoqItem, Project = b.BoqProject } equals new { Item = o.ItemO, Project = o.ProjectO }
-                              select b).ToList();
+                //var lstBoq = (from a in input.AssignBoqList
+                //              join b in _costDbcontext.TblBoqVds on a.BoqSeq equals b.BoqSeq
+                //              join o in _costDbcontext.TblOriginalBoqVds on new { Item = b.BoqItem, Project = b.BoqProject } equals new { Item = o.ItemO, Project = o.ProjectO }
+                //              select b).ToList();
 
+                List<BoqWithExternal> lstBoq =
+                (
+                    from a in input.AssignBoqList
+
+                    join b in _costDbcontext.TblBoqVds
+                        on a.BoqSeq equals b.BoqSeq
+
+                    join o in _costDbcontext.TblOriginalBoqVds
+                        on new { Item = b.BoqItem, Project = b.BoqProject }
+                        equals new { Item = o.ItemO, Project = o.ProjectO }
+
+                        // LEFT JOIN tblVoDtlBkd
+                    join v in _costDbcontext.TblVoDtlBkds
+                        on b.BoqVoBkdSeq equals v.BSeq into vj
+                    from vd in vj.DefaultIfEmpty()
+
+                    select new BoqWithExternal
+                    {
+                        Boq = b,
+                        IsExternal = vd?.BisExternal ?? false
+                    }
+                ).ToList();
+
+                var boqDict = lstBoq.ToDictionary(x => x.Boq.BoqSeq);
                 foreach (var item in input.AssignBoqList)
                 {
-                    lstBoq.Where(d => d.BoqSeq == item.BoqSeq).First().BoqScope = item.BoqScope;
+                    if (boqDict.TryGetValue(item.BoqSeq, out var entry) && !(entry.IsExternal == false && entry.Boq.BoqVoSeq > 0))
+                    {   
+                        entry.Boq.BoqScope = item.BoqScope;
+                        //entry.Boq.IsExternal = entry.IsExternal;
+                    }
                 }
-                _context.TblBoqVds.UpdateRange(lstBoq);
-                _context.SaveChanges();
+
+                //foreach (var item in input.AssignBoqList)
+                //{
+                //    lstBoq.Where(d => d.BoqSeq == item.BoqSeq).First().BoqScope = item.BoqScope;
+                //}
+                //_context.TblBoqVds.UpdateRange(lstBoq);
+                _costDbcontext.SaveChanges();
             }
+
             return true;
         }
 

@@ -21,7 +21,7 @@ namespace AccApi.Repository.Managers
 {
     public class RevisionDetailsRepository : IRevisionDetailsRepository
     {
-        private AccDbContext _dbContext;
+        private AccDbContext _costDBContext;
         //private PolicyDbContext _pdbContext;
         private MasterDbContext _mdbContext;
         private readonly IlogonRepository _logonRepository;
@@ -37,18 +37,18 @@ namespace AccApi.Repository.Managers
             _mdbContext = mdbContext;
             _logonRepository = logonRepository;
             _globalLists = globalLists;
-            _dbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _costDBContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
             //_pdbContext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
         }
 
         public List<LevelModel> GetRevisionDetails(int RevisionId, string itemDesc, string resource, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            var supPackRev = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
+            var supPackRev = _context.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrRevId == RevisionId));
             int PackageSuppliersID = (int)supPackRev.PrPackSuppId;
 
-            var supPack = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSuppliersID).FirstOrDefault();
+            var supPack = _context.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSuppliersID).FirstOrDefault();
             byte byBoq = (byte)((supPack.SpByBoq == null) ? 0 : supPack.SpByBoq);
 
             List<RevisionDetailsList> revDetailList = new List<RevisionDetailsList>();
@@ -58,10 +58,10 @@ namespace AccApi.Repository.Managers
 
             if (byBoq == 1)
             {
-                var revDtlQry = (from bb in _dbContext.TblSupplierPackageRevisions 
-                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                 join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                 join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                var revDtlQry = (from bb in _context.TblSupplierPackageRevisions 
+                                 join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                 join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                 join o in _context.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                  where b.RdRevisionId == RevisionId && (b.IsNew == false || b.IsNew == null)
                                  && (b.IsAlternative == false || b.IsAlternative == null)
                                  && (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
@@ -109,10 +109,10 @@ namespace AccApi.Repository.Managers
                                      C6 = o.C6
                                  }).ToList();
 
-                var revDtlQryNew = (from bb in _dbContext.TblSupplierPackageRevisions 
-                                    join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                    join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                    join item in _dbContext.NewItems on b.NewItemId equals item.Id
+                var revDtlQryNew = (from bb in _context.TblSupplierPackageRevisions 
+                                    join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                    join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                    join item in _context.NewItems on b.NewItemId equals item.Id
                                     where b.RdRevisionId == RevisionId && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
                                     && (itemDesc == null || item.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                     select new RevisionDetailsList
@@ -159,10 +159,10 @@ namespace AccApi.Repository.Managers
                                         C6 = item.C6
                                     }).ToList();
 
-                var revDtlQryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
-                                               join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                               join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                               join o in _dbContext.TblOriginalBoqVds on b.ParentItemO equals o.ItemO
+                var revDtlQryAlt = (from bb in _context.TblSupplierPackageRevisions
+                                               join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                               join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                               join o in _context.TblOriginalBoqVds on b.ParentItemO equals o.ItemO
                                                where (b.RdRevisionId == RevisionId && b.IsAlternative == true) && (b.ItemCopiedFromRevision == 0 || b.ItemCopiedFromRevision == null)
                                               && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                                select new RevisionDetailsList
@@ -218,12 +218,12 @@ namespace AccApi.Repository.Managers
             }
             else
             {
-                var revDtl = (from bb in _dbContext.TblSupplierPackageRevisions 
-                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                             join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                              //join c in _dbContext.TblBoqVds on b.RdResourceSeq equals c.BoqResSeq
-                              //join o in _dbContext.TblOriginalBoqVds on c.BoqItem equals o.ItemO
-                              //join e in _dbContext.TblResources on c.BoqResSeq equals e.ResSeq
+                var revDtl = (from bb in _context.TblSupplierPackageRevisions 
+                             join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                             join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                              //join c in _context.TblBoqVds on b.RdResourceSeq equals c.BoqResSeq
+                              //join o in _context.TblOriginalBoqVds on c.BoqItem equals o.ItemO
+                              //join e in _context.TblResources on c.BoqResSeq equals e.ResSeq
                              where (b.RdRevisionId == RevisionId) && b.IsAlternative == false && b.IsNew == false
                              //&& (itemDesc == null || o.DescriptionO.ToUpper().Contains(itemDesc.ToUpper()))
                              && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper())) 
@@ -271,13 +271,13 @@ namespace AccApi.Repository.Managers
                                  //C6 = o.C6
                              }).ToList();
 
-                var revDtlNew= (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                join item in _dbContext.NewItems on b.NewItemId equals item.Id
-                                join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
-                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
-                                //join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                var revDtlNew= (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                join item in _context.NewItems on b.NewItemId equals item.Id
+                                join newr in _context.NewItemResources on b.NewItemResourceId equals newr.Id
+                                //join item in _context.NewItemResources on b.NewItemResourceId equals item.Id
+                                //join o in _context.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                 where b.RdRevisionId == RevisionId && b.IsNew == true
                                 && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                 && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
@@ -325,13 +325,13 @@ namespace AccApi.Repository.Managers
                                     //C6 = item.C6
                                 }).ToList();
 
-                var revDtlNewRes=(from bb in _dbContext.TblSupplierPackageRevisions 
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
-                                join newr in _dbContext.NewItemResources on b.NewItemResourceId equals newr.Id
-                                //join item in _dbContext.NewItemResources on b.NewItemResourceId equals item.Id
-                                //join n in _dbContext.NewItems on b.NewItemId equals n.Id
+                var revDtlNewRes=(from bb in _context.TblSupplierPackageRevisions 
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                join o in _context.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                                join newr in _context.NewItemResources on b.NewItemResourceId equals newr.Id
+                                //join item in _context.NewItemResources on b.NewItemResourceId equals item.Id
+                                //join n in _context.NewItems on b.NewItemId equals n.Id
                                 where b.RdRevisionId == RevisionId && b.IsNew == true
                                 && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                 && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
@@ -379,10 +379,10 @@ namespace AccApi.Repository.Managers
                                     //C6 = o.C6
                                 }).ToList();
 
-                var revDtlAlt = (from bb in _dbContext.TblSupplierPackageRevisions
-                                 join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                 join b in _dbContext.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
-                                 //join o in _dbContext.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
+                var revDtlAlt = (from bb in _context.TblSupplierPackageRevisions
+                                 join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                 join b in _context.TblRevisionDetails on bb.PrRevId equals b.RdRevisionId
+                                 //join o in _context.TblOriginalBoqVds on b.RdBoqItem equals o.ItemO
                                  where (b.RdRevisionId == RevisionId && b.IsAlternative == true)
                                  && (itemDesc == null || b.ItemDescription.ToUpper().Contains(itemDesc.ToUpper()))
                                  && (resource == null || b.ResourceDescription.ToUpper().Contains(resource.ToUpper()))
@@ -510,22 +510,22 @@ namespace AccApi.Repository.Managers
 
         public bool AddRevision(int PackageSupplierId, DateTime PackSuppDate, IFormFile ExcelFile, int curId, double ExchRate,double discount,byte addedItem, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             if (addedItem != 1)  //add Items to Last Revision
             {
-                int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+                int LastRevNo = GetMaxRevisionNumber(PackageSupplierId,CostConn);
 
                 if (LastRevNo != -1)
                 {
                     int i = LastRevNo;
                     do
                     {
-                        var res = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
+                        var res = _context.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
                         if (res != null)
                         {
                             res.PrRevNo = i + 1;
-                            _dbContext.SaveChanges();
+                            _context.SaveChanges();
                         }
                         i--;
                     }
@@ -533,28 +533,30 @@ namespace AccApi.Repository.Managers
                 }
 
                 var result = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = PackSuppDate, PrCurrency = curId, PrExchRate = ExchRate };
-                _dbContext.Add<TblSupplierPackageRevision>(result);
-                _dbContext.SaveChanges();
+                _context.Add<TblSupplierPackageRevision>(result);
+                _context.SaveChanges();
             }
 
             //Get inserted Revison ID
-            var Rev0 = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
+            var Rev0 = _context.TblSupplierPackageRevisions.SingleOrDefault(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
             int revId = Rev0.PrRevId;
 
-            var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
+            var packageSupp = _context.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
             byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate, discount, addedItem))
+            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate, discount, addedItem,CostConn))
                 return false;
             else
             {
-                UpdateTotalPrice(revId);
+                UpdateTotalPrice(revId, CostConn);
                 return true;
             }
         }
 
-        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem)
+        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem ,string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             Boolean ret = true;
 
             if (ExcelFile?.Length > 0)
@@ -573,8 +575,8 @@ namespace AccApi.Repository.Managers
                         var rowCount = worksheet.Dimension.Rows;
 
                         //RemoveExistingMissing
-                        //_dbContext.TblMissingPrices.RemoveRange(_dbContext.TblMissingPrices.Where(c => c.RevisionId == revId));
-                        //_dbContext.SaveChanges();
+                        //_context.TblMissingPrices.RemoveRange(_context.TblMissingPrices.Where(c => c.RevisionId == revId));
+                        //_context.SaveChanges();
                         string resComment, resCode = "", oldBoqRef = "";
                         double resQty, Price,discount=0;
 
@@ -645,9 +647,9 @@ namespace AccApi.Repository.Managers
 
                                         resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
 
-                                        //var result = _dbContext.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
-                                        var result = (from b in _dbContext.TblBoqVds
-                                                     join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                                        //var result = _context.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+                                        var result = (from b in _context.TblBoqVds
+                                                     join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                                                      where b.BoqItem == boqItem && b.BoqPackage == resCode
                                                      select b).SingleOrDefault();
 
@@ -697,16 +699,16 @@ namespace AccApi.Repository.Managers
 
                     //if (LstMissingPrice.Count()>0 )
                     //{ 
-                    //    _dbContext.AddRange(LstMissingPrice);
+                    //    _context.AddRange(LstMissingPrice);
                     //    ret = false;
                     //}
                     //else
                     //{ 
-                    _dbContext.AddRange(LstRevDetails);
+                    _context.AddRange(LstRevDetails);
                     ret = true;
                     //}
 
-                    _dbContext.SaveChanges();
+                    _context.SaveChanges();
                 }
 
                 catch (Exception ex)
@@ -718,37 +720,41 @@ namespace AccApi.Repository.Managers
             return ret;
         }
 
-        public void UpdateTotalPrice(int revId)
+        public void UpdateTotalPrice(int revId, string CostConn)
         {
-            var result = _dbContext.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var result = _context.TblSupplierPackageRevisions.SingleOrDefault(b => b.PrRevNo == 0 && b.PrRevId == revId);
             if (result != null)
             {
-                var TotalPrice = (from b in _dbContext.TblRevisionDetails
+                var TotalPrice = (from b in _context.TblRevisionDetails
                                   where b.RdRevisionId == revId
                                   select b).Sum(e => (e.RdPrice * e.RdQty));
 
                 result.PrTotPrice = (decimal)TotalPrice;
-                _dbContext.SaveChanges();
+                _context.SaveChanges();
             }
         }
 
 
-        public int GetMaxRevisionNumber(int PackageSupplierId)
+        public int GetMaxRevisionNumber(int PackageSupplierId,string CostConn)
         {
-            var query = _dbContext.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var query = _context.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
             var MaxRevisionNumber = query.Any() ? query.Max(x => x.PrRevNo) : -1;
             return (int)MaxRevisionNumber;
         }
 
         public bool AssignSupplierPackage(int packId, List<SupplierPercent> SupPercentList, string CostConn)
         {
-            AccDbContext _dbContext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             foreach (var sup in SupPercentList)
             {
-                var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                       join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                       join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                var revisionDetails = (from a in _context.TblSupplierPackages
+                                       join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                       join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                        where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                        select new AssignRevisionDetails
@@ -766,7 +772,7 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var revDtl in revisionDetails)
                     {
-                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                     }
                 }
             }
@@ -775,7 +781,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierRessource(int packId, List<SupplierResrouces> supplierResList, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
@@ -785,9 +791,9 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var supPerc in sup.supplierPercents)
                     {
-                         revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                         revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                where (a.SpPackageId == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && c.RdResourceSeq == sup.resourceID)
 
                                                select new AssignRevisionDetails
@@ -806,7 +812,7 @@ namespace AccApi.Repository.Managers
                         {
                             foreach (var revDtl in revisionDetails)
                             {
-                                UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                             }
                         }
                     }
@@ -815,9 +821,9 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var supQty in sup.supplierQtys)
                     {
-                        revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                           join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                           join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                        revisionDetails = (from a in _context.TblSupplierPackages
+                                           join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                           join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                            where (a.SpPackageId == packId && a.SpSupplierId == supQty.supID && b.PrRevNo == 0 && c.RdResourceSeq == sup.resourceID)
 
                                            select new AssignRevisionDetails
@@ -836,7 +842,7 @@ namespace AccApi.Repository.Managers
                         {
                             foreach (var revDtl in revisionDetails)
                             {
-                                UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                             }
                         }
                     }
@@ -847,7 +853,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierListRessourceList(int packId, AssignSuppliertRes item, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
@@ -855,9 +861,9 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var sup in item.supplierPercentList)
                 {
-                    revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                       join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                       join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                    revisionDetails = (from a in _context.TblSupplierPackages
+                                       join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                       join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                        where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                        select new AssignRevisionDetails
@@ -876,7 +882,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var revDtl in filtered)
                     {
-                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                     }
                 }
             }
@@ -884,9 +890,9 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var sup in item.supplierQtyList)
                 {
-                    revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                       join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                       join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                    revisionDetails = (from a in _context.TblSupplierPackages
+                                       join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                       join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                        where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                        select new AssignRevisionDetails
@@ -905,7 +911,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var revDtl in filtered)
                     {
-                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                     }
                 }
             }
@@ -915,7 +921,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierListBoqList(int packId, AssignSuppliertBoq item, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<AssignRevisionDetails> revisionDetails = new List<AssignRevisionDetails>();
 
@@ -923,9 +929,9 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var sup in item.supplierPercentList)
                 {
-                    revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                           join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                           join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                    revisionDetails = (from a in _context.TblSupplierPackages
+                                           join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                           join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                            where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                            select new AssignRevisionDetails
@@ -947,7 +953,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var revDtl in filtered)
                     {
-                        UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                     }
                 }
             }
@@ -955,9 +961,9 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var sup in item.supplierQtyList)
                 {
-                    revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                           join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                           join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                    revisionDetails = (from a in _context.TblSupplierPackages
+                                           join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                           join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                            where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                            select new AssignRevisionDetails
@@ -976,7 +982,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var revDtl in filtered)
                     {
-                        UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                        UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                     }
                 }
             }
@@ -986,7 +992,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierGroup(int packId, bool byBoq, List<SupplierGroups> SupplierGroupList, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             if (!byBoq)
             {
@@ -996,11 +1002,11 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var supPerc in sup.supplierPercents)
                         {
-                            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
-                                                   join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
+                            var revisionDetails = (from a in _context.TblSupplierPackages
+                                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                   join boq in _context.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                                   join o in _context.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1019,7 +1025,7 @@ namespace AccApi.Repository.Managers
                             {
                                 foreach (var revDtl in revisionDetails)
                                 {
-                                    UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                    UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                                 }
                             }
                         }
@@ -1028,11 +1034,11 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var supPerc in sup.supplierQtys)
                         {
-                            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
-                                                   join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
+                            var revisionDetails = (from a in _context.TblSupplierPackages
+                                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                   join boq in _context.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                                   join o in _context.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                    where (a.SpPackageId == packId && boq.BoqScope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1051,7 +1057,7 @@ namespace AccApi.Repository.Managers
                             {
                                 foreach (var revDtl in revisionDetails)
                                 {
-                                    UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                    UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                                 }
                             }
                         }
@@ -1067,10 +1073,10 @@ namespace AccApi.Repository.Managers
                     {
                         foreach (var supPerc in sup.supplierPercents)
                         {
-                            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
+                            var revisionDetails = (from a in _context.TblSupplierPackages
+                                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                   join boq in _context.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                    where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1089,7 +1095,7 @@ namespace AccApi.Repository.Managers
                             {
                                 foreach (var revDtl in revisionDetails)
                                 {
-                                    UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                    UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                                 }
                             }
                         }
@@ -1098,10 +1104,10 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var supPerc in sup.supplierQtys)
                         {
-                            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                   join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
+                            var revisionDetails = (from a in _context.TblSupplierPackages
+                                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                   join boq in _context.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                    where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 && boq.GroupId == sup.GroupId)
 
                                                    select new AssignRevisionDetails
@@ -1120,7 +1126,7 @@ namespace AccApi.Repository.Managers
                             {
                                 foreach (var revDtl in revisionDetails)
                                 {
-                                    UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                    UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                                 }
                             }
                         }
@@ -1133,7 +1139,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierListGroupList(int packId, bool byBoq, AssignSupplierGroup item, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             if (byBoq)
             {
@@ -1141,10 +1147,10 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var sup in item.supplierPercentList)
                     {
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                               join boq in _context.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1164,7 +1170,7 @@ namespace AccApi.Repository.Managers
 
                         foreach (var revDtl in filtered)
                         {
-                            UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                            UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                         }
 
                     }
@@ -1173,10 +1179,10 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var sup in item.supplierQtyList)
                     {
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                               join boq in _context.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
                                                where (a.SpPackageId == packId && boq.Scope == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1196,7 +1202,7 @@ namespace AccApi.Repository.Managers
 
                         foreach (var revDtl in filtered)
                         {
-                            UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                            UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                         }
 
                     }
@@ -1208,11 +1214,11 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var sup in item.supplierPercentList)
                     {
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
-                                               join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                               join boq in _context.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                               join o in _context.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1232,7 +1238,7 @@ namespace AccApi.Repository.Managers
 
                         foreach (var revDtl in filtered)
                         {
-                            UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                            UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                         }
                     }
                 }
@@ -1240,11 +1246,11 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var sup in item.supplierQtyList)
                     {
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                               join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
-                                               join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                               join boq in _context.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                                               join o in _context.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
                                                where (a.SpPackageId == packId && a.SpSupplierId == sup.supID && b.PrRevNo == 0)
 
                                                select new AssignRevisionDetails
@@ -1264,7 +1270,7 @@ namespace AccApi.Repository.Managers
 
                         foreach (var revDtl in filtered)
                         {
-                            UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                            UpdateRevDtlAssignedQty(revDtl.revisionId, revDtl.resourceID, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                         }
                     }
                 }
@@ -1275,7 +1281,7 @@ namespace AccApi.Repository.Managers
 
         public bool AssignSupplierBOQ(int packId, List<SupplierBOQ> SupplierBOQList, bool isPercent, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             foreach (var sup in SupplierBOQList)
             {
@@ -1283,9 +1289,9 @@ namespace AccApi.Repository.Managers
                 {
                     foreach (var supPerc in sup.supplierPercents)
                     {
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                where (a.SpPackageId == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 &&
                                                ((sup.IsNewItem == false && c.RdBoqItem == sup.BoqItemID) || (sup.IsNewItem == true && sup.BoqItemID == Convert.ToString(c.NewItemId))))                                     
                                                select new AssignRevisionDetails
@@ -1304,7 +1310,7 @@ namespace AccApi.Repository.Managers
                         {
                             foreach (var revDtl in revisionDetails)
                             {
-                                UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                             }
                         }
                     }
@@ -1315,9 +1321,9 @@ namespace AccApi.Repository.Managers
                     {
                         //int itm = int.Parse( sup.BoqItemID);
 
-                        var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                               join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                               join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                        var revisionDetails = (from a in _context.TblSupplierPackages
+                                               join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                               join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                where (a.SpPackageId == packId && a.SpSupplierId == supPerc.supID && b.PrRevNo == 0 &&
                                                ((sup.IsNewItem == false && c.RdBoqItem == sup.BoqItemID) || (sup.IsNewItem == true && int.Parse(sup.BoqItemID) == c.NewItemId)))
 
@@ -1337,7 +1343,7 @@ namespace AccApi.Repository.Managers
                         {
                             foreach (var revDtl in revisionDetails)
                             {
-                                UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice);
+                                UpdateRevDtlAssignedQtyBOQ(revDtl.revisionId, revDtl.boqItem, (double)revDtl.assignpercent, (double)revDtl.assignQty, (double)revDtl.assignPrice,CostConn);
                             }
                         }
                     }
@@ -1346,37 +1352,43 @@ namespace AccApi.Repository.Managers
             return true;
         }
 
-        public void UpdateRevDtlAssignedQty(int revisionId, string resourceID, double assignpercent, double assignQty, double assignPrice)
+        public void UpdateRevDtlAssignedQty(int revisionId, string resourceID, double assignpercent, double assignQty, double assignPrice,string CostConn)
         {
-            var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var result = _context.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdResourceSeq == resourceID);
             if (result != null)
             {
                 result.RdAssignedPerc = assignpercent;
                 result.RdAssignedQty = assignQty;
                 result.RdAssignedPrice = assignPrice;
-                _dbContext.SaveChanges();
+                _context.SaveChanges();
             }
         }
 
-        public void UpdateRevDtlAssignedQtyBOQ(int revisionId, string boqItem, double assignpercent, double assignQty, double assignPrice)
+        public void UpdateRevDtlAssignedQtyBOQ(int revisionId, string boqItem, double assignpercent, double assignQty, double assignPrice, string CostConn)
         {
-            var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdBoqItem == boqItem);
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var result = _context.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == revisionId && b.RdBoqItem == boqItem);
             if (result != null)
             {
                 result.RdAssignedPerc = assignpercent;
                 result.RdAssignedQty = assignQty;
                 result.RdAssignedPrice = assignPrice;
-                _dbContext.SaveChanges();
+                _context.SaveChanges();
             }
         }
 
-        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList)
+        public bool UpdateRevisionDetailsPriceByBoq(List<RevisionDetailsList> revisionDetailsList, string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
             var usedCur = from cur in curList
-                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency   
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency   
                           join c in revisionDetailsList on b.PrRevId equals c.RdRevisionId                        
                           group cur by cur.CurCode into g
                           select new LiveExchange
@@ -1386,26 +1398,28 @@ namespace AccApi.Repository.Managers
 
             foreach (var item in revisionDetailsList)
             {
-                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdBoqItem == item.RdBoqItem);
+                var result = _context.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdBoqItem == item.RdBoqItem);
                 if (result != null)
                 {
-                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
+                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency, CostConn);
                     result.RdPriceOrigCurrency = item.RdPrice;
                     result.RdDiscount = item.RdDiscount;
                     result.RdMissedPriceReason = item.RdMissedPriceReason;
                 }
             }
-            _dbContext.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
 
-        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList)
+        public bool UpdateRevisionDetailsPrice(List<RevisionDetailsList> revisionDetailsList,string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
             var usedCur = from cur in curList
-                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
                           join c in revisionDetailsList on b.PrRevId equals c.RdRevisionId
                           group cur by cur.CurCode into g
                           select new LiveExchange
@@ -1415,22 +1429,22 @@ namespace AccApi.Repository.Managers
 
             foreach (var item in revisionDetailsList)
             {
-                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdResourceSeq == item.RdResourceSeq);
+                var result = _context.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == item.RdRevisionId && b.RdResourceSeq == item.RdResourceSeq);
                 if (result != null)
                 {
-                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency);
+                    result.RdPrice = item.RdPrice * GetExchange(usedCur.FirstOrDefault().fromCurrency, CostConn);
                     result.RdPriceOrigCurrency = item.RdPrice;
                     result.RdDiscount = item.RdDiscount;
                     result.RdMissedPriceReason=item.RdMissedPriceReason;
                 }
             }
-            _dbContext.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
 
         public bool SendCompToManagement(TopManagementTemplateModel topManagementTemplate, List<IFormFile> attachments,  string UserName, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             string send = "";
 
@@ -1445,7 +1459,7 @@ namespace AccApi.Repository.Managers
                 var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
                 string PackageName = package.PkgeName;
 
-                var p = _dbContext.TblParameters.FirstOrDefault();
+                var p = _context.TblParameters.FirstOrDefault();
                 //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
                 //string ProjectName = proj.PrjName;
                 string ProjectName = p.Project;
@@ -1477,7 +1491,7 @@ namespace AccApi.Repository.Managers
                 //BCC
                 List<string> mylistBCC = new List<string>();
                 //mylistBCC = null;
-                //User user = new LogonRepository(mdbcontext, _pdbContext, _dbContext, configuration).GetUser(UserName);
+                //User user = new LogonRepository(mdbcontext, _pdbContext, _context, configuration).GetUser(UserName);
                 User user = _logonRepository.GetUser(UserName);
 
                 if (user.UsrEmail != "")
@@ -1546,14 +1560,14 @@ namespace AccApi.Repository.Managers
 
         public List<C> GetComparisonSheet(int packageId, SearchInput input,int supId, string CostConn, string C)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             //IEnumerable<BoqRessourcesList> condQuery
-            var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                //join b in _dbContext.TblBoqVds on c.RdResourceSeq equals b.BoqResSeq
-                                //join o in _dbContext.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+            var condQueryItm = (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                //join b in _context.TblBoqVds on c.RdResourceSeq equals b.BoqResSeq
+                                //join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                                 where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
                                 && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
                                 select new BoqRessourcesList
@@ -1610,11 +1624,11 @@ namespace AccApi.Repository.Managers
             if (input.RESType.Length > 0) condQueryItm = condQueryItm.Where(w => input.RESType.Contains(w.BoqCtg));
             if (!string.IsNullOrEmpty(input.RESDesc)) condQueryItm = condQueryItm.Where(w => w.ResDescription.ToLower().Contains(input.RESDesc.ToLower()));
 
-            var condQueryNew = (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                join item in _dbContext.NewItems on c.NewItemId equals item.Id
-                                join newr in _dbContext.NewItemResources on c.NewItemResourceId equals newr.Id
+            var condQueryNew = (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                join item in _context.NewItems on c.NewItemId equals item.Id
+                                join newr in _context.NewItemResources on c.NewItemResourceId equals newr.Id
                                 where a.SpPackageId == packageId && bb.PrRevNo == 0
                                 select new BoqRessourcesList
                                 {
@@ -1658,10 +1672,10 @@ namespace AccApi.Repository.Managers
                                     //C6 = Convert.ToString(item.C6)
                                 }).ToList();
 
-            var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                //join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
+            var condQueryAlt = (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                                //join o in _context.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
                                 where (a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
                                 select new BoqRessourcesList
                                 {
@@ -1735,8 +1749,8 @@ namespace AccApi.Repository.Managers
                            select b).ToList();
 
             var usedCur = from cur in curList
-                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                           where (a.SpPackageId == packageId && b.PrRevNo == 0)
                           group cur by cur.CurCode into g
                           select new LiveExchange
@@ -1748,7 +1762,7 @@ namespace AccApi.Repository.Managers
                                select new LiveExchange
                                {
                                    fromCurrency = cur.fromCurrency,
-                                   ExchRateNow = GetExchange(cur.fromCurrency)
+                                   ExchRateNow = GetExchange(cur.fromCurrency, CostConn)
                                }).ToList();
 
             //IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
@@ -1761,9 +1775,9 @@ namespace AccApi.Repository.Managers
                            select b).ToList();
 
             PackageSupplierPriceRevDetail = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
                              && (c.IsAlternative == false || c.IsAlternative == null) && (supId == 0 || a.SpSupplierId == supId))
@@ -1810,11 +1824,11 @@ namespace AccApi.Repository.Managers
 
             //New Items
             PackageSupplierPriceRevDetailNew = (from cur in curList
-                                                join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                                                join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
-                                                join item in _dbContext.NewItems on c.NewItemId equals item.Id
-                                                join newr in _dbContext.NewItemResources on c.NewItemResourceId equals newr.Id
+                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                join item in _context.NewItems on c.NewItemId equals item.Id
+                                                join newr in _context.NewItemResources on c.NewItemResourceId equals newr.Id
                                                 join sup in supList on a.SpSupplierId equals sup.SupCode
                                                 where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsNew == true)
                                                 select new GroupingPackageSupplierPriceModel
@@ -1889,9 +1903,9 @@ namespace AccApi.Repository.Managers
 
             //Alternative Items
             PackageSupplierPriceRevDetailAlt = (from cur in curList
-                                                join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                                                join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                                                join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                 join sup in supList on a.SpSupplierId equals sup.SupCode
                                                 where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsAlternative == true)
                                                 select new GroupingPackageSupplierPriceModel
@@ -2121,15 +2135,15 @@ namespace AccApi.Repository.Managers
         public List<C> GetComparisonSheetByBoq(int packageId, SearchInput input,int supId, string CostConn, string C)
         {
             //C = "1";
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             //IEnumerable<BoqRessourcesList> condQuery
-            var condQueryItm = (from bb in _dbContext.TblSupplierPackageRevisions
-                             join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                             join o in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
-                             join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
-                             join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
+            var condQueryItm = (from bb in _context.TblSupplierPackageRevisions
+                             join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                             join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
+                             join o in _context.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
+                             join b in _context.TblBoqVds on o.ItemO equals b.BoqItem
+                             join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
                              where a.SpPackageId == packageId && b.BoqScope == a.SpPackageId && bb.PrRevNo == 0 && (c.IsNew == false || c.IsNew == null)
                              && (c.IsAlternative == false || c.IsAlternative == null) && (supId == 0 || a.SpSupplierId == supId)
                                 select new BoqRessourcesList
@@ -2261,10 +2275,10 @@ namespace AccApi.Repository.Managers
                             }).ToList();
 
             //New Items
-            var condQueryNew = (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
-                                join item in _dbContext.NewItems on r.NewItemId equals item.Id
+            var condQueryNew = (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join r in _context.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
+                                join item in _context.NewItems on r.NewItemId equals item.Id
                                 where a.SpPackageId == packageId && bb.PrRevNo == 0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null)
                                 && (supId == 0 || a.SpSupplierId == supId)
                                 select new BoqRessourcesList
@@ -2305,10 +2319,10 @@ namespace AccApi.Repository.Managers
                                 }).ToList();
 
             //Alternative Items
-            var condQueryAlt = (from bb in _dbContext.TblSupplierPackageRevisions
-                                join a in _dbContext.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
-                                join r in _dbContext.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
-                                join o in _dbContext.TblOriginalBoqVds on r.ParentItemO equals o.ItemO
+            var condQueryAlt = (from bb in _context.TblSupplierPackageRevisions
+                                join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
+                                join r in _context.TblRevisionDetails on bb.PrRevId equals r.RdRevisionId
+                                join o in _context.TblOriginalBoqVds on r.ParentItemO equals o.ItemO
                                 where (a.SpPackageId == packageId && r.IsAlternative == true && bb.PrRevNo == 0 && (r.ItemCopiedFromRevision == 0 || r.ItemCopiedFromRevision == null))
                                 && (supId == 0 || a.SpSupplierId == supId)
                                 select new BoqRessourcesList
@@ -2381,8 +2395,8 @@ namespace AccApi.Repository.Managers
                             select b).ToList();
 
             var usedCur = from cur in curList
-                        join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                        join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                        join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                        join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                         where (a.SpPackageId == packageId && b.PrRevNo == 0)
                         group cur by cur.CurCode into g
                         select new LiveExchange
@@ -2394,7 +2408,7 @@ namespace AccApi.Repository.Managers
                              select new LiveExchange
                              {                              
                                  fromCurrency = cur.fromCurrency,
-                                 ExchRateNow = GetExchange(cur.fromCurrency)
+                                 ExchRateNow = GetExchange(cur.fromCurrency, CostConn)
                              }).ToList();
 
             List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetail;
@@ -2405,9 +2419,9 @@ namespace AccApi.Repository.Managers
                            select b).ToList();
 
                 PackageSupplierPriceRevDetail = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && (c.IsNew==false || c.IsNew ==null)
                              && (c.IsAlternative==false || c.IsAlternative ==null) && (supId == 0 || a.SpSupplierId == supId))
@@ -2457,9 +2471,9 @@ namespace AccApi.Repository.Managers
 
                 //New Items
                 PackageSupplierPriceRevDetailNew = (from cur in curList
-                                                    join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                                                    join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                                                    join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                                    join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                                    join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                                    join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                                     join sup in supList on a.SpSupplierId equals sup.SupCode
                                                     where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsNew == true && (c.ItemCopiedFromRevision == 0 || c.ItemCopiedFromRevision == null) )
                                                     select new GroupingPackageSupplierPriceModel
@@ -2533,7 +2547,7 @@ namespace AccApi.Repository.Managers
                         PackageSupplierPriceRevDetail.Add(packSupRevDt);
 
                     /*Add Items those added by another Supplier */
-                    var ItemRevDtl = _dbContext.TblRevisionDetails.Where(x => x.RdRevisionId == sup.RevisionId && x.RdBoqItem == itm.BoqItemO && x.IsNew==true).FirstOrDefault();
+                    var ItemRevDtl = _context.TblRevisionDetails.Where(x => x.RdRevisionId == sup.RevisionId && x.RdBoqItem == itm.BoqItemO && x.IsNew==true).FirstOrDefault();
                     if (ItemRevDtl == null)
                     {
                         var revdtl = new TblRevisionDetail()
@@ -2562,17 +2576,17 @@ namespace AccApi.Repository.Managers
                             ItemCopiedFromRevision = itm.RevisionId
                         };
 
-                        _dbContext.Add<TblRevisionDetail>(revdtl);
-                        _dbContext.SaveChanges();
+                        _context.Add<TblRevisionDetail>(revdtl);
+                        _context.SaveChanges();
                     }
                 }
                 }
 
                 //Alternative Items
                 PackageSupplierPriceRevDetailAlt = (from cur in curList
-                                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                                             join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                                             join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                              join sup in supList on a.SpSupplierId equals sup.SupCode
                                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.IsAlternative == true && (c.ItemCopiedFromRevision == 0 || c.ItemCopiedFromRevision == null))
                                              select new GroupingPackageSupplierPriceModel
@@ -2646,7 +2660,7 @@ namespace AccApi.Repository.Managers
                         PackageSupplierPriceRevDetail.Add(packSupRevDt);
 
                     /*Add Items those added from another Supplier */
-                    var ItemRevDtl = _dbContext.TblRevisionDetails.Where(x => x.RdRevisionId == sup.RevisionId && x.RdBoqItem == itm.BoqItemO && x.IsAlternative == true).FirstOrDefault();
+                    var ItemRevDtl = _context.TblRevisionDetails.Where(x => x.RdRevisionId == sup.RevisionId && x.RdBoqItem == itm.BoqItemO && x.IsAlternative == true).FirstOrDefault();
                         if (ItemRevDtl==null)
                         {
                             var revdtl = new TblRevisionDetail()
@@ -2675,8 +2689,8 @@ namespace AccApi.Repository.Managers
                                 ItemCopiedFromRevision= itm.RevisionId
                             };
 
-                        _dbContext.Add<TblRevisionDetail>(revdtl);
-                        _dbContext.SaveChanges();
+                        _context.Add<TblRevisionDetail>(revdtl);
+                        _context.SaveChanges();
                         }
                     }
                 }
@@ -2851,12 +2865,12 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqGroupModel> GetComparisonSheetBoqByGroup(int packageId, SearchInput input, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
-                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        join g in _dbContext.ComparisonPackageGroups on o.GroupId equals g.Id
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqVds
+                                                        join b in _context.TblBoqVds on o.ItemO equals b.BoqItem
+                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        join g in _context.ComparisonPackageGroups on o.GroupId equals g.Id
                                                         where o.Scope == packageId
                                                         select new BoqRessourcesList
                                                         {
@@ -2909,8 +2923,8 @@ namespace AccApi.Repository.Managers
                            select b).ToList();
 
             var usedCur = from cur in curList
-                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                           where (a.SpPackageId == packageId && b.PrRevNo == 0)
                           group cur by cur.CurCode into g
                           select new LiveExchange
@@ -2922,18 +2936,18 @@ namespace AccApi.Repository.Managers
                                select new LiveExchange
                                {
                                    fromCurrency = cur.fromCurrency,
-                                   ExchRateNow = GetExchange(cur.fromCurrency)
+                                   ExchRateNow = GetExchange(cur.fromCurrency, CostConn)
                                }).ToList();
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
             var querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
-                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
+                             join boq in _context.TblOriginalBoqVds on c.RdBoqItem equals boq.ItemO
+                             join g in _context.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.Scope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
@@ -2976,12 +2990,12 @@ namespace AccApi.Repository.Managers
 
         public List<GroupingBoqGroupModel> GetComparisonSheetResourcesByGroup(int packageId, SearchInput input, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            IEnumerable<BoqRessourcesList> condQuery = (from o in _dbContext.TblOriginalBoqVds
-                                                        join b in _dbContext.TblBoqVds on o.ItemO equals b.BoqItem
-                                                        join r in _dbContext.TblResources on b.BoqResSeq equals r.ResSeq
-                                                        join g in _dbContext.ComparisonPackageGroups on b.GroupId equals g.Id
+            IEnumerable<BoqRessourcesList> condQuery = (from o in _context.TblOriginalBoqVds
+                                                        join b in _context.TblBoqVds on o.ItemO equals b.BoqItem
+                                                        join r in _context.TblResources on b.BoqResSeq equals r.ResSeq
+                                                        join g in _context.ComparisonPackageGroups on b.GroupId equals g.Id
                                                         where o.Scope == packageId
                                                         select new BoqRessourcesList
                                                         {
@@ -3033,8 +3047,8 @@ namespace AccApi.Repository.Managers
                            select b).ToList();
 
             var usedCur = from cur in curList
-                          join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                          join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                          join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                          join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
                           where (a.SpPackageId == packageId && b.PrRevNo == 0)
                           group cur by cur.CurCode into g
                           select new LiveExchange
@@ -3046,20 +3060,20 @@ namespace AccApi.Repository.Managers
                                select new LiveExchange
                                {
                                    fromCurrency = cur.fromCurrency,
-                                   ExchRateNow = GetExchange(cur.fromCurrency)
+                                   ExchRateNow = GetExchange(cur.fromCurrency, CostConn)
                                }).ToList();
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
 
             var querySupp = (from cur in curList
-                             join b in _dbContext.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
-                             join a in _dbContext.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join b in _context.TblSupplierPackageRevisions on cur.CurId equals b.PrCurrency
+                             join a in _context.TblSupplierPackages on b.PrPackSuppId equals a.SpPackSuppId
+                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              join sup in supList on a.SpSupplierId equals sup.SupCode
-                             join boq in _dbContext.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
-                             join o in _dbContext.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
-                             join g in _dbContext.ComparisonPackageGroups on boq.GroupId equals g.Id
+                             join boq in _context.TblBoqVds on c.RdResourceSeq equals boq.BoqResSeq
+                             join o in _context.TblOriginalBoqVds on boq.BoqItem equals o.ItemO
+                             join g in _context.ComparisonPackageGroups on boq.GroupId equals g.Id
                              where (a.SpPackageId == packageId && boq.BoqScope == packageId && b.PrRevNo == 0)
                              select new GroupingPackageSupplierPriceModel
                              {
@@ -3102,7 +3116,7 @@ namespace AccApi.Repository.Managers
         public string GetComparisonSheet_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, bool Pdf)
         {
             
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             //AH16062025
             //List<GroupingLevelModel> levels = GetComparisonSheet(packageId, input, 0, CostConn, "1");
@@ -3112,7 +3126,7 @@ namespace AccApi.Repository.Managers
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -3436,14 +3450,14 @@ namespace AccApi.Repository.Managers
 
         public string GetComparisonSheetByBoq_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C, bool Pdf)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<C> levels = GetComparisonSheetByBoq(packageId, input,0, CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -3857,14 +3871,14 @@ namespace AccApi.Repository.Managers
 
         public string GetComparisonSheetResourcesByGroup_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -4082,14 +4096,14 @@ namespace AccApi.Repository.Managers
   
         public string GetComparisonSheetBoqByGroup_Excel(int packageId, SearchInput input, List<boqPackageList> boqPackageList, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<GroupingBoqGroupModel> items = GetComparisonSheetBoqByGroup(packageId, input, CostConn);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -4305,27 +4319,31 @@ namespace AccApi.Repository.Managers
                 return excelName;
             }
         }
-        public byte checkByBoq(int packageId)
+
+        public byte checkByBoq(int packageId,string CostConn)
         {
-            var packageSupp = _dbContext.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var packageSupp = _context.TblSupplierPackages.Where(x => x.SpPackageId == packageId).FirstOrDefault();
             return (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);            
         }
+
         public List<string> GenerateSuppliersContracts_Excel(int packageId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<GroupingBoqModel> items;
             List<string> excelList = new List<string>();
 
-            byte byBoq = checkByBoq(packageId);
+            byte byBoq = checkByBoq(packageId, CostConn);
 
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
             var querySupp = (from sup in supList
-                             join a in _dbContext.TblSupplierPackages on sup.SupCode equals  a.SpSupplierId
-                             join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                             join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+                             join a in _context.TblSupplierPackages on sup.SupCode equals  a.SpSupplierId
+                             join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                             join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                              where (a.SpPackageId == packageId && b.PrRevNo == 0 && c.RdPriceOrigCurrency > 0)
                              group sup by sup.SupCode into s
                              select new GroupingPackageSupplierPriceModel
@@ -4346,14 +4364,14 @@ namespace AccApi.Repository.Managers
 
         public string GenerateSupplierContract_BOQ_Excel(int packageId,int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<C> levels = GetComparisonSheetByBoq(packageId, input, supId,  CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -4678,14 +4696,14 @@ namespace AccApi.Repository.Managers
 
         public string GenerateSupplierContract_Excel(int packageId, int supId, SearchInput input, List<TmpComparisonConditionsReply> comcondRepLst, List<TmpComparisonConditionsReply> techcondRepLst, string CostConn, string C)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
             List<C> levels = GetComparisonSheet(packageId, input, supId, CostConn,C);
 
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packageId).FirstOrDefault();
             string PackageName = package.PkgeName;
 
-            var p = _dbContext.TblParameters.FirstOrDefault();
+            var p = _context.TblParameters.FirstOrDefault();
             //var proj = _pdbContext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefault();
             //string ProjectName = proj.PrjName;
             string ProjectName = p.Project;
@@ -4987,13 +5005,15 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private double GetExchange(string foreignCurrency)
+        private double GetExchange(string foreignCurrency, string CostConn)
         {
+            AccDbContext _context = new AccDbContext(CostConn);
+
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
 
             var result = from a in curList 
-                         join b in _dbContext.TblParameters
+                         join b in _context.TblParameters
                          on a.CurId equals b.EstimatedCur
                          select new ProjectCurrency
                          {
@@ -5010,10 +5030,10 @@ namespace AccApi.Repository.Managers
 
         public List<AcceptComment> GetRevisionAcceptance(int revId, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            var acceptanceComments = _dbContext.AcceptanceComments.Where(x=>x.Enabled == true).ToList();
-            var revAcceptanceComments = _dbContext.RevisionAcceptanceComments.Where(x => x.RevisionId == revId).ToList();
+            var acceptanceComments = _context.AcceptanceComments.Where(x=>x.Enabled == true).ToList();
+            var revAcceptanceComments = _context.RevisionAcceptanceComments.Where(x => x.RevisionId == revId).ToList();
             //var result = (from  a in _dbContext.AcceptanceComments
             //join b in _dbContext.RevisionAcceptanceComments on a.Id equals b.AcceptanceCommentId into gr
             //from subpet in gr.DefaultIfEmpty()
@@ -5038,11 +5058,11 @@ namespace AccApi.Repository.Managers
 
         public bool ExcludBoq(int packId, string Item, bool isNewItem,bool exclud, string CostConn) {
 
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+            var revisionDetails = (from a in _context.TblSupplierPackages
+                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                    where (a.SpPackageId == packId && b.PrRevNo == 0 && ((isNewItem==true && c.NewItemId == int.Parse(Item)) || (isNewItem == false && c.RdBoqItem==Item)))
                                    select new AssignRevisionDetails
                                    {
@@ -5053,23 +5073,23 @@ namespace AccApi.Repository.Managers
 
             foreach (var rev in revisionDetails)
             {
-                var result = _dbContext.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == rev.revisionId && b.RdBoqItem == rev.boqItem);
+                var result = _context.TblRevisionDetails.SingleOrDefault(b => b.RdRevisionId == rev.revisionId && b.RdBoqItem == rev.boqItem);
                 if (result != null)
                 {
                     result.IsExcluded = exclud;
                 }
             }
-            _dbContext.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
 
         public bool ExcludRessource(int packId, string boqResSeq, bool isNewItem, bool isAlternative, bool exclud, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            AccDbContext _context = new AccDbContext(CostConn);
 
-            var revisionDetails = (from a in _dbContext.TblSupplierPackages
-                                   join b in _dbContext.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
-                                   join c in _dbContext.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
+            var revisionDetails = (from a in _context.TblSupplierPackages
+                                   join b in _context.TblSupplierPackageRevisions on a.SpPackSuppId equals b.PrPackSuppId
+                                   join c in _context.TblRevisionDetails on b.PrRevId equals c.RdRevisionId
                                    where (a.SpPackageId == packId && b.PrRevNo == 0 && 
                                    ((isNewItem == true && c.NewItemResourceId.ToString() == boqResSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId.ToString() == boqResSeq && c.IsAlternative == isAlternative)
                                    || (isNewItem == false && isAlternative==false && c.RdResourceSeq == boqResSeq) ))
@@ -5089,7 +5109,7 @@ namespace AccApi.Repository.Managers
 
             foreach (var rev in revisionDetails)
             {
-                var result = _dbContext.TblRevisionDetails.SingleOrDefault(c => c.RdRevisionId == rev.RevisionId &&
+                var result = _context.TblRevisionDetails.SingleOrDefault(c => c.RdRevisionId == rev.RevisionId &&
                 ((isNewItem == true && c.NewItemResourceId.ToString() == boqResSeq && c.IsNew == isNewItem) || (isAlternative == true && c.ParentResourceId.ToString() == boqResSeq && c.IsAlternative == isAlternative)
                 || (isNewItem == false && isAlternative == false && c.RdResourceSeq == boqResSeq && c.RdBoqItem == rev.BoqItemO)));
                 
@@ -5098,7 +5118,7 @@ namespace AccApi.Repository.Managers
                     result.IsExcluded = exclud;
                 }
             }
-            _dbContext.SaveChanges();
+            _context.SaveChanges();
             return true;
         }
     }

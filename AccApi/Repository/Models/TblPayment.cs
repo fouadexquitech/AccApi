@@ -70,5 +70,18 @@ namespace AccApi.Repository.Models
         public decimal? PlantandMaterialsOffSite { get; set; }
         public double? LessRetention { get; set; }
         public double? ReleaseRetention { get; set; }
+        [Column("certDueDate", TypeName = "datetime")]
+        public DateTime? CertDueDate { get; set; }
+        [Column("certNo")]
+        [StringLength(100)]
+        public string CertNo { get; set; }
+        [Column("certIssueDate", TypeName = "datetime")]
+        public DateTime? CertIssueDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? PaymentDueDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? PaymentPaidDate { get; set; }
+        [Column("daysToCertDueDate")]
+        public int? DaysToCertDueDate { get; set; }
     }
 }

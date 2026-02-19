@@ -142,5 +142,13 @@ namespace AccApi.Repository.Models
         [Column(TypeName = "datetime")]
         public DateTime? DiscountedDate { get; set; }
         public double? Discountedvalue { get; set; }
+        [Column("insertedDateAbed", TypeName = "datetime")]
+        public DateTime? InsertedDateAbed { get; set; }
+        [Column("insertedDateSync", TypeName = "datetime")]
+        public DateTime? InsertedDateSync { get; set; }
+        [Column("boqVoBkdSeq")]
+        public int? BoqVoBkdSeq { get; set; }
+        [Column("boqVoSeq")]
+        public int? BoqVoSeq { get; set; }
     }
 }

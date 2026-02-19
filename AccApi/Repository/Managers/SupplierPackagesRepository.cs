@@ -20,7 +20,7 @@ namespace AccApi.Repository.Managers
 {
     public class SupplierPackagesRepository : ISupplierPackagesRepository
     {
-        private readonly AccDbContext _dbcontext;
+        private readonly AccDbContext _CostDbContext;
         private readonly PolicyDbContext _pdbcontext;
         private MasterDbContext _mdbContext;
         private readonly IlogonRepository _logonRepository;
@@ -35,7 +35,7 @@ namespace AccApi.Repository.Managers
             _mdbContext = mdbContext;
             _logonRepository = logonRepository;
             _globalLists = globalLists;
-            _dbcontext = new AccDbContext(_globalLists.GetAccDbconnectionString());
+            _CostDbContext = new AccDbContext(_globalLists.GetAccDbconnectionString());
             _pdbcontext = new PolicyDbContext(_globalLists.GetTimeSheetDbconnectionString());
             _httpClient = httpClient;
             _configuration = configuration;
@@ -770,7 +770,7 @@ namespace AccApi.Repository.Managers
                     }
 
                     //2.Add Revision
-                    int LastRevNo = GetMaxRevisionNumber(PackageSupplierId);
+                    int LastRevNo = GetMaxRevisionNumber(PackageSupplierId,CostConn);
                     
                     if (LastRevNo != -1)
                     {
@@ -830,10 +830,10 @@ namespace AccApi.Repository.Managers
                     }
 
                     //Insert ComConditions Conditions Revision
-                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList);
+                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,CostConn);
 
                     //Insert Technical Conditions Revision
-                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList);
+                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList, CostConn);
 
 
                     //2.2 Add RevisionModel
@@ -856,7 +856,7 @@ namespace AccApi.Repository.Managers
                                                select new AddRevisionDetailModel
                                                {
                                                    BoqResourceSeq = d.RdResourceSeq,
-                                                   ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative),
+                                                   ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative,CostConn),
                                                    ItemO = d.RdBoqItem,
                                                    ItemDescription = d.ItemDescription,//GetBoqItemDescription(d.RdBoqItem),
                                                    Quantity = d.RdQty,
@@ -1077,8 +1077,10 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private string GetRessourceDescription(byte ByBoq,string boqResSeq, string resourceDescription, bool isAlternative)
+        private string GetRessourceDescription(byte ByBoq,string boqResSeq, string resourceDescription, bool isAlternative, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             string resDesc = "";
 
             if (ByBoq == 1)
@@ -1099,8 +1101,10 @@ namespace AccApi.Repository.Managers
             return resDesc;
         }
 
-        private string GetBoqItemDescription(string boqItemO)
+        private string GetBoqItemDescription(string boqItemO, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var result = _dbcontext.TblOriginalBoqVds.Where(x => x.ItemO == boqItemO).FirstOrDefault();
 
             if (result == null)
@@ -1510,8 +1514,10 @@ namespace AccApi.Repository.Managers
             return LstRevDetails;
         }
 
-        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList)
+        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList,string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             List<TblSuppComCondReply> LstComCondReply = new List<TblSuppComCondReply>();
            
             foreach (var comCond in comCondList)
@@ -1591,8 +1597,10 @@ namespace AccApi.Repository.Managers
             return lstComCondReplyPortal;
         }
 
-        private async Task<List<TblSuppTechCondReply>> InsertTechnicalConditions(int revId, int packId, int rev1Id,List<Condition> techCondList)
+        private async Task<List<TblSuppTechCondReply>> InsertTechnicalConditions(int revId, int packId, int rev1Id,List<Condition> techCondList, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             List<TblSuppTechCondReply> LstTechCondReply = new List<TblSuppTechCondReply>();
 
             foreach (var Cond in techCondList)
@@ -1673,15 +1681,19 @@ namespace AccApi.Repository.Managers
             return lstTechCondReplyPortal;
         }
 
-        public int GetMaxRevisionNumber(int PackageSupplierId)
+        public int GetMaxRevisionNumber(int PackageSupplierId, string CostConn)
         {
-            var query = _dbcontext.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
+            AccDbContext _context = new AccDbContext(CostConn);
+
+            var query = _context.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
             var MaxRevisionNumber = query.Any() ? query.Max(x => x.PrRevNo) : -1;
             return (int)MaxRevisionNumber;
         }
 
-        public string SendComercialConditions(int packId, List<Condition> comCondList)
+        public string SendComercialConditions(int packId, List<Condition> comCondList, string CostConn)
         {
+            AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
             string PackageName = package.PkgeName;
 

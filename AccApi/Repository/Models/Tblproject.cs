@@ -140,5 +140,12 @@ namespace AccApi.Repository.Models
         public double? RetentionPercent { get; set; }
         [Column(TypeName = "money")]
         public decimal? AdvancePayment { get; set; }
+        [StringLength(500)]
+        public string Employer { get; set; }
+        [Column("daysToCertDueDate")]
+        public int? DaysToCertDueDate { get; set; }
+        [Column("daysToPaymDueDate")]
+        public int? DaysToPaymDueDate { get; set; }
+        public byte? IpaIpc { get; set; }
     }
 }

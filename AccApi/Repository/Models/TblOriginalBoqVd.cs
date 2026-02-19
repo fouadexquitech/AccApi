@@ -189,5 +189,11 @@ namespace AccApi.Repository.Models
         public double? UnitRateBeforeDisct { get; set; }
         [Column("submittedBeforeDisct")]
         public double? SubmittedBeforeDisct { get; set; }
+        [Column("insertedDateAbed", TypeName = "datetime")]
+        public DateTime? InsertedDateAbed { get; set; }
+        [Column("insertedDateSync", TypeName = "datetime")]
+        public DateTime? InsertedDateSync { get; set; }
+        [Column("voSeq")]
+        public int? VoSeq { get; set; }
     }
 }

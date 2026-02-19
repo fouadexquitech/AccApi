@@ -14,5 +14,18 @@ namespace AccApi.Repository.Models
         [Key]
         [Column("llLogonDate", TypeName = "datetime")]
         public DateTime LlLogonDate { get; set; }
+        [Column("conCatalog")]
+        [StringLength(20)]
+        public string ConCatalog { get; set; }
+        [Column("conServer")]
+        [StringLength(20)]
+        public string ConServer { get; set; }
+        [Key]
+        [Column("conUserID")]
+        [StringLength(20)]
+        public string ConUserId { get; set; }
+        [Column("conPwd")]
+        [StringLength(20)]
+        public string ConPwd { get; set; }
     }
 }

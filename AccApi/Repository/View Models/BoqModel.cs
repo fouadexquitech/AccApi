@@ -1,4 +1,5 @@
 ﻿
+using AccApi.Repository.Models;
 using AccApi.Repository.View_Models.Request;
 using System;
 using System.Collections.Generic;
@@ -44,13 +45,20 @@ namespace AccApi.Repository.View_Models
         public double? boqUpriceDisc { get; set; }
         public byte? BoqInsertedFromVendan { get; set; }
         public string? BoqWBS { get; set; }
-        public int boqVoSeq { get; set; }=0;
-        public bool isExternat { get; set; } = false;
+        public int? boqVoSeq { get; set; }=0;
+        public int? boqVoBkdSeq { get; set; } = 0;       
+        public bool? isExternal { get; set; } = false;
     }
 
     public class AddNewBoqRessourceModel
     {
         public BoqModel newRessource { get; set; }
         public AssignPackages boqList { get; set; }
+    }
+
+    public class BoqWithExternal
+    {
+        public TblBoqVd Boq { get; set; }
+        public bool IsExternal { get; set; }
     }
 }

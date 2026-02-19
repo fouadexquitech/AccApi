@@ -59,6 +59,13 @@ namespace AccApi.Repository.Models
         public string InsertedBy { get; set; }
         [Column(TypeName = "datetime")]
         public DateTime? InsertedDate { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? ConsEvalDate { get; set; }
+        public int? Revision { get; set; }
+        [Column(TypeName = "datetime")]
+        public DateTime? EmployerEvalDate { get; set; }
+        [Column("voStatus")]
+        public int? VoStatus { get; set; }
 
         [InverseProperty(nameof(TblVodtl.SeqHdrNavigation))]
         public virtual ICollection<TblVodtl> TblVodtls { get; set; }
