@@ -3425,6 +3425,8 @@ namespace AccApi.Repository.Managers
                 //}
                 //string FullPath = path + excelName;
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
+
                 if (File.Exists(excelName))
                     File.Delete(excelName);
                 
@@ -3434,8 +3436,11 @@ namespace AccApi.Repository.Managers
                 {
                     string pdfName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.pdf";
                     pdfName = pdfName.Replace("/", "-");
+                    pdfName = pdfName.Replace("&", "-");
+
                     if (File.Exists(pdfName))
                         File.Delete(pdfName);
+
                     ExportExcelToPdf(excelName,pdfName);
 
                     return pdfName;
@@ -3780,7 +3785,8 @@ namespace AccApi.Repository.Managers
                 if (File.Exists(excelName))
                     File.Delete(excelName);
 
-                excelName = excelName.Replace("/", "-");        
+                excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
                 xlPackage.SaveAs(excelName);
 
 
@@ -3788,6 +3794,8 @@ namespace AccApi.Repository.Managers
                 {
                     string pdfName = $" {ProjectName}-{PackageName}-Comparison-{DateTime.Now.ToString("dd-MM-yyyy")}.pdf";
                     pdfName = pdfName.Replace("/", "-");
+                    pdfName = pdfName.Replace("&", "-");
+
                     if (File.Exists(pdfName))
                         File.Delete(pdfName);
                     ExportExcelToPdf(excelName, pdfName);
@@ -4088,6 +4096,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
+
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -4314,6 +4324,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
+
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -4688,6 +4700,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
+
                 xlPackage.SaveAs(excelName);
 
                 return excelName;
@@ -4999,6 +5013,8 @@ namespace AccApi.Repository.Managers
                     File.Delete(excelName);
 
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
+
                 xlPackage.SaveAs(excelName);
 
                 return excelName;

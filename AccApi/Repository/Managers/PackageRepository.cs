@@ -1,12 +1,17 @@
-﻿using AccApi.Repository.Interfaces;
+﻿using AccApi.Data_Layer;
+using AccApi.Repository.Interfaces;
+using AccApi.Repository.Models;
+using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
 using AccApi.Repository.View_Models.Request;
-using AccApi.Data_Layer;
 using AutoMapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OfficeOpenXml;
+using OfficeOpenXml.DataValidation;
+using Syncfusion.XlsIO.Implementation.Security;
+using Syncfusion.XlsIO.Implementation.XmlSerialization;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,7 +20,6 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
 using File = System.IO.File;
-using AccApi.Repository.Models;
 
 namespace AccApi.Repository.Managers
 {
@@ -1671,6 +1675,7 @@ namespace AccApi.Repository.Managers
                         File.Delete(excelName);
 
                     excelName = excelName.Replace("/", "-");
+                    excelName = excelName.Replace("&", "-");
                     xlPackage.SaveAs(excelName);
                 }
             }
@@ -1780,6 +1785,7 @@ namespace AccApi.Repository.Managers
                         File.Delete(excelName);
 
                     excelName = excelName.Replace("/", "-");
+                    excelName = excelName.Replace("&", "-");
                     xlPackage.SaveAs(excelName);
                 }
             }
@@ -2046,6 +2052,7 @@ namespace AccApi.Repository.Managers
                         File.Delete(excelName);
 
                     excelName = excelName.Replace("/", "-");
+                    excelName = excelName.Replace("&", "-");
                     xlPackage.SaveAs(excelName);
 
                     //excelName = "Package-Aluminum Doors and Windows.xlsx";
@@ -2076,42 +2083,156 @@ namespace AccApi.Repository.Managers
                 return false;
         }
 
-        public bool updateBoqRes(string CostConn, BoqModel res, int type)
+        public bool updateBoqRes(string CostConn, string TSConn, string usrEmail, BoqModel res, int type)
         {
             AccDbContext _context = new AccDbContext(CostConn);
 
             //var result = _context.TblBoqVds.Where(x => x.BoqSeq == res.BoqSeq).FirstOrDefault();
+            bool isExternal = false;
 
-            var result = (from b in _context.TblBoqVds
-                         join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
-                         where b.BoqSeq == res.BoqSeq
-                         select b)
+            var boqVd = (from b in _context.TblBoqVds
+                       join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+                       where b.BoqSeq == res.BoqSeq
+                       select b)
                         .FirstOrDefault();
 
             if (type == 1)
-                result.BoqQtyScope = res.BoqScopeQty;
+                boqVd.BoqQtyScope = res.BoqScopeQty;
             else
-                result.BoqUprice = res.BoqUprice;
-
-            if (result != null)
             {
-                _context.TblBoqVds.Update(result);
+                //1- update boq vd
+                boqVd.BoqUprice = res.BoqUprice;
+
+                if (boqVd.BoqVoBkdSeq > 0)
+                {
+                    isExternal = _context.TblVoDtlBkds
+                                    .Where(x => x.BSeq == boqVd.BoqVoBkdSeq)
+                                    .Select(x => x.BisExternal ?? false)
+                                    .FirstOrDefault();
+
+                    if (isExternal)
+                    {
+                        //2- update VO bkd item
+                        var voBkd = _context.TblVoDtlBkds
+                                    .FirstOrDefault(x => x.BSeq == boqVd.BoqVoBkdSeq);
+
+                        if (voBkd != null)
+                        {
+                            voBkd.BUnitRate = res.BoqUprice;
+                            voBkd.BAmt = res.BoqUprice * voBkd.BQty;                        
+                            _context.TblVoDtlBkds.Update(voBkd);
+                            _context.SaveChanges();
+                        }
+
+                        //3- update ST external item
+                        var voST = _context.TblBoqs
+                                    .FirstOrDefault(x => x.BoqVoBkdSeq == boqVd.BoqVoBkdSeq);
+
+                        if (voST != null)
+                        {
+                            voST.BoqUprice = res.BoqUprice;
+                            _context.TblBoqs.Update(voST);
+                            _context.SaveChanges();
+                        }
+
+                        PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
+                        string userInsEmail = _TSdbcontext.TblUsers.FirstOrDefault(x => x.UsrId == voBkd.InsertedUser)?.UsrEmail;
+
+                        if (userInsEmail != "")
+                        {
+                            //To
+                            List<string> mylistTo = new List<string>();
+                            mylistTo.Add(userInsEmail);
+
+                            //CC
+                            List<string> mylistCC = new List<string>();
+                            if (usrEmail != "")
+                                mylistCC.Add(usrEmail);
+
+                            //BCC
+                            List<string> mylistBCC = new List<string>();
+
+                            //Subject
+
+                            var VO = (from bkd in _context.TblVoDtlBkds
+                                          join dtl in _context.TblVodtls
+                                              on bkd.BVoSeq equals dtl.Seq
+                                          join hdr in _context.TblVohdrs
+                                              on dtl.SeqHdr equals hdr.VoSeq
+                                          where bkd.BSeq == boqVd.BoqVoBkdSeq
+                                      select new
+                                          {
+                                              Bkd = bkd,
+                                              Dtl = dtl,
+                                              Hdr = hdr
+                                          })
+                                       .FirstOrDefault();
+
+                            var p = _context.TblParameters.FirstOrDefault();
+                            string ProjectName = p.Project;
+
+                            string Subject = "VO Price Updated: Project (<b>" + ProjectName + "</b>) VO (" + VO.Hdr.Ref + ") Item ( " + VO.Dtl.Item + " )";
+
+                            string MailBody="";
+                            MailBody += "Dear Sir,<br><br>";
+                            MailBody += "Please be informed that the price has been updated :<br><br>";
+                            MailBody += "Project : <b>" + ProjectName + "</b><br>";
+                            MailBody += "VO : <b>" + VO.Hdr.Ref + "</b><br>";
+                            MailBody += "Item : <b>" + VO.Dtl.Item + "</b><br>";
+                            MailBody += "Item Description : <b>" + VO.Bkd.BDesc + "</b><br>";
+                            MailBody += "Unit Price : <b>" + (res.BoqUprice ?? 0).ToString("N0") + "</b><br>";
+                            MailBody += "Updated By : <b>" + usrEmail + "</b> <br><br><br>";
+                            MailBody += "Best regards";
+
+                            var AttachmentList = new List<string>();
+
+                            Mail m = new Mail();
+                            var sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList,true, null);
+                        }
+
+                    }
+                }       
+                
+            }
+
+
+            if (boqVd != null)
+            {
+                _context.TblBoqVds.Update(boqVd);
                 _context.SaveChanges();
 
                 //var totalPrice = _context.TblBoqVds.Where(x => x.BoqItem == result.BoqItem).Sum(x => x.BoqQty * x.BoqUprice).Value;
                 var totalPrice = (from b in _context.TblBoqVds
                                  join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
-                                 where b.BoqItem == result.BoqItem
+                                 where b.BoqItem == boqVd.BoqItem
                                  select b.BoqQty * b.BoqUprice)
                                 .Sum();
 
-                var origboq = _context.TblOriginalBoqVds.Where(x => x.ItemO == result.BoqItem).FirstOrDefault();
+                var origboq = _context.TblOriginalBoqVds.Where(x => x.ItemO == boqVd.BoqItem).FirstOrDefault();
                 origboq.Submitted = totalPrice;
                 origboq.UnitRate = totalPrice / origboq.QtyO;
                 _context.TblOriginalBoqVds.Update(origboq);
                 _context.SaveChanges();
 
+
+                if ( (boqVd.BoqVoBkdSeq > 0) & isExternal)
+                {
+                    var totalPriceST = (from b in _context.TblBoqs
+                                      join o in _context.TblOriginalBoqs on b.BoqItem equals o.ItemO
+                                      where b.BoqItem == boqVd.BoqItem
+                                      select b.BoqQty * b.BoqUprice)
+                                      .Sum();
+
+                    var origboqST = _context.TblOriginalBoqs.Where(x => x.ItemO == boqVd.BoqItem).FirstOrDefault();
+                    origboqST.Submitted = totalPriceST;
+                    origboqST.UnitRate = totalPriceST / origboqST.QtyO;
+                    _context.TblOriginalBoqs.Update(origboqST);
+                    _context.SaveChanges();
+
+                }
+
                 return true;
+
             }
             else
                 return false;
@@ -2462,6 +2583,7 @@ namespace AccApi.Repository.Managers
                     excelName = $"{ProjectName}-Packages Dry Cost-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
                 excelName = excelName.Replace("/", "-");
+                excelName = excelName.Replace("&", "-");
 
                 //string filePath = "C:\\App\\ExportExcel\\vendan\\" + excelName;
 

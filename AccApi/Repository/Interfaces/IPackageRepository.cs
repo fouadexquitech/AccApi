@@ -16,7 +16,7 @@ namespace AccApi.Repository.Interfaces
         Task<string> ExportExcelVerification(SearchInput input, string costDB, string userName);
         Task<string> ExportNotAssigned(string costDB);
         public bool updateOriginalBoqQty(string CostConn,OriginalBoqModel boq);
-        public bool updateBoqRes(string CostConn, BoqModel res, int type);
+        public bool updateBoqRes(string CostConn, string TSConn, string usrEmail, BoqModel res, int type);
         public bool updateBoqTradeDesc(string tradeDesc, string CostConn, List<OriginalBoqModel> origBoqList);
 
         PackageDetailsModel GetPackageById(int IdPkge);

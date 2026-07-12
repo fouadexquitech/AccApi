@@ -143,7 +143,7 @@ namespace AccApi.Repository.Managers
             bool isAdmin = (bool)(usr.UsrAdmin==null ? false : usr.UsrAdmin);
             if (!isAdmin)
             {
-                var accAllProjects = _tsdbcontext.TblPermGrpUsrs.Where(x => x.PrmUser == username && x.PrmFuncId == "AccessAllProjects" && x.MinOfprmRead == 1).FirstOrDefault();
+                var accAllProjects = _tsdbcontext.TblPermissions.Where(x => x.PrmGrpUsrId == username && x.PrmFuncId == "AccessAllProjects" && x.PrmRead == 1).FirstOrDefault();
                 if (accAllProjects == null)
                 {
                     var query = _tsdbcontext.TblUsersProjects.Where(x => x.UpUserId == username && x.UpProject == projSeq).FirstOrDefault();

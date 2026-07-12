@@ -51,6 +51,7 @@ namespace AccApi.Repository.View_Models
         public string c9Ref { get; set; }
         public string c10Ref { get; set; }
 
+        public string boqSN { get; set; }
         public string item { get; set; }
         public string boqDesc { get; set; }
         public string unit { get; set; }
@@ -64,11 +65,12 @@ namespace AccApi.Repository.View_Models
         public string resDesc { get; set; }
         public string resUnit { get; set; }
         public double? resUnitPrice { get; set; }
-        public double? boqQty { get; set; }
-        public double? boqBillQty { get; set; }
-        public double? boqScopeQty { get; set; }
+        public double? resQty { get; set; }
+        public double? resBillQty { get; set; }
+        public double? resScopeQty { get; set; }
         public double? resTotalPrice { get; set; }
         public byte exportedToSupplier { get; set; }
         public string obTradeDesc { get; set; }
+        public string resWbs { get; set; }
     }
 }

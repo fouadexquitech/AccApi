@@ -389,11 +389,11 @@ namespace AccApi.Controllers
 
 
         [HttpPost("updateBoqRes")]
-        public bool updateBoqRes(string CostConn, BoqModel res, int type)
+        public bool updateBoqRes(string CostConn, string TSConn, string usrEmail, BoqModel res, int type)
         {
             try
             {
-                return this._packageRepository.updateBoqRes(CostConn, res,  type);
+                return this._packageRepository.updateBoqRes(CostConn, TSConn,usrEmail, res,  type);
             }
             catch (Exception ex)
             {
