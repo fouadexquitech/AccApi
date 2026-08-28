@@ -25,4 +25,5 @@ namespace AccApi.Repository.Models
         [Column("insertDate", TypeName = "datetime")]
         public DateTime? InsertDate { get; set; }
     }
+
 }

@@ -1,12 +1,12 @@
 ﻿using AccApi.Data_Layer;
 using AccApi.Repository.Interfaces;
 using AccApi.Repository.Models;
-using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using OfficeOpenXml;
+using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,8 +14,8 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
+using System.Drawing;
 
 namespace AccApi.Repository.Managers
 {
@@ -29,7 +29,7 @@ namespace AccApi.Repository.Managers
         private readonly HttpClient _httpClient;
         private IConfiguration _configuration { get; }
 
-        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, MasterDbContext mdbContext, 
+        public SupplierPackagesRepository(AccDbContext Context, PolicyDbContext pdbcontext, MasterDbContext mdbContext,
             IlogonRepository logonRepository, GlobalLists globalLists, HttpClient httpClient, IConfiguration configuration)
         {
             /*_dbcontext = Context;*/
@@ -49,7 +49,7 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            var results = from c in supList 
+            var results = from c in supList
                           join b in _dbcontext.TblSupplierPackages on c.SupCode equals b.SpSupplierId
                           where b.SpPackSuppId == spId
                           orderby b.SpPackSuppId
@@ -72,20 +72,6 @@ namespace AccApi.Repository.Managers
             var supList = (from b in _mdbContext.TblSuppliers
                            select b).ToList();
 
-            //var results = from b in supList                         
-            //              join c in _dbcontext.TblSupplierPackages on b.SupCode equals c.SpSupplierId
-            //              where c.SpPackageId == packageid
-            //              orderby c.SpPackSuppId
-            //              select new SupplierPackagesList
-            //              {
-            //                  PsId = c.SpPackSuppId,
-            //                  PsPackId = c.SpPackageId,
-            //                  PsSuppId = c.SpSupplierId,
-            //                  PsSupName = b.SupName,
-            //                  PsByBoq = c.SpByBoq,
-            //                  TecCondSent = c.TecCondSent
-            //              };
-
             var results = from b in supList
                           join c in _dbcontext.TblSupplierPackages on b.SupCode equals c.SpSupplierId
                           join s in _dbcontext.TblSupplierPackageRevisions on c.SpPackSuppId equals s.PrPackSuppId
@@ -96,7 +82,7 @@ namespace AccApi.Repository.Managers
                               PsSuppId = g.Key.SpSupplierId,
                               PsSupName = g.Key.SupName,
                               RevisionStatus = g.Max(x => x.s.StatusId),
-                              SupSubmitted= g.Max(x => x.s.StatusId) ==3 ? true : false,
+                              SupSubmitted = g.Max(x => x.s.StatusId) == 3 ? true : false,
                               PsId = g.Max(x => x.c.SpPackSuppId),
                               PsPackId = g.Max(x => x.c.SpPackageId),
                               PsByBoq = g.Max(x => x.c.SpByBoq),
@@ -174,7 +160,7 @@ namespace AccApi.Repository.Managers
                         c9Ref = o.C9ref,
                         c10Ref = o.C10ref,
 
-                        boqSN=o.RefNumber,
+                        boqSN = o.RefNumber,
                         item = o.ItemO,
                         boqDesc = o.DescriptionO,
                         unit = o.UnitO,
@@ -206,7 +192,7 @@ namespace AccApi.Repository.Managers
 
             if (byboq == 1)
             {
-               
+
                 var resCost = from e in _dbcontext.TblBoqVds
                               join o in _dbcontext.TblOriginalBoqVds on e.BoqItem equals o.ItemO
                               where e.BoqScope == packId
@@ -294,7 +280,7 @@ namespace AccApi.Repository.Managers
             return boqList;
         }
 
-        public string ValidateExcelBeforeAssign(int packId, byte byBoq,bool withPrice, string CostConn)
+        public string ValidateExcelBeforeAssign(int packId, byte byBoq, bool withPrice, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -302,11 +288,11 @@ namespace AccApi.Repository.Managers
             //var packageSupp = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packId).FirstOrDefault();
             //byte byBoq = (byte)((packageSupp.SpByBoq==null) ? 0 : packageSupp.SpByBoq);
             //AH0702
-            string PackageName="";
-            var package =new Models.MasterModels.TblPackage();
+            string PackageName = "";
+            var package = new Models.MasterModels.TblPackage();
 
-            if (packId != -1) 
-            { 
+            if (packId != -1)
+            {
                 package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
                 if (package == null) return string.Empty;
 
@@ -323,10 +309,13 @@ namespace AccApi.Repository.Managers
                 worksheet.Columns.AutoFit();
 
                 if (!withPrice)
-                  worksheet.Protection.IsProtected = true;
+                    worksheet.Protection.IsProtected = true;
 
                 int i, j;
-                string Boq = "", OldBoq = "", C = "", OldC = "", l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
+                string Boq = "", OldBoq = "", c1 = "", c2 = "", c3 = "", c4 = "", c5 = "", c6 = "",
+                    oldc1 = "", oldc2 = "", oldc3 = "", oldc4 = "", oldc5 = "", oldc6 = "",
+                    l1 = "", l2 = "", l3 = "", l4 = "", l5 = "", l6 = "", oldl1 = "", oldl2 = "", oldl3 = "", oldl4 = "", oldl5 = "", oldl6 = "";
+
                 i = 1;
                 double total = 0;
 
@@ -345,27 +334,17 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 6].Value = "Qty";
                     worksheet.Columns[6].Style.WrapText = true;
                     //worksheet.Column(5).AutoFit();
+                    worksheet.Cells[i, 7].Value = "Unit Price";
+                    worksheet.Cells[i, 8].Value = "Total Price";
 
-                    if (withPrice)
+                    if (packId != -1)
                     {
-                        worksheet.Cells[i, 7].Value = "Unit Price";
-                        worksheet.Cells[i, 8].Value = "Total Price";
-                       
-                        if (packId != -1) 
-                        { 
-                           worksheet.Cells[i, 9].Value = "Comments";
-                           worksheet.Column(9).Width = 50;
-                           worksheet.Columns[9].Style.WrapText = true;
-                        }
+                        worksheet.Cells[i, 9].Value = "Comments";
+                        worksheet.Column(9).Width = 50;
+                        worksheet.Columns[9].Style.WrapText = true;
+                        worksheet.Columns[9].Style.Locked = false;
                     }
                     else
-                    { 
-                        worksheet.Cells[i, 7].Value = "Comments";
-                        worksheet.Column(7).Width = 50;
-                        worksheet.Columns[7].Style.WrapText = true;
-                    }
-
-                    if (packId == -1)
                     {
                         worksheet.Cells[i, 9].Value = "Ressource Type";
                         worksheet.Cells[i, 10].Value = "Ressource Code";
@@ -398,17 +377,15 @@ namespace AccApi.Repository.Managers
                     worksheet.Columns[5].Style.WrapText = true;
                     //worksheet.Column(5).AutoFit();
 
-                    if (withPrice)
-                    {
-                        worksheet.Cells[i, 6].Value = "ResUnitPrice";
-                        //worksheet.Column(6).AutoFit();
-                        worksheet.Cells[i, 7].Value = "ResTotalPrice";
-                        worksheet.Column(7).Width = 25;
-                        //worksheet.Column(7).AutoFit();
-                        worksheet.Cells[i, 8].Value = "Comments";
-                        worksheet.Column(8).Width = 50;
-                        worksheet.Columns[8].Style.WrapText = true;
-                    }
+                    worksheet.Cells[i, 6].Value = "ResUnitPrice";
+                    //worksheet.Column(6).AutoFit();
+                    worksheet.Cells[i, 7].Value = "ResTotalPrice";
+                    worksheet.Column(7).Width = 25;
+                    //worksheet.Column(7).AutoFit();
+                    worksheet.Cells[i, 8].Value = "Comments";
+                    worksheet.Column(8).Width = 50;
+                    worksheet.Columns[8].Style.WrapText = true;
+                    worksheet.Columns[8].Style.Locked = false;
                     //worksheet.Column(12).AutoFit();                   
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
@@ -417,8 +394,13 @@ namespace AccApi.Repository.Managers
                 foreach (var x in result)
                 {
                     Boq = x.item;
-                    C = x.c1;
-                    l1 = (x.l1 == null) ? "" : x.l1;
+                    c1 = (x.c1 == null) ? "" : x.c1;
+                    c2 = (x.c2 == null) ? "" : x.c2;
+                    c3 = (x.c3 == null) ? "" : x.c3;
+                    c4 = (x.c4 == null) ? "" : x.c4;
+                    c5 = (x.c5 == null) ? "" : x.c5;
+                    c6 = (x.c6 == null) ? "" : x.c6;
+                    //l1 = (x.l1 == null) ? "" : x.l1;
                     l2 = (x.l2 == null) ? "" : x.l2;
                     l3 = (x.l3 == null) ? "" : x.l3;
                     l4 = (x.l4 == null) ? "" : x.l4;
@@ -429,15 +411,15 @@ namespace AccApi.Repository.Managers
                     {
                         if ((Boq != OldBoq) || (OldBoq == ""))
                         {
-                            if ((l1 != "") && (l1 != oldl1))
-                            {
-                                worksheet.Cells[i, 2].Value = (x.l1Ref == null) ? "" : x.l1Ref;
-                                worksheet.Cells[i, 3].Value = "1";
-                                worksheet.Cells[i, 4].Value = (x.l1 == null) ? "" : x.l1;
-                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                oldl1 = x.l1;
-                                i = i + 2;
-                            }
+                            //if ((l1 != "") && (l1 != oldl1))
+                            //{
+                            //    worksheet.Cells[i, 2].Value = (x.l1Ref == null) ? "" : x.l1Ref;
+                            //    worksheet.Cells[i, 3].Value = "1";
+                            //    worksheet.Cells[i, 4].Value = (x.l1 == null) ? "" : x.l1;
+                            //    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                            //    oldl1 = x.l1;
+                            //    i = i + 2;
+                            //}
                             if ((l2 != "") && (l2 != oldl2))
                             {
                                 worksheet.Cells[i, 2].Value = (x.l2Ref == null) ? "" : x.l2Ref;
@@ -484,59 +466,64 @@ namespace AccApi.Repository.Managers
                                 i = i + 2;
                             }
 
-                            if ((C != OldC) | (OldC == ""))
+                            //if ((C != OldC) | (OldC == ""))
+                            //{
+                            if ((c1 != "") && (c1 != oldc1))
                             {
-                                if (((x.c1 == null) ? "" : x.c1) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c1Ref == null) ? "" : x.c1Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c1 == null) ? "" : x.c1;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                    OldC = C;
-                                }
-                                if (((x.c2 == null) ? "" : x.c2) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c2Ref == null) ? "" : x.c2Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c2 == null) ? "" : x.c2;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                }
-                                if (((x.c3 == null) ? "" : x.c3) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c3Ref == null) ? "" : x.c3Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c3 == null) ? "" : x.c3;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                }
-                                if (((x.c4 == null) ? "" : x.c4) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c4Ref == null) ? "" : x.c4Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c4 == null) ? "" : x.c4;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                }
-                                if (((x.c5 == null) ? "" : x.c5) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c5Ref == null) ? "" : x.c5Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c5 == null) ? "" : x.c5;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                }
-                                if (((x.c6 == null) ? "" : x.c6) != "")
-                                {
-                                    worksheet.Cells[i, 2].Value = (x.c6Ref == null) ? "" : x.c6Ref;
-                                    worksheet.Cells[i, 3].Value = "C";
-                                    worksheet.Cells[i, 4].Value = (x.c5 == null) ? "" : x.c5;
-                                    worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
-                                    i = i + 2;
-                                }
+                                worksheet.Cells[i, 2].Value = (x.c1Ref == null) ? "" : x.c1Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c1 == null) ? "" : x.c1;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc1 = x.c1;
+                                i = i + 2;
                             }
-                            
+                            if ((c2 != "") && (c2 != oldc2))
+                            {
+                                worksheet.Cells[i, 2].Value = (x.c2Ref == null) ? "" : x.c2Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c2 == null) ? "" : x.c2;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc2 = x.c2;
+                                i = i + 2;
+                            }
+                            if ((c3 != "") && (c3 != oldc3))
+                            {
+                                worksheet.Cells[i, 2].Value = (x.c3Ref == null) ? "" : x.c3Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c3 == null) ? "" : x.c3;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc3 = x.c3;
+                                i = i + 2;
+                            }
+                            if ((c4 != "") && (c4 != oldc4))
+                            {
+                                worksheet.Cells[i, 2].Value = (x.c4Ref == null) ? "" : x.c4Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c4 == null) ? "" : x.c4;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc4 = x.c4;
+                                i = i + 2;
+                            }
+                            if ((c5 != "") && (c5 != oldc5))
+                            {
+                                worksheet.Cells[i, 2].Value = (x.c5Ref == null) ? "" : x.c5Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c5 == null) ? "" : x.c5;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc5 = x.c5;
+                                i = i + 2;
+                            }
+                            if ((c6 != "") && (c6 != oldc6))
+                            {
+                                worksheet.Cells[i, 2].Value = (x.c6Ref == null) ? "" : x.c6Ref;
+                                worksheet.Cells[i, 3].Value = "C";
+                                worksheet.Cells[i, 4].Value = (x.c6 == null) ? "" : x.c6;
+                                worksheet.SelectedRange[i, 4].Style.Font.Bold = true;
+                                oldc6 = x.c6;
+                                i = i + 2;
+                            }
+                            //}
+
                             worksheet.Cells[i, 1].Value = (x.boqSN == null) ? "" : x.boqSN;
                             worksheet.Cells[i, 2].Value = (x.item == null) ? "" : x.item;
                             worksheet.Cells[i, 4].Value = (x.boqDesc == null) ? "" : x.boqDesc;
@@ -552,18 +539,13 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.###";
                                 //total += (double)((x.resTotalPrice == null) ? 0 : x.resTotalPrice);
                             }
-
-                            if (byBoq == 1)
+                            else
                             {
-                                worksheet.Cells[i, 9].Value = (x.obTradeDesc == null) ? "" : x.obTradeDesc;
-                                //worksheet.Cells[i, 8].Formula = "= (F" + i + ") - (F" + i + "*" + "G" + i + "/100)";
-                                //worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
-                                //worksheet.Cells[i, 9].Formula = "=E" + i + "*" + "H" + i;
-                                //worksheet.Cells[i, 9].Style.Numberformat.Format = "#,##0.0";
-                                //worksheet.Cells[i, 6].Style.Locked = false;
-                                //worksheet.Cells[i, 7].Style.Locked = false;
-                                //worksheet.Cells[i, 10].Style.Locked = false;
+                                worksheet.Cells[i, 7].Style.Locked = false;
+                                worksheet.Cells[i, 8].Formula = "= F" + i + "*" + "G" + i;
+                                worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                             }
+
                         }
 
                         if (packId == -1)
@@ -584,7 +566,7 @@ namespace AccApi.Repository.Managers
 
                         //i = i + 1;
                         OldBoq = Boq;
-                        
+
                     }
                     else  //by Res.                   
                     {
@@ -603,13 +585,13 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.###";
                             //total += (double)((x.resTotalPrice == null) ? 0 : x.resTotalPrice);
                         }
-                        //worksheet.Cells[i, 13].Formula = "= (K" + i + ") - (K" + i + "*" + "L" + i + "/100)";
-                        //worksheet.Cells[i, 13].Style.Numberformat.Format = "#,##0.0";
-                        //worksheet.Cells[i, 14].Formula = "=J" + i + "*" + "M" + i;
-                        //worksheet.Cells[i, 14].Style.Numberformat.Format = "#,##0.0";
-                        //worksheet.Cells[i, 11].Style.Locked = false;
-                        //worksheet.Cells[i, 12].Style.Locked = false;
-                        //worksheet.Cells[i, 15].Style.Locked = false;
+                        else
+                        {
+                            worksheet.Cells[i, 6].Style.Locked = false;
+                            worksheet.Cells[i, 7].Formula = "=E" + i + "*" + "F" + i;
+                            worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
+                        }
+
                     }
                     i++;
                 }
@@ -646,7 +628,7 @@ namespace AccApi.Repository.Managers
                 string excelName = "";
 
                 if (PackageName != "")
-                    excelName= $"{ProjectName}-Package-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
+                    excelName = $"{ProjectName}-Package-{PackageName}-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
                 else
                     excelName = $"{ProjectName}-BKD-{DateTime.Now.ToString("dd-MM-yyyy")}.xlsx";
 
@@ -693,7 +675,7 @@ namespace AccApi.Repository.Managers
 
             //    List<string> mylistCC = new List<string>();
             //    mylistCC.Add("ahijazi@accsal.com");
-            
+
             //    List<string> mylistBCC = new List<string>();
 
             //    string Subject = "Procurement";
@@ -726,376 +708,2195 @@ namespace AccApi.Repository.Managers
             //    sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
             //    return true;
         }
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,DateTime ExpiryDate, string CostConn,string TSConn)
+
+        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,
+                DateTime ExpiryDate, List<string> emailCc, string CostConn, string TSConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
+
             PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
-            var t = await _dbcontext.Database.BeginTransactionAsync();
+
+            var transaction = await _dbcontext.Database.BeginTransactionAsync();
+
+            string sharedRfqExcelWithConditions = string.Empty;
+
+            bool sharedRfqExcelCreated = false;
+
+            /*
+             * Files created specifically by this process.
+             * They are cleaned after completing or failing.
+             */
+            List<string> temporaryFiles = new List<string>();
+
+            /*
+             * Local helper:
+             * Converts text into a safe Excel worksheet name.
+             */
+            string GetSafeWorksheetName(string worksheetName)
+            {
+                if (string.IsNullOrWhiteSpace(worksheetName))
+                {
+                    return "Sheet";
+                }
+
+                string result = worksheetName
+                        .Replace(":", " ")
+                        .Replace("\\", " ")
+                        .Replace("/", " ")
+                        .Replace("?", " ")
+                        .Replace("*", " ")
+                        .Replace("[", " ")
+                        .Replace("]", " ")
+                        .Trim();
+
+                if (result.Length > 31)
+                {
+                    result = result.Substring(0, 31);
+                }
+
+                return result;
+            }
+
+            /*
+             * Local helper:
+             * Applies common formatting to one condition sheet.
+             */
+            /*
+       * Applies common formatting and protection to both:
+       *
+       * 1. Commercial Conditions
+       * 2. Technical Conditions
+       *
+       * Protection rules:
+       *
+       * Column A: Condition           Locked
+       * Column B: ACC Condition       Locked
+       * Column C: Supplier Condition  Editable
+       *
+       * The header row is always locked.
+       */
+            void FormatConditionWorksheet(ExcelWorksheet worksheet, int lastRow)
+            {
+                if (worksheet == null)
+                {
+                    throw new ArgumentNullException(
+                        nameof(worksheet)
+                    );
+                }
+
+                /*
+                 * Worksheet titles.
+                 */
+                worksheet.Cells[1, 1].Value =
+                    "Condition";
+
+                worksheet.Cells[1, 2].Value =
+                    "ACC Condition";
+
+                worksheet.Cells[1, 3].Value =
+                    "Supplier Condition";
+
+                /*
+                 * Freeze the header row.
+                 */
+                worksheet.View.FreezePanes(
+                    2,
+                    1
+                );
+
+                /*
+                 * Set all worksheet cells as locked first.
+                 *
+                 * This locks:
+                 * Column A
+                 * Column B
+                 * Header row
+                 * All columns outside the working area
+                 */
+                worksheet.Cells.Style.Locked = true;
+
+                /*
+                 * Only Supplier Condition cells are editable.
+                 *
+                 * Row 1 remains locked because it is the header.
+                 * Rows 2 through lastRow in Column C are unlocked.
+                 */
+                if (lastRow >= 2)
+                {
+                    worksheet.Cells[
+                        2,
+                        3,
+                        lastRow,
+                        3
+                    ].Style.Locked =
+                        false;
+                }
+
+                /*
+                 * Header formatting.
+                 */
+                using (
+                    ExcelRange headerRange =
+                        worksheet.Cells[
+                            1,
+                            1,
+                            1,
+                            3
+                        ]
+                )
+                {
+                    headerRange.Style.Font.Bold = true;
+
+                    headerRange.Style.Font.Color.SetColor(
+                        Color.White
+                    );
+
+                    headerRange.Style.Fill.PatternType =
+                        ExcelFillStyle.Solid;
+
+                    headerRange.Style.Fill.BackgroundColor.SetColor(
+                        Color.FromArgb(
+                            14,
+                            116,
+                            144
+                        )
+                    );
+
+                    headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+
+                    headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+
+                    headerRange.Style.WrapText = true;
+
+                    /*
+                     * Explicitly lock the header.
+                     */
+                    headerRange.Style.Locked = true;
+
+                    headerRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+
+                    headerRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+
+                    headerRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+
+                    headerRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                }
+
+                worksheet.Row(1).Height = 24;
+
+                /*
+                 * Format condition rows.
+                 */
+                if (lastRow >= 2)
+                {
+                    using (
+                        ExcelRange dataRange =
+                            worksheet.Cells[
+                                2,
+                                1,
+                                lastRow,
+                                3
+                            ]
+                    )
+                    {
+                        dataRange.Style.WrapText = true;
+
+                        dataRange.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+
+                        dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+
+                        dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                    }
+
+                    /*
+                     * Clearly identify protected ACC fields.
+                     */
+                    using (
+                        ExcelRange lockedRange =
+                            worksheet.Cells[
+                                2,
+                                1,
+                                lastRow,
+                                2
+                            ]
+                    )
+                    {
+                        lockedRange.Style.Locked = true;
+
+                        lockedRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+
+                        lockedRange.Style.Fill.BackgroundColor.SetColor(
+                            Color.FromArgb(
+                                242,
+                                242,
+                                242
+                            )
+                        );
+                    }
+
+                    /*
+                     * Supplier Condition is the only editable area.
+                     */
+                    using (
+                        ExcelRange editableRange =
+                            worksheet.Cells[
+                                2,
+                                3,
+                                lastRow,
+                                3
+                            ]
+                    )
+                    {
+                        editableRange.Style.Locked = false;
+
+                        editableRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+
+                        editableRange.Style.Fill.BackgroundColor.SetColor(
+                            Color.FromArgb(
+                                255,
+                                255,
+                                255
+                            )
+                        );
+                    }
+                }
+
+                /*
+                 * Column widths.
+                 */
+                worksheet.Column(1).Width = 55;
+
+                worksheet.Column(2).Width = 45;
+
+                worksheet.Column(3).Width = 45;
+
+                /*
+                 * Apply auto-filter to the header.
+                 */
+                if (lastRow >= 1)
+                {
+                    worksheet.Cells[
+                        1,
+                        1,
+                        lastRow,
+                        3
+                    ].AutoFilter =
+                        true;
+                }
+
+                /*
+                 * Printing configuration.
+                 */
+                worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
+
+                worksheet.PrinterSettings.FitToPage = true;
+
+                worksheet.PrinterSettings.FitToWidth = 1;
+
+                worksheet.PrinterSettings.FitToHeight = 0;
+
+                if (lastRow >= 1)
+                {
+                    worksheet.PrinterSettings.PrintArea =
+                        worksheet.Cells[
+                            1,
+                            1,
+                            lastRow,
+                            3
+                        ];
+                }
+
+                /*
+                 * Protect the worksheet.
+                 *
+                 * Change this password if required.
+                 */
+                //const string sheetProtectionPassword =
+                //    "ACC@RFQ2026";
+
+                worksheet.Protection.IsProtected = true;
+
+                //worksheet.Protection.SetPassword(
+                //    sheetProtectionPassword
+                //);
+
+                /*
+                 * Allow supplier to select and edit unlocked
+                 * Supplier Condition cells.
+                 */
+                worksheet.Protection.AllowSelectUnlockedCells = true;
+
+                /*
+                 * Do not allow selection or editing of locked cells.
+                 */
+                worksheet.Protection.AllowSelectLockedCells = true;
+
+                /*
+                 * Keep filter dropdowns usable while protected.
+                 */
+                worksheet.Protection.AllowAutoFilter = true;
+
+                /*
+                 * Prevent structural changes.
+                 */
+                worksheet.Protection.AllowDeleteColumns = false;
+
+                worksheet.Protection.AllowDeleteRows = false;
+
+                worksheet.Protection.AllowInsertColumns = false;
+
+                worksheet.Protection.AllowInsertRows = false;
+
+                worksheet.Protection.AllowFormatCells = false;
+
+                worksheet.Protection.AllowFormatColumns = false;
+
+                worksheet.Protection.AllowFormatRows = false;
+            }
+
+            /*
+             * Local helper:
+             * Creates one shared copy of the RFQ Excel and adds:
+             *
+             * 1. Commercial Conditions
+             * 2. Technical Conditions
+             *
+             * The same completed file is sent to all suppliers.
+             */
+            string CreateSharedRfqExcelWithConditions(string sourceExcelPath, List<Condition> commercialConditionInput,
+                List<TblSuppComCondReply> commercialReplies, List<Condition> technicalConditionInput, List<TblSuppTechCondReply> technicalReplies)
+            {
+                if (string.IsNullOrWhiteSpace(sourceExcelPath))
+                {
+                    throw new Exception(
+                        "The generated RFQ Excel file path is empty."
+                    );
+                }
+
+                if (!File.Exists(sourceExcelPath))
+                {
+                    throw new FileNotFoundException(
+                        "The generated RFQ Excel file was not found.",
+                        sourceExcelPath
+                    );
+                }
+
+                string sourceDirectory =
+                    Path.GetDirectoryName(sourceExcelPath);
+
+                if (string.IsNullOrWhiteSpace(sourceDirectory))
+                {
+                    sourceDirectory =
+                        Path.GetTempPath();
+                }
+
+                string sourceFileNameWithoutExtension =
+                    Path.GetFileNameWithoutExtension(
+                        sourceExcelPath
+                    );
+
+                string targetFileName =
+                    sourceFileNameWithoutExtension +
+                    "-Conditions-" +
+                    DateTime.Now.ToString(
+                        "yyyyMMddHHmmssfff"
+                    ) +
+                    ".xlsx";
+
+                string targetExcelPath =
+                    Path.Combine(
+                        sourceDirectory,
+                        targetFileName
+                    );
+
+                File.Copy(
+                    sourceExcelPath,
+                    targetExcelPath,
+                    true
+                );
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                FileInfo targetFile = new FileInfo(targetExcelPath);
+
+                using (ExcelPackage excelPackage = new ExcelPackage(targetFile))
+                {
+                    /*
+                     * Commercial Conditions sheet.
+                     */
+                    string commercialSheetName = GetSafeWorksheetName("Commercial Conditions");
+
+                    ExcelWorksheet existingCommercialSheet = excelPackage.Workbook.Worksheets[commercialSheetName];
+
+                    if (existingCommercialSheet != null)
+                    {
+                        excelPackage.Workbook.Worksheets.Delete(existingCommercialSheet);
+                    }
+
+                    ExcelWorksheet commercialSheet = excelPackage.Workbook.Worksheets.Add(commercialSheetName);
+
+                    int commercialRow = 2;
+
+                    List<Condition> safeCommercialInput =
+                        commercialConditionInput ??
+                        new List<Condition>();
+
+                    List<TblSuppComCondReply>
+                        safeCommercialReplies =
+                            commercialReplies ??
+                            new List<TblSuppComCondReply>();
+
+                    /*
+                     * Start from selected/requested commercial conditions
+                     * to preserve the same order displayed in Angular.
+                     */
+                    foreach (Condition condition in safeCommercialInput)
+                    {
+                        TblSuppComCondReply reply = safeCommercialReplies.FirstOrDefault(x => x.CdComConId == condition.id);
+
+                        commercialSheet.Cells[commercialRow, 1].Value = condition.description ?? string.Empty;
+
+                        commercialSheet.Cells[commercialRow, 2].Value = reply != null ? reply.CdAccCond ?? string.Empty : condition.ACCCondValue ?? string.Empty;
+
+                        commercialSheet.Cells[commercialRow, 3].Value = reply?.CdAccCond ?? string.Empty;
+
+                        commercialRow++;
+                    }
+
+                    /*
+                     * Include any commercial reply that was not found
+                     * in the input list.
+                     */
+                    foreach (                        TblSuppComCondReply reply                        in safeCommercialReplies                    )
+                    {
+                        bool alreadyAdded =                            safeCommercialInput.Any(x =>                                x.id ==                                reply.CdComConId                            );
+
+                        if (alreadyAdded)
+                        {
+                            continue;
+                        }
+
+                        commercialSheet.Cells[commercialRow, 1].Value = "Condition " + reply.CdComConId;
+
+                        commercialSheet.Cells[commercialRow, 2].Value = reply.CdAccCond ?? string.Empty;
+
+                        commercialSheet.Cells[commercialRow, 3].Value = reply.CdAccCond ?? string.Empty;
+
+                        commercialRow++;
+                    }
+
+                    FormatConditionWorksheet(commercialSheet, Math.Max(1, commercialRow - 1));
+
+                    /*
+                     * Technical Conditions sheet.
+                     */
+                    string technicalSheetName = GetSafeWorksheetName("Technical Conditions");
+
+                    ExcelWorksheet existingTechnicalSheet = excelPackage.Workbook.Worksheets[technicalSheetName];
+
+                    if (existingTechnicalSheet != null)
+                    {
+                        excelPackage
+                            .Workbook
+                            .Worksheets
+                            .Delete(
+                                existingTechnicalSheet
+                            );
+                    }
+
+                    ExcelWorksheet technicalSheet =
+                        excelPackage
+                            .Workbook
+                            .Worksheets
+                            .Add(
+                                technicalSheetName
+                            );
+
+                    int technicalRow = 2;
+
+                    List<Condition> safeTechnicalInput =
+                        technicalConditionInput ??
+                        new List<Condition>();
+
+                    List<TblSuppTechCondReply>
+                        safeTechnicalReplies =
+                            technicalReplies ??
+                            new List<TblSuppTechCondReply>();
+
+                    /*
+                     * Start from selected/requested technical conditions
+                     * to preserve the displayed order.
+                     */
+                    foreach (                        Condition condition                        in safeTechnicalInput                    )
+                    {
+                        TblSuppTechCondReply reply =
+                            safeTechnicalReplies
+                                .FirstOrDefault(x =>
+                                    x.TcTechConId ==
+                                        condition.id
+                                );
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            1
+                        ].Value =
+                            condition.description ??
+                            string.Empty;
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            2
+                        ].Value =
+                            reply != null
+                                ? reply.TcAccCond ??
+                                    string.Empty
+                                : condition.ACCCondValue ??
+                                    string.Empty;
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            3
+                        ].Value = reply?.TcAccCond ?? string.Empty;
+
+                        technicalRow++;
+                    }
+
+                    /*
+                     * Include any technical reply not found
+                     * in the input list.
+                     */
+                    foreach (
+                        TblSuppTechCondReply reply
+                        in safeTechnicalReplies
+                    )
+                    {
+                        bool alreadyAdded =
+                            safeTechnicalInput.Any(x =>
+                                x.id ==
+                                reply.TcTechConId
+                            );
+
+                        if (alreadyAdded)
+                        {
+                            continue;
+                        }
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            1
+                        ].Value =
+                            "Condition " +
+                            reply.TcTechConId;
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            2
+                        ].Value =
+                            reply.TcAccCond ??
+                            string.Empty;
+
+                        technicalSheet.Cells[
+                            technicalRow,
+                            3
+                        ].Value =
+                            reply.TcSuppReply ??
+                            string.Empty;
+
+                        technicalRow++;
+                    }
+
+                    FormatConditionWorksheet(
+                        technicalSheet,
+                        Math.Max(
+                            1,
+                            technicalRow - 1
+                        )
+                    );
+
+                    excelPackage.Save();
+                }
+
+                return targetExcelPath;
+            }
 
             try
             {
-                var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
-                string PackageName = package.PkgeName;
-
-                var mailListForSending = new List<MailForSending>();
-                var AttachmentList = new List<string>();
-                string sent = "";
-
-                var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
-                var proj = await _TSdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
-
-                //Get User Email Signature
-                User user = _logonRepository.GetUser(UserName);
-                string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
-                string usrEmail = (user.UsrEmail == null) ? "" : user.UsrEmail;
-
-                int PackageSupplierId = 0;
-                List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
-                List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
-                AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
-
-                string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false,CostConn);
-
-                foreach (var supInput in supInputList)
+                if (
+                    supInputList == null ||
+                    supInputList.Count == 0
+                )
                 {
-                    //1.Add PackageSupplier
-                    SupplierInput supplier = supInput.supplierInput;
+                    throw new Exception(
+                        "At least one supplier is required."
+                    );
+                }
 
-                    if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+                var package =
+                    await _mdbContext
+                        .TblPackages
+                        .FirstOrDefaultAsync(x =>
+                            x.PkgeId ==
+                            packId
+                        );
+
+                if (package == null)
+                {
+                    throw new Exception(
+                        "Package was not found. Package ID: " +
+                        packId
+                    );
+                }
+
+                string PackageName =
+                    package.PkgeName ??
+                    string.Empty;
+
+                List<MailForSending>
+                    mailListForSending =
+                        new List<MailForSending>();
+
+                var p =
+                    await _dbcontext
+                        .TblParameters
+                        .FirstOrDefaultAsync();
+
+                if (p == null)
+                {
+                    throw new Exception(
+                        "Project parameters were not found."
+                    );
+                }
+
+                var proj =
+                    await _TSdbcontext
+                        .Tblprojects
+                        .FirstOrDefaultAsync(x =>
+                            x.Seq ==
+                            p.TsProjId
+                        );
+
+                if (proj == null)
+                {
+                    throw new Exception(
+                        "Project information was not found."
+                    );
+                }
+
+                User user =
+                    _logonRepository
+                        .GetUser(UserName);
+
+                string userSignature =
+                    user?.UsrEmailSignature ??
+                    string.Empty;
+
+                string usrEmail =
+                    user?.UsrEmail ??
+                    string.Empty;
+
+                List<AddSupplierPackageModel>
+                    supplierPackageModelList =
+                        new List<AddSupplierPackageModel>();
+
+                List<AddRevisionModel>
+                    revisionModelList =
+                        new List<AddRevisionModel>();
+
+                AddSupplierPackageRevisionModel
+                    supplierPackageRevisionModel =
+                        new AddSupplierPackageRevisionModel();
+
+                /*
+                 * Create the base RFQ once.
+                 */
+                string baseRfqExcel =
+                    ValidateExcelBeforeAssign(
+                        packId,
+                        ByBoq,
+                        false,
+                        CostConn
+                    );
+
+                if (string.IsNullOrWhiteSpace(baseRfqExcel))
+                {
+                    throw new Exception(
+                        "The RFQ Excel file could not be generated."
+                    );
+                }
+
+                if (!File.Exists(baseRfqExcel))
+                {
+                    throw new FileNotFoundException(
+                        "The generated RFQ Excel file was not found.",
+                        baseRfqExcel
+                    );
+                }
+
+                foreach (
+                    SupplierInputList supInput
+                    in supInputList
+                )
+                {
+                    if (
+                        supInput == null ||
+                        supInput.supplierInput == null
+                    )
                     {
-                        var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
-                        await _dbcontext.AddAsync<TblSupplierPackage>(spack);
-                        await _dbcontext.SaveChangesAsync();
-
-                        PackageSupplierId = spack.SpPackSuppId;
-
-                        //1.1 Add AddSupplierPackageModel
-                        supplierPackageModelList.Add(new AddSupplierPackageModel
-                        {
-                            SpPackSuppId = spack.SpPackSuppId,
-                            SpPackageId = spack.SpPackageId,
-                            SpSupplierId = spack.SpSupplierId,
-                            SpByBoq = ByBoq,
-                            ProjectCode = proj.PrjCode,
-                            ProjectName = proj.PrjName,
-                            TecCondSent= false
-                        });
+                        throw new Exception(
+                            "Invalid supplier information."
+                        );
                     }
-                    else
-                    {
-                        var supPack = await _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefaultAsync();
-                        PackageSupplierId = supPack.SpPackSuppId;
-                    }
 
-                    //2.Add Revision
-                    int LastRevNo = GetMaxRevisionNumber(PackageSupplierId,CostConn);
-                    
-                    if (LastRevNo != -1)
+                    SupplierInput supplier =
+                        supInput.supplierInput;
+
+                    int PackageSupplierId =
+                        0;
+
+                    /*
+                     * 1. Find or create package supplier.
+                     */
+                    TblSupplierPackage
+                        supplierPackage =
+                            await _dbcontext
+                                .TblSupplierPackages
+                                .FirstOrDefaultAsync(x =>
+                                    x.SpPackageId ==
+                                        packId &&
+                                    x.SpSupplierId ==
+                                        supplier.supID
+                                );
+
+                    if (supplierPackage == null)
                     {
-                        int i = LastRevNo;
-                        //check if last revision is submitted by supp or rejected or expired
-                        if (_dbcontext.TblSupplierPackageRevisions.Any(a => (a.PrRevNo == i) && (a.PrPackSuppId == PackageSupplierId) && ((a.StatusId ?? 0) < 3)))
-                        {
-                            throw new Exception("Revision not returned from Supplier !");
-                        }
-                        else
-                        {
-                            do
+                        supplierPackage =
+                            new TblSupplierPackage
                             {
-                                var res = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == i && b.PrPackSuppId == PackageSupplierId);
-                                if (res != null)
-                                {
-                                    res.PrRevNo = i + 1;
-                                    await _dbcontext.SaveChangesAsync();
-                                }
-                                i--;
+                                SpPackageId =
+                                    packId,
+
+                                SpSupplierId =
+                                    supplier.supID,
+
+                                SpByBoq =
+                                    ByBoq
+                            };
+
+                        await _dbcontext
+                            .TblSupplierPackages
+                            .AddAsync(
+                                supplierPackage
+                            );
+
+                        await _dbcontext
+                            .SaveChangesAsync();
+
+                        supplierPackageModelList.Add(
+                            new AddSupplierPackageModel
+                            {
+                                SpPackSuppId =
+                                    supplierPackage
+                                        .SpPackSuppId,
+
+                                SpPackageId =
+                                    supplierPackage
+                                        .SpPackageId,
+
+                                SpSupplierId =
+                                    supplierPackage
+                                        .SpSupplierId,
+
+                                SpByBoq =
+                                    supplierPackage
+                                        .SpByBoq,
+
+                                ProjectCode =
+                                    proj.PrjCode,
+
+                                ProjectName =
+                                    proj.PrjName,
+
+                                TecCondSent =
+                                    false
                             }
-                            while (i >= 0);
-                        }
+                        );
                     }
 
+                    PackageSupplierId =
+                        supplierPackage
+                            .SpPackSuppId;
 
-                    var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
-                    var supPackRev = new TblSupplierPackageRevision();
-                    int rev1Id = 0;
+                    /*
+                     * 2. Shift existing revisions.
+                     */
+                    int LastRevNo =
+                        await GetMaxRevisionNumberAsync(
+                            PackageSupplierId,
+                            _dbcontext
+                        );
+
+                    if (LastRevNo >= 0)
+                    {
+                        bool hasPendingRevision =
+                            await _dbcontext
+                                .TblSupplierPackageRevisions
+                                .AnyAsync(x =>
+                                    x.PrPackSuppId ==
+                                        PackageSupplierId &&
+                                    x.PrRevNo ==
+                                        LastRevNo &&
+                                    (x.StatusId ?? 0) <
+                                        3
+                                );
+
+                        if (hasPendingRevision)
+                        {
+                            throw new Exception(
+                                "Revision not returned from Supplier. " +
+                                "Supplier ID: " +
+                                supplier.supID +
+                                ", Package Supplier ID: " +
+                                PackageSupplierId +
+                                ", Revision No: " +
+                                LastRevNo
+                            );
+                        }
+
+                        List<TblSupplierPackageRevision>
+                            existingRevisions =
+                                await _dbcontext
+                                    .TblSupplierPackageRevisions
+                                    .Where(x =>
+                                        x.PrPackSuppId ==
+                                            PackageSupplierId
+                                    )
+                                    .OrderByDescending(x =>
+                                        x.PrRevNo
+                                    )
+                                    .ToListAsync();
+
+                        foreach (
+                            TblSupplierPackageRevision revision
+                            in existingRevisions
+                        )
+                        {
+                            revision.PrRevNo =
+                                revision.PrRevNo +
+                                1;
+                        }
+
+                        await _dbcontext
+                            .SaveChangesAsync();
+                    }
+
+                    TblSupplierPackageRevision Rev1 =
+                        await _dbcontext
+                            .TblSupplierPackageRevisions
+                            .FirstOrDefaultAsync(x =>
+                                x.PrRevNo ==
+                                    1 &&
+                                x.PrPackSuppId ==
+                                    PackageSupplierId
+                            );
+
+                    int rev1Id =
+                        Rev1?.PrRevId ??
+                        0;
+
+                    TblSupplierPackageRevision
+                        supPackRev;
 
                     if (Rev1 != null)
                     {
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate , InsertedBy = UserName, InsertedByEmail = usrEmail };
-                        rev1Id = Rev1.PrRevId;
+                        supPackRev =
+                            new TblSupplierPackageRevision
+                            {
+                                PrRevNo =
+                                    0,
+
+                                PrPackSuppId =
+                                    PackageSupplierId,
+
+                                PrTotPrice =
+                                    Rev1.PrTotPrice,
+
+                                PrRevDate =
+                                    DateTime.Now,
+
+                                PrCurrency =
+                                    Rev1.PrCurrency,
+
+                                PrExchRate =
+                                    Rev1.PrExchRate,
+
+                                RevExpiryDate =
+                                    ExpiryDate,
+
+                                InsertedBy =
+                                    UserName,
+
+                                InsertedByEmail =
+                                    usrEmail
+                            };
                     }
                     else
                     {
-                        int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
-                        supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate,InsertedBy= UserName,InsertedByEmail= usrEmail };
-                        rev1Id = 0;
-                    }
-                    await _dbcontext.AddAsync<TblSupplierPackageRevision>(supPackRev);
-                    await _dbcontext.SaveChangesAsync();
+                        int projectCurrency =
+                            Convert.ToInt32(
+                                p.EstimatedCur
+                            );
 
-                    //Get inserted Revison ID
-                    var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
-                    int rev0Id = Rev0.PrRevId;
-
-                    var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
-                    byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
-
-                    List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id, _dbcontext);
-                    if (LstRevDetails.Count() > 0)
-                    {
-                        await _dbcontext.AddRangeAsync(LstRevDetails);
-                        await _dbcontext.SaveChangesAsync();
-                    }
-
-                    //Insert ComConditions Conditions Revision
-                    List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,CostConn);
-
-                    //Insert Technical Conditions Revision
-                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList, CostConn);
-
-
-                    //2.2 Add RevisionModel
-                    //if (ByBoq ==1)
-                    //{ 
-                        revisionModelList.Add(new AddRevisionModel
-                        {
-                            PrRevId = Rev0.PrRevId,
-                            PrRevNo = Rev0.PrRevNo,
-                            PrRevDate = Rev0.PrRevDate,
-                            PrTotPrice = Rev0.PrTotPrice,
-                            PrPackSuppId = Rev0.PrPackSuppId,
-                            PrCurrency = Rev0.PrCurrency,
-                            PrExchRate = 1,
-                            StatusId = 1,
-                            ProjectCode = proj.PrjCode,
-                            IsSynched = false,
-                            RevExpiryDate = Rev0.RevExpiryDate,
-                            RevisionDetails = (from d in LstRevDetails
-                                               select new AddRevisionDetailModel
-                                               {
-                                                   BoqResourceSeq = d.RdResourceSeq,
-                                                   ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative,CostConn),
-                                                   ItemO = d.RdBoqItem,
-                                                   ItemDescription = d.ItemDescription,//GetBoqItemDescription(d.RdBoqItem),
-                                                   Quantity = d.RdQty,
-                                                   QuotationQty = d.RdQuotationQty,
-                                                   UnitPrice = d.RdPrice,
-                                                   TotalPrice = (d.RdQty) * (d.UnitPriceAfterDiscount),
-                                                   DiscountPerc = d.RdDiscount,
-                                                   Comments = d.RdComment,
-                                                   CreatedOn = DateTime.Now,
-                                                   IsSynched = false,
-                                                   ProjectCode = proj.PrjCode,
-                                                   ParentItemO = d.ParentItemO,
-                                                   ParentResourceId = d.ParentResourceId.ToString(),
-                                                   NewItemId = d.NewItemId,
-                                                   NewItemResourceId = d.NewItemResourceId,
-                                                   IsNewItem = d.IsNew,
-                                                   IsAlternative = d.IsAlternative,
-                                                   UnitPriceAfterDiscount=d.UnitPriceAfterDiscount,
-                                                   UnitO = (d.UnitO == null) ? "" : d.UnitO,
-                                                   BoqCtg = (d.BoqCtg == null) ? "" : d.BoqCtg,
-                                                   BoqUnitMesure = (d.BoqUnitMesure == null) ? "" : d.BoqUnitMesure,
-                                                   L1 = (d.L1 == null) ? "" : d.L1,
-                                                   L2 = (d.L2 == null) ? "" : d.L2,
-                                                   L3 = (d.L3 == null) ? "" : d.L3,
-                                                   L4 = (d.L4 == null) ? "" : d.L4,
-                                                   L5 = (d.L5 == null) ? "" : d.L5,
-                                                   L6 = (d.L6 == null) ? "" : d.L6,
-                                                   L7 = (d.L7 == null) ? "" : d.L7,
-                                                   L8 = (d.L8 == null) ? "" : d.L8,
-                                                   L9 = (d.L9 == null) ? "" : d.L9,
-                                                   L10 = (d.L10 == null) ? "" : d.L10,
-                                                   C1 = (d.C1 == null) ? "" : d.C1,
-                                                   C2 = (d.C2 == null) ? "" : d.C2,
-                                                   C3 = (d.C3 == null) ? "" : d.C3,
-                                                   C4 = (d.C4 == null) ? "" : d.C4,
-                                                   C5 = (d.C5 == null) ? "" : d.C5,
-                                                   C6 = (d.C6 == null) ? "" : d.C6,
-                                                   C7 = (d.C7 == null) ? "" : d.C7,
-                                                   C8 = (d.C8 == null) ? "" : d.C8,
-                                                   C9 = (d.C9 == null) ? "" : d.C9,
-                                                   C10 = (d.C10 == null) ? "" : d.C10,
-                                                   C11 = (d.C11 == null) ? "" : d.C11,
-                                                   C12 = (d.C12 == null) ? "" : d.C12,
-                                                   C13 = (d.C13 == null) ? "" : d.C13,
-                                                   C14 = (d.C14 == null) ? "" : d.C14,
-                                                   C15 = (d.C15 == null) ? "" : d.C15,
-                                                   BoqRefNumber= (d.RdBoqRefNumber == null) ? "" : d.RdBoqRefNumber,
-                                                   AccComment= (d.RdAccComment == null) ? "" : d.RdAccComment,
-                                               }).ToList(),
-                            CommercialConditions= (from d in LstComCondReply
-                                                   select new AddCondModel
-                                                   {
-                                                       Id = d.CdComConId,
-                                                       CondValue = d.CdSuppReply,
-                                                       ACCCondValue=d.CdAccCond,
-                                                       ProjectCode = proj.PrjCode
-                                                   }).ToList(),
-                            TechnicalConditions = (from d in LstTechCondReply
-                                                   select new AddCondModel
-                                                    {
-                                                        Id = d.TcTechConId,
-                                                        CondValue = d.TcSuppReply,
-                                                        ACCCondValue = d.TcAccCond,
-                                                        ProjectCode = proj.PrjCode
-                                                   }).ToList()
-                        });
-                    //}
-
-                    //Send Email with Attachments to this Supplier
-                    AttachmentList.Clear();
-                    AttachmentList.Add(supInput.FilePath);
-                    if (supInput.mailAttachments != null)
-                    {
-                        foreach (var attach in supInput.mailAttachments)
-                        {
-                            AttachmentList.Add(attach);
-                        }
-                    }
-
-                    //if (supInput.comercialCondList.Count > 0)
-                    //{
-                    //    if (ComCondAttch == "")
-                    //        ComCondAttch = SendComercialConditions(packId, supInput.comercialCondList);
-
-                    //    AttachmentList.Add(ComCondAttch);
-                    //}
-
-                    AttachmentList.Add(attachExcel);
-
-                    //send email
-                    string SupEmail = "";
-                    var Sup = _mdbContext.TblSuppliers.Where(s => s.SupCode == supplier.supID).FirstOrDefault();
-
-                    if (Sup != null)
-                        SupEmail = Sup.SupEmail;
-
-                    if (!string.IsNullOrEmpty(SupEmail))
-                    {
-                        var mail = new MailForSending();
-                        mail.To.Add(SupEmail);
-
-                        //List<string> mylistTo = new List<string>();
-                        //mylistTo.Add(SupEmail);
-
-                        //List<string> mylistCC = new List<string>();
-                        //if (usrEmail !="")
-                        //    mylistCC.Add(usrEmail);
-
-                        //if (supInput.mailCC != null)
-                        //{
-                        //    foreach (var ccMail in supInput.mailCC)
-                        //    {
-                        //        mylistCC.Add(ccMail);
-                        //    }
-                        //}
-
-                        //List<string> mylistBCC = new List<string>();
-                        //mylistBCC.Add("sdasuki@accsal.com");
-
-                        //string MailBody;
-                        //if (supInput.EmailTemplate != "")
-                        //{
-                        //    MailBody = supInput.EmailTemplate;
-                        //}
-                        //else
-                        //{
-                        //    MailBody = "Dear Sir,";
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += "Kindly find attachments , and fill the price ";
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += Environment.NewLine;
-                        //    MailBody += "Best regards";
-                        //}
-                        //if (userSignature != "")
-                        //{
-                        //    MailBody += @"<br><br>";
-                        //    MailBody += userSignature;
-                        //}                     
-
-                        //Mail m = new Mail();
-                        //sent = m.SendMail(mylistTo, mylistCC, mylistBCC, Subject, MailBody, AttachmentList, true, attachments);
-
-                        if (!string.IsNullOrEmpty(usrEmail))
-                            mail.Cc.Add(usrEmail);
-
-                        if (supInput.mailCC != null)
-                        {
-                            foreach (var ccMail in supInput.mailCC)
+                        supPackRev =
+                            new TblSupplierPackageRevision
                             {
-                                mail.Cc.Add(ccMail);
+                                PrRevNo =
+                                    0,
+
+                                PrPackSuppId =
+                                    PackageSupplierId,
+
+                                PrTotPrice =
+                                    0,
+
+                                PrRevDate =
+                                    DateTime.Now,
+
+                                PrCurrency =
+                                    projectCurrency,
+
+                                PrExchRate =
+                                    1,
+
+                                RevExpiryDate =
+                                    ExpiryDate,
+
+                                InsertedBy =
+                                    UserName,
+
+                                InsertedByEmail =
+                                    usrEmail
+                            };
+                    }
+
+                    await _dbcontext
+                        .TblSupplierPackageRevisions
+                        .AddAsync(
+                            supPackRev
+                        );
+
+                    await _dbcontext
+                        .SaveChangesAsync();
+
+                    /*
+                     * EF Core fills the identity after SaveChanges.
+                     */
+                    int rev0Id =
+                        supPackRev.PrRevId;
+
+                    TblSupplierPackageRevision Rev0 =
+                        supPackRev;
+
+                    byte byBoq =
+                        Convert.ToByte(
+                            supplierPackage
+                                .SpByBoq ??
+                            0
+                        );
+
+                    List<TblRevisionDetail>
+                        LstRevDetails =
+                            await InsertRevisionDetail(
+                                rev0Id,
+                                packId,
+                                byBoq,
+                                rev1Id,
+                                _dbcontext
+                            );
+
+                    if (
+                        LstRevDetails != null &&
+                        LstRevDetails.Count > 0
+                    )
+                    {
+                        await _dbcontext
+                            .TblRevisionDetails
+                            .AddRangeAsync(
+                                LstRevDetails
+                            );
+
+                        await _dbcontext
+                            .SaveChangesAsync();
+                    }
+
+                    /*
+                     * Insert Commercial Conditions.
+                     */
+                    List<TblSuppComCondReply>
+                        LstComCondReply =
+                            await InsertComercialConditions(
+                                rev0Id,
+                                packId,
+                                rev1Id,
+                                supInput.comercialCondList,
+                                CostConn
+                            );
+
+                    /*
+                     * Insert Technical Conditions.
+                     */
+                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(
+                                rev0Id,
+                                packId,
+                                rev1Id,
+                                supInput.technicalCondList,
+                                CostConn
+                            );
+
+                    /*
+                     * Create the shared RFQ Excel only once.
+                     *
+                     * All suppliers use the same selected commercial
+                     * and technical conditions, so the first supplier's
+                     * condition lists are used to build the common file.
+                     */
+                    if (!sharedRfqExcelCreated)
+                    {
+                        sharedRfqExcelWithConditions =
+                            CreateSharedRfqExcelWithConditions(
+                                baseRfqExcel,
+                                supInput.comercialCondList,
+                                LstComCondReply,
+                                supInput.technicalCondList,
+                                LstTechCondReply
+                            );
+
+                        temporaryFiles.Add(
+                            sharedRfqExcelWithConditions
+                        );
+
+                        sharedRfqExcelCreated =
+                            true;
+                    }
+
+                    /*
+                     * Portal revision model.
+                     */
+                    revisionModelList.Add(
+                        new AddRevisionModel
+                        {
+                            PrRevId =
+                                Rev0.PrRevId,
+
+                            PrRevNo =
+                                Rev0.PrRevNo,
+
+                            PrRevDate =
+                                Rev0.PrRevDate,
+
+                            PrTotPrice =
+                                Rev0.PrTotPrice,
+
+                            PrPackSuppId =
+                                Rev0.PrPackSuppId,
+
+                            PrCurrency =
+                                Rev0.PrCurrency,
+
+                            PrExchRate =
+                                1,
+
+                            StatusId =
+                                1,
+
+                            ProjectCode =
+                                proj.PrjCode,
+
+                            IsSynched =
+                                false,
+
+                            RevExpiryDate =
+                                Rev0.RevExpiryDate,
+
+                            RevisionDetails =
+                                (
+                                    from d in LstRevDetails
+                                    select new AddRevisionDetailModel
+                                    {
+                                        BoqResourceSeq =
+                                            d.RdResourceSeq,
+
+                                        ResourceDescription =
+                                            GetRessourceDescription(
+                                                ByBoq,
+                                                d.RdResourceSeq,
+                                                d.ResourceDescription,
+                                                Convert.ToBoolean(
+                                                    d.IsAlternative
+                                                ),
+                                                CostConn
+                                            ),
+
+                                        ItemO =
+                                            d.RdBoqItem,
+
+                                        ItemDescription =
+                                            d.ItemDescription,
+
+                                        Quantity =
+                                            d.RdQty,
+
+                                        QuotationQty =
+                                            d.RdQuotationQty,
+
+                                        UnitPrice =
+                                            d.RdPrice,
+
+                                        TotalPrice =
+                                            d.RdQty *
+                                            d.UnitPriceAfterDiscount,
+
+                                        DiscountPerc =
+                                            d.RdDiscount,
+
+                                        Comments =
+                                            d.RdComment,
+
+                                        CreatedOn =
+                                            DateTime.Now,
+
+                                        IsSynched =
+                                            false,
+
+                                        ProjectCode =
+                                            proj.PrjCode,
+
+                                        ParentItemO =
+                                            d.ParentItemO,
+
+                                        ParentResourceId =
+                                            d.ParentResourceId
+                                                .ToString(),
+
+                                        NewItemId =
+                                            d.NewItemId,
+
+                                        NewItemResourceId =
+                                            d.NewItemResourceId,
+
+                                        IsNewItem =
+                                            d.IsNew,
+
+                                        IsAlternative =
+                                            d.IsAlternative,
+
+                                        UnitPriceAfterDiscount =
+                                            d.UnitPriceAfterDiscount,
+
+                                        UnitO =
+                                            d.UnitO ??
+                                            string.Empty,
+
+                                        BoqCtg =
+                                            d.BoqCtg ??
+                                            string.Empty,
+
+                                        BoqUnitMesure =
+                                            d.BoqUnitMesure ??
+                                            string.Empty,
+
+                                        L1 =
+                                            d.L1 ??
+                                            string.Empty,
+
+                                        L2 =
+                                            d.L2 ??
+                                            string.Empty,
+
+                                        L3 =
+                                            d.L3 ??
+                                            string.Empty,
+
+                                        L4 =
+                                            d.L4 ??
+                                            string.Empty,
+
+                                        L5 =
+                                            d.L5 ??
+                                            string.Empty,
+
+                                        L6 =
+                                            d.L6 ??
+                                            string.Empty,
+
+                                        L7 =
+                                            d.L7 ??
+                                            string.Empty,
+
+                                        L8 =
+                                            d.L8 ??
+                                            string.Empty,
+
+                                        L9 =
+                                            d.L9 ??
+                                            string.Empty,
+
+                                        L10 =
+                                            d.L10 ??
+                                            string.Empty,
+
+                                        C1 =
+                                            d.C1 ??
+                                            string.Empty,
+
+                                        C2 =
+                                            d.C2 ??
+                                            string.Empty,
+
+                                        C3 =
+                                            d.C3 ??
+                                            string.Empty,
+
+                                        C4 =
+                                            d.C4 ??
+                                            string.Empty,
+
+                                        C5 =
+                                            d.C5 ??
+                                            string.Empty,
+
+                                        C6 =
+                                            d.C6 ??
+                                            string.Empty,
+
+                                        C7 =
+                                            d.C7 ??
+                                            string.Empty,
+
+                                        C8 =
+                                            d.C8 ??
+                                            string.Empty,
+
+                                        C9 =
+                                            d.C9 ??
+                                            string.Empty,
+
+                                        C10 =
+                                            d.C10 ??
+                                            string.Empty,
+
+                                        C11 =
+                                            d.C11 ??
+                                            string.Empty,
+
+                                        C12 =
+                                            d.C12 ??
+                                            string.Empty,
+
+                                        C13 =
+                                            d.C13 ??
+                                            string.Empty,
+
+                                        C14 =
+                                            d.C14 ??
+                                            string.Empty,
+
+                                        C15 =
+                                            d.C15 ??
+                                            string.Empty,
+
+                                        BoqRefNumber =
+                                            d.RdBoqRefNumber ??
+                                            string.Empty,
+
+                                        AccComment =
+                                            d.RdAccComment ??
+                                            string.Empty
+                                    }
+                                )
+                                .ToList(),
+
+                            CommercialConditions =
+                                (
+                                    from d in LstComCondReply
+                                    select new AddCondModel
+                                    {
+                                        Id =
+                                            d.CdComConId,
+
+                                        CondValue =
+                                            d.CdSuppReply,
+
+                                        ACCCondValue =
+                                            d.CdAccCond,
+
+                                        ProjectCode =
+                                            proj.PrjCode
+                                    }
+                                )
+                                .ToList(),
+
+                            TechnicalConditions =
+                                (
+                                    from d in LstTechCondReply
+                                    select new AddCondModel
+                                    {
+                                        Id =
+                                            d.TcTechConId,
+
+                                        CondValue =
+                                            d.TcSuppReply,
+
+                                        ACCCondValue =
+                                            d.TcAccCond,
+
+                                        ProjectCode =
+                                            proj.PrjCode
+                                    }
+                                )
+                                .ToList()
+                        }
+                    );
+
+                    /*
+                     * Build email attachments.
+                     * Every supplier receives the same completed RFQ Excel.
+                     */
+                    List<string> supplierAttachmentList =
+                        new List<string>();
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            supInput.FilePath
+                        )
+                    )
+                    {
+                        supplierAttachmentList.Add(
+                            supInput.FilePath
+                        );
+                    }
+
+                    if (
+                        supInput.mailAttachments != null
+                    )
+                    {
+                        foreach (
+                            string attachment
+                            in supInput.mailAttachments
+                        )
+                        {
+                            if (
+                                !string.IsNullOrWhiteSpace(
+                                    attachment
+                                )
+                            )
+                            {
+                                supplierAttachmentList.Add(
+                                    attachment
+                                );
                             }
                         }
-
-                        if (!string.IsNullOrEmpty(_configuration["mailBcc1"]))
-                            mail.Bcc.Add(_configuration["mailBcc1"]);
-                        if (!string.IsNullOrEmpty(_configuration["mailBcc2"]))
-                            mail.Bcc.Add(_configuration["mailBcc2"]);
-
-                        string Subject = $"Job in Hand-{proj.PrjName}-{PackageName}";
-                        mail.Subject = Subject;
-                     
-                        mail.Body = !string.IsNullOrEmpty(supInput.EmailTemplate)
-                                    ? supInput.EmailTemplate
-                                    : @"Dear Sir,<br><br>Kindly find attachments and fill the price.<br><br>Best regards";
-
-                        if (!string.IsNullOrEmpty(userSignature))
-                            mail.Body += "<br><br>" + userSignature;
-
-                        mail.Attachments = AttachmentList;
-
-                        mailListForSending.Add(mail);
                     }
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            sharedRfqExcelWithConditions
+                        ) ||
+                        !File.Exists(
+                            sharedRfqExcelWithConditions
+                        )
+                    )
+                    {
+                        throw new Exception(
+                            "The RFQ Excel file with conditions was not created."
+                        );
+                    }
+
+                    supplierAttachmentList.Add(
+                        sharedRfqExcelWithConditions
+                    );
+
+                    /*
+                     * Build separate email for this supplier.
+                     */
+                    List<string> supplierEmailTo =
+                        NormalizeRepositoryEmailList(
+                            supInput.mailTo
+                        );
+
+                    if (supplierEmailTo.Count == 0)
+                    {
+                        throw new Exception(
+                            "No Email To address was provided for supplier " +
+                            (
+                                supInput.supplierName ??
+                                supplier.supID.ToString()
+                            )
+                        );
+                    }
+
+                    MailForSending mail =
+                        new MailForSending();
+
+                    foreach (
+                        string toAddress
+                        in supplierEmailTo
+                    )
+                    {
+                        mail.To.Add(
+                            toAddress
+                        );
+                    }
+
+                    /*
+                     * Apply the same shared CC to every supplier email.
+                     */
+                    List<string> cleanSharedCc =
+                        emailCc
+                            .Where(cc =>
+                                !supplierEmailTo.Contains(
+                                    cc,
+                                    StringComparer.OrdinalIgnoreCase
+                                )
+                            )
+                            .Distinct(
+                                StringComparer.OrdinalIgnoreCase
+                            )
+                            .ToList();
+
+                    foreach (
+                        string ccAddress
+                        in cleanSharedCc
+                    )
+                    {
+                        mail.Cc.Add(
+                            ccAddress
+                        );
+                    }
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            _configuration["mailBcc1"]
+                        )
+                    )
+                    {
+                        mail.Bcc.Add(
+                            _configuration["mailBcc1"]
+                        );
+                    }
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            _configuration["mailBcc2"]
+                        )
+                    )
+                    {
+                        mail.Bcc.Add(_configuration["mailBcc2"]);
+                    }
+
+                    mail.Subject = $"Job in Hand-{proj.PrjName}-{PackageName}";
+
+                    mail.Body = !string.IsNullOrWhiteSpace(supInput.EmailTemplate)
+                            ? supInput.EmailTemplate
+                            : @"Dear Sir,<br><br>
+                        Kindly find attachments and fill the price.
+                        <br><br>Best regards";
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            userSignature
+                        )
+                    )
+                    {
+                        mail.Body +=
+                            "<br><br>" +
+                            userSignature;
+                    }
+
+                    /*
+                     * Copy the attachment list so each email has
+                     * its own independent list instance.
+                     */
+                    mail.Attachments =
+                        supplierAttachmentList
+                            .Distinct(
+                                StringComparer.OrdinalIgnoreCase
+                            )
+                            .ToList();
+
+                    mailListForSending.Add(
+                        mail
+                    );
+                }
+
+                if (!sharedRfqExcelCreated)
+                {
+                    throw new Exception(
+                        "The RFQ Excel file with conditions was not created."
+                    );
                 }
 
                 supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
+
                 supplierPackageRevisionModel.RevisionModels = revisionModelList;
 
-                //Post the portal API (Create supplier package and revision on portal)
-                var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
-                var portalApiPath = _configuration["PortalApiPath"];
-                var key = _configuration["External:Key"];
-                var requestContent = new StringContent(body, Encoding.UTF8, "application/json");
-                _httpClient.DefaultRequestHeaders.Add("Authorization", key);
-                var response = await _httpClient.PostAsync(portalApiPath + "External/AddSupplierRevisionInPortal", requestContent);
+                /*
+                 * Post data to portal API.
+                 */
+                string body = System.Text.Json.JsonSerializer.Serialize(supplierPackageRevisionModel);
+
+                string portalApiPath = _configuration["PortalApiPath"];
+
+                string key = _configuration["External:Key"];
+
+                using StringContent requestContent =
+                    new StringContent(
+                        body,
+                        Encoding.UTF8,
+                        "application/json"
+                    );
+
+                /*
+                 * Avoid adding the Authorization header repeatedly
+                 * to the shared HttpClient.
+                 */
+                using HttpRequestMessage portalRequest = new HttpRequestMessage(HttpMethod.Post, portalApiPath + "External/AddSupplierRevisionInPortal");
+
+                portalRequest.Content = requestContent;
+
+                if (!string.IsNullOrWhiteSpace(key))
+                {
+                    portalRequest.Headers.TryAddWithoutValidation("Authorization", key);
+                }
+
+                using HttpResponseMessage response = await _httpClient.SendAsync(portalRequest);
+
                 response.EnsureSuccessStatusCode();
 
-                var content = await response.Content.ReadAsStringAsync();
-                if (content == "true")
-                {
-                    //Send email to suppliers
-                    foreach (var email in mailListForSending)
-                    {
-                        var mail = new Mail();
+                string content =
+                    await response.Content
+                        .ReadAsStringAsync();
 
-                        sent = mail.SendMail(email.To, email.Cc,email.Bcc,email.Subject,email.Body,email.Attachments,email.IsBodyHtml,attachments);
-                    }
-
-                    if (sent == "sent")
-                    {
-                        await t.CommitAsync();
-                        return true;
-                    }
-                    else
-                        throw new Exception("Email didn't sent !");
-                }
-                else
+                if (
+                    !string.Equals(
+                        content?.Trim(),
+                        "true",
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
                 {
-                    throw new Exception("An error occured on the Portal API");
+                    throw new Exception(
+                        "An error occurred on the Portal API."
+                    );
                 }
+
+                /*
+                 * Send one separate email to every supplier.
+                 * Each email contains the same completed RFQ Excel.
+                 */
+                if (mailListForSending.Count == 0)
+                {
+                    throw new Exception(
+                        "No supplier emails were prepared."
+                    );
+                }
+
+                foreach (
+                    MailForSending email
+                    in mailListForSending
+                )
+                {
+                    Mail mailSender =
+                        new Mail();
+
+                    string currentSendResult =
+                        mailSender.SendMail(
+                            email.To,
+                            email.Cc,
+                            email.Bcc,
+                            email.Subject,
+                            email.Body,
+                            email.Attachments,
+                            email.IsBodyHtml,
+                            attachments
+                        );
+
+                    if (
+                        !string.Equals(
+                            currentSendResult,
+                            "sent",
+                            StringComparison.OrdinalIgnoreCase
+                        )
+                    )
+                    {
+                        throw new Exception(
+                            "Email was not sent to: " +
+                            string.Join(
+                                "; ",
+                                email.To
+                            ) +
+                            ". Mail result: " +
+                            currentSendResult
+                        );
+                    }
+                }
+
+                await transaction.CommitAsync();
+
+                return true;
             }
-            catch (Exception ex)
-            {            
-                await t.RollbackAsync();
+            catch
+            {
+                await transaction.RollbackAsync();
+
                 throw;
+            }
+            finally
+            {
+                await transaction.DisposeAsync();
+
+                await _dbcontext.DisposeAsync();
+
+                await _TSdbcontext.DisposeAsync();
+
+                /*
+                 * Delete only the temporary condition-enhanced copy.
+                 *
+                 * The base Excel generated by ValidateExcelBeforeAssign
+                 * is not deleted here because the existing application
+                 * may manage that file separately.
+                 */
+                foreach (
+                    string temporaryFile
+                    in temporaryFiles
+                )
+                {
+                    try
+                    {
+                        if (
+                            !string.IsNullOrWhiteSpace(
+                                temporaryFile
+                            ) &&
+                            File.Exists(temporaryFile)
+                        )
+                        {
+                            File.Delete(
+                                temporaryFile
+                            );
+                        }
+                    }
+                    catch (Exception cleanupException)
+                    {
+                        Console.WriteLine(
+                            "Unable to delete temporary RFQ file: " +
+                            temporaryFile +
+                            ". Error: " +
+                            cleanupException.Message
+                        );
+                    }
+                }
             }
         }
 
-        private string GetRessourceDescription(byte ByBoq,string boqResSeq, string resourceDescription, bool isAlternative, string CostConn)
+        //public async Task<bool> AssignPackageSuppliers(            int packId,            List<SupplierInputList> supInputList,            byte ByBoq,
+        //    string UserName,            List<IFormFile> attachments,            DateTime ExpiryDate,            List<string> emailCc,
+        //    string CostConn,            string TSConn)
+        //{
+        //    AccDbContext _dbcontext = new AccDbContext(CostConn);
+        //    PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
+        //    var t = await _dbcontext.Database.BeginTransactionAsync();
+
+
+        //    emailCc =
+        //        NormalizeRepositoryEmailList(
+        //            emailCc
+        //        );
+
+        //    try
+        //    {
+        //        var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
+        //        string PackageName = package.PkgeName;
+
+        //        var mailListForSending = new List<MailForSending>();
+        //        var AttachmentList = new List<string>();
+        //        string sent = "";
+
+        //        var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
+        //        var proj = await _TSdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
+
+        //        //Get User Email Signature
+        //        User user = _logonRepository.GetUser(UserName);
+        //        string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
+        //        string usrEmail = (user.UsrEmail == null) ? "" : user.UsrEmail;
+
+        //        int PackageSupplierId = 0;
+        //        List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
+        //        List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
+        //        AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
+
+        //        string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false,CostConn);
+
+        //        foreach (var supInput in supInputList)
+        //        {
+        //            //1.Add PackageSupplier
+        //            SupplierInput supplier = supInput.supplierInput;
+
+        //            if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
+        //            {
+        //                var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
+        //                await _dbcontext.AddAsync<TblSupplierPackage>(spack);
+        //                await _dbcontext.SaveChangesAsync();
+
+        //                PackageSupplierId = spack.SpPackSuppId;
+
+        //                //1.1 Add AddSupplierPackageModel
+        //                supplierPackageModelList.Add(new AddSupplierPackageModel
+        //                {
+        //                    SpPackSuppId = spack.SpPackSuppId,
+        //                    SpPackageId = spack.SpPackageId,
+        //                    SpSupplierId = spack.SpSupplierId,
+        //                    SpByBoq = ByBoq,
+        //                    ProjectCode = proj.PrjCode,
+        //                    ProjectName = proj.PrjName,
+        //                    TecCondSent= false
+        //                });
+        //            }
+        //            else
+        //            {
+        //                var supPack = await _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefaultAsync();
+        //                PackageSupplierId = supPack.SpPackSuppId;
+        //            }
+
+        //            // 2. Add Revision
+        //            int LastRevNo = await GetMaxRevisionNumberAsync(PackageSupplierId, _dbcontext);
+
+        //            if (LastRevNo >= 0)
+        //            {
+        //                /*
+        //                 * Check whether the latest revision is still pending.
+        //                 */
+        //                bool hasPendingRevision =
+        //                    await _dbcontext
+        //                        .TblSupplierPackageRevisions
+        //                        .AnyAsync(x =>
+        //                            x.PrPackSuppId ==
+        //                                PackageSupplierId &&
+        //                            x.PrRevNo ==
+        //                                LastRevNo &&
+        //                            (x.StatusId ?? 0) < 3
+        //                        );
+
+        //                if (hasPendingRevision)
+        //                {
+        //                    throw new Exception(
+        //                        "Revision not returned from Supplier. " +
+        //                        "Supplier ID: " +
+        //                        supplier.supID +
+        //                        ", Package Supplier ID: " +
+        //                        PackageSupplierId +
+        //                        ", Revision No: " +
+        //                        LastRevNo
+        //                    );
+        //                }
+
+        //                /*
+        //                 * Load all existing revisions using the same DbContext
+        //                 * and the same active transaction.
+        //                 *
+        //                 * Descending order is important if the database has a
+        //                 * unique constraint on:
+        //                 *
+        //                 * PrPackSuppId + PrRevNo
+        //                 */
+        //                List<TblSupplierPackageRevision>
+        //                    existingRevisions =
+        //                        await _dbcontext
+        //                            .TblSupplierPackageRevisions
+        //                            .Where(x =>
+        //                                x.PrPackSuppId ==
+        //                                    PackageSupplierId
+        //                            )
+        //                            .OrderByDescending(x =>
+        //                                x.PrRevNo
+        //                            )
+        //                            .ToListAsync();
+
+        //                /*
+        //                 * Shift all revisions by one position:
+        //                 *
+        //                 * 2 becomes 3
+        //                 * 1 becomes 2
+        //                 * 0 becomes 1
+        //                 */
+        //                foreach (
+        //                    TblSupplierPackageRevision revision
+        //                    in existingRevisions
+        //                )
+        //                {
+        //                    revision.PrRevNo =
+        //                        revision.PrRevNo + 1;
+        //                }
+
+        //                /*
+        //                 * Save all shifted revisions in one operation.
+        //                 */
+        //                await _dbcontext.SaveChangesAsync();
+        //            }
+
+        //            var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
+        //            var supPackRev = new TblSupplierPackageRevision();
+        //            int rev1Id = 0;
+
+        //            if (Rev1 != null)
+        //            {
+        //                supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate , InsertedBy = UserName, InsertedByEmail = usrEmail };
+        //                rev1Id = Rev1.PrRevId;
+        //            }
+        //            else
+        //            {
+        //                int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
+        //                supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate,InsertedBy= UserName,InsertedByEmail= usrEmail };
+        //                rev1Id = 0;
+        //            }
+        //            await _dbcontext.AddAsync<TblSupplierPackageRevision>(supPackRev);
+        //            await _dbcontext.SaveChangesAsync();
+
+        //            //Get inserted Revison ID
+        //            var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
+        //            int rev0Id = Rev0.PrRevId;
+
+        //            var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
+        //            byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
+
+        //            List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id, _dbcontext);
+        //            if (LstRevDetails.Count() > 0)
+        //            {
+        //                await _dbcontext.AddRangeAsync(LstRevDetails);
+        //                await _dbcontext.SaveChangesAsync();
+        //            }
+
+        //            //Insert ComConditions Conditions Revision
+        //            List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,CostConn);
+
+        //            //Insert Technical Conditions Revision
+        //            List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList, CostConn);
+
+
+        //            //2.2 Add RevisionModel
+        //            //if (ByBoq ==1)
+        //            //{ 
+        //                revisionModelList.Add(new AddRevisionModel
+        //                {
+        //                    PrRevId = Rev0.PrRevId,
+        //                    PrRevNo = Rev0.PrRevNo,
+        //                    PrRevDate = Rev0.PrRevDate,
+        //                    PrTotPrice = Rev0.PrTotPrice,
+        //                    PrPackSuppId = Rev0.PrPackSuppId,
+        //                    PrCurrency = Rev0.PrCurrency,
+        //                    PrExchRate = 1,
+        //                    StatusId = 1,
+        //                    ProjectCode = proj.PrjCode,
+        //                    IsSynched = false,
+        //                    RevExpiryDate = Rev0.RevExpiryDate,
+        //                    RevisionDetails = (from d in LstRevDetails
+        //                                       select new AddRevisionDetailModel
+        //                                       {
+        //                                           BoqResourceSeq = d.RdResourceSeq,
+        //                                           ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative,CostConn),
+        //                                           ItemO = d.RdBoqItem,
+        //                                           ItemDescription = d.ItemDescription,//GetBoqItemDescription(d.RdBoqItem),
+        //                                           Quantity = d.RdQty,
+        //                                           QuotationQty = d.RdQuotationQty,
+        //                                           UnitPrice = d.RdPrice,
+        //                                           TotalPrice = (d.RdQty) * (d.UnitPriceAfterDiscount),
+        //                                           DiscountPerc = d.RdDiscount,
+        //                                           Comments = d.RdComment,
+        //                                           CreatedOn = DateTime.Now,
+        //                                           IsSynched = false,
+        //                                           ProjectCode = proj.PrjCode,
+        //                                           ParentItemO = d.ParentItemO,
+        //                                           ParentResourceId = d.ParentResourceId.ToString(),
+        //                                           NewItemId = d.NewItemId,
+        //                                           NewItemResourceId = d.NewItemResourceId,
+        //                                           IsNewItem = d.IsNew,
+        //                                           IsAlternative = d.IsAlternative,
+        //                                           UnitPriceAfterDiscount=d.UnitPriceAfterDiscount,
+        //                                           UnitO = (d.UnitO == null) ? "" : d.UnitO,
+        //                                           BoqCtg = (d.BoqCtg == null) ? "" : d.BoqCtg,
+        //                                           BoqUnitMesure = (d.BoqUnitMesure == null) ? "" : d.BoqUnitMesure,
+        //                                           L1 = (d.L1 == null) ? "" : d.L1,
+        //                                           L2 = (d.L2 == null) ? "" : d.L2,
+        //                                           L3 = (d.L3 == null) ? "" : d.L3,
+        //                                           L4 = (d.L4 == null) ? "" : d.L4,
+        //                                           L5 = (d.L5 == null) ? "" : d.L5,
+        //                                           L6 = (d.L6 == null) ? "" : d.L6,
+        //                                           L7 = (d.L7 == null) ? "" : d.L7,
+        //                                           L8 = (d.L8 == null) ? "" : d.L8,
+        //                                           L9 = (d.L9 == null) ? "" : d.L9,
+        //                                           L10 = (d.L10 == null) ? "" : d.L10,
+        //                                           C1 = (d.C1 == null) ? "" : d.C1,
+        //                                           C2 = (d.C2 == null) ? "" : d.C2,
+        //                                           C3 = (d.C3 == null) ? "" : d.C3,
+        //                                           C4 = (d.C4 == null) ? "" : d.C4,
+        //                                           C5 = (d.C5 == null) ? "" : d.C5,
+        //                                           C6 = (d.C6 == null) ? "" : d.C6,
+        //                                           C7 = (d.C7 == null) ? "" : d.C7,
+        //                                           C8 = (d.C8 == null) ? "" : d.C8,
+        //                                           C9 = (d.C9 == null) ? "" : d.C9,
+        //                                           C10 = (d.C10 == null) ? "" : d.C10,
+        //                                           C11 = (d.C11 == null) ? "" : d.C11,
+        //                                           C12 = (d.C12 == null) ? "" : d.C12,
+        //                                           C13 = (d.C13 == null) ? "" : d.C13,
+        //                                           C14 = (d.C14 == null) ? "" : d.C14,
+        //                                           C15 = (d.C15 == null) ? "" : d.C15,
+        //                                           BoqRefNumber= (d.RdBoqRefNumber == null) ? "" : d.RdBoqRefNumber,
+        //                                           AccComment= (d.RdAccComment == null) ? "" : d.RdAccComment,
+        //                                       }).ToList(),
+        //                    CommercialConditions= (from d in LstComCondReply
+        //                                           select new AddCondModel
+        //                                           {
+        //                                               Id = d.CdComConId,
+        //                                               CondValue = d.CdSuppReply,
+        //                                               ACCCondValue=d.CdAccCond,
+        //                                               ProjectCode = proj.PrjCode
+        //                                           }).ToList(),
+        //                    TechnicalConditions = (from d in LstTechCondReply
+        //                                           select new AddCondModel
+        //                                            {
+        //                                                Id = d.TcTechConId,
+        //                                                CondValue = d.TcSuppReply,
+        //                                                ACCCondValue = d.TcAccCond,
+        //                                                ProjectCode = proj.PrjCode
+        //                                           }).ToList()
+        //                });
+        //            //}
+
+        //            //Send Email with Attachments to this Supplier
+        //            AttachmentList.Clear();
+        //            AttachmentList.Add(supInput.FilePath);
+        //            if (supInput.mailAttachments != null)
+        //            {
+        //                foreach (var attach in supInput.mailAttachments)
+        //                {
+        //                    AttachmentList.Add(attach);
+        //                }
+        //            }
+
+        //            //if (supInput.comercialCondList.Count > 0)
+        //            //{
+        //            //    if (ComCondAttch == "")
+        //            //        ComCondAttch = SendComercialConditions(packId, supInput.comercialCondList);
+
+        //            //    AttachmentList.Add(ComCondAttch);
+        //            //}
+
+        //            AttachmentList.Add(attachExcel);
+
+        //            //send email
+        //            /*
+        //             * Each supplier has a separate edited To list.
+        //             */
+        //            List<string> supplierEmailTo =
+        //                NormalizeRepositoryEmailList(
+        //                    supInput.mailTo
+        //                );
+
+        //            if (supplierEmailTo.Count == 0)
+        //            {
+        //                throw new Exception(
+        //                    "No Email To address was provided for supplier " +
+        //                    (
+        //                        supInput.supplierName ??
+        //                        supplier.supID.ToString()
+        //                    )
+        //                );
+        //            }
+
+        //            var mail =
+        //                new MailForSending();
+
+        //            /*
+        //             * Add only the current supplier's addresses.
+        //             */
+        //            foreach (
+        //                string toAddress
+        //                in supplierEmailTo
+        //            )
+        //            {
+        //                mail.To.Add(
+        //                    toAddress
+        //                );
+        //            }
+
+        //            /*
+        //             * Apply the one shared CC list to this email.
+        //             */
+        //            List<string> cleanSharedCc =
+        //                NormalizeRepositoryEmailList(
+        //                    emailCc
+        //                )
+        //                .Where(cc =>
+        //                    !supplierEmailTo.Contains(
+        //                        cc,
+        //                        StringComparer.OrdinalIgnoreCase
+        //                    )
+        //                )
+        //                .ToList();
+
+        //            foreach (
+        //                string ccAddress
+        //                in cleanSharedCc
+        //            )
+        //            {
+        //                mail.Cc.Add(
+        //                    ccAddress
+        //                );
+        //            }
+
+        //            /*
+        //             * Configuration BCC remains unchanged.
+        //             */
+        //            if (
+        //                !string.IsNullOrWhiteSpace(
+        //                    _configuration["mailBcc1"]
+        //                )
+        //            )
+        //            {
+        //                mail.Bcc.Add(
+        //                    _configuration["mailBcc1"]
+        //                );
+        //            }
+
+        //            if (
+        //                !string.IsNullOrWhiteSpace(
+        //                    _configuration["mailBcc2"]
+        //                )
+        //            )
+        //            {
+        //                mail.Bcc.Add(
+        //                    _configuration["mailBcc2"]
+        //                );
+        //            }
+
+        //            mail.Subject =
+        //                $"Job in Hand-{proj.PrjName}-{PackageName}";
+
+        //            mail.Body =
+        //                !string.IsNullOrWhiteSpace(
+        //                    supInput.EmailTemplate
+        //                )
+        //                    ? supInput.EmailTemplate
+        //                    : @"Dear Sir,<br><br>
+        //                    Kindly find attachments and fill the price.
+        //                    <br><br>Best regards";
+
+        //            if (
+        //                !string.IsNullOrWhiteSpace(
+        //                    userSignature
+        //                )
+        //            )
+        //            {
+        //                mail.Body +=
+        //                    "<br><br>" +
+        //                    userSignature;
+        //            }
+
+        //            /*
+        //             * Copy the list because AttachmentList is cleared
+        //             * at the beginning of the next supplier iteration.
+        //             */
+        //            mail.Attachments =
+        //                AttachmentList.ToList();
+
+        //            mailListForSending.Add(mail);
+
+        //        }
+
+        //        supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
+        //        supplierPackageRevisionModel.RevisionModels = revisionModelList;
+
+        //        //Post the portal API (Create supplier package and revision on portal)
+        //        var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
+        //        var portalApiPath = _configuration["PortalApiPath"];
+        //        var key = _configuration["External:Key"];
+        //        var requestContent = new StringContent(body, Encoding.UTF8, "application/json");
+        //        _httpClient.DefaultRequestHeaders.Add("Authorization", key);
+        //        var response = await _httpClient.PostAsync(portalApiPath + "External/AddSupplierRevisionInPortal", requestContent);
+        //        response.EnsureSuccessStatusCode();
+
+        //        var content = await response.Content.ReadAsStringAsync();
+        //        if (content == "true")
+        //        {
+        //            //Send email to suppliers
+        //            foreach (var email in mailListForSending)
+        //            {
+        //                var mail = new Mail();
+
+        //                sent = mail.SendMail(email.To, email.Cc,email.Bcc,email.Subject,email.Body,email.Attachments,email.IsBodyHtml,attachments);
+        //            }
+
+        //            if (sent == "sent")
+        //            {
+        //                await t.CommitAsync();
+        //                return true;
+        //            }
+        //            else
+        //                throw new Exception("Email didn't sent !");
+        //        }
+        //        else
+        //        {
+        //            throw new Exception("An error occured on the Portal API");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {            
+        //        await t.RollbackAsync();
+        //        throw;
+        //    }
+        //}
+
+
+
+        private static List<string> NormalizeRepositoryEmailList(IEnumerable<string> emails)
+        {
+            if (emails == null)
+            {
+                return new List<string>();
+            }
+
+            return emails
+                .Where(email =>
+                    !string.IsNullOrWhiteSpace(email)
+                )
+                .SelectMany(email =>
+                    email.Split(
+                        new[]
+                        {
+                    ',',
+                    ';',
+                    '\r',
+                    '\n'
+                        },
+                        StringSplitOptions
+                            .RemoveEmptyEntries
+                    )
+                )
+                .Select(email =>
+                    email.Trim().ToLowerInvariant()
+                )
+                .Where(email =>
+                    !string.IsNullOrWhiteSpace(email)
+                )
+                .Distinct(
+                    StringComparer.OrdinalIgnoreCase
+                )
+                .ToList();
+        }
+
+        private string GetRessourceDescription(byte ByBoq, string boqResSeq, string resourceDescription, bool isAlternative, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -1104,14 +2905,14 @@ namespace AccApi.Repository.Managers
             if (ByBoq == 1)
                 return "";
 
-            if (resourceDescription!="" && resourceDescription!=null)
+            if (resourceDescription != "" && resourceDescription != null)
             {
                 resDesc = resourceDescription;
             }
             else
             {
                 var result = _dbcontext.TblResources.Where(x => x.ResSeq == boqResSeq).FirstOrDefault();
-                            
+
                 if (result != null)
                     resDesc = result.ResDescription;
             }
@@ -1136,7 +2937,7 @@ namespace AccApi.Repository.Managers
             //AccDbContext _dbcontext = new AccDbContext(CostConn);
             List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
 
-            if (rev1Id>0)  //In case of previous revision exists , so you have to insert new details from pervious
+            if (rev1Id > 0)  //In case of previous revision exists , so you have to insert new details from pervious
             {
                 var oldRevDtl = _dbcontext.TblRevisionDetails.Where(x => x.RdRevisionId == rev1Id).ToList();
                 if (oldRevDtl != null)
@@ -1151,25 +2952,25 @@ namespace AccApi.Repository.Managers
                             RdPrice = row.RdPrice,
                             RdPriceOrigCurrency = row.RdPriceOrigCurrency,
                             RdQty = row.RdQty,
-                            RdQuotationQty=row.RdQuotationQty,
+                            RdQuotationQty = row.RdQuotationQty,
                             RdComment = row.RdComment,
                             RdMissedPrice = row.RdMissedPrice,
                             RdDiscount = row.RdDiscount,
                             RdAddedItem = row.RdAddedItem,
                             IsAlternative = row.IsAlternative,
-                            IsNew=row.IsNew,
-                            NewItemId=row.NewItemId,
-                            NewItemResourceId=row.NewItemResourceId,
+                            IsNew = row.IsNew,
+                            NewItemId = row.NewItemId,
+                            NewItemResourceId = row.NewItemResourceId,
                             ParentItemO = row.ParentItemO,
                             ParentResourceId = row.ParentResourceId,
                             ResourceDescription = row.ResourceDescription,
-                            ItemDescription=row.ItemDescription ,
+                            ItemDescription = row.ItemDescription,
                             UnitPriceAfterDiscount = row.UnitPriceAfterDiscount,
-                            TotalPrice= Math.Round((double) (row.RdQuotationQty*row.UnitPriceAfterDiscount),2),
-                            UnitO=row.UnitO,
-                            BoqCtg=row.BoqCtg,
-                            BoqUnitMesure=row.BoqUnitMesure,
-                            L1=row.L1,
+                            TotalPrice = Math.Round((double)(row.RdQuotationQty * row.UnitPriceAfterDiscount), 2),
+                            UnitO = row.UnitO,
+                            BoqCtg = row.BoqCtg,
+                            BoqUnitMesure = row.BoqUnitMesure,
+                            L1 = row.L1,
                             L2 = row.L2,
                             L3 = row.L3,
                             L4 = row.L4,
@@ -1195,14 +2996,14 @@ namespace AccApi.Repository.Managers
                             C14 = row.C14,
                             C15 = row.C15,
                             RdBoqRefNumber = row.RdBoqRefNumber,
-                            RdAccComment= row.RdAccComment,
+                            RdAccComment = row.RdAccComment,
                         };
                         LstRevDetails.Add(revdtl);
-                    }                  
+                    }
                 }
             }
             else
-            { 
+            {
                 List<BoqRessourcesList> result = new List<BoqRessourcesList>();
                 double discount = 0;
 
@@ -1221,9 +3022,9 @@ namespace AccApi.Repository.Managers
                                   ScopeQtyO = o.QtyScope,
                                   UnitRateO = o.UnitRate,
                                   ScopeO = o.Scope,
-                                  BoqUprice=b.BoqUprice,
-                                  BoqQty=b.BoqQty,
-                                  BoqCtg="",
+                                  BoqUprice = b.BoqUprice,
+                                  BoqQty = b.BoqQty,
+                                  BoqCtg = "",
                                   L1 = o.L1,
                                   L2 = o.L2,
                                   L3 = o.L3,
@@ -1249,8 +3050,8 @@ namespace AccApi.Repository.Managers
                                   C13 = o.C13,
                                   C14 = o.C14,
                                   C15 = o.C15,
-                                  BoqRefNumber=o.RefNumber,
-                                  ObTradeDesc=o.ObTradeDesc,
+                                  BoqRefNumber = o.RefNumber,
+                                  ObTradeDesc = o.ObTradeDesc,
                               }).ToList();
 
                     //AH102025
@@ -1269,7 +3070,7 @@ namespace AccApi.Repository.Managers
                                 BoqRefNumber = p.First().BoqRefNumber,
                                 BoqCtg = p.First().BoqCtg,
                                 BoqQty = p.Sum(c => c.BoqQty),
-                                BoqTotalPrice= p.Sum(c => c.BoqQty  *  c.BoqUprice),
+                                BoqTotalPrice = p.Sum(c => c.BoqQty * c.BoqUprice),
                                 L1 = p.First().L1,
                                 L2 = p.First().L2,
                                 L3 = p.First().L3,
@@ -1320,8 +3121,8 @@ namespace AccApi.Repository.Managers
                                 IsNew = false,
                                 NewItemId = 0,
                                 NewItemResourceId = 0,
-                                ParentItemO ="",
-                                ParentResourceId="0",
+                                ParentItemO = "",
+                                ParentResourceId = "0",
                                 ResourceDescription = "",
                                 ItemDescription = row.DescriptionO,
                                 UnitPriceAfterDiscount = 0,
@@ -1355,8 +3156,8 @@ namespace AccApi.Repository.Managers
                                 C13 = row.C13,
                                 C14 = row.C14,
                                 C15 = row.C15,
-                                RdBoqRefNumber=row.BoqRefNumber,
-                                RdAccComment=row.ObTradeDesc
+                                RdBoqRefNumber = row.BoqRefNumber,
+                                RdAccComment = row.ObTradeDesc
                             };
                             LstRevDetails.Add(revdtl);
                         }
@@ -1364,7 +3165,7 @@ namespace AccApi.Repository.Managers
                 }
                 else
                 {
-                    result = (from o in _dbcontext.TblOriginalBoqVds 
+                    result = (from o in _dbcontext.TblOriginalBoqVds
                               join b in _dbcontext.TblBoqVds on o.ItemO equals b.BoqItem
                               join r in _dbcontext.TblResources on b.BoqResSeq equals r.ResSeq
                               where b.BoqScope == packId
@@ -1380,10 +3181,10 @@ namespace AccApi.Repository.Managers
                                   BoqDiv = b.BoqDiv,
                                   BoqPackage = b.BoqPackage,
                                   BoqScope = b.BoqScope,
-                                  DescriptionO=o.DescriptionO,
-                                  BoqResSeq=b.BoqResSeq,
-                                  ResDescription=r.ResDescription,
-                                  ResSeq=r.ResSeq,
+                                  DescriptionO = o.DescriptionO,
+                                  BoqResSeq = b.BoqResSeq,
+                                  ResDescription = r.ResDescription,
+                                  ResSeq = r.ResSeq,
                                   UnitO = o.UnitO,
                                   L1 = o.L1,
                                   L2 = o.L2,
@@ -1410,11 +3211,11 @@ namespace AccApi.Repository.Managers
                                   C13 = o.C13,
                                   C14 = o.C14,
                                   C15 = o.C15,
-                                  BoqRefNumber=o.RefNumber
+                                  BoqRefNumber = o.RefNumber
                               }).ToList();
 
                     var resourcesGrp = result
-                            .GroupBy(x => new { x.BoqResSeq, x.ResDescription, x.BoqUnitMesure,x.BoqUprice,x.BoqScope })
+                            .GroupBy(x => new { x.BoqResSeq, x.ResDescription, x.BoqUnitMesure, x.BoqUprice, x.BoqScope })
                             .Select(p => new BoqRessourcesList
                             {
                                 RowNumber = 0,
@@ -1461,7 +3262,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var row in resourcesGrp)
                     {
-                        if  (row.BoqScopeQty > 0)
+                        if (row.BoqScopeQty > 0)
                         {
                             var revdtl = new TblRevisionDetail()
                             {
@@ -1521,23 +3322,23 @@ namespace AccApi.Repository.Managers
                 }
             }
 
-//AH23112025
+            //AH23112025
             //if (LstRevDetails.Count() > 0)
             //    {
             //        await _dbcontext.AddRangeAsync(LstRevDetails);
             //        await _dbcontext.SaveChangesAsync();
             //    }               
-///AH23112025
-///
+            ///AH23112025
+            ///
             return LstRevDetails;
         }
 
-        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id,List<Condition> comCondList,string CostConn)
+        private async Task<List<TblSuppComCondReply>> InsertComercialConditions(int revId, int packId, int rev1Id, List<Condition> comCondList, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
             List<TblSuppComCondReply> LstComCondReply = new List<TblSuppComCondReply>();
-           
+
             foreach (var comCond in comCondList)
             {
                 var ComCondReply = new TblSuppComCondReply()
@@ -1572,8 +3373,8 @@ namespace AccApi.Repository.Managers
             }
 
             //In case of previous revision exists , so you have to insert new details from pervious
-            if (rev1Id > 0) 
-            {   
+            if (rev1Id > 0)
+            {
                 var oldRevDtl = _dbcontext.TblSuppComCondReplies.Where(x => x.CdRevisionId == rev1Id).ToList();
                 if (oldRevDtl != null)
                 {
@@ -1615,7 +3416,7 @@ namespace AccApi.Repository.Managers
             return lstComCondReplyPortal;
         }
 
-        private async Task<List<TblSuppTechCondReply>> InsertTechnicalConditions(int revId, int packId, int rev1Id,List<Condition> techCondList, string CostConn)
+        private async Task<List<TblSuppTechCondReply>> InsertTechnicalConditions(int revId, int packId, int rev1Id, List<Condition> techCondList, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
 
@@ -1699,13 +3500,19 @@ namespace AccApi.Repository.Managers
             return lstTechCondReplyPortal;
         }
 
-        public int GetMaxRevisionNumber(int PackageSupplierId, string CostConn)
+        private async Task<int> GetMaxRevisionNumberAsync(int packageSupplierId, AccDbContext dbContext)
         {
-            AccDbContext _context = new AccDbContext(CostConn);
+            int? maxRevisionNumber =
+                await dbContext
+                    .TblSupplierPackageRevisions
+                    .Where(x =>
+                        x.PrPackSuppId == packageSupplierId
+                    )
+                    .MaxAsync(x =>
+                        (int?)x.PrRevNo
+                    );
 
-            var query = _context.TblSupplierPackageRevisions.Where(x => x.PrPackSuppId == PackageSupplierId);
-            var MaxRevisionNumber = query.Any() ? query.Max(x => x.PrRevNo) : -1;
-            return (int)MaxRevisionNumber;
+            return maxRevisionNumber ?? -1;
         }
 
         public string SendComercialConditions(int packId, List<Condition> comCondList, string CostConn)

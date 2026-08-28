@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
-using AccApi.Repository.Interfaces;
+﻿using AccApi.Repository.Interfaces;
+using AccApi.Repository.Managers;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AccApi.Controllers
@@ -39,18 +41,72 @@ namespace AccApi.Controllers
         }
 
         [HttpGet("GetSupplierList_NotAssignetPackage")]
-        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
+        public ActionResult<List<Supplier>> GetSupplierList_NotAssignetPackage([FromQuery] int packID, [FromQuery] int portalStatus, [FromQuery] string CostConn)
         {
             try
             {
-                return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID,  CostConn);
+                if (packID <= 0)
+                {
+                    return BadRequest(
+                        new
+                        {
+                            message = "A valid package ID is required."
+                        }
+                    );
+                }
+
+                if (
+                    portalStatus != 0 &&
+                    portalStatus != 1
+                )
+                {
+                    return BadRequest(
+                        new
+                        {
+                            message = "Portal status must be 0 or 1."
+                        }
+                    );
+                }
+
+                List<Supplier> suppliers = _supplierRepository.GetSupplierList_NotAssignetPackage(packID, portalStatus, CostConn);
+
+                return Ok(suppliers);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return null;
+                _logger.LogError(
+                    ex,
+                    "Error loading unassigned suppliers. " +
+                    "Package ID: {PackageId}, " +
+                    "Portal Status: {PortalStatus}",
+                    packID,
+                    portalStatus
+                );
+
+                return StatusCode(
+                    StatusCodes
+                        .Status500InternalServerError,
+                    new
+                    {
+                        message =
+                            ex.Message
+                    }
+                );
             }
         }
+        //[HttpGet("GetSupplierList_NotAssignetPackage")]
+        //public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
+        //{
+        //    try
+        //    {
+        //        return this._supplierRepository.GetSupplierList_NotAssignetPackage(packID,  CostConn);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex.Message);
+        //        return null;
+        //    }
+        //}
 
         [HttpPost("GetSuppliers")]
         public IActionResult GetSuppliers(dynamic dataTablesParameters)

@@ -1,5 +1,6 @@
 ﻿using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
+using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace AccApi.Repository.Interfaces
 
         Task<bool> UpdatePortalAccountFlag(SupplierPortalAccountFlagViewModel model);
 
-        List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn);
+        List<Supplier> GetSupplierList_NotAssignetPackage(int packID, int portalStatus, string CostConn);
 
         Task<ResponseModel<bool>> Register(List<RegisterModel> model);
     }

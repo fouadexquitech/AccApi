@@ -17,15 +17,94 @@ namespace AccApi.Repository.View_Models
         public string? ACCCondValue { get; set; }
     }
 
+    //public class SupplierInputList
+    //{
+    //    public SupplierInput supplierInput { get; set; }
+    //    public string EmailTemplate { get; set; }
+    //    public string FilePath { get; set; }
+    //    public List<Condition> comercialCondList { get; set; }
+    //    public List<Condition> technicalCondList { get; set; }
+
+    //    public List<string> mailCC { get; set; }
+    //    public List<string> mailAttachments { get; set; }
+    //}
+
     public class SupplierInputList
     {
-        public SupplierInput supplierInput { get; set; }
-        public string EmailTemplate { get; set; }
-        public string FilePath { get; set; }
-        public List<Condition> comercialCondList { get; set; }
-        public List<Condition> technicalCondList { get; set; }
+        public SupplierInput supplierInput
+        {
+            get;
+            set;
+        }
 
-        public List<string> mailCC { get; set; }
-        public List<string> mailAttachments { get; set; }
+        public string supplierName
+        {
+            get;
+            set;
+        }
+
+        /*
+         * Editable To addresses for this supplier only.
+         */
+        public List<string> mailTo
+        {
+            get;
+            set;
+        }
+
+        public List<Condition> comercialCondList
+        {
+            get;
+            set;
+        }
+
+        public List<Condition> technicalCondList
+        {
+            get;
+            set;
+        }
+
+        public string FilePath
+        {
+            get;
+            set;
+        }
+
+        public string EmailTemplate
+        {
+            get;
+            set;
+        }
+
+        public List<string> mailCC
+        {
+            get;
+            set;
+        }
+
+        public List<string> mailAttachments
+        {
+            get;
+            set;
+        }
+
+        public SupplierInputList()
+        {
+            mailTo =
+                new List<string>();
+
+            mailCC =
+                new List<string>();
+
+            mailAttachments =
+                new List<string>();
+
+            comercialCondList =
+                new List<Condition>();
+
+            technicalCondList =
+                new List<Condition>();
+        }
     }
+
 }

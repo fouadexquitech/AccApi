@@ -3,10 +3,7 @@ using AccApi.Repository.Models;
 using AccApi.Repository.Models.MasterModels;
 using AccApi.Repository.View_Models;
 using AccApi.Repository.View_Models.Common;
-using AccApi.Repository.View_Models.Request;
-using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Nancy;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -15,11 +12,10 @@ using System.Linq.Dynamic.Core;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using Microsoft.Extensions.Configuration;
-using System.Text.Json;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+
 
 namespace AccApi.Repository.Managers
 {
@@ -71,49 +67,151 @@ namespace AccApi.Repository.Managers
             return results.ToList();
         }
 
-        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, string CostConn)
+        public List<Supplier> GetSupplierList_NotAssignetPackage(int packID, int portalStatus, string CostConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
+            using (AccDbContext dbContext =
+                new AccDbContext(CostConn))
+            {
+                if (packID <= 0)
+                {
+                    return new List<Supplier>();
+                }
 
-            //Models.MasterModels.TblPackage package = (from p in _mdbcontext.TblPackages
-            //                                          where p.PkgeId == packID
-            //                                          select p).First();
+                if (
+                    portalStatus != 0 &&
+                    portalStatus != 1
+                )
+                {
+                    throw new ArgumentException(
+                        "Portal status must be 0 or 1.",
+                        nameof(portalStatus)
+                    );
+                }
 
-            //var results=from b in _mdbcontext.TblSuppliers
-            //           join d in _mdbcontext.TblSupplierDivs
-            //           on b.SupCode  equals d.SupCode
-            //           where d.SupDiv == package.Division
-            //            orderby b.SupName
-            //           select new Supplier
-            //           {
-            //               SupID = b.SupCode,
-            //               SupName = b.SupName,
-            //               SupEmail=b.SupEmail
-            //           };
+                /*
+                 * SpSupplierId is nullable in TblSupplierPackages.
+                 *
+                 * Therefore:
+                 * 1. Exclude NULL values.
+                 * 2. Use .Value to return List<int>.
+                 */
+                List<int> assignedSupplierIds =
+                    dbContext
+                        .TblSupplierPackages
+                        .AsNoTracking()
+                        .Where(packageSupplier =>
+                            packageSupplier.SpPackageId ==
+                                packID &&
+                            packageSupplier.SpSupplierId
+                                .HasValue
+                        )
+                        .Select(packageSupplier =>
+                            packageSupplier.SpSupplierId
+                                .Value
+                        )
+                        .Distinct()
+                        .ToList();
 
-            var supPackageList = _dbcontext.TblSupplierPackages.Where(x => x.SpPackageId == packID).Select(p => p.SpSupplierId).ToList();
-            //              orderby b.SupName
-            //              select new Supplier
-            //              {
-            //                  SupID = b.SupCode,
-            //                  SupName = b.SupName,
-            //                  SupEmail = b.SupEmail
-            //              };
+                bool requiresPortalAccount =
+                    portalStatus == 1;
 
-            var results = (from b in _mdbcontext.TblSuppliers.Where(s => s.IsAccountCreated == true && !supPackageList.Contains(s.SupCode)).ToList()
-                           select new Supplier
-                           {
-                               SupID = b.SupCode,
-                               SupName = b.SupName + "          \\ " + b.SupEmail,
-                               SupEmail = b.SupEmail
-                           }).ToList();
+                /*
+                 * Do not explicitly declare:
+                 *
+                 * IQueryable<TblSupplier>
+                 *
+                 * because the project contains two classes named
+                 * TblSupplier:
+                 *
+                 * AccApi.Repository.Models.MasterModels.TblSupplier
+                 * AccApi.Repository.Models.TblSupplier
+                 *
+                 * Using var lets the compiler take the correct entity
+                 * type directly from _mdbcontext.TblSuppliers.
+                 */
+                var supplierQuery =
+                    _mdbcontext
+                        .TblSuppliers
+                        .AsNoTracking()
+                        .Where(supplier =>
+                            !assignedSupplierIds.Contains(
+                                supplier.SupCode
+                            )
+                        );
 
-            return results.OrderBy(x => x.SupName).ToList();
+                /*
+                 * Portal supplier group:
+                 *
+                 * portalStatus = 1
+                 * IsAccountCreated = true
+                 */
+                if (requiresPortalAccount)
+                {
+                    supplierQuery =
+                        supplierQuery.Where(
+                            supplier =>
+                                supplier.IsAccountCreated ==
+                                true
+                        );
+                }
+                else
+                {
+                    /*
+                     * Non-portal supplier group:
+                     *
+                     * portalStatus = 0
+                     * IsAccountCreated = false or NULL
+                     */
+                    supplierQuery =
+                        supplierQuery.Where(
+                            supplier =>
+                                supplier.IsAccountCreated !=
+                                true
+                        );
+                }
+
+                List<Supplier> results =
+                    supplierQuery
+                        .Select(supplier =>
+                            new Supplier
+                            {
+                                SupID =
+                                    supplier.SupCode,
+
+                                /*
+                                 * Supplier name and email are displayed
+                                 * once in the dropdown.
+                                 */
+                                SupName =
+                                    (
+                                        supplier.SupName ??
+                                        string.Empty
+                                    ) +
+                                    (
+                                        string.IsNullOrWhiteSpace(
+                                            supplier.SupEmail
+                                        )
+                                            ? string.Empty
+                                            : " \\ " +
+                                              supplier.SupEmail
+                                    ),
+
+                                SupEmail = supplier.SupEmail ?? string.Empty,
+
+                                IsAccountCreated = supplier.IsAccountCreated == true
+                            }
+                        )
+                        .OrderBy(supplier =>
+                            supplier.SupName
+                        )
+                        .ToList();
+
+                return results;
+            }
         }
 
         public DataTablesResponse<Supplier> GetSuppliers(DataTablesRequest dtRequest)
         {
-
             var sortColumnName = dtRequest.SortCol;
             var sortDirection = dtRequest.SortDirVal;
             var skip = dtRequest.Start;

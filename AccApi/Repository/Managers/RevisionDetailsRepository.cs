@@ -544,7 +544,7 @@ namespace AccApi.Repository.Managers
             var packageSupp = _context.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefault();
             byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
 
-            if (!InsertRevisionDetail(revId, ExcelFile, byBoq, ExchRate, discount, addedItem,CostConn))
+            if (!ImportRevisionDetail(revId, ExcelFile, byBoq, ExchRate, discount, addedItem,CostConn))
                 return false;
             else
             {
@@ -553,172 +553,1773 @@ namespace AccApi.Repository.Managers
             }
         }
 
-        private bool InsertRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem ,string CostConn)
+
+        private bool ImportRevisionDetail(    int revId,    IFormFile ExcelFile,    byte byBoq,    double ExchRate,    double disc,    byte addedItem,    string CostConn)
         {
-            AccDbContext _context = new AccDbContext(CostConn);
-
-            Boolean ret = true;
-
-            if (ExcelFile?.Length > 0)
+            if (ExcelFile == null || ExcelFile.Length <= 0)
             {
-                var stream = ExcelFile.OpenReadStream();
-                List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
-                List<TblMissingPrice> LstMissingPrice = new List<TblMissingPrice>();
+                return false;
+            }
 
+            bool ret = true;
+
+            ExcelPackage.LicenseContext =                LicenseContext.NonCommercial;
+
+            using (AccDbContext context =                new AccDbContext(CostConn))
+            using (var transaction =                context.Database.BeginTransaction())
+            {
                 try
                 {
-                    ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-                    using (var package = new ExcelPackage(stream))
+                    using (Stream stream =
+                        ExcelFile.OpenReadStream())
+                    using (ExcelPackage package =
+                        new ExcelPackage(stream))
                     {
-                        var worksheet = package.Workbook.Worksheets.First();
-                        var rowCount = worksheet.Dimension.Rows;
-
-                        //RemoveExistingMissing
-                        //_context.TblMissingPrices.RemoveRange(_context.TblMissingPrices.Where(c => c.RevisionId == revId));
-                        //_context.SaveChanges();
-                        string resComment, resCode = "", oldBoqRef = "";
-                        double resQty, Price,discount=0;
-
-                        if (disc > 0)
-                            discount = disc;
-
-                        for (var row = 2; row <= rowCount; row++)
+                        if (
+                            package.Workbook == null ||
+                            package.Workbook.Worksheets.Count == 0
+                        )
                         {
-                            try
-                            {
-                                string boqRef = worksheet.Cells[row, 1].Value == null ? "" : worksheet.Cells[row, 1].Value.ToString();
-
-                                if ((byBoq != 1) & (oldBoqRef != "") & (boqRef == ""))
-                                    boqRef = oldBoqRef;
-
-                                string boqDesc = worksheet.Cells[row, 3].Value == null ? "" : worksheet.Cells[row, 3].Value.ToString();
-                                double boqQty = worksheet.Cells[row, 5].Value == null ? 0 : (double)worksheet.Cells[row, 5].Value;
-
-                                if (byBoq == 1)
-                                {
-                                    if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)))
-                                    {
-                                        Price = (worksheet.Cells[row, 6].Value == null) ? 0 : (double)worksheet.Cells[row, 6].Value;
-                                        if (discount==0)
-                                        discount = (worksheet.Cells[row, 7].Value == null) ? 0 : (double)worksheet.Cells[row, 7].Value;
-                                        resComment = worksheet.Cells[row, 10].Value == null ? "" : worksheet.Cells[row, 10].Value.ToString();
-                                        resQty = boqQty;
-
-                                        byte missPrice = 0;
-                                        if (Price <= 0 && boqRef != "")
-                                        {
-                                            missPrice = 1;
-                                        }
-
-                                        if ((boqRef != "") && (resQty > 0) && (Price >= 0))
-                                        {
-                                            var revdtl = new TblRevisionDetail()
-                                            {
-                                                RdRevisionId = revId,
-                                                RdResourceSeq = "0",
-                                                RdBoqItem = boqRef,
-                                                RdPrice = Math.Round(Price * (ExchRate > 0 ? ExchRate : 1),3),
-                                                RdPriceOrigCurrency = Math.Round(Price, 3),
-                                                RdQty = resQty,
-                                                RdComment = resComment,                                                
-                                                RdMissedPrice = missPrice,
-                                                RdDiscount = discount,
-                                                RdAddedItem= (byte?)(addedItem == null ? 0 : addedItem)
-                                            };
-                                            LstRevDetails.Add(revdtl);
-                                        }
-                                        oldBoqRef = boqRef;
-                                    }
-                                }
-                                else
-                                {
-
-                                    if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)) || ((oldBoqRef != "") && ((worksheet.Cells[row, 6].Value == null ? "" : worksheet.Cells[row, 6].Value.ToString()) != "")))
-                                    {
-                                        resQty = worksheet.Cells[row, 10].Value == null ? 0 : (double)worksheet.Cells[row, 10].Value;
-                                        Price = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
-                                        if (discount == 0)
-                                            discount = (worksheet.Cells[row, 12].Value == null) ? 0 : (double)worksheet.Cells[row, 12].Value;
-                                        resComment = worksheet.Cells[row, 15].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
-
-                                        string resSeq = "0";
-                                        string boqItem = boqRef == "" ? oldBoqRef : boqRef;
-
-                                        resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
-
-                                        //var result = _context.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
-                                        var result = (from b in _context.TblBoqVds
-                                                     join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
-                                                     where b.BoqItem == boqItem && b.BoqPackage == resCode
-                                                     select b).SingleOrDefault();
-
-                                        if (result != null)
-                                            resSeq = result.BoqResSeq;
-
-                                        byte missPrice = 0;
-                                        //Insert missing prices
-                                        if (Price <= 0 && resSeq != "0")
-                                        {
-                                            //var missPrice = new TblMissingPrice()
-                                            //{
-                                            //    RevisionId = revId,
-                                            //    BoqResourceSeq = resSeq
-                                            //};
-                                            //LstMissingPrice.Add(missPrice);
-                                            missPrice = 1;
-                                        }
-
-                                        if ((resCode != "") && (resQty > 0) && (Price >= 0))
-                                        {
-                                            var revdtl = new TblRevisionDetail()
-                                            {
-                                                RdRevisionId = revId,
-                                                RdResourceSeq = resSeq,
-                                                RdBoqItem = boqRef,
-                                                RdPrice = Math.Round( Price * (ExchRate > 0 ? ExchRate : 1),3),
-                                                RdQty = resQty,
-                                                RdComment = resComment,
-                                                RdPriceOrigCurrency = Math.Round(Price,3),
-                                                RdMissedPrice = missPrice,
-                                                RdDiscount=discount,
-                                                RdAddedItem = (byte?)(addedItem == null ? 0 : addedItem)
-                                            };
-                                            LstRevDetails.Add(revdtl);
-                                        }
-                                        oldBoqRef = boqRef != "" ? boqRef : oldBoqRef;
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine(ex.Message);
-                            }
+                            throw new Exception(
+                                "The uploaded Excel workbook does not contain any worksheets."
+                            );
                         }
+
+                        /*
+                         * Locate the BOQ sheet by name first.
+                         * If an older RFQ does not use the BOQ name,
+                         * use the first worksheet as a fallback.
+                         */
+                        ExcelWorksheet boqWorksheet =
+                            package.Workbook.Worksheets
+                                .FirstOrDefault(sheet =>
+                                    string.Equals(
+                                        sheet.Name.Trim(),
+                                        "BOQ",
+                                        StringComparison.OrdinalIgnoreCase
+                                    )
+                                )
+                            ??
+                            package.Workbook.Worksheets
+                                .FirstOrDefault();
+
+                        if (
+                            boqWorksheet == null ||
+                            boqWorksheet.Dimension == null
+                        )
+                        {
+                            throw new Exception(
+                                "The BOQ worksheet is empty or unavailable."
+                            );
+                        }
+
+                        double effectiveExchangeRate =
+                            ExchRate > 0
+                                ? ExchRate
+                                : 1;
+
+                        /*
+                         * Import prices from the BOQ worksheet.
+                         */
+                        if (byBoq == 1)
+                        {
+                            ret =
+                                ImportBoqLevelPrices(
+                                    context,
+                                    boqWorksheet,
+                                    revId,
+                                    effectiveExchangeRate,
+                                    addedItem
+                                )
+                                && ret;
+                        }
+                        else
+                        {
+                            /*
+                             * Any value other than 1 is treated as
+                             * resource-based RFQ import.
+                             */
+                            ret =
+                                ImportResourceLevelPrices(
+                                    context,
+                                    boqWorksheet,
+                                    revId,
+                                    effectiveExchangeRate,
+                                    addedItem
+                                )
+                                && ret;
+                        }
+
+                        /*
+                         * Save revision-price changes before importing
+                         * the condition responses.
+                         */
+                        context.SaveChanges();
+
+                        /*
+                         * Import Commercial Conditions for both:
+                         * byBoq = 1 and resource-based import.
+                         */
+                        ExcelWorksheet commercialWorksheet =
+                            FindWorksheet(
+                                package,
+                                "Commercial Conditions"
+                            );
+
+                        if (
+                            commercialWorksheet != null &&
+                            commercialWorksheet.Dimension != null
+                        )
+                        {
+                            ret =
+                                ImportCommercialConditionReplies(
+                                    context,
+                                    commercialWorksheet,
+                                    revId
+                                )
+                                && ret;
+                        }
+
+                        /*
+                         * Import Technical Conditions for both:
+                         * byBoq = 1 and resource-based import.
+                         */
+                        ExcelWorksheet technicalWorksheet =
+                            FindWorksheet(
+                                package,
+                                "Technical Conditions"
+                            );
+
+                        if (
+                            technicalWorksheet != null &&
+                            technicalWorksheet.Dimension != null
+                        )
+                        {
+                            ret =
+                                ImportTechnicalConditionReplies(
+                                    context,
+                                    technicalWorksheet,
+                                    revId
+                                )
+                                && ret;
+                        }
+
+                        context.SaveChanges();
                     }
 
-                    //if (LstMissingPrice.Count()>0 )
-                    //{ 
-                    //    _context.AddRange(LstMissingPrice);
-                    //    ret = false;
-                    //}
-                    //else
-                    //{ 
-                    _context.AddRange(LstRevDetails);
-                    ret = true;
-                    //}
+                    transaction.Commit();
 
-                    _context.SaveChanges();
+                    return ret;
                 }
-
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    transaction.Rollback();
+
+                    Console.WriteLine(
+                        "ImportRevisionDetail error: " +
+                        ex.Message
+                    );
+
+                    if (ex.InnerException != null)
+                    {
+                        Console.WriteLine(
+                            "ImportRevisionDetail inner error: " +
+                            ex.InnerException.Message
+                        );
+                    }
+
+                    return false;
+                }
+            }
+        }
+
+
+        private bool ImportBoqLevelPrices(
+    AccDbContext context,
+    ExcelWorksheet worksheet,
+    int revId,
+    double exchangeRate,
+    byte addedItem)
+        {
+            bool success = true;
+
+            int firstDataRow = GetFirstDataRow(worksheet, "BOQ");
+
+            int rowCount =
+                worksheet.Dimension.End.Row;
+
+            for (
+                int row = firstDataRow;
+                row <= rowCount;
+                row++
+            )
+            {
+                try
+                {
+                    /*
+                     * BOQ RFQ structure:
+                     *
+                     * B = BOQ Item
+                     * D = BOQ Description
+                     * E = Unit
+                     * F = Quantity
+                     * G = Unit Price
+                     * H = Total Price
+                     * I = Comments
+                     */
+                    string boqItem =
+                        GetExcelText(
+                            worksheet.Cells[row, 2]
+                        );
+
+                    double quantity =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 6]
+                        );
+
+                    if (
+                        string.IsNullOrWhiteSpace(boqItem) ||
+                        quantity <= 0
+                    )
+                    {
+                        continue;
+                    }
+
+                    double originalUnitPrice =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 7]
+                        );
+
+                    double originalTotalPrice =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 8]
+                        );
+
+                    string comments =
+                        GetExcelText(
+                            worksheet.Cells[row, 9]
+                        );
+
+                    if (
+                        originalTotalPrice == 0 &&
+                        originalUnitPrice != 0
+                    )
+                    {
+                        originalTotalPrice =
+                            quantity *
+                            originalUnitPrice;
+                    }
+
+                    double convertedUnitPrice =
+                        Math.Round(
+                            originalUnitPrice *
+                            exchangeRate,
+                            3
+                        );
+
+                    double convertedTotalPrice =
+                        Math.Round(
+                            originalTotalPrice *
+                            exchangeRate,
+                            3
+                        );
+
+                    byte missedPrice =
+                        originalUnitPrice <= 0
+                            ? (byte)1
+                            : (byte)0;
+
+                    const string resourceSeq =
+                        "0";
+
+                    /*
+                     * Update the existing revision detail.
+                     * Insert only if the revision did not contain the row.
+                     */
+                    TblRevisionDetail revisionDetail =
+                        context
+                            .TblRevisionDetails
+                            .FirstOrDefault(item =>
+                                item.RdRevisionId == revId &&
+                                item.RdBoqItem == boqItem &&
+                                item.RdResourceSeq == resourceSeq
+                            );
+
+                    if (revisionDetail == null)
+                    {
+                        revisionDetail =
+                            new TblRevisionDetail
+                            {
+                                RdRevisionId =
+                                    revId,
+
+                                RdResourceSeq =
+                                    resourceSeq,
+
+                                RdBoqItem =
+                                    boqItem
+                            };
+
+                        context
+                            .TblRevisionDetails
+                            .Add(revisionDetail);
+                    }
+
+                    revisionDetail.RdQty =
+                        quantity;
+
+                    revisionDetail.RdPrice =
+                        convertedUnitPrice;
+
+                    revisionDetail.RdPriceOrigCurrency =
+                        Math.Round(
+                            originalUnitPrice,
+                            3
+                        );
+
+                    revisionDetail.RdComment =
+                        comments;
+
+                    revisionDetail.RdMissedPrice =
+                        missedPrice;
+
+                    revisionDetail.RdDiscount =
+                        0;
+
+                    revisionDetail.UnitPriceAfterDiscount =
+                        convertedUnitPrice;
+
+                    revisionDetail.TotalPrice =
+                        convertedTotalPrice;
+
+                    revisionDetail.IsAlternative =
+                        false;
+
+                    revisionDetail.IsNew =
+                        false;
+
+                    revisionDetail.RdAddedItem =
+                        addedItem;
+                }
+                catch (Exception rowException)
+                {
+                    success = false;
+
+                    Console.WriteLine(
+                        "BOQ price import, row " +
+                        row +
+                        ": " +
+                        rowException.Message
+                    );
                 }
             }
 
-            return ret;
+            return success;
         }
+
+        private bool ImportResourceLevelPrices(
+    AccDbContext context,
+    ExcelWorksheet worksheet,
+    int revId,
+    double exchangeRate,
+    byte addedItem)
+        {
+            bool success = true;
+
+            int firstDataRow =
+                GetFirstDataRow(
+                    worksheet,
+                    "RESOURCE"
+                );
+
+            int rowCount =
+                worksheet.Dimension.End.Row;
+
+            /*
+             * Load the revision resources once.
+             * This avoids one revision-detail query for every Excel row.
+             */
+            List<TblRevisionDetail> revisionDetails =
+                context
+                    .TblRevisionDetails
+                    .Where(item =>
+                        item.RdRevisionId == revId
+                    )
+                    .ToList();
+
+            /*
+             * Load the resource library once.
+             */
+            var resources =
+                context
+                    .TblResources
+                    .Select(resource => new
+                    {
+                        resource.ResSeq,
+                        resource.ResDescription
+                    })
+                    .ToList();
+
+            for (
+                int row = firstDataRow;
+                row <= rowCount;
+                row++
+            )
+            {
+                try
+                {
+                    string resourceDescription =
+                        GetExcelText(
+                            worksheet.Cells[row, 3]
+                        );
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            resourceDescription
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    string normalizedDescription =
+                        NormalizeLookupText(
+                            resourceDescription
+                        );
+
+                    /*
+                     * Match Column C against TblResources.ResDescription.
+                     */
+                    var matchedResources =
+                        resources
+                            .Where(resource =>
+                                NormalizeLookupText(
+                                    resource.ResDescription
+                                )
+                                ==
+                                normalizedDescription
+                            )
+                            .ToList();
+
+                    if (matchedResources.Count == 0)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Resource import, row " +
+                            row +
+                            ": Resource was not found in TblResources: " +
+                            resourceDescription
+                        );
+
+                        continue;
+                    }
+
+                    /*
+                     * Do not silently select an arbitrary resource
+                     * if duplicate descriptions exist.
+                     */
+                    if (matchedResources.Count > 1)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Resource import, row " +
+                            row +
+                            ": More than one resource has the description: " +
+                            resourceDescription
+                        );
+
+                        continue;
+                    }
+
+                    string resourceSeq =
+                        Convert.ToString(
+                            matchedResources[0].ResSeq
+                        );
+
+                    TblRevisionDetail revisionDetail =
+                        revisionDetails
+                            .FirstOrDefault(item =>
+                                string.Equals(
+                                    Convert.ToString(
+                                        item.RdResourceSeq
+                                    ),
+                                    resourceSeq,
+                                    StringComparison.OrdinalIgnoreCase
+                                )
+                            );
+
+                    if (revisionDetail == null)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Resource import, row " +
+                            row +
+                            ": Revision detail was not found for ResSeq " +
+                            resourceSeq +
+                            ", description " +
+                            resourceDescription
+                        );
+
+                        continue;
+                    }
+
+                    double resourceQuantity =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 5]
+                        );
+
+                    double originalUnitPrice =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 6]
+                        );
+
+                    double originalTotalPrice =
+                        GetExcelDouble(
+                            worksheet.Cells[row, 7]
+                        );
+
+                    string comments =
+                        GetExcelText(
+                            worksheet.Cells[row, 8]
+                        );
+
+                    if (
+                        resourceQuantity <= 0 &&
+                        revisionDetail.RdQty > 0
+                    )
+                    {
+                        /*
+                         * Preserve the existing revision quantity when
+                         * the supplier did not return a quantity.
+                         */
+                        resourceQuantity =
+                            Convert.ToDouble(
+                                revisionDetail.RdQty
+                            );
+                    }
+
+                    if (
+                        originalTotalPrice == 0 &&
+                        originalUnitPrice != 0 &&
+                        resourceQuantity > 0
+                    )
+                    {
+                        originalTotalPrice =
+                            resourceQuantity *
+                            originalUnitPrice;
+                    }
+
+                    /*
+                     * The updated resource RFQ does not contain a discount
+                     * column. The requested behavior is the same as byBoq:
+                     * RdDiscount = 0.
+                     */
+                    double convertedUnitPrice =
+                        Math.Round(
+                            originalUnitPrice *
+                            exchangeRate,
+                            3
+                        );
+
+                    double convertedTotalPrice =
+                        Math.Round(
+                            originalTotalPrice *
+                            exchangeRate,
+                            3
+                        );
+
+                    byte missedPrice =
+                        originalUnitPrice <= 0
+                            ? (byte)1
+                            : (byte)0;
+
+                    revisionDetail.RdQty =
+                        resourceQuantity;
+
+                    revisionDetail.RdPrice =
+                        convertedUnitPrice;
+
+                    revisionDetail.RdPriceOrigCurrency =
+                        Math.Round(
+                            originalUnitPrice,
+                            3
+                        );
+
+                    revisionDetail.RdComment =
+                        comments;
+
+                    revisionDetail.RdMissedPrice =
+                        missedPrice;
+
+                    revisionDetail.RdDiscount =
+                        0;
+
+                    revisionDetail.UnitPriceAfterDiscount =
+                        convertedUnitPrice;
+
+                    revisionDetail.TotalPrice =
+                        convertedTotalPrice;
+
+                    revisionDetail.IsAlternative =
+                        false;
+
+                    revisionDetail.IsNew =
+                        false;
+
+                    revisionDetail.RdAddedItem =
+                        addedItem;
+                }
+                catch (Exception rowException)
+                {
+                    success = false;
+
+                    Console.WriteLine(
+                        "Resource price import, row " +
+                        row +
+                        ": " +
+                        rowException.Message
+                    );
+                }
+            }
+
+            return success;
+        }
+
+        private bool ImportCommercialConditionReplies(    AccDbContext context,    ExcelWorksheet worksheet,    int revId)
+        {
+            bool success = true;
+
+            int rowCount =
+                worksheet.Dimension.End.Row;
+
+            /*
+             * Load the MasterProjects condition library.
+             */
+            var conditionLibrary =
+                _mdbContext
+                    .TblComConds
+                    .Select(condition => new
+                    {
+                        condition.CmSeq,
+                        condition.CmDescription
+                    })
+                    .ToList();
+
+            /*
+             * Load revision replies once.
+             */
+            List<TblSuppComCondReply> revisionReplies =
+                context
+                    .TblSuppComCondReplies
+                    .Where(reply =>
+                        reply.CdRevisionId == revId
+                    )
+                    .ToList();
+
+            /*
+             * Row 1 contains:
+             * A Condition
+             * B ACC Condition
+             * C Supplier Condition
+             */
+            for (
+                int row = 2;
+                row <= rowCount;
+                row++
+            )
+            {
+                try
+                {
+                    string conditionDescription =
+                        GetExcelText(
+                            worksheet.Cells[row, 1]
+                        );
+
+                    string supplierReply =
+                        GetExcelText(
+                            worksheet.Cells[row, 3]
+                        );
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            conditionDescription
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    string normalizedDescription =
+                        NormalizeLookupText(
+                            conditionDescription
+                        );
+
+                    var matchingConditions =
+                        conditionLibrary
+                            .Where(condition =>
+                                NormalizeLookupText(
+                                    condition.CmDescription
+                                )
+                                ==
+                                normalizedDescription
+                            )
+                            .ToList();
+
+                    if (matchingConditions.Count == 0)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Commercial Conditions, row " +
+                            row +
+                            ": Condition was not found in MasterProjects.dbo.tblComCond: " +
+                            conditionDescription
+                        );
+
+                        continue;
+                    }
+
+                    if (matchingConditions.Count > 1)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Commercial Conditions, row " +
+                            row +
+                            ": Duplicate condition descriptions exist in tblComCond: " +
+                            conditionDescription
+                        );
+
+                        continue;
+                    }
+
+                    int conditionId =
+                        Convert.ToInt32(
+                            matchingConditions[0].CmSeq
+                        );
+
+                    TblSuppComCondReply reply =
+                        revisionReplies
+                            .FirstOrDefault(item =>
+                                item.CdComConId ==
+                                    conditionId
+                            );
+
+                    if (reply == null)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Commercial Conditions, row " +
+                            row +
+                            ": tblSuppComCondReply was not found for Revision ID " +
+                            revId +
+                            " and Condition ID " +
+                            conditionId
+                        );
+
+                        continue;
+                    }
+
+                    /*
+                     * Update supplier response from Column C.
+                     */
+                    reply.CdSuppReply =
+                        supplierReply;
+                }
+                catch (Exception rowException)
+                {
+                    success = false;
+
+                    Console.WriteLine(
+                        "Commercial Conditions, row " +
+                        row +
+                        ": " +
+                        rowException.Message
+                    );
+                }
+            }
+
+            return success;
+        }
+
+        private bool ImportTechnicalConditionReplies(    AccDbContext context,    ExcelWorksheet worksheet,    int revId)
+        {
+            bool success = true;
+
+            int rowCount =
+                worksheet.Dimension.End.Row;
+
+            /*
+             * Load conditions for the current sheet by description.
+             *
+             * If the same Technical Condition description can exist
+             * in multiple packages, the current code detects it as
+             * ambiguous rather than updating the wrong record.
+             */
+            var conditionLibrary =
+                _mdbContext
+                    .TblTechConds
+                    .Select(condition => new
+                    {
+                        condition.TcSeq,
+                        condition.TcDescription
+                    })
+                    .ToList();
+
+            List<TblSuppTechCondReply> revisionReplies =
+                context
+                    .TblSuppTechCondReplies
+                    .Where(reply =>
+                        reply.TcRevisionId == revId
+                    )
+                    .ToList();
+
+            /*
+             * Row 1 contains:
+             * A Condition
+             * B ACC Condition
+             * C Supplier Condition
+             */
+            for (
+                int row = 2;
+                row <= rowCount;
+                row++
+            )
+            {
+                try
+                {
+                    string conditionDescription =
+                        GetExcelText(
+                            worksheet.Cells[row, 1]
+                        );
+
+                    string supplierReply =
+                        GetExcelText(
+                            worksheet.Cells[row, 3]
+                        );
+
+                    if (
+                        string.IsNullOrWhiteSpace(
+                            conditionDescription
+                        )
+                    )
+                    {
+                        continue;
+                    }
+
+                    string normalizedDescription =
+                        NormalizeLookupText(
+                            conditionDescription
+                        );
+
+                    var matchingConditions =
+                        conditionLibrary
+                            .Where(condition =>
+                                NormalizeLookupText(
+                                    condition.TcDescription
+                                )
+                                ==
+                                normalizedDescription
+                            )
+                            .ToList();
+
+                    if (matchingConditions.Count == 0)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Technical Conditions, row " +
+                            row +
+                            ": Condition was not found in MasterProjects.dbo.tblTechCond: " +
+                            conditionDescription
+                        );
+
+                        continue;
+                    }
+
+                    if (matchingConditions.Count > 1)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Technical Conditions, row " +
+                            row +
+                            ": Duplicate technical-condition descriptions exist: " +
+                            conditionDescription
+                        );
+
+                        continue;
+                    }
+
+                    int conditionId =
+                        Convert.ToInt32(
+                            matchingConditions[0].TcSeq
+                        );
+
+                    TblSuppTechCondReply reply =
+                        revisionReplies
+                            .FirstOrDefault(item =>
+                                item.TcTechConId ==
+                                    conditionId
+                            );
+
+                    if (reply == null)
+                    {
+                        success = false;
+
+                        Console.WriteLine(
+                            "Technical Conditions, row " +
+                            row +
+                            ": tblSuppTechCondReply was not found for Revision ID " +
+                            revId +
+                            " and Condition ID " +
+                            conditionId
+                        );
+
+                        continue;
+                    }
+
+                    /*
+                     * Update supplier response from Column C.
+                     */
+                    reply.TcSuppReply =
+                        supplierReply;
+                }
+                catch (Exception rowException)
+                {
+                    success = false;
+
+                    Console.WriteLine(
+                        "Technical Conditions, row " +
+                        row +
+                        ": " +
+                        rowException.Message
+                    );
+                }
+            }
+
+            return success;
+        }
+
+        private static ExcelWorksheet FindWorksheet(    ExcelPackage package,    string expectedName)
+        {
+            if (
+                package == null ||
+                package.Workbook == null ||
+                package.Workbook.Worksheets.Count == 0
+            )
+            {
+                return null;
+            }
+
+            string normalizedExpectedName =
+                NormalizeLookupText(
+                    expectedName
+                );
+
+            return package
+                .Workbook
+                .Worksheets
+                .FirstOrDefault(sheet =>
+                    NormalizeLookupText(
+                        sheet.Name
+                    )
+                    ==
+                    normalizedExpectedName
+                );
+        }
+
+        private static int GetFirstDataRow(
+    ExcelWorksheet worksheet,
+    string importType)
+        {
+            if (
+                worksheet == null ||
+                worksheet.Dimension == null
+            )
+            {
+                return 2;
+            }
+
+            int lastRow =
+                worksheet.Dimension.End.Row;
+
+            if (
+                string.Equals(
+                    importType,
+                    "RESOURCE",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            {
+                for (
+                    int row = 2;
+                    row <= lastRow;
+                    row++
+                )
+                {
+                    string resourceDescription =
+                        GetExcelText(
+                            worksheet.Cells[row, 3]
+                        );
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            resourceDescription
+                        )
+                    )
+                    {
+                        return row;
+                    }
+                }
+            }
+            else
+            {
+                for (
+                    int row = 2;
+                    row <= lastRow;
+                    row++
+                )
+                {
+                    string boqItem =
+                        GetExcelText(
+                            worksheet.Cells[row, 2]
+                        );
+
+                    if (
+                        !string.IsNullOrWhiteSpace(
+                            boqItem
+                        )
+                    )
+                    {
+                        return row;
+                    }
+                }
+            }
+
+            return 2;
+        }
+
+        private static string NormalizeLookupText(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return string.Empty;
+            }
+
+            string normalized =
+                value
+                    .Replace("\r", " ")
+                    .Replace("\n", " ")
+                    .Replace("\t", " ")
+                    .Trim();
+
+            while (normalized.Contains("  "))
+            {
+                normalized =
+                    normalized.Replace(
+                        "  ",
+                        " "
+                    );
+            }
+
+            return normalized.ToUpperInvariant();
+        }
+
+
+        //private bool ImportRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem, string CostConn)
+        //{
+        //    if (ExcelFile == null || ExcelFile.Length <= 0)
+        //    {
+        //        return false;
+        //    }
+
+        //    bool ret = true;
+
+        //    using (AccDbContext _context = new AccDbContext(CostConn))
+        //    using (var transaction = _context.Database.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        //            using (Stream stream = ExcelFile.OpenReadStream())
+        //            using (ExcelPackage package = new ExcelPackage(stream))
+        //            {
+        //                ExcelWorksheet worksheet =
+        //                    package.Workbook.Worksheets.FirstOrDefault();
+
+        //                if (worksheet == null || worksheet.Dimension == null)
+        //                {
+        //                    return false;
+        //                }
+
+        //                int rowCount = worksheet.Dimension.End.Row;
+
+        //                string oldBoqRef = string.Empty;
+
+        //                double exchangeRate =
+        //                    ExchRate > 0 ? ExchRate : 1;
+
+        //                /*
+        //                 * Attached BOQ supplier Excel structure:
+        //                 *
+        //                 * Column B = BOQ Item
+        //                 * Column D = Bill Description
+        //                 * Column E = Unit
+        //                 * Column F = Quantity
+        //                 * Column G = Unit Price
+        //                 * Column H = Total Price
+        //                 * Column I = Comments
+        //                 *
+        //                 * Resource-level old format:
+        //                 *
+        //                 * Column G  = Resource Code
+        //                 * Column J  = Resource Quantity
+        //                 * Column K  = Unit Price
+        //                 * Column L  = Discount
+        //                 * Column O  = Comment
+        //                 */
+
+        //                for (int row = 2; row <= rowCount; row++)
+        //                {
+        //                    try
+        //                    {
+        //                        string boqRef =
+        //                            GetExcelText(
+        //                                worksheet.Cells[row, 2]
+        //                            );
+
+        //                        if (
+        //                            byBoq != 1 &&
+        //                            string.IsNullOrWhiteSpace(boqRef) &&
+        //                            !string.IsNullOrWhiteSpace(oldBoqRef)
+        //                        )
+        //                        {
+        //                            boqRef = oldBoqRef;
+        //                        }
+
+        //                        string boqDescription =
+        //                            GetExcelText(
+        //                                worksheet.Cells[row, 4]
+        //                            );
+
+        //                        double boqQty =
+        //                            GetExcelDouble(
+        //                                worksheet.Cells[row, 6]
+        //                            );
+
+        //                        /*
+        //                         * Skip headings and blank rows.
+        //                         *
+        //                         * A valid RFQ price row must contain:
+        //                         * 1. BOQ item
+        //                         * 2. Quantity
+        //                         *
+        //                         * Description is not mandatory because some supplier
+        //                         * formats may leave it blank while BOQ Item is present.
+        //                         */
+        //                        if (
+        //                            string.IsNullOrWhiteSpace(boqRef) ||
+        //                            boqQty <= 0
+        //                        )
+        //                        {
+        //                            continue;
+        //                        }
+
+        //                        if (byBoq == 1)
+        //                        {
+        //                            /*
+        //                             * BOQ-level supplier quotation import.
+        //                             *
+        //                             * G = Unit Price
+        //                             * H = Total Price
+        //                             * I = Comments
+        //                             */
+
+        //                            double unitPriceOriginal =
+        //                                GetExcelDouble(
+        //                                    worksheet.Cells[row, 7]
+        //                                );
+
+        //                            double totalPriceOriginal =
+        //                                GetExcelDouble(
+        //                                    worksheet.Cells[row, 8]
+        //                                );
+
+        //                            string comments =
+        //                                GetExcelText(
+        //                                    worksheet.Cells[row, 9]
+        //                                );
+
+        //                            /*
+        //                             * If the supplier left Total Price empty,
+        //                             * derive it from Quantity x Unit Price.
+        //                             */
+        //                            if (
+        //                                totalPriceOriginal == 0 &&
+        //                                unitPriceOriginal != 0 &&
+        //                                boqQty > 0
+        //                            )
+        //                            {
+        //                                totalPriceOriginal =
+        //                                    boqQty * unitPriceOriginal;
+        //                            }
+
+        //                            double convertedUnitPrice =
+        //                                Math.Round(
+        //                                    unitPriceOriginal * exchangeRate,
+        //                                    3
+        //                                );
+
+        //                            double convertedTotalPrice =
+        //                                Math.Round(
+        //                                    totalPriceOriginal * exchangeRate,
+        //                                    3
+        //                                );
+
+        //                            byte missedPrice =
+        //                                unitPriceOriginal <= 0
+        //                                    ? (byte)1
+        //                                    : (byte)0;
+
+        //                            string resourceSeq = "0";
+
+        //                            /*
+        //                             * Update existing revision row instead of
+        //                             * inserting another duplicate row.
+        //                             */
+        //                            TblRevisionDetail revisionDetail =
+        //                                _context.TblRevisionDetails
+        //                                    .FirstOrDefault(
+        //                                        item =>
+        //                                            item.RdRevisionId == revId &&
+        //                                            item.RdBoqItem == boqRef &&
+        //                                            item.RdResourceSeq == resourceSeq
+        //                                    );
+
+        //                            if (revisionDetail == null)
+        //                            {
+        //                                revisionDetail =
+        //                                    new TblRevisionDetail
+        //                                    {
+        //                                        RdRevisionId = revId,
+        //                                        RdResourceSeq = resourceSeq,
+        //                                        RdBoqItem = boqRef
+        //                                    };
+
+        //                                _context.TblRevisionDetails.Add(
+        //                                    revisionDetail
+        //                                );
+        //                            }
+
+        //                            revisionDetail.RdQty =
+        //                                boqQty;
+
+        //                            revisionDetail.RdPrice =
+        //                                convertedUnitPrice;
+
+        //                            revisionDetail.RdPriceOrigCurrency =
+        //                                Math.Round(
+        //                                    unitPriceOriginal,
+        //                                    3
+        //                                );
+
+        //                            revisionDetail.RdComment =
+        //                                comments;
+
+        //                            revisionDetail.RdMissedPrice =
+        //                                missedPrice;
+
+        //                            revisionDetail.RdDiscount =
+        //                                0;
+
+        //                            revisionDetail.UnitPriceAfterDiscount =
+        //                                convertedUnitPrice;
+
+        //                            revisionDetail.TotalPrice =
+        //                                convertedTotalPrice;
+
+        //                            revisionDetail.IsAlternative =
+        //                                false;
+
+        //                            revisionDetail.IsNew =
+        //                                false;
+
+        //                            revisionDetail.RdAddedItem =
+        //                                addedItem;
+
+        //                            oldBoqRef = boqRef;
+        //                        }
+        //                        else
+        //                        {
+        //                            /*
+        //                             * Existing resource-level import format.
+        //                             */
+
+        //                            string resourceCode =
+        //                                GetExcelText(
+        //                                    worksheet.Cells[row, 7]
+        //                                );
+
+        //                            double resourceQty =
+        //                                GetExcelDouble(
+        //                                    worksheet.Cells[row, 10]
+        //                                );
+
+        //                            double unitPriceOriginal =
+        //                                GetExcelDouble(
+        //                                    worksheet.Cells[row, 11]
+        //                                );
+
+        //                            double rowDiscount =
+        //                                disc > 0
+        //                                    ? disc
+        //                                    : GetExcelDouble(
+        //                                        worksheet.Cells[row, 12]
+        //                                    );
+
+        //                            string comments =
+        //                                GetExcelText(
+        //                                    worksheet.Cells[row, 15]
+        //                                );
+
+        //                            string boqItem =
+        //                                string.IsNullOrWhiteSpace(boqRef)
+        //                                    ? oldBoqRef
+        //                                    : boqRef;
+
+        //                            if (
+        //                                string.IsNullOrWhiteSpace(boqItem) ||
+        //                                string.IsNullOrWhiteSpace(resourceCode) ||
+        //                                resourceQty <= 0
+        //                            )
+        //                            {
+        //                                continue;
+        //                            }
+
+        //                            string resourceSeq = "0";
+
+        //                            var boqResource =
+        //                                (
+        //                                    from boq in _context.TblBoqVds
+        //                                    join originalBoq
+        //                                        in _context.TblOriginalBoqVds
+        //                                        on boq.BoqItem
+        //                                        equals originalBoq.ItemO
+        //                                    where
+        //                                        boq.BoqItem == boqItem &&
+        //                                        boq.BoqPackage == resourceCode
+        //                                    select boq
+        //                                )
+        //                                .FirstOrDefault();
+
+        //                            if (
+        //                                boqResource != null &&
+        //                                !string.IsNullOrWhiteSpace(
+        //                                    boqResource.BoqResSeq
+        //                                )
+        //                            )
+        //                            {
+        //                                resourceSeq =
+        //                                    boqResource.BoqResSeq;
+        //                            }
+
+        //                            byte missedPrice =
+        //                                unitPriceOriginal <= 0 &&
+        //                                resourceSeq != "0"
+        //                                    ? (byte)1
+        //                                    : (byte)0;
+
+        //                            double convertedUnitPrice =
+        //                                Math.Round(
+        //                                    unitPriceOriginal * exchangeRate,
+        //                                    3
+        //                                );
+
+        //                            /*
+        //                             * UnitPriceAfterDiscount:
+        //                             * The imported price is reduced by the
+        //                             * applicable percentage discount.
+        //                             */
+        //                            double unitPriceAfterDiscountOriginal =
+        //                                unitPriceOriginal;
+
+        //                            if (rowDiscount > 0)
+        //                            {
+        //                                unitPriceAfterDiscountOriginal =
+        //                                    unitPriceOriginal -
+        //                                    (
+        //                                        unitPriceOriginal *
+        //                                        rowDiscount /
+        //                                        100
+        //                                    );
+        //                            }
+
+        //                            double convertedUnitPriceAfterDiscount =
+        //                                Math.Round(
+        //                                    unitPriceAfterDiscountOriginal *
+        //                                    exchangeRate,
+        //                                    3
+        //                                );
+
+        //                            double convertedTotalPrice =
+        //                                Math.Round(
+        //                                    resourceQty *
+        //                                    convertedUnitPriceAfterDiscount,
+        //                                    3
+        //                                );
+
+        //                            TblRevisionDetail revisionDetail =
+        //                                _context.TblRevisionDetails
+        //                                    .FirstOrDefault(
+        //                                        item =>
+        //                                            item.RdRevisionId == revId &&
+        //                                            item.RdBoqItem == boqItem &&
+        //                                            item.RdResourceSeq ==
+        //                                                resourceSeq
+        //                                    );
+
+        //                            if (revisionDetail == null)
+        //                            {
+        //                                revisionDetail =
+        //                                    new TblRevisionDetail
+        //                                    {
+        //                                        RdRevisionId = revId,
+        //                                        RdResourceSeq = resourceSeq,
+        //                                        RdBoqItem = boqItem
+        //                                    };
+
+        //                                _context.TblRevisionDetails.Add(
+        //                                    revisionDetail
+        //                                );
+        //                            }
+
+        //                            revisionDetail.RdQty =
+        //                                resourceQty;
+
+        //                            revisionDetail.RdPrice =
+        //                                convertedUnitPrice;
+
+        //                            revisionDetail.RdPriceOrigCurrency =
+        //                                Math.Round(
+        //                                    unitPriceOriginal,
+        //                                    3
+        //                                );
+
+        //                            revisionDetail.RdComment =
+        //                                comments;
+
+        //                            revisionDetail.RdMissedPrice =
+        //                                missedPrice;
+
+        //                            revisionDetail.RdDiscount =
+        //                                rowDiscount;
+
+        //                            revisionDetail.UnitPriceAfterDiscount =
+        //                                convertedUnitPriceAfterDiscount;
+
+        //                            revisionDetail.TotalPrice =
+        //                                convertedTotalPrice;
+
+        //                            revisionDetail.IsAlternative =
+        //                                false;
+
+        //                            revisionDetail.IsNew =
+        //                                false;
+
+        //                            revisionDetail.RdAddedItem =
+        //                                addedItem;
+
+        //                            oldBoqRef = boqItem;
+        //                        }
+        //                    }
+        //                    catch (Exception rowException)
+        //                    {
+        //                        ret = false;
+
+        //                        Console.WriteLine(
+        //                            "ImportRevisionDetail row " +
+        //                            row +
+        //                            " error: " +
+        //                            rowException.Message
+        //                        );
+        //                    }
+        //                }
+        //            }
+
+        //            _context.SaveChanges();
+
+        //            transaction.Commit();
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            transaction.Rollback();
+
+        //            ret = false;
+
+        //            Console.WriteLine(
+        //                "ImportRevisionDetail error: " +
+        //                ex.Message
+        //            );
+
+        //            if (ex.InnerException != null)
+        //            {
+        //                Console.WriteLine(
+        //                    "ImportRevisionDetail inner error: " +
+        //                    ex.InnerException.Message
+        //                );
+        //            }
+        //        }
+        //    }
+
+        //    return ret;
+        //}
+
+        private static string GetExcelText(ExcelRange cell)
+        {
+            if (cell == null || cell.Value == null)
+            {
+                return string.Empty;
+            }
+
+            return cell.Text == null
+                ? string.Empty
+                : cell.Text.Trim();
+        }
+
+        private static double GetExcelDouble(ExcelRange cell)
+        {
+            if (cell == null || cell.Value == null)
+            {
+                return 0;
+            }
+
+            double value;
+
+            if (
+                double.TryParse(
+                    Convert.ToString(
+                        cell.Value,
+                        System.Globalization.CultureInfo.InvariantCulture
+                    ),
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out value
+                )
+            )
+            {
+                return value;
+            }
+
+            /*
+             * Try the displayed Excel text using the current culture.
+             */
+            if (
+                double.TryParse(
+                    cell.Text,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    out value
+                )
+            )
+            {
+                return value;
+            }
+
+            /*
+             * Last attempt for values containing comma separators.
+             */
+            string cleanedValue =
+                (cell.Text ?? string.Empty)
+                    .Replace(",", string.Empty)
+                    .Trim();
+
+            if (
+                double.TryParse(
+                    cleanedValue,
+                    System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    out value
+                )
+            )
+            {
+                return value;
+            }
+
+            return 0;
+        }
+
+        //private bool ImportRevisionDetail(int revId, IFormFile ExcelFile, byte byBoq, double ExchRate, double disc, byte addedItem ,string CostConn)
+        //{
+        //    AccDbContext _context = new AccDbContext(CostConn);
+
+        //    Boolean ret = true;
+
+        //    if (ExcelFile?.Length > 0)
+        //    {
+        //        var stream = ExcelFile.OpenReadStream();
+        //        List<TblRevisionDetail> LstRevDetails = new List<TblRevisionDetail>();
+        //        List<TblMissingPrice> LstMissingPrice = new List<TblMissingPrice>();
+
+        //        try
+        //        {
+        //            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        //            using (var package = new ExcelPackage(stream))
+        //            {
+        //                var worksheet = package.Workbook.Worksheets.First();
+        //                var rowCount = worksheet.Dimension.Rows;
+
+        //                //RemoveExistingMissing
+        //                //_context.TblMissingPrices.RemoveRange(_context.TblMissingPrices.Where(c => c.RevisionId == revId));
+        //                //_context.SaveChanges();
+        //                string resComment, resCode = "", oldBoqRef = "";
+        //                double resQty, Price,discount=0;
+
+        //                if (disc > 0)
+        //                    discount = disc;
+
+        //                for (var row = 2; row <= rowCount; row++)
+        //                {
+        //                    try
+        //                    {
+        //                        string boqRef = worksheet.Cells[row, 2].Value == null ? "" : worksheet.Cells[row, 2].Value.ToString();
+
+        //                        if ((byBoq != 1) & (oldBoqRef != "") & (boqRef == ""))
+        //                            boqRef = oldBoqRef;
+
+        //                        string boqDesc = worksheet.Cells[row, 4].Value == null ? "" : worksheet.Cells[row, 4].Value.ToString();
+        //                        double boqQty = worksheet.Cells[row, 6].Value == null ? 0 : (double)worksheet.Cells[row, 6].Value;
+
+        //                        if (byBoq == 1)
+        //                        {
+        //                            if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)))
+        //                            {
+        //                                Price = (worksheet.Cells[row, 7].Value == null) ? 0 : (double)worksheet.Cells[row, 7].Value;
+        //                                if (discount == 0)
+        //                                    discount = 0;  /* (worksheet.Cells[row, 7].Value == null) ? 0 : (double)worksheet.Cells[row, 7].Value;*/
+        //                                resComment = worksheet.Cells[row, 9].Value == null ? "" : worksheet.Cells[row, 9].Value.ToString();
+        //                                resQty = boqQty;
+
+        //                                byte missPrice = 0;
+        //                                if (Price <= 0 && boqRef != "")
+        //                                {
+        //                                    missPrice = 1;
+        //                                }
+
+        //                                if ((boqRef != "") && (resQty > 0) && (Price >= 0))
+        //                                {
+        //                                    var revdtl = new TblRevisionDetail()
+        //                                    {
+        //                                        RdRevisionId = revId,
+        //                                        RdResourceSeq = "0",
+        //                                        RdBoqItem = boqRef,
+        //                                        RdPrice = Math.Round(Price * (ExchRate > 0 ? ExchRate : 1),3),
+        //                                        RdPriceOrigCurrency = Math.Round(Price, 3),
+        //                                        RdQty = resQty,
+        //                                        RdComment = resComment,                                                
+        //                                        RdMissedPrice = missPrice,
+        //                                        RdDiscount = discount,
+        //                                        RdAddedItem= (byte?)(addedItem == null ? 0 : addedItem)
+        //                                    };
+        //                                    LstRevDetails.Add(revdtl);
+        //                                }
+        //                                oldBoqRef = boqRef;
+        //                            }
+        //                        }
+        //                        else
+        //                        {
+
+        //                            if (((boqRef != "") && (boqDesc != "") && (boqQty != 0)) || ((oldBoqRef != "") && ((worksheet.Cells[row, 6].Value == null ? "" : worksheet.Cells[row, 6].Value.ToString()) != "")))
+        //                            {
+        //                                resQty = worksheet.Cells[row, 10].Value == null ? 0 : (double)worksheet.Cells[row, 10].Value;
+        //                                Price = (worksheet.Cells[row, 11].Value == null) ? 0 : (double)worksheet.Cells[row, 11].Value;
+        //                                if (discount == 0)
+        //                                    discount = (worksheet.Cells[row, 12].Value == null) ? 0 : (double)worksheet.Cells[row, 12].Value;
+        //                                resComment = worksheet.Cells[row, 15].Value == null ? "" : worksheet.Cells[row, 12].Value.ToString();
+
+        //                                string resSeq = "0";
+        //                                string boqItem = boqRef == "" ? oldBoqRef : boqRef;
+
+        //                                resCode = worksheet.Cells[row, 7].Value == null ? "" : worksheet.Cells[row, 7].Value.ToString();
+
+        //                                //var result = _context.TblBoqVds.SingleOrDefault(b => b.BoqItem == boqItem && b.BoqPackage == resCode);
+        //                                var result = (from b in _context.TblBoqVds
+        //                                             join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
+        //                                             where b.BoqItem == boqItem && b.BoqPackage == resCode
+        //                                             select b).SingleOrDefault();
+
+        //                                if (result != null)
+        //                                    resSeq = result.BoqResSeq;
+
+        //                                byte missPrice = 0;
+        //                                //Insert missing prices
+        //                                if (Price <= 0 && resSeq != "0")
+        //                                {
+        //                                    //var missPrice = new TblMissingPrice()
+        //                                    //{
+        //                                    //    RevisionId = revId,
+        //                                    //    BoqResourceSeq = resSeq
+        //                                    //};
+        //                                    //LstMissingPrice.Add(missPrice);
+        //                                    missPrice = 1;
+        //                                }
+
+        //                                if ((resCode != "") && (resQty > 0) && (Price >= 0))
+        //                                {
+        //                                    var revdtl = new TblRevisionDetail()
+        //                                    {
+        //                                        RdRevisionId = revId,
+        //                                        RdResourceSeq = resSeq,
+        //                                        RdBoqItem = boqRef,
+        //                                        RdPrice = Math.Round( Price * (ExchRate > 0 ? ExchRate : 1),3),
+        //                                        RdQty = resQty,
+        //                                        RdComment = resComment,
+        //                                        RdPriceOrigCurrency = Math.Round(Price,3),
+        //                                        RdMissedPrice = missPrice,
+        //                                        RdDiscount=discount,
+        //                                        RdAddedItem = (byte?)(addedItem == null ? 0 : addedItem)
+        //                                    };
+        //                                    LstRevDetails.Add(revdtl);
+        //                                }
+        //                                oldBoqRef = boqRef != "" ? boqRef : oldBoqRef;
+        //                            }
+        //                        }
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        Console.WriteLine(ex.Message);
+        //                    }
+        //                }
+        //            }
+
+        //            //if (LstMissingPrice.Count()>0 )
+        //            //{ 
+        //            //    _context.AddRange(LstMissingPrice);
+        //            //    ret = false;
+        //            //}
+        //            //else
+        //            //{ 
+        //            _context.AddRange(LstRevDetails);
+        //            ret = true;
+        //            //}
+
+        //            _context.SaveChanges();
+        //        }
+
+        //        catch (Exception ex)
+        //        {
+        //            Console.WriteLine(ex.Message);
+        //        }
+        //    }
+
+        //    return ret;
+        //}
 
         public void UpdateTotalPrice(int revId, string CostConn)
         {
