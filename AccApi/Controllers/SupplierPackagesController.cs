@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -150,217 +149,260 @@ namespace AccApi.Controllers
 
 
         [HttpPost("AssignPackageSuppliers")]
-        public async Task<IActionResult> AssignPackageSuppliers(    [FromQuery] string CostConn,        [FromQuery] string TSConn)
+        public async Task<ActionResult<bool>> AssignPackageSuppliers(
+            [FromForm] string assignPackageTemplate,
+            [FromForm] List<IFormFile> attachments,
+            [FromQuery] string CostConn,
+            [FromQuery] string TSConn)
         {
             try
             {
-                IFormCollection form =
-                    await Request.ReadFormAsync();
+                if (string.IsNullOrWhiteSpace(assignPackageTemplate))
+                    return BadRequest(new { message = "Assignment request is required." });
 
-                string serializedTemplate =
-                    form["assignPackageTemplate"]
-                        .FirstOrDefault();
-
-                if (
-                    string.IsNullOrWhiteSpace(
-                        serializedTemplate
-                    )
-                )
-                {
-                    return BadRequest(
-                        new
-                        {
-                            success = false,
-                            message =
-                                "Assign package template is required."
-                        }
-                    );
-                }
-
-                AssignPackageTemplateModel assignTemplate =
-                    System.Text.Json.JsonSerializer.Deserialize
-                    <AssignPackageTemplateModel>(
-                        serializedTemplate,
+                AssignPackageTemplateModel model =
+                    JsonSerializer.Deserialize<AssignPackageTemplateModel>(
+                        assignPackageTemplate,
                         new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
-                        }
-                    );
+                        });
 
-                if (assignTemplate == null)
-                {
-                    return BadRequest(
-                        new
-                        {
-                            success = false,
-                            message =
-                                "Invalid assign package template."
-                        }
-                    );
-                }
+                if (model == null)
+                    return BadRequest(new { message = "Invalid assignment request." });
 
-                if (
-                    assignTemplate.SupInputList == null ||
-                    assignTemplate.SupInputList.Count == 0
-                )
-                {
-                    return BadRequest(
-                        new
-                        {
-                            success = false,
-                            message =
-                                "At least one supplier is required."
-                        }
-                    );
-                }
+                bool result = await _supplierPackagesRepository.AssignPackageSuppliers(
+                    model.PackId,
+                    model.SupInputList,
+                    model.ByBoq,
+                    model.UserName,
+                    attachments ?? new List<IFormFile>(),
+                    model.RevisionExpiryDate,
+                    model.ListCC ?? new List<string>(),
+                    model.ListAttach ?? new List<string>(),
+                    model.IncludeRfqAttachment,
+                    CostConn,
+                    TSConn);
 
-
-
-                List<string> emailCc =
-    NormalizeEmailList(
-        assignTemplate.ListCC
-    );
-
-                if (
-                    assignTemplate.SupInputList == null ||
-                    assignTemplate.SupInputList.Count == 0
-                )
-                {
-                    return BadRequest(
-                        new
-                        {
-                            success = false,
-                            message =
-                                "At least one supplier is required."
-                        }
-                    );
-                }
-
-                foreach (
-                    SupplierInputList supplierInput
-                    in assignTemplate.SupInputList
-                )
-                {
-                    supplierInput.mailTo =
-                        NormalizeEmailList(
-                            supplierInput.mailTo
-                        );
-
-                    if (
-                        supplierInput.mailTo == null ||
-                        supplierInput.mailTo.Count == 0
-                    )
-                    {
-                        return BadRequest(
-                            new
-                            {
-                                success = false,
-                                message =
-                                    "Email To is required for supplier " +
-                                    (
-                                        supplierInput.supplierName ??
-                                        supplierInput
-                                            .supplierInput
-                                            ?.supID
-                                            .ToString()
-                                    )
-                            }
-                        );
-                    }
-
-                    List<string> invalidSupplierEmails =
-                        supplierInput.mailTo
-                            .Where(email =>
-                                !IsValidEmail(email)
-                            )
-                            .ToList();
-
-                    if (invalidSupplierEmails.Count > 0)
-                    {
-                        return BadRequest(
-                            new
-                            {
-                                success = false,
-                                message =
-                                    "Invalid Email To for supplier " +
-                                    supplierInput.supplierName +
-                                    ": " +
-                                    string.Join(
-                                        "; ",
-                                        invalidSupplierEmails
-                                    )
-                            }
-                        );
-                    }
-                }
-
-                List<string> invalidCc =
-                    emailCc
-                        .Where(email =>
-                            !IsValidEmail(email)
-                        )
-                        .ToList();
-
-                if (invalidCc.Count > 0)
-                {
-                    return BadRequest(
-                        new
-                        {
-                            success = false,
-                            message =
-                                "Invalid CC email: " +
-                                string.Join(
-                                    "; ",
-                                    invalidCc
-                                )
-                        }
-                    );
-                }
-
-              
-
-                List<IFormFile> attachments =
-                    form.Files == null
-                        ? new List<IFormFile>()
-                        : form.Files.ToList();
-
-                bool result =
-                await _supplierPackagesRepository.AssignPackageSuppliers(
-        assignTemplate.PackId,
-        assignTemplate.SupInputList,
-        assignTemplate.ByBoq,
-        assignTemplate.UserName,
-        attachments,
-        assignTemplate.RevisionExpiryDate,
-        emailCc,
-        CostConn,
-        TSConn
-    );
-
-                return Ok(
-                    new
-                    {
-                        success = result,
-
-                        message = result
-                            ? "Supplier(s) assigned and email sent successfully."
-                            : "Supplier assignment or email sending failed."
-                    }
-                );
+                return Ok(result);
             }
             catch (Exception ex)
             {
+                _logger.LogError(
+                    ex,
+                    "AssignPackageSuppliers failed. Request: {AssignmentRequest}",
+                    assignPackageTemplate);
+
                 return StatusCode(
-                    StatusCodes
-                        .Status500InternalServerError,
+                    StatusCodes.Status500InternalServerError,
                     new
                     {
                         success = false,
-                        message = ex.Message
-                    }
-                );
+                        message = ex.InnerException?.Message ?? ex.Message
+                    });
             }
         }
+
+
+
+        //[HttpPost("AssignPackageSuppliers")]
+        //public async Task<IActionResult> AssignPackageSuppliers([FromQuery] string CostConn,[FromQuery] string TSConn)
+        //{
+        //    try
+        //    {
+        //        IFormCollection form = await Request.ReadFormAsync();
+
+        //        string serializedTemplate = form["assignPackageTemplate"].FirstOrDefault();
+
+        //        if (
+        //            string.IsNullOrWhiteSpace(
+        //                serializedTemplate
+        //            )
+        //        )
+        //        {
+        //            return BadRequest(
+        //                new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "Assign package template is required."
+        //                }
+        //            );
+        //        }
+
+        //        AssignPackageTemplateModel assignTemplate =
+        //            System.Text.Json.JsonSerializer.Deserialize
+        //            <AssignPackageTemplateModel>(
+        //                serializedTemplate,
+        //                new JsonSerializerOptions
+        //                {
+        //                    PropertyNameCaseInsensitive = true
+        //                }
+        //            );
+
+        //        if (assignTemplate == null)
+        //        {
+        //            return BadRequest(
+        //                new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "Invalid assign package template."
+        //                }
+        //            );
+        //        }
+
+        //        if (
+        //            assignTemplate.SupInputList == null ||
+        //            assignTemplate.SupInputList.Count == 0
+        //        )
+        //        {
+        //            return BadRequest(
+        //                new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "At least one supplier is required."
+        //                }
+        //            );
+        //        }
+
+        //        List<string> emailCc = NormalizeEmailList(assignTemplate.ListCC);
+
+        //        if (assignTemplate.SupInputList == null || assignTemplate.SupInputList.Count == 0)
+        //        {
+        //            return BadRequest(
+        //                new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "At least one supplier is required."
+        //                }
+        //            );
+        //        }
+
+        //        foreach (SupplierInputList supplierInput in assignTemplate.SupInputList)
+        //        {
+        //            supplierInput.mailTo =
+        //                NormalizeEmailList(
+        //                    supplierInput.mailTo
+        //                );
+
+        //            if (
+        //                supplierInput.mailTo == null ||
+        //                supplierInput.mailTo.Count == 0
+        //            )
+        //            {
+        //                return BadRequest(
+        //                    new
+        //                    {
+        //                        success = false,
+        //                        message =
+        //                            "Email To is required for supplier " +
+        //                            (
+        //                                supplierInput.supplierName ??
+        //                                supplierInput
+        //                                    .supplierInput
+        //                                    ?.supID
+        //                                    .ToString()
+        //                            )
+        //                    }
+        //                );
+        //            }
+
+        //            List<string> invalidSupplierEmails =
+        //                supplierInput.mailTo
+        //                    .Where(email =>
+        //                        !IsValidEmail(email)
+        //                    )
+        //                    .ToList();
+
+        //            if (invalidSupplierEmails.Count > 0)
+        //            {
+        //                return BadRequest(
+        //                    new
+        //                    {
+        //                        success = false,
+        //                        message =
+        //                            "Invalid Email To for supplier " +
+        //                            supplierInput.supplierName +
+        //                            ": " +
+        //                            string.Join(
+        //                                "; ",
+        //                                invalidSupplierEmails
+        //                            )
+        //                    }
+        //                );
+        //            }
+        //        }
+
+        //        List<string> invalidCc =
+        //            emailCc
+        //                .Where(email =>
+        //                    !IsValidEmail(email)
+        //                )
+        //                .ToList();
+
+        //        if (invalidCc.Count > 0)
+        //        {
+        //            return BadRequest(
+        //                new
+        //                {
+        //                    success = false,
+        //                    message =
+        //                        "Invalid CC email: " +
+        //                        string.Join(
+        //                            "; ",
+        //                            invalidCc
+        //                        )
+        //                }
+        //            );
+        //        }
+
+
+
+        //        List<IFormFile> attachments =
+        //            form.Files == null
+        //                ? new List<IFormFile>()
+        //                : form.Files.ToList();
+
+        //        bool result = await _supplierPackagesRepository.AssignPackageSuppliers(
+        //                assignTemplate.PackId,
+        //                assignTemplate.SupInputList,
+        //                assignTemplate.ByBoq,
+        //                assignTemplate.UserName,
+        //                attachments,
+        //                assignTemplate.RevisionExpiryDate,
+        //                emailCc,
+        //                assignTemplate.ListAttach ?? new List<string>(),
+        //                CostConn,
+        //                TSConn
+        //            );
+
+        //        return Ok(
+        //            new
+        //            {
+        //                success = result,
+
+        //                message = result
+        //                    ? "Supplier(s) assigned and email sent successfully."
+        //                    : "Supplier assignment or email sending failed."
+        //            }
+        //        );
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(
+        //            StatusCodes
+        //                .Status500InternalServerError,
+        //            new
+        //            {
+        //                success = false,
+        //                message = ex.Message
+        //            }
+        //        );
+        //    }
+        //}
 
 
         private static List<string> NormalizeEmailList( IEnumerable<string> emails)

@@ -14,6 +14,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Drawing;
 
@@ -709,2154 +710,2054 @@ namespace AccApi.Repository.Managers
             //    return true;
         }
 
-        public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,
-                DateTime ExpiryDate, List<string> emailCc, string CostConn, string TSConn)
+
+        public async Task<bool> AssignPackageSuppliers(
+    int packId,
+    List<SupplierInputList> supInputList,
+    byte ByBoq,
+    string UserName,
+    List<IFormFile> attachments,
+    DateTime ExpiryDate,
+    List<string> emailCc,
+    List<string> generatedAttachments,
+    bool includeRfqAttachment,
+    string CostConn,
+    string TSConn)
         {
-            AccDbContext _dbcontext = new AccDbContext(CostConn);
-
-            PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
-
-            var transaction = await _dbcontext.Database.BeginTransactionAsync();
-
-            string sharedRfqExcelWithConditions = string.Empty;
-
-            bool sharedRfqExcelCreated = false;
-
-            /*
-             * Files created specifically by this process.
-             * They are cleaned after completing or failing.
-             */
-            List<string> temporaryFiles = new List<string>();
-
-            /*
-             * Local helper:
-             * Converts text into a safe Excel worksheet name.
-             */
-            string GetSafeWorksheetName(string worksheetName)
-            {
-                if (string.IsNullOrWhiteSpace(worksheetName))
-                {
-                    return "Sheet";
-                }
-
-                string result = worksheetName
-                        .Replace(":", " ")
-                        .Replace("\\", " ")
-                        .Replace("/", " ")
-                        .Replace("?", " ")
-                        .Replace("*", " ")
-                        .Replace("[", " ")
-                        .Replace("]", " ")
-                        .Trim();
-
-                if (result.Length > 31)
-                {
-                    result = result.Substring(0, 31);
-                }
-
-                return result;
-            }
-
-            /*
-             * Local helper:
-             * Applies common formatting to one condition sheet.
-             */
-            /*
-       * Applies common formatting and protection to both:
-       *
-       * 1. Commercial Conditions
-       * 2. Technical Conditions
-       *
-       * Protection rules:
-       *
-       * Column A: Condition           Locked
-       * Column B: ACC Condition       Locked
-       * Column C: Supplier Condition  Editable
-       *
-       * The header row is always locked.
-       */
-            void FormatConditionWorksheet(ExcelWorksheet worksheet, int lastRow)
-            {
-                if (worksheet == null)
-                {
-                    throw new ArgumentNullException(
-                        nameof(worksheet)
-                    );
-                }
-
-                /*
-                 * Worksheet titles.
-                 */
-                worksheet.Cells[1, 1].Value =
-                    "Condition";
-
-                worksheet.Cells[1, 2].Value =
-                    "ACC Condition";
-
-                worksheet.Cells[1, 3].Value =
-                    "Supplier Condition";
-
-                /*
-                 * Freeze the header row.
-                 */
-                worksheet.View.FreezePanes(
-                    2,
-                    1
-                );
-
-                /*
-                 * Set all worksheet cells as locked first.
-                 *
-                 * This locks:
-                 * Column A
-                 * Column B
-                 * Header row
-                 * All columns outside the working area
-                 */
-                worksheet.Cells.Style.Locked = true;
-
-                /*
-                 * Only Supplier Condition cells are editable.
-                 *
-                 * Row 1 remains locked because it is the header.
-                 * Rows 2 through lastRow in Column C are unlocked.
-                 */
-                if (lastRow >= 2)
-                {
-                    worksheet.Cells[
-                        2,
-                        3,
-                        lastRow,
-                        3
-                    ].Style.Locked =
-                        false;
-                }
-
-                /*
-                 * Header formatting.
-                 */
-                using (
-                    ExcelRange headerRange =
-                        worksheet.Cells[
-                            1,
-                            1,
-                            1,
-                            3
-                        ]
-                )
-                {
-                    headerRange.Style.Font.Bold = true;
-
-                    headerRange.Style.Font.Color.SetColor(
-                        Color.White
-                    );
-
-                    headerRange.Style.Fill.PatternType =
-                        ExcelFillStyle.Solid;
-
-                    headerRange.Style.Fill.BackgroundColor.SetColor(
-                        Color.FromArgb(
-                            14,
-                            116,
-                            144
-                        )
-                    );
-
-                    headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-
-                    headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
-
-                    headerRange.Style.WrapText = true;
-
-                    /*
-                     * Explicitly lock the header.
-                     */
-                    headerRange.Style.Locked = true;
-
-                    headerRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
-
-                    headerRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-
-                    headerRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-
-                    headerRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                }
-
-                worksheet.Row(1).Height = 24;
-
-                /*
-                 * Format condition rows.
-                 */
-                if (lastRow >= 2)
-                {
-                    using (
-                        ExcelRange dataRange =
-                            worksheet.Cells[
-                                2,
-                                1,
-                                lastRow,
-                                3
-                            ]
-                    )
-                    {
-                        dataRange.Style.WrapText = true;
-
-                        dataRange.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
-
-                        dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
-
-                        dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
-
-                        dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
-
-                        dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
-                    }
-
-                    /*
-                     * Clearly identify protected ACC fields.
-                     */
-                    using (
-                        ExcelRange lockedRange =
-                            worksheet.Cells[
-                                2,
-                                1,
-                                lastRow,
-                                2
-                            ]
-                    )
-                    {
-                        lockedRange.Style.Locked = true;
-
-                        lockedRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
-
-                        lockedRange.Style.Fill.BackgroundColor.SetColor(
-                            Color.FromArgb(
-                                242,
-                                242,
-                                242
-                            )
-                        );
-                    }
-
-                    /*
-                     * Supplier Condition is the only editable area.
-                     */
-                    using (
-                        ExcelRange editableRange =
-                            worksheet.Cells[
-                                2,
-                                3,
-                                lastRow,
-                                3
-                            ]
-                    )
-                    {
-                        editableRange.Style.Locked = false;
-
-                        editableRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
-
-                        editableRange.Style.Fill.BackgroundColor.SetColor(
-                            Color.FromArgb(
-                                255,
-                                255,
-                                255
-                            )
-                        );
-                    }
-                }
-
-                /*
-                 * Column widths.
-                 */
-                worksheet.Column(1).Width = 55;
-
-                worksheet.Column(2).Width = 45;
-
-                worksheet.Column(3).Width = 45;
-
-                /*
-                 * Apply auto-filter to the header.
-                 */
-                if (lastRow >= 1)
-                {
-                    worksheet.Cells[
-                        1,
-                        1,
-                        lastRow,
-                        3
-                    ].AutoFilter =
-                        true;
-                }
-
-                /*
-                 * Printing configuration.
-                 */
-                worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
-
-                worksheet.PrinterSettings.FitToPage = true;
-
-                worksheet.PrinterSettings.FitToWidth = 1;
-
-                worksheet.PrinterSettings.FitToHeight = 0;
-
-                if (lastRow >= 1)
-                {
-                    worksheet.PrinterSettings.PrintArea =
-                        worksheet.Cells[
-                            1,
-                            1,
-                            lastRow,
-                            3
-                        ];
-                }
-
-                /*
-                 * Protect the worksheet.
-                 *
-                 * Change this password if required.
-                 */
-                //const string sheetProtectionPassword =
-                //    "ACC@RFQ2026";
-
-                worksheet.Protection.IsProtected = true;
-
-                //worksheet.Protection.SetPassword(
-                //    sheetProtectionPassword
-                //);
-
-                /*
-                 * Allow supplier to select and edit unlocked
-                 * Supplier Condition cells.
-                 */
-                worksheet.Protection.AllowSelectUnlockedCells = true;
-
-                /*
-                 * Do not allow selection or editing of locked cells.
-                 */
-                worksheet.Protection.AllowSelectLockedCells = true;
-
-                /*
-                 * Keep filter dropdowns usable while protected.
-                 */
-                worksheet.Protection.AllowAutoFilter = true;
-
-                /*
-                 * Prevent structural changes.
-                 */
-                worksheet.Protection.AllowDeleteColumns = false;
-
-                worksheet.Protection.AllowDeleteRows = false;
-
-                worksheet.Protection.AllowInsertColumns = false;
-
-                worksheet.Protection.AllowInsertRows = false;
-
-                worksheet.Protection.AllowFormatCells = false;
-
-                worksheet.Protection.AllowFormatColumns = false;
-
-                worksheet.Protection.AllowFormatRows = false;
-            }
-
-            /*
-             * Local helper:
-             * Creates one shared copy of the RFQ Excel and adds:
-             *
-             * 1. Commercial Conditions
-             * 2. Technical Conditions
-             *
-             * The same completed file is sent to all suppliers.
-             */
-            string CreateSharedRfqExcelWithConditions(string sourceExcelPath, List<Condition> commercialConditionInput,
-                List<TblSuppComCondReply> commercialReplies, List<Condition> technicalConditionInput, List<TblSuppTechCondReply> technicalReplies)
-            {
-                if (string.IsNullOrWhiteSpace(sourceExcelPath))
-                {
-                    throw new Exception(
-                        "The generated RFQ Excel file path is empty."
-                    );
-                }
-
-                if (!File.Exists(sourceExcelPath))
-                {
-                    throw new FileNotFoundException(
-                        "The generated RFQ Excel file was not found.",
-                        sourceExcelPath
-                    );
-                }
-
-                string sourceDirectory =
-                    Path.GetDirectoryName(sourceExcelPath);
-
-                if (string.IsNullOrWhiteSpace(sourceDirectory))
-                {
-                    sourceDirectory =
-                        Path.GetTempPath();
-                }
-
-                string sourceFileNameWithoutExtension =
-                    Path.GetFileNameWithoutExtension(
-                        sourceExcelPath
-                    );
-
-                string targetFileName =
-                    sourceFileNameWithoutExtension +
-                    "-Conditions-" +
-                    DateTime.Now.ToString(
-                        "yyyyMMddHHmmssfff"
-                    ) +
-                    ".xlsx";
-
-                string targetExcelPath =
-                    Path.Combine(
-                        sourceDirectory,
-                        targetFileName
-                    );
-
-                File.Copy(
-                    sourceExcelPath,
-                    targetExcelPath,
-                    true
-                );
-
-                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-
-                FileInfo targetFile = new FileInfo(targetExcelPath);
-
-                using (ExcelPackage excelPackage = new ExcelPackage(targetFile))
-                {
-                    /*
-                     * Commercial Conditions sheet.
-                     */
-                    string commercialSheetName = GetSafeWorksheetName("Commercial Conditions");
-
-                    ExcelWorksheet existingCommercialSheet = excelPackage.Workbook.Worksheets[commercialSheetName];
-
-                    if (existingCommercialSheet != null)
-                    {
-                        excelPackage.Workbook.Worksheets.Delete(existingCommercialSheet);
-                    }
-
-                    ExcelWorksheet commercialSheet = excelPackage.Workbook.Worksheets.Add(commercialSheetName);
-
-                    int commercialRow = 2;
-
-                    List<Condition> safeCommercialInput =
-                        commercialConditionInput ??
-                        new List<Condition>();
-
-                    List<TblSuppComCondReply>
-                        safeCommercialReplies =
-                            commercialReplies ??
-                            new List<TblSuppComCondReply>();
-
-                    /*
-                     * Start from selected/requested commercial conditions
-                     * to preserve the same order displayed in Angular.
-                     */
-                    foreach (Condition condition in safeCommercialInput)
-                    {
-                        TblSuppComCondReply reply = safeCommercialReplies.FirstOrDefault(x => x.CdComConId == condition.id);
-
-                        commercialSheet.Cells[commercialRow, 1].Value = condition.description ?? string.Empty;
-
-                        commercialSheet.Cells[commercialRow, 2].Value = reply != null ? reply.CdAccCond ?? string.Empty : condition.ACCCondValue ?? string.Empty;
-
-                        commercialSheet.Cells[commercialRow, 3].Value = reply?.CdAccCond ?? string.Empty;
-
-                        commercialRow++;
-                    }
-
-                    /*
-                     * Include any commercial reply that was not found
-                     * in the input list.
-                     */
-                    foreach (                        TblSuppComCondReply reply                        in safeCommercialReplies                    )
-                    {
-                        bool alreadyAdded =                            safeCommercialInput.Any(x =>                                x.id ==                                reply.CdComConId                            );
-
-                        if (alreadyAdded)
-                        {
-                            continue;
-                        }
-
-                        commercialSheet.Cells[commercialRow, 1].Value = "Condition " + reply.CdComConId;
-
-                        commercialSheet.Cells[commercialRow, 2].Value = reply.CdAccCond ?? string.Empty;
-
-                        commercialSheet.Cells[commercialRow, 3].Value = reply.CdAccCond ?? string.Empty;
-
-                        commercialRow++;
-                    }
-
-                    FormatConditionWorksheet(commercialSheet, Math.Max(1, commercialRow - 1));
-
-                    /*
-                     * Technical Conditions sheet.
-                     */
-                    string technicalSheetName = GetSafeWorksheetName("Technical Conditions");
-
-                    ExcelWorksheet existingTechnicalSheet = excelPackage.Workbook.Worksheets[technicalSheetName];
-
-                    if (existingTechnicalSheet != null)
-                    {
-                        excelPackage
-                            .Workbook
-                            .Worksheets
-                            .Delete(
-                                existingTechnicalSheet
-                            );
-                    }
-
-                    ExcelWorksheet technicalSheet =
-                        excelPackage
-                            .Workbook
-                            .Worksheets
-                            .Add(
-                                technicalSheetName
-                            );
-
-                    int technicalRow = 2;
-
-                    List<Condition> safeTechnicalInput =
-                        technicalConditionInput ??
-                        new List<Condition>();
-
-                    List<TblSuppTechCondReply>
-                        safeTechnicalReplies =
-                            technicalReplies ??
-                            new List<TblSuppTechCondReply>();
-
-                    /*
-                     * Start from selected/requested technical conditions
-                     * to preserve the displayed order.
-                     */
-                    foreach (                        Condition condition                        in safeTechnicalInput                    )
-                    {
-                        TblSuppTechCondReply reply =
-                            safeTechnicalReplies
-                                .FirstOrDefault(x =>
-                                    x.TcTechConId ==
-                                        condition.id
-                                );
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            1
-                        ].Value =
-                            condition.description ??
-                            string.Empty;
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            2
-                        ].Value =
-                            reply != null
-                                ? reply.TcAccCond ??
-                                    string.Empty
-                                : condition.ACCCondValue ??
-                                    string.Empty;
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            3
-                        ].Value = reply?.TcAccCond ?? string.Empty;
-
-                        technicalRow++;
-                    }
-
-                    /*
-                     * Include any technical reply not found
-                     * in the input list.
-                     */
-                    foreach (
-                        TblSuppTechCondReply reply
-                        in safeTechnicalReplies
-                    )
-                    {
-                        bool alreadyAdded =
-                            safeTechnicalInput.Any(x =>
-                                x.id ==
-                                reply.TcTechConId
-                            );
-
-                        if (alreadyAdded)
-                        {
-                            continue;
-                        }
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            1
-                        ].Value =
-                            "Condition " +
-                            reply.TcTechConId;
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            2
-                        ].Value =
-                            reply.TcAccCond ??
-                            string.Empty;
-
-                        technicalSheet.Cells[
-                            technicalRow,
-                            3
-                        ].Value =
-                            reply.TcSuppReply ??
-                            string.Empty;
-
-                        technicalRow++;
-                    }
-
-                    FormatConditionWorksheet(
-                        technicalSheet,
-                        Math.Max(
-                            1,
-                            technicalRow - 1
-                        )
-                    );
-
-                    excelPackage.Save();
-                }
-
-                return targetExcelPath;
-            }
+            await using AccDbContext db = new AccDbContext(CostConn);
+            await using PolicyDbContext tsDb = new PolicyDbContext(TSConn);
+            await using var transaction = await db.Database.BeginTransactionAsync();
+
+            var temporaryFiles = new List<string>();
 
             try
             {
-                if (
-                    supInputList == null ||
-                    supInputList.Count == 0
-                )
+                if (supInputList == null || supInputList.Count == 0)
+                    throw new Exception("At least one supplier is required.");
+
+                emailCc = NormalizeRepositoryEmailList(emailCc);
+                generatedAttachments = (generatedAttachments ?? new List<string>())
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var package = await _mdbContext.TblPackages
+                    .FirstOrDefaultAsync(x => x.PkgeId == packId);
+                if (package == null) throw new Exception("Package was not found.");
+
+                var parameter = await db.TblParameters.FirstOrDefaultAsync();
+                if (parameter == null) throw new Exception("Project parameters were not found.");
+
+                var project = await tsDb.Tblprojects
+                    .FirstOrDefaultAsync(x => x.Seq == parameter.TsProjId);
+                if (project == null) throw new Exception("Project information was not found.");
+
+                User user = _logonRepository.GetUser(UserName);
+                string signature = user?.UsrEmailSignature ?? string.Empty;
+                string userEmail = user?.UsrEmail ?? string.Empty;
+
+                string baseRfqExcel = generatedAttachments.FirstOrDefault(File.Exists)
+                    ?? ValidateExcelBeforeAssign(packId, ByBoq, false, CostConn);
+
+                if (string.IsNullOrWhiteSpace(baseRfqExcel) || !File.Exists(baseRfqExcel))
+                    throw new FileNotFoundException("The RFQ Excel file was not found.", baseRfqExcel);
+
+                string sharedRfq = string.Empty;
+                var mailQueue = new List<MailForSending>();
+                var supplierModels = new List<AddSupplierPackageModel>();
+                var revisionModels = new List<AddRevisionModel>();
+
+                foreach (SupplierInputList input in supInputList)
                 {
-                    throw new Exception(
-                        "At least one supplier is required."
-                    );
-                }
+                    if (input?.supplierInput == null)
+                        throw new Exception("Invalid supplier information.");
 
-                var package =
-                    await _mdbContext
-                        .TblPackages
-                        .FirstOrDefaultAsync(x =>
-                            x.PkgeId ==
-                            packId
-                        );
-
-                if (package == null)
-                {
-                    throw new Exception(
-                        "Package was not found. Package ID: " +
-                        packId
-                    );
-                }
-
-                string PackageName =
-                    package.PkgeName ??
-                    string.Empty;
-
-                List<MailForSending>
-                    mailListForSending =
-                        new List<MailForSending>();
-
-                var p =
-                    await _dbcontext
-                        .TblParameters
+                    SupplierInput supplier = input.supplierInput;
+                    bool hasPortalAccount = await _mdbContext.TblSuppliers
+                        .AsNoTracking()
+                        .Where(x => x.SupCode == supplier.supID)
+                        .Select(x => x.IsAccountCreated == true)
                         .FirstOrDefaultAsync();
 
-                if (p == null)
-                {
-                    throw new Exception(
-                        "Project parameters were not found."
-                    );
-                }
-
-                var proj =
-                    await _TSdbcontext
-                        .Tblprojects
+                    TblSupplierPackage supplierPackage = await db.TblSupplierPackages
                         .FirstOrDefaultAsync(x =>
-                            x.Seq ==
-                            p.TsProjId
-                        );
+                            x.SpPackageId == packId && x.SpSupplierId == supplier.supID);
 
-                if (proj == null)
-                {
-                    throw new Exception(
-                        "Project information was not found."
-                    );
-                }
-
-                User user =
-                    _logonRepository
-                        .GetUser(UserName);
-
-                string userSignature =
-                    user?.UsrEmailSignature ??
-                    string.Empty;
-
-                string usrEmail =
-                    user?.UsrEmail ??
-                    string.Empty;
-
-                List<AddSupplierPackageModel>
-                    supplierPackageModelList =
-                        new List<AddSupplierPackageModel>();
-
-                List<AddRevisionModel>
-                    revisionModelList =
-                        new List<AddRevisionModel>();
-
-                AddSupplierPackageRevisionModel
-                    supplierPackageRevisionModel =
-                        new AddSupplierPackageRevisionModel();
-
-                /*
-                 * Create the base RFQ once.
-                 */
-                string baseRfqExcel =
-                    ValidateExcelBeforeAssign(
-                        packId,
-                        ByBoq,
-                        false,
-                        CostConn
-                    );
-
-                if (string.IsNullOrWhiteSpace(baseRfqExcel))
-                {
-                    throw new Exception(
-                        "The RFQ Excel file could not be generated."
-                    );
-                }
-
-                if (!File.Exists(baseRfqExcel))
-                {
-                    throw new FileNotFoundException(
-                        "The generated RFQ Excel file was not found.",
-                        baseRfqExcel
-                    );
-                }
-
-                foreach (
-                    SupplierInputList supInput
-                    in supInputList
-                )
-                {
-                    if (
-                        supInput == null ||
-                        supInput.supplierInput == null
-                    )
-                    {
-                        throw new Exception(
-                            "Invalid supplier information."
-                        );
-                    }
-
-                    SupplierInput supplier =
-                        supInput.supplierInput;
-
-                    int PackageSupplierId =
-                        0;
-
-                    /*
-                     * 1. Find or create package supplier.
-                     */
-                    TblSupplierPackage
-                        supplierPackage =
-                            await _dbcontext
-                                .TblSupplierPackages
-                                .FirstOrDefaultAsync(x =>
-                                    x.SpPackageId ==
-                                        packId &&
-                                    x.SpSupplierId ==
-                                        supplier.supID
-                                );
-
+                    bool isNewSupplierPackage = supplierPackage == null;
                     if (supplierPackage == null)
                     {
-                        supplierPackage =
-                            new TblSupplierPackage
-                            {
-                                SpPackageId =
-                                    packId,
-
-                                SpSupplierId =
-                                    supplier.supID,
-
-                                SpByBoq =
-                                    ByBoq
-                            };
-
-                        await _dbcontext
-                            .TblSupplierPackages
-                            .AddAsync(
-                                supplierPackage
-                            );
-
-                        await _dbcontext
-                            .SaveChangesAsync();
-
-                        supplierPackageModelList.Add(
-                            new AddSupplierPackageModel
-                            {
-                                SpPackSuppId =
-                                    supplierPackage
-                                        .SpPackSuppId,
-
-                                SpPackageId =
-                                    supplierPackage
-                                        .SpPackageId,
-
-                                SpSupplierId =
-                                    supplierPackage
-                                        .SpSupplierId,
-
-                                SpByBoq =
-                                    supplierPackage
-                                        .SpByBoq,
-
-                                ProjectCode =
-                                    proj.PrjCode,
-
-                                ProjectName =
-                                    proj.PrjName,
-
-                                TecCondSent =
-                                    false
-                            }
-                        );
+                        supplierPackage = new TblSupplierPackage
+                        {
+                            SpPackageId = packId,
+                            SpSupplierId = supplier.supID,
+                            SpByBoq = ByBoq
+                        };
+                        await db.TblSupplierPackages.AddAsync(supplierPackage);
+                        await db.SaveChangesAsync();
                     }
 
-                    PackageSupplierId =
-                        supplierPackage
-                            .SpPackSuppId;
+                    int packageSupplierId = supplierPackage.SpPackSuppId;
+                    int lastRevisionNo = await GetMaxRevisionNumberAsync(packageSupplierId, db);
 
-                    /*
-                     * 2. Shift existing revisions.
-                     */
-                    int LastRevNo =
-                        await GetMaxRevisionNumberAsync(
-                            PackageSupplierId,
-                            _dbcontext
-                        );
-
-                    if (LastRevNo >= 0)
+                    if (lastRevisionNo >= 0)
                     {
-                        bool hasPendingRevision =
-                            await _dbcontext
-                                .TblSupplierPackageRevisions
-                                .AnyAsync(x =>
-                                    x.PrPackSuppId ==
-                                        PackageSupplierId &&
-                                    x.PrRevNo ==
-                                        LastRevNo &&
-                                    (x.StatusId ?? 0) <
-                                        3
-                                );
+                        bool pending = await db.TblSupplierPackageRevisions.AnyAsync(x =>
+                            x.PrPackSuppId == packageSupplierId &&
+                            x.PrRevNo == lastRevisionNo &&
+                            (x.StatusId ?? 0) < 3);
 
-                        if (hasPendingRevision)
+                        if (pending)
+                            throw new Exception("Revision not returned from Supplier. Supplier ID: " + supplier.supID);
+
+                        List<TblSupplierPackageRevision> revisions = await db.TblSupplierPackageRevisions
+                            .Where(x => x.PrPackSuppId == packageSupplierId)
+                            .OrderByDescending(x => x.PrRevNo)
+                            .ToListAsync();
+
+                        foreach (TblSupplierPackageRevision revision in revisions)
+                            revision.PrRevNo += 1;
+
+                        await db.SaveChangesAsync();
+                    }
+
+                    TblSupplierPackageRevision rev1 = await db.TblSupplierPackageRevisions
+                        .FirstOrDefaultAsync(x => x.PrPackSuppId == packageSupplierId && x.PrRevNo == 1);
+
+                    var rev0 = new TblSupplierPackageRevision
+                    {
+                        PrRevNo = 0,
+                        PrPackSuppId = packageSupplierId,
+                        PrTotPrice = rev1?.PrTotPrice ?? 0,
+                        PrRevDate = DateTime.Now,
+                        PrCurrency = rev1?.PrCurrency ?? Convert.ToInt32(parameter.EstimatedCur),
+                        PrExchRate = rev1?.PrExchRate ?? 1,
+                        RevExpiryDate = ExpiryDate,
+                        InsertedBy = UserName,
+                        InsertedByEmail = userEmail
+                    };
+
+                    await db.TblSupplierPackageRevisions.AddAsync(rev0);
+                    await db.SaveChangesAsync();
+
+                    int rev1Id = rev1?.PrRevId ?? 0;
+                    byte byBoq = Convert.ToByte(supplierPackage.SpByBoq ?? 0);
+
+                    List<TblRevisionDetail> details = await InsertRevisionDetail(
+                        rev0.PrRevId, packId, byBoq, rev1Id, db) ?? new List<TblRevisionDetail>();
+
+                    if (details.Count > 0)
+                    {
+                        await db.TblRevisionDetails.AddRangeAsync(details);
+                        await db.SaveChangesAsync();
+                    }
+
+                    List<TblSuppComCondReply> commercial = await InsertComercialConditions(
+                        rev0.PrRevId, packId, rev1Id,
+                        input.comercialCondList ?? new List<Condition>(), CostConn)
+                        ?? new List<TblSuppComCondReply>();
+
+                    List<TblSuppTechCondReply> technical = await InsertTechnicalConditions(
+                        rev0.PrRevId, packId, rev1Id,
+                        input.technicalCondList ?? new List<Condition>(), CostConn)
+                        ?? new List<TblSuppTechCondReply>();
+
+                    if (string.IsNullOrWhiteSpace(sharedRfq))
+                    {
+                        sharedRfq = SharedRfqWorkbookBuilder.Create(
+                            baseRfqExcel,
+                            input.comercialCondList,
+                            commercial,
+                            input.technicalCondList,
+                            technical);
+                        temporaryFiles.Add(sharedRfq);
+                    }
+
+                    // Only suppliers with a portal account are posted to the portal API.
+                    if (hasPortalAccount)
+                    {
+                        if (isNewSupplierPackage)
                         {
-                            throw new Exception(
-                                "Revision not returned from Supplier. " +
-                                "Supplier ID: " +
-                                supplier.supID +
-                                ", Package Supplier ID: " +
-                                PackageSupplierId +
-                                ", Revision No: " +
-                                LastRevNo
-                            );
+                            supplierModels.Add(new AddSupplierPackageModel
+                            {
+                                SpPackSuppId = supplierPackage.SpPackSuppId,
+                                SpPackageId = supplierPackage.SpPackageId,
+                                SpSupplierId = supplierPackage.SpSupplierId,
+                                SpByBoq = supplierPackage.SpByBoq,
+                                ProjectCode = project.PrjCode,
+                                ProjectName = project.PrjName,
+                                TecCondSent = false
+                            });
                         }
 
-                        List<TblSupplierPackageRevision>
-                            existingRevisions =
-                                await _dbcontext
-                                    .TblSupplierPackageRevisions
-                                    .Where(x =>
-                                        x.PrPackSuppId ==
-                                            PackageSupplierId
-                                    )
-                                    .OrderByDescending(x =>
-                                        x.PrRevNo
-                                    )
-                                    .ToListAsync();
-
-                        foreach (
-                            TblSupplierPackageRevision revision
-                            in existingRevisions
-                        )
+                        revisionModels.Add(new AddRevisionModel
                         {
-                            revision.PrRevNo =
-                                revision.PrRevNo +
-                                1;
-                        }
-
-                        await _dbcontext
-                            .SaveChangesAsync();
-                    }
-
-                    TblSupplierPackageRevision Rev1 =
-                        await _dbcontext
-                            .TblSupplierPackageRevisions
-                            .FirstOrDefaultAsync(x =>
-                                x.PrRevNo ==
-                                    1 &&
-                                x.PrPackSuppId ==
-                                    PackageSupplierId
-                            );
-
-                    int rev1Id =
-                        Rev1?.PrRevId ??
-                        0;
-
-                    TblSupplierPackageRevision
-                        supPackRev;
-
-                    if (Rev1 != null)
-                    {
-                        supPackRev =
-                            new TblSupplierPackageRevision
+                            PrRevId = rev0.PrRevId,
+                            PrRevNo = rev0.PrRevNo,
+                            PrRevDate = rev0.PrRevDate,
+                            PrTotPrice = rev0.PrTotPrice,
+                            PrPackSuppId = rev0.PrPackSuppId,
+                            PrCurrency = rev0.PrCurrency,
+                            PrExchRate = 1,
+                            StatusId = 1,
+                            ProjectCode = project.PrjCode,
+                            IsSynched = false,
+                            RevExpiryDate = rev0.RevExpiryDate,
+                            RevisionDetails = details.Select(d => new AddRevisionDetailModel
                             {
-                                PrRevNo =
-                                    0,
-
-                                PrPackSuppId =
-                                    PackageSupplierId,
-
-                                PrTotPrice =
-                                    Rev1.PrTotPrice,
-
-                                PrRevDate =
-                                    DateTime.Now,
-
-                                PrCurrency =
-                                    Rev1.PrCurrency,
-
-                                PrExchRate =
-                                    Rev1.PrExchRate,
-
-                                RevExpiryDate =
-                                    ExpiryDate,
-
-                                InsertedBy =
-                                    UserName,
-
-                                InsertedByEmail =
-                                    usrEmail
-                            };
-                    }
-                    else
-                    {
-                        int projectCurrency =
-                            Convert.ToInt32(
-                                p.EstimatedCur
-                            );
-
-                        supPackRev =
-                            new TblSupplierPackageRevision
+                                BoqResourceSeq = d.RdResourceSeq,
+                                ResourceDescription = GetRessourceDescription(ByBoq, d.RdResourceSeq,
+                                    d.ResourceDescription, Convert.ToBoolean(d.IsAlternative), CostConn),
+                                ItemO = d.RdBoqItem,
+                                ItemDescription = d.ItemDescription,
+                                Quantity = d.RdQty,
+                                QuotationQty = d.RdQuotationQty,
+                                UnitPrice = d.RdPrice,
+                                TotalPrice = d.RdQty * d.UnitPriceAfterDiscount,
+                                DiscountPerc = d.RdDiscount,
+                                Comments = d.RdComment,
+                                CreatedOn = DateTime.Now,
+                                IsSynched = false,
+                                ProjectCode = project.PrjCode,
+                                ParentItemO = d.ParentItemO,
+                                ParentResourceId = d.ParentResourceId.ToString(),
+                                NewItemId = d.NewItemId,
+                                NewItemResourceId = d.NewItemResourceId,
+                                IsNewItem = d.IsNew,
+                                IsAlternative = d.IsAlternative,
+                                UnitPriceAfterDiscount = d.UnitPriceAfterDiscount,
+                                UnitO = d.UnitO ?? string.Empty,
+                                BoqCtg = d.BoqCtg ?? string.Empty,
+                                BoqUnitMesure = d.BoqUnitMesure ?? string.Empty,
+                                L1 = d.L1 ?? string.Empty,
+                                L2 = d.L2 ?? string.Empty,
+                                L3 = d.L3 ?? string.Empty,
+                                L4 = d.L4 ?? string.Empty,
+                                L5 = d.L5 ?? string.Empty,
+                                L6 = d.L6 ?? string.Empty,
+                                L7 = d.L7 ?? string.Empty,
+                                L8 = d.L8 ?? string.Empty,
+                                L9 = d.L9 ?? string.Empty,
+                                L10 = d.L10 ?? string.Empty,
+                                C1 = d.C1 ?? string.Empty,
+                                C2 = d.C2 ?? string.Empty,
+                                C3 = d.C3 ?? string.Empty,
+                                C4 = d.C4 ?? string.Empty,
+                                C5 = d.C5 ?? string.Empty,
+                                C6 = d.C6 ?? string.Empty,
+                                C7 = d.C7 ?? string.Empty,
+                                C8 = d.C8 ?? string.Empty,
+                                C9 = d.C9 ?? string.Empty,
+                                C10 = d.C10 ?? string.Empty,
+                                C11 = d.C11 ?? string.Empty,
+                                C12 = d.C12 ?? string.Empty,
+                                C13 = d.C13 ?? string.Empty,
+                                C14 = d.C14 ?? string.Empty,
+                                C15 = d.C15 ?? string.Empty,
+                                BoqRefNumber = d.RdBoqRefNumber ?? string.Empty,
+                                AccComment = d.RdAccComment ?? string.Empty
+                            }).ToList(),
+                            CommercialConditions = commercial.Select(x => new AddCondModel
                             {
-                                PrRevNo =
-                                    0,
-
-                                PrPackSuppId =
-                                    PackageSupplierId,
-
-                                PrTotPrice =
-                                    0,
-
-                                PrRevDate =
-                                    DateTime.Now,
-
-                                PrCurrency =
-                                    projectCurrency,
-
-                                PrExchRate =
-                                    1,
-
-                                RevExpiryDate =
-                                    ExpiryDate,
-
-                                InsertedBy =
-                                    UserName,
-
-                                InsertedByEmail =
-                                    usrEmail
-                            };
-                    }
-
-                    await _dbcontext
-                        .TblSupplierPackageRevisions
-                        .AddAsync(
-                            supPackRev
-                        );
-
-                    await _dbcontext
-                        .SaveChangesAsync();
-
-                    /*
-                     * EF Core fills the identity after SaveChanges.
-                     */
-                    int rev0Id =
-                        supPackRev.PrRevId;
-
-                    TblSupplierPackageRevision Rev0 =
-                        supPackRev;
-
-                    byte byBoq =
-                        Convert.ToByte(
-                            supplierPackage
-                                .SpByBoq ??
-                            0
-                        );
-
-                    List<TblRevisionDetail>
-                        LstRevDetails =
-                            await InsertRevisionDetail(
-                                rev0Id,
-                                packId,
-                                byBoq,
-                                rev1Id,
-                                _dbcontext
-                            );
-
-                    if (
-                        LstRevDetails != null &&
-                        LstRevDetails.Count > 0
-                    )
-                    {
-                        await _dbcontext
-                            .TblRevisionDetails
-                            .AddRangeAsync(
-                                LstRevDetails
-                            );
-
-                        await _dbcontext
-                            .SaveChangesAsync();
-                    }
-
-                    /*
-                     * Insert Commercial Conditions.
-                     */
-                    List<TblSuppComCondReply>
-                        LstComCondReply =
-                            await InsertComercialConditions(
-                                rev0Id,
-                                packId,
-                                rev1Id,
-                                supInput.comercialCondList,
-                                CostConn
-                            );
-
-                    /*
-                     * Insert Technical Conditions.
-                     */
-                    List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(
-                                rev0Id,
-                                packId,
-                                rev1Id,
-                                supInput.technicalCondList,
-                                CostConn
-                            );
-
-                    /*
-                     * Create the shared RFQ Excel only once.
-                     *
-                     * All suppliers use the same selected commercial
-                     * and technical conditions, so the first supplier's
-                     * condition lists are used to build the common file.
-                     */
-                    if (!sharedRfqExcelCreated)
-                    {
-                        sharedRfqExcelWithConditions =
-                            CreateSharedRfqExcelWithConditions(
-                                baseRfqExcel,
-                                supInput.comercialCondList,
-                                LstComCondReply,
-                                supInput.technicalCondList,
-                                LstTechCondReply
-                            );
-
-                        temporaryFiles.Add(
-                            sharedRfqExcelWithConditions
-                        );
-
-                        sharedRfqExcelCreated =
-                            true;
-                    }
-
-                    /*
-                     * Portal revision model.
-                     */
-                    revisionModelList.Add(
-                        new AddRevisionModel
-                        {
-                            PrRevId =
-                                Rev0.PrRevId,
-
-                            PrRevNo =
-                                Rev0.PrRevNo,
-
-                            PrRevDate =
-                                Rev0.PrRevDate,
-
-                            PrTotPrice =
-                                Rev0.PrTotPrice,
-
-                            PrPackSuppId =
-                                Rev0.PrPackSuppId,
-
-                            PrCurrency =
-                                Rev0.PrCurrency,
-
-                            PrExchRate =
-                                1,
-
-                            StatusId =
-                                1,
-
-                            ProjectCode =
-                                proj.PrjCode,
-
-                            IsSynched =
-                                false,
-
-                            RevExpiryDate =
-                                Rev0.RevExpiryDate,
-
-                            RevisionDetails =
-                                (
-                                    from d in LstRevDetails
-                                    select new AddRevisionDetailModel
-                                    {
-                                        BoqResourceSeq =
-                                            d.RdResourceSeq,
-
-                                        ResourceDescription =
-                                            GetRessourceDescription(
-                                                ByBoq,
-                                                d.RdResourceSeq,
-                                                d.ResourceDescription,
-                                                Convert.ToBoolean(
-                                                    d.IsAlternative
-                                                ),
-                                                CostConn
-                                            ),
-
-                                        ItemO =
-                                            d.RdBoqItem,
-
-                                        ItemDescription =
-                                            d.ItemDescription,
-
-                                        Quantity =
-                                            d.RdQty,
-
-                                        QuotationQty =
-                                            d.RdQuotationQty,
-
-                                        UnitPrice =
-                                            d.RdPrice,
-
-                                        TotalPrice =
-                                            d.RdQty *
-                                            d.UnitPriceAfterDiscount,
-
-                                        DiscountPerc =
-                                            d.RdDiscount,
-
-                                        Comments =
-                                            d.RdComment,
-
-                                        CreatedOn =
-                                            DateTime.Now,
-
-                                        IsSynched =
-                                            false,
-
-                                        ProjectCode =
-                                            proj.PrjCode,
-
-                                        ParentItemO =
-                                            d.ParentItemO,
-
-                                        ParentResourceId =
-                                            d.ParentResourceId
-                                                .ToString(),
-
-                                        NewItemId =
-                                            d.NewItemId,
-
-                                        NewItemResourceId =
-                                            d.NewItemResourceId,
-
-                                        IsNewItem =
-                                            d.IsNew,
-
-                                        IsAlternative =
-                                            d.IsAlternative,
-
-                                        UnitPriceAfterDiscount =
-                                            d.UnitPriceAfterDiscount,
-
-                                        UnitO =
-                                            d.UnitO ??
-                                            string.Empty,
-
-                                        BoqCtg =
-                                            d.BoqCtg ??
-                                            string.Empty,
-
-                                        BoqUnitMesure =
-                                            d.BoqUnitMesure ??
-                                            string.Empty,
-
-                                        L1 =
-                                            d.L1 ??
-                                            string.Empty,
-
-                                        L2 =
-                                            d.L2 ??
-                                            string.Empty,
-
-                                        L3 =
-                                            d.L3 ??
-                                            string.Empty,
-
-                                        L4 =
-                                            d.L4 ??
-                                            string.Empty,
-
-                                        L5 =
-                                            d.L5 ??
-                                            string.Empty,
-
-                                        L6 =
-                                            d.L6 ??
-                                            string.Empty,
-
-                                        L7 =
-                                            d.L7 ??
-                                            string.Empty,
-
-                                        L8 =
-                                            d.L8 ??
-                                            string.Empty,
-
-                                        L9 =
-                                            d.L9 ??
-                                            string.Empty,
-
-                                        L10 =
-                                            d.L10 ??
-                                            string.Empty,
-
-                                        C1 =
-                                            d.C1 ??
-                                            string.Empty,
-
-                                        C2 =
-                                            d.C2 ??
-                                            string.Empty,
-
-                                        C3 =
-                                            d.C3 ??
-                                            string.Empty,
-
-                                        C4 =
-                                            d.C4 ??
-                                            string.Empty,
-
-                                        C5 =
-                                            d.C5 ??
-                                            string.Empty,
-
-                                        C6 =
-                                            d.C6 ??
-                                            string.Empty,
-
-                                        C7 =
-                                            d.C7 ??
-                                            string.Empty,
-
-                                        C8 =
-                                            d.C8 ??
-                                            string.Empty,
-
-                                        C9 =
-                                            d.C9 ??
-                                            string.Empty,
-
-                                        C10 =
-                                            d.C10 ??
-                                            string.Empty,
-
-                                        C11 =
-                                            d.C11 ??
-                                            string.Empty,
-
-                                        C12 =
-                                            d.C12 ??
-                                            string.Empty,
-
-                                        C13 =
-                                            d.C13 ??
-                                            string.Empty,
-
-                                        C14 =
-                                            d.C14 ??
-                                            string.Empty,
-
-                                        C15 =
-                                            d.C15 ??
-                                            string.Empty,
-
-                                        BoqRefNumber =
-                                            d.RdBoqRefNumber ??
-                                            string.Empty,
-
-                                        AccComment =
-                                            d.RdAccComment ??
-                                            string.Empty
-                                    }
-                                )
-                                .ToList(),
-
-                            CommercialConditions =
-                                (
-                                    from d in LstComCondReply
-                                    select new AddCondModel
-                                    {
-                                        Id =
-                                            d.CdComConId,
-
-                                        CondValue =
-                                            d.CdSuppReply,
-
-                                        ACCCondValue =
-                                            d.CdAccCond,
-
-                                        ProjectCode =
-                                            proj.PrjCode
-                                    }
-                                )
-                                .ToList(),
-
-                            TechnicalConditions =
-                                (
-                                    from d in LstTechCondReply
-                                    select new AddCondModel
-                                    {
-                                        Id =
-                                            d.TcTechConId,
-
-                                        CondValue =
-                                            d.TcSuppReply,
-
-                                        ACCCondValue =
-                                            d.TcAccCond,
-
-                                        ProjectCode =
-                                            proj.PrjCode
-                                    }
-                                )
-                                .ToList()
-                        }
-                    );
-
-                    /*
-                     * Build email attachments.
-                     * Every supplier receives the same completed RFQ Excel.
-                     */
-                    List<string> supplierAttachmentList =
-                        new List<string>();
-
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            supInput.FilePath
-                        )
-                    )
-                    {
-                        supplierAttachmentList.Add(
-                            supInput.FilePath
-                        );
-                    }
-
-                    if (
-                        supInput.mailAttachments != null
-                    )
-                    {
-                        foreach (
-                            string attachment
-                            in supInput.mailAttachments
-                        )
-                        {
-                            if (
-                                !string.IsNullOrWhiteSpace(
-                                    attachment
-                                )
-                            )
+                                Id = x.CdComConId,
+                                CondValue = x.CdSuppReply,
+                                ACCCondValue = x.CdAccCond,
+                                ProjectCode = project.PrjCode
+                            }).ToList(),
+                            TechnicalConditions = technical.Select(x => new AddCondModel
                             {
-                                supplierAttachmentList.Add(
-                                    attachment
-                                );
-                            }
-                        }
+                                Id = x.TcTechConId,
+                                CondValue = x.TcSuppReply,
+                                ACCCondValue = x.TcAccCond,
+                                ProjectCode = project.PrjCode
+                            }).ToList()
+                        });
                     }
 
-                    if (
-                        string.IsNullOrWhiteSpace(
-                            sharedRfqExcelWithConditions
-                        ) ||
-                        !File.Exists(
-                            sharedRfqExcelWithConditions
-                        )
-                    )
-                    {
-                        throw new Exception(
-                            "The RFQ Excel file with conditions was not created."
-                        );
-                    }
+                    List<string> to = NormalizeRepositoryEmailList(input.mailTo);
+                    if (to.Count == 0)
+                        throw new Exception("No Email To address was provided for supplier " +
+                            (input.supplierName ?? supplier.supID.ToString()));
 
-                    supplierAttachmentList.Add(
-                        sharedRfqExcelWithConditions
-                    );
+                    var mail = new MailForSending();
+                    foreach (string address in to) mail.To.Add(address);
+                    foreach (string address in emailCc.Where(x => !to.Contains(x, StringComparer.OrdinalIgnoreCase)))
+                        mail.Cc.Add(address);
 
-                    /*
-                     * Build separate email for this supplier.
-                     */
-                    List<string> supplierEmailTo =
-                        NormalizeRepositoryEmailList(
-                            supInput.mailTo
-                        );
-
-                    if (supplierEmailTo.Count == 0)
-                    {
-                        throw new Exception(
-                            "No Email To address was provided for supplier " +
-                            (
-                                supInput.supplierName ??
-                                supplier.supID.ToString()
-                            )
-                        );
-                    }
-
-                    MailForSending mail =
-                        new MailForSending();
-
-                    foreach (
-                        string toAddress
-                        in supplierEmailTo
-                    )
-                    {
-                        mail.To.Add(
-                            toAddress
-                        );
-                    }
-
-                    /*
-                     * Apply the same shared CC to every supplier email.
-                     */
-                    List<string> cleanSharedCc =
-                        emailCc
-                            .Where(cc =>
-                                !supplierEmailTo.Contains(
-                                    cc,
-                                    StringComparer.OrdinalIgnoreCase
-                                )
-                            )
-                            .Distinct(
-                                StringComparer.OrdinalIgnoreCase
-                            )
-                            .ToList();
-
-                    foreach (
-                        string ccAddress
-                        in cleanSharedCc
-                    )
-                    {
-                        mail.Cc.Add(
-                            ccAddress
-                        );
-                    }
-
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            _configuration["mailBcc1"]
-                        )
-                    )
-                    {
-                        mail.Bcc.Add(
-                            _configuration["mailBcc1"]
-                        );
-                    }
-
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            _configuration["mailBcc2"]
-                        )
-                    )
-                    {
+                    if (!string.IsNullOrWhiteSpace(_configuration["mailBcc1"]))
+                        mail.Bcc.Add(_configuration["mailBcc1"]);
+                    if (!string.IsNullOrWhiteSpace(_configuration["mailBcc2"]))
                         mail.Bcc.Add(_configuration["mailBcc2"]);
-                    }
 
-                    mail.Subject = $"Job in Hand-{proj.PrjName}-{PackageName}";
+                    mail.Subject = $"Job in Hand-{project.PrjName}-{package.PkgeName}";
+                    mail.Body = !string.IsNullOrWhiteSpace(input.EmailTemplate)
+                        ? input.EmailTemplate
+                        : "Dear Sir,<br><br>Kindly find attachments and fill the price.<br><br>Best regards";
+                    if (!string.IsNullOrWhiteSpace(signature)) mail.Body += "<br><br>" + signature;
 
-                    mail.Body = !string.IsNullOrWhiteSpace(supInput.EmailTemplate)
-                            ? supInput.EmailTemplate
-                            : @"Dear Sir,<br><br>
-                        Kindly find attachments and fill the price.
-                        <br><br>Best regards";
+                    var paths = new List<string>();
+                    if (!string.IsNullOrWhiteSpace(input.FilePath)) paths.Add(input.FilePath);
+                    if (input.mailAttachments != null) paths.AddRange(input.mailAttachments);
+                    bool attachRfqToEmail =
+                        !hasPortalAccount || includeRfqAttachment;
 
-                    if (
-                        !string.IsNullOrWhiteSpace(
-                            userSignature
-                        )
-                    )
+                    if (attachRfqToEmail)
                     {
-                        mail.Body +=
-                            "<br><br>" +
-                            userSignature;
-                    }
-
-                    /*
-                     * Copy the attachment list so each email has
-                     * its own independent list instance.
-                     */
-                    mail.Attachments =
-                        supplierAttachmentList
-                            .Distinct(
-                                StringComparer.OrdinalIgnoreCase
-                            )
-                            .ToList();
-
-                    mailListForSending.Add(
-                        mail
-                    );
-                }
-
-                if (!sharedRfqExcelCreated)
-                {
-                    throw new Exception(
-                        "The RFQ Excel file with conditions was not created."
-                    );
-                }
-
-                supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
-
-                supplierPackageRevisionModel.RevisionModels = revisionModelList;
-
-                /*
-                 * Post data to portal API.
-                 */
-                string body = System.Text.Json.JsonSerializer.Serialize(supplierPackageRevisionModel);
-
-                string portalApiPath = _configuration["PortalApiPath"];
-
-                string key = _configuration["External:Key"];
-
-                using StringContent requestContent =
-                    new StringContent(
-                        body,
-                        Encoding.UTF8,
-                        "application/json"
-                    );
-
-                /*
-                 * Avoid adding the Authorization header repeatedly
-                 * to the shared HttpClient.
-                 */
-                using HttpRequestMessage portalRequest = new HttpRequestMessage(HttpMethod.Post, portalApiPath + "External/AddSupplierRevisionInPortal");
-
-                portalRequest.Content = requestContent;
-
-                if (!string.IsNullOrWhiteSpace(key))
-                {
-                    portalRequest.Headers.TryAddWithoutValidation("Authorization", key);
-                }
-
-                using HttpResponseMessage response = await _httpClient.SendAsync(portalRequest);
-
-                response.EnsureSuccessStatusCode();
-
-                string content =
-                    await response.Content
-                        .ReadAsStringAsync();
-
-                if (
-                    !string.Equals(
-                        content?.Trim(),
-                        "true",
-                        StringComparison.OrdinalIgnoreCase
-                    )
-                )
-                {
-                    throw new Exception(
-                        "An error occurred on the Portal API."
-                    );
-                }
-
-                /*
-                 * Send one separate email to every supplier.
-                 * Each email contains the same completed RFQ Excel.
-                 */
-                if (mailListForSending.Count == 0)
-                {
-                    throw new Exception(
-                        "No supplier emails were prepared."
-                    );
-                }
-
-                foreach (
-                    MailForSending email
-                    in mailListForSending
-                )
-                {
-                    Mail mailSender =
-                        new Mail();
-
-                    string currentSendResult =
-                        mailSender.SendMail(
-                            email.To,
-                            email.Cc,
-                            email.Bcc,
-                            email.Subject,
-                            email.Body,
-                            email.Attachments,
-                            email.IsBodyHtml,
-                            attachments
+                        paths.AddRange(
+                            generatedAttachments.Where(File.Exists)
                         );
+                        paths.Add(sharedRfq);
+                    }
+                    mail.Attachments = paths.Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                    mailQueue.Add(mail);
+                }
 
-                    if (
-                        !string.Equals(
-                            currentSendResult,
-                            "sent",
-                            StringComparison.OrdinalIgnoreCase
-                        )
-                    )
+                // Skip the portal call when all selected suppliers are without portal accounts.
+                if (revisionModels.Count > 0)
+                {
+                    var portalModel = new AddSupplierPackageRevisionModel
                     {
-                        throw new Exception(
-                            "Email was not sent to: " +
-                            string.Join(
-                                "; ",
-                                email.To
-                            ) +
-                            ". Mail result: " +
-                            currentSendResult
-                        );
-                    }
+                        SupplierPackageModels = supplierModels,
+                        RevisionModels = revisionModels
+                    };
+
+                    string body = JsonSerializer.Serialize(portalModel);
+                    using var request = new HttpRequestMessage(HttpMethod.Post,
+                        _configuration["PortalApiPath"] + "External/AddSupplierRevisionInPortal");
+                    request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+                    request.Headers.TryAddWithoutValidation("Authorization", _configuration["External:Key"]);
+
+                    using HttpResponseMessage response = await _httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    string result = await response.Content.ReadAsStringAsync();
+                    if (!string.Equals(result?.Trim(), "true", StringComparison.OrdinalIgnoreCase))
+                        throw new Exception("An error occurred on the Portal API.");
+                }
+
+                foreach (MailForSending queuedMail in mailQueue)
+                {
+                    string result = new Mail().SendMail(
+                        queuedMail.To, queuedMail.Cc, queuedMail.Bcc,
+                        queuedMail.Subject, queuedMail.Body, queuedMail.Attachments,
+                        queuedMail.IsBodyHtml, attachments);
+
+                    if (!string.Equals(result, "sent", StringComparison.OrdinalIgnoreCase))
+                        throw new Exception("Email was not sent to: " + string.Join("; ", queuedMail.To));
                 }
 
                 await transaction.CommitAsync();
-
                 return true;
             }
             catch
             {
                 await transaction.RollbackAsync();
-
                 throw;
             }
             finally
             {
-                await transaction.DisposeAsync();
-
-                await _dbcontext.DisposeAsync();
-
-                await _TSdbcontext.DisposeAsync();
-
-                /*
-                 * Delete only the temporary condition-enhanced copy.
-                 *
-                 * The base Excel generated by ValidateExcelBeforeAssign
-                 * is not deleted here because the existing application
-                 * may manage that file separately.
-                 */
-                foreach (
-                    string temporaryFile
-                    in temporaryFiles
-                )
+                foreach (string file in temporaryFiles)
                 {
-                    try
-                    {
-                        if (
-                            !string.IsNullOrWhiteSpace(
-                                temporaryFile
-                            ) &&
-                            File.Exists(temporaryFile)
-                        )
-                        {
-                            File.Delete(
-                                temporaryFile
-                            );
-                        }
-                    }
-                    catch (Exception cleanupException)
-                    {
-                        Console.WriteLine(
-                            "Unable to delete temporary RFQ file: " +
-                            temporaryFile +
-                            ". Error: " +
-                            cleanupException.Message
-                        );
-                    }
+                    try { if (File.Exists(file)) File.Delete(file); }
+                    catch (Exception ex) { Console.WriteLine("Unable to delete temporary RFQ file: " + ex.Message); }
                 }
             }
         }
 
-        //public async Task<bool> AssignPackageSuppliers(            int packId,            List<SupplierInputList> supInputList,            byte ByBoq,
-        //    string UserName,            List<IFormFile> attachments,            DateTime ExpiryDate,            List<string> emailCc,
-        //    string CostConn,            string TSConn)
-        //{
-        //    AccDbContext _dbcontext = new AccDbContext(CostConn);
-        //    PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
-        //    var t = await _dbcontext.Database.BeginTransactionAsync();
+        // public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,
+        //         DateTime ExpiryDate, List<string> emailCc, List<string> generatedAttachments, string CostConn, string TSConn)
+        // {
+        //     AccDbContext _dbcontext = new AccDbContext(CostConn);
+        //     PolicyDbContext _TSdbcontext = new PolicyDbContext(TSConn);
 
 
-        //    emailCc =
-        //        NormalizeRepositoryEmailList(
-        //            emailCc
-        //        );
+        //     generatedAttachments = (generatedAttachments ?? new List<string>()).Where(path => !string.IsNullOrWhiteSpace(path))
+        //         .Select(path => path.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
-        //    try
-        //    {
-        //        var package = _mdbContext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
-        //        string PackageName = package.PkgeName;
+        //     var transaction = await _dbcontext.Database.BeginTransactionAsync();
 
-        //        var mailListForSending = new List<MailForSending>();
-        //        var AttachmentList = new List<string>();
-        //        string sent = "";
+        //     string sharedRfqExcelWithConditions = string.Empty;
 
-        //        var p = await _dbcontext.TblParameters.FirstOrDefaultAsync();
-        //        var proj = await _TSdbcontext.Tblprojects.Where(x => x.Seq == p.TsProjId).FirstOrDefaultAsync();
+        //     bool sharedRfqExcelCreated = false;
 
-        //        //Get User Email Signature
-        //        User user = _logonRepository.GetUser(UserName);
-        //        string userSignature = (user.UsrEmailSignature == null) ? "" : user.UsrEmailSignature;
-        //        string usrEmail = (user.UsrEmail == null) ? "" : user.UsrEmail;
+        //     /*
+        //      * Files created specifically by this process.
+        //      * They are cleaned after completing or failing.
+        //      */
+        //     List<string> temporaryFiles = new List<string>();
 
-        //        int PackageSupplierId = 0;
-        //        List<AddSupplierPackageModel> supplierPackageModelList = new List<AddSupplierPackageModel>();
-        //        List<AddRevisionModel> revisionModelList = new List<AddRevisionModel>();
-        //        AddSupplierPackageRevisionModel supplierPackageRevisionModel = new AddSupplierPackageRevisionModel();
+        //     /*
+        //      * Local helper:
+        //      * Converts text into a safe Excel worksheet name.
+        //      */
+        //     string GetSafeWorksheetName(string worksheetName)
+        //     {
+        //         if (string.IsNullOrWhiteSpace(worksheetName))
+        //         {
+        //             return "Sheet";
+        //         }
 
-        //        string attachExcel = ValidateExcelBeforeAssign(packId, ByBoq, false,CostConn);
+        //         string result = worksheetName
+        //                 .Replace(":", " ")
+        //                 .Replace("\\", " ")
+        //                 .Replace("/", " ")
+        //                 .Replace("?", " ")
+        //                 .Replace("*", " ")
+        //                 .Replace("[", " ")
+        //                 .Replace("]", " ")
+        //                 .Trim();
 
-        //        foreach (var supInput in supInputList)
-        //        {
-        //            //1.Add PackageSupplier
-        //            SupplierInput supplier = supInput.supplierInput;
+        //         if (result.Length > 31)
+        //         {
+        //             result = result.Substring(0, 31);
+        //         }
 
-        //            if (!_dbcontext.TblSupplierPackages.Any(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)))
-        //            {
-        //                var spack = new TblSupplierPackage { SpPackageId = packId, SpSupplierId = supplier.supID, SpByBoq = ByBoq };
-        //                await _dbcontext.AddAsync<TblSupplierPackage>(spack);
-        //                await _dbcontext.SaveChangesAsync();
+        //         return result;
+        //     }
 
-        //                PackageSupplierId = spack.SpPackSuppId;
+        //     /*
+        //      * Local helper:
+        //      * Applies common formatting to one condition sheet.
+        //      */
+        //     /*
+        //* Applies common formatting and protection to both:
+        //*
+        //* 1. Commercial Conditions
+        //* 2. Technical Conditions
+        //*
+        //* Protection rules:
+        //*
+        //* Column A: Condition           Locked
+        //* Column B: ACC Condition       Locked
+        //* Column C: Supplier Condition  Editable
+        //*
+        //* The header row is always locked.
+        //*/
+        //     void FormatConditionWorksheet(ExcelWorksheet worksheet, int lastRow)
+        //     {
+        //         if (worksheet == null)
+        //         {
+        //             throw new ArgumentNullException(
+        //                 nameof(worksheet)
+        //             );
+        //         }
 
-        //                //1.1 Add AddSupplierPackageModel
-        //                supplierPackageModelList.Add(new AddSupplierPackageModel
-        //                {
-        //                    SpPackSuppId = spack.SpPackSuppId,
-        //                    SpPackageId = spack.SpPackageId,
-        //                    SpSupplierId = spack.SpSupplierId,
-        //                    SpByBoq = ByBoq,
-        //                    ProjectCode = proj.PrjCode,
-        //                    ProjectName = proj.PrjName,
-        //                    TecCondSent= false
-        //                });
-        //            }
-        //            else
-        //            {
-        //                var supPack = await _dbcontext.TblSupplierPackages.Where(a => (a.SpPackageId == packId) && (a.SpSupplierId == supplier.supID)).FirstOrDefaultAsync();
-        //                PackageSupplierId = supPack.SpPackSuppId;
-        //            }
+        //         /*
+        //          * Worksheet titles.
+        //          */
+        //         worksheet.Cells[1, 1].Value =
+        //             "Condition";
 
-        //            // 2. Add Revision
-        //            int LastRevNo = await GetMaxRevisionNumberAsync(PackageSupplierId, _dbcontext);
+        //         worksheet.Cells[1, 2].Value =
+        //             "ACC Condition";
 
-        //            if (LastRevNo >= 0)
-        //            {
-        //                /*
-        //                 * Check whether the latest revision is still pending.
-        //                 */
-        //                bool hasPendingRevision =
-        //                    await _dbcontext
-        //                        .TblSupplierPackageRevisions
-        //                        .AnyAsync(x =>
-        //                            x.PrPackSuppId ==
-        //                                PackageSupplierId &&
-        //                            x.PrRevNo ==
-        //                                LastRevNo &&
-        //                            (x.StatusId ?? 0) < 3
-        //                        );
+        //         worksheet.Cells[1, 3].Value =
+        //             "Supplier Condition";
 
-        //                if (hasPendingRevision)
-        //                {
-        //                    throw new Exception(
-        //                        "Revision not returned from Supplier. " +
-        //                        "Supplier ID: " +
-        //                        supplier.supID +
-        //                        ", Package Supplier ID: " +
-        //                        PackageSupplierId +
-        //                        ", Revision No: " +
-        //                        LastRevNo
-        //                    );
-        //                }
+        //         /*
+        //          * Freeze the header row.
+        //          */
+        //         worksheet.View.FreezePanes(
+        //             2,
+        //             1
+        //         );
 
-        //                /*
-        //                 * Load all existing revisions using the same DbContext
-        //                 * and the same active transaction.
-        //                 *
-        //                 * Descending order is important if the database has a
-        //                 * unique constraint on:
-        //                 *
-        //                 * PrPackSuppId + PrRevNo
-        //                 */
-        //                List<TblSupplierPackageRevision>
-        //                    existingRevisions =
-        //                        await _dbcontext
-        //                            .TblSupplierPackageRevisions
-        //                            .Where(x =>
-        //                                x.PrPackSuppId ==
-        //                                    PackageSupplierId
-        //                            )
-        //                            .OrderByDescending(x =>
-        //                                x.PrRevNo
-        //                            )
-        //                            .ToListAsync();
+        //         /*
+        //          * Set all worksheet cells as locked first.
+        //          *
+        //          * This locks:
+        //          * Column A
+        //          * Column B
+        //          * Header row
+        //          * All columns outside the working area
+        //          */
+        //         worksheet.Cells.Style.Locked = true;
 
-        //                /*
-        //                 * Shift all revisions by one position:
-        //                 *
-        //                 * 2 becomes 3
-        //                 * 1 becomes 2
-        //                 * 0 becomes 1
-        //                 */
-        //                foreach (
-        //                    TblSupplierPackageRevision revision
-        //                    in existingRevisions
-        //                )
-        //                {
-        //                    revision.PrRevNo =
-        //                        revision.PrRevNo + 1;
-        //                }
+        //         /*
+        //          * Only Supplier Condition cells are editable.
+        //          *
+        //          * Row 1 remains locked because it is the header.
+        //          * Rows 2 through lastRow in Column C are unlocked.
+        //          */
+        //         if (lastRow >= 2)
+        //         {
+        //             worksheet.Cells[
+        //                 2,
+        //                 3,
+        //                 lastRow,
+        //                 3
+        //             ].Style.Locked =
+        //                 false;
+        //         }
 
-        //                /*
-        //                 * Save all shifted revisions in one operation.
-        //                 */
-        //                await _dbcontext.SaveChangesAsync();
-        //            }
+        //         /*
+        //          * Header formatting.
+        //          */
+        //         using (
+        //             ExcelRange headerRange =
+        //                 worksheet.Cells[
+        //                     1,
+        //                     1,
+        //                     1,
+        //                     3
+        //                 ]
+        //         )
+        //         {
+        //             headerRange.Style.Font.Bold = true;
 
-        //            var Rev1 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => b.PrRevNo == 1 && b.PrPackSuppId == PackageSupplierId);
-        //            var supPackRev = new TblSupplierPackageRevision();
-        //            int rev1Id = 0;
+        //             headerRange.Style.Font.Color.SetColor(
+        //                 Color.White
+        //             );
 
-        //            if (Rev1 != null)
-        //            {
-        //                supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = Rev1.PrTotPrice, PrRevDate = DateTime.Now, PrCurrency = Rev1.PrCurrency, PrExchRate = Rev1.PrExchRate, RevExpiryDate = ExpiryDate , InsertedBy = UserName, InsertedByEmail = usrEmail };
-        //                rev1Id = Rev1.PrRevId;
-        //            }
-        //            else
-        //            {
-        //                int prjCurrency = (int)(await _dbcontext.TblParameters.FirstOrDefaultAsync()).EstimatedCur;
-        //                supPackRev = new TblSupplierPackageRevision { PrRevNo = 0, PrPackSuppId = PackageSupplierId, PrTotPrice = 0, PrRevDate = DateTime.Now, PrCurrency = prjCurrency , RevExpiryDate= ExpiryDate,InsertedBy= UserName,InsertedByEmail= usrEmail };
-        //                rev1Id = 0;
-        //            }
-        //            await _dbcontext.AddAsync<TblSupplierPackageRevision>(supPackRev);
-        //            await _dbcontext.SaveChangesAsync();
+        //             headerRange.Style.Fill.PatternType =
+        //                 ExcelFillStyle.Solid;
 
-        //            //Get inserted Revison ID
-        //            var Rev0 = await _dbcontext.TblSupplierPackageRevisions.SingleOrDefaultAsync(b => (b.PrPackSuppId == PackageSupplierId) && (b.PrRevNo == 0));
-        //            int rev0Id = Rev0.PrRevId;
+        //             headerRange.Style.Fill.BackgroundColor.SetColor(
+        //                 Color.FromArgb(
+        //                     14,
+        //                     116,
+        //                     144
+        //                 )
+        //             );
 
-        //            var packageSupp = await _dbcontext.TblSupplierPackages.Where(x => x.SpPackSuppId == PackageSupplierId).FirstOrDefaultAsync();
-        //            byte byBoq = (byte)((packageSupp.SpByBoq == null) ? 0 : packageSupp.SpByBoq);
+        //             headerRange.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
 
-        //            List<TblRevisionDetail> LstRevDetails = await InsertRevisionDetail(rev0Id, packId, byBoq, rev1Id, _dbcontext);
-        //            if (LstRevDetails.Count() > 0)
-        //            {
-        //                await _dbcontext.AddRangeAsync(LstRevDetails);
-        //                await _dbcontext.SaveChangesAsync();
-        //            }
+        //             headerRange.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
-        //            //Insert ComConditions Conditions Revision
-        //            List<TblSuppComCondReply> LstComCondReply = await InsertComercialConditions(rev0Id, packId, rev1Id, supInput.comercialCondList,CostConn);
+        //             headerRange.Style.WrapText = true;
 
-        //            //Insert Technical Conditions Revision
-        //            List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(rev0Id, packId, rev1Id, supInput.technicalCondList, CostConn);
+        //             /*
+        //              * Explicitly lock the header.
+        //              */
+        //             headerRange.Style.Locked = true;
 
+        //             headerRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
 
-        //            //2.2 Add RevisionModel
-        //            //if (ByBoq ==1)
-        //            //{ 
-        //                revisionModelList.Add(new AddRevisionModel
-        //                {
-        //                    PrRevId = Rev0.PrRevId,
-        //                    PrRevNo = Rev0.PrRevNo,
-        //                    PrRevDate = Rev0.PrRevDate,
-        //                    PrTotPrice = Rev0.PrTotPrice,
-        //                    PrPackSuppId = Rev0.PrPackSuppId,
-        //                    PrCurrency = Rev0.PrCurrency,
-        //                    PrExchRate = 1,
-        //                    StatusId = 1,
-        //                    ProjectCode = proj.PrjCode,
-        //                    IsSynched = false,
-        //                    RevExpiryDate = Rev0.RevExpiryDate,
-        //                    RevisionDetails = (from d in LstRevDetails
-        //                                       select new AddRevisionDetailModel
-        //                                       {
-        //                                           BoqResourceSeq = d.RdResourceSeq,
-        //                                           ResourceDescription = GetRessourceDescription(ByBoq,d.RdResourceSeq,d.ResourceDescription,(bool) d.IsAlternative,CostConn),
-        //                                           ItemO = d.RdBoqItem,
-        //                                           ItemDescription = d.ItemDescription,//GetBoqItemDescription(d.RdBoqItem),
-        //                                           Quantity = d.RdQty,
-        //                                           QuotationQty = d.RdQuotationQty,
-        //                                           UnitPrice = d.RdPrice,
-        //                                           TotalPrice = (d.RdQty) * (d.UnitPriceAfterDiscount),
-        //                                           DiscountPerc = d.RdDiscount,
-        //                                           Comments = d.RdComment,
-        //                                           CreatedOn = DateTime.Now,
-        //                                           IsSynched = false,
-        //                                           ProjectCode = proj.PrjCode,
-        //                                           ParentItemO = d.ParentItemO,
-        //                                           ParentResourceId = d.ParentResourceId.ToString(),
-        //                                           NewItemId = d.NewItemId,
-        //                                           NewItemResourceId = d.NewItemResourceId,
-        //                                           IsNewItem = d.IsNew,
-        //                                           IsAlternative = d.IsAlternative,
-        //                                           UnitPriceAfterDiscount=d.UnitPriceAfterDiscount,
-        //                                           UnitO = (d.UnitO == null) ? "" : d.UnitO,
-        //                                           BoqCtg = (d.BoqCtg == null) ? "" : d.BoqCtg,
-        //                                           BoqUnitMesure = (d.BoqUnitMesure == null) ? "" : d.BoqUnitMesure,
-        //                                           L1 = (d.L1 == null) ? "" : d.L1,
-        //                                           L2 = (d.L2 == null) ? "" : d.L2,
-        //                                           L3 = (d.L3 == null) ? "" : d.L3,
-        //                                           L4 = (d.L4 == null) ? "" : d.L4,
-        //                                           L5 = (d.L5 == null) ? "" : d.L5,
-        //                                           L6 = (d.L6 == null) ? "" : d.L6,
-        //                                           L7 = (d.L7 == null) ? "" : d.L7,
-        //                                           L8 = (d.L8 == null) ? "" : d.L8,
-        //                                           L9 = (d.L9 == null) ? "" : d.L9,
-        //                                           L10 = (d.L10 == null) ? "" : d.L10,
-        //                                           C1 = (d.C1 == null) ? "" : d.C1,
-        //                                           C2 = (d.C2 == null) ? "" : d.C2,
-        //                                           C3 = (d.C3 == null) ? "" : d.C3,
-        //                                           C4 = (d.C4 == null) ? "" : d.C4,
-        //                                           C5 = (d.C5 == null) ? "" : d.C5,
-        //                                           C6 = (d.C6 == null) ? "" : d.C6,
-        //                                           C7 = (d.C7 == null) ? "" : d.C7,
-        //                                           C8 = (d.C8 == null) ? "" : d.C8,
-        //                                           C9 = (d.C9 == null) ? "" : d.C9,
-        //                                           C10 = (d.C10 == null) ? "" : d.C10,
-        //                                           C11 = (d.C11 == null) ? "" : d.C11,
-        //                                           C12 = (d.C12 == null) ? "" : d.C12,
-        //                                           C13 = (d.C13 == null) ? "" : d.C13,
-        //                                           C14 = (d.C14 == null) ? "" : d.C14,
-        //                                           C15 = (d.C15 == null) ? "" : d.C15,
-        //                                           BoqRefNumber= (d.RdBoqRefNumber == null) ? "" : d.RdBoqRefNumber,
-        //                                           AccComment= (d.RdAccComment == null) ? "" : d.RdAccComment,
-        //                                       }).ToList(),
-        //                    CommercialConditions= (from d in LstComCondReply
-        //                                           select new AddCondModel
-        //                                           {
-        //                                               Id = d.CdComConId,
-        //                                               CondValue = d.CdSuppReply,
-        //                                               ACCCondValue=d.CdAccCond,
-        //                                               ProjectCode = proj.PrjCode
-        //                                           }).ToList(),
-        //                    TechnicalConditions = (from d in LstTechCondReply
-        //                                           select new AddCondModel
-        //                                            {
-        //                                                Id = d.TcTechConId,
-        //                                                CondValue = d.TcSuppReply,
-        //                                                ACCCondValue = d.TcAccCond,
-        //                                                ProjectCode = proj.PrjCode
-        //                                           }).ToList()
-        //                });
-        //            //}
+        //             headerRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
 
-        //            //Send Email with Attachments to this Supplier
-        //            AttachmentList.Clear();
-        //            AttachmentList.Add(supInput.FilePath);
-        //            if (supInput.mailAttachments != null)
-        //            {
-        //                foreach (var attach in supInput.mailAttachments)
-        //                {
-        //                    AttachmentList.Add(attach);
-        //                }
-        //            }
+        //             headerRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
 
-        //            //if (supInput.comercialCondList.Count > 0)
-        //            //{
-        //            //    if (ComCondAttch == "")
-        //            //        ComCondAttch = SendComercialConditions(packId, supInput.comercialCondList);
+        //             headerRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+        //         }
 
-        //            //    AttachmentList.Add(ComCondAttch);
-        //            //}
+        //         worksheet.Row(1).Height = 24;
 
-        //            AttachmentList.Add(attachExcel);
+        //         /*
+        //          * Format condition rows.
+        //          */
+        //         if (lastRow >= 2)
+        //         {
+        //             using (
+        //                 ExcelRange dataRange =
+        //                     worksheet.Cells[
+        //                         2,
+        //                         1,
+        //                         lastRow,
+        //                         3
+        //                     ]
+        //             )
+        //             {
+        //                 dataRange.Style.WrapText = true;
 
-        //            //send email
-        //            /*
-        //             * Each supplier has a separate edited To list.
-        //             */
-        //            List<string> supplierEmailTo =
-        //                NormalizeRepositoryEmailList(
-        //                    supInput.mailTo
-        //                );
+        //                 dataRange.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
 
-        //            if (supplierEmailTo.Count == 0)
-        //            {
-        //                throw new Exception(
-        //                    "No Email To address was provided for supplier " +
-        //                    (
-        //                        supInput.supplierName ??
-        //                        supplier.supID.ToString()
-        //                    )
-        //                );
-        //            }
+        //                 dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
 
-        //            var mail =
-        //                new MailForSending();
+        //                 dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
 
-        //            /*
-        //             * Add only the current supplier's addresses.
-        //             */
-        //            foreach (
-        //                string toAddress
-        //                in supplierEmailTo
-        //            )
-        //            {
-        //                mail.To.Add(
-        //                    toAddress
-        //                );
-        //            }
+        //                 dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
 
-        //            /*
-        //             * Apply the one shared CC list to this email.
-        //             */
-        //            List<string> cleanSharedCc =
-        //                NormalizeRepositoryEmailList(
-        //                    emailCc
-        //                )
-        //                .Where(cc =>
-        //                    !supplierEmailTo.Contains(
-        //                        cc,
-        //                        StringComparer.OrdinalIgnoreCase
-        //                    )
-        //                )
-        //                .ToList();
+        //                 dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+        //             }
 
-        //            foreach (
-        //                string ccAddress
-        //                in cleanSharedCc
-        //            )
-        //            {
-        //                mail.Cc.Add(
-        //                    ccAddress
-        //                );
-        //            }
+        //             /*
+        //              * Clearly identify protected ACC fields.
+        //              */
+        //             using (
+        //                 ExcelRange lockedRange =
+        //                     worksheet.Cells[
+        //                         2,
+        //                         1,
+        //                         lastRow,
+        //                         2
+        //                     ]
+        //             )
+        //             {
+        //                 lockedRange.Style.Locked = true;
 
-        //            /*
-        //             * Configuration BCC remains unchanged.
-        //             */
-        //            if (
-        //                !string.IsNullOrWhiteSpace(
-        //                    _configuration["mailBcc1"]
-        //                )
-        //            )
-        //            {
-        //                mail.Bcc.Add(
-        //                    _configuration["mailBcc1"]
-        //                );
-        //            }
+        //                 lockedRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
 
-        //            if (
-        //                !string.IsNullOrWhiteSpace(
-        //                    _configuration["mailBcc2"]
-        //                )
-        //            )
-        //            {
-        //                mail.Bcc.Add(
-        //                    _configuration["mailBcc2"]
-        //                );
-        //            }
+        //                 lockedRange.Style.Fill.BackgroundColor.SetColor(
+        //                     Color.FromArgb(
+        //                         242,
+        //                         242,
+        //                         242
+        //                     )
+        //                 );
+        //             }
 
-        //            mail.Subject =
-        //                $"Job in Hand-{proj.PrjName}-{PackageName}";
+        //             /*
+        //              * Supplier Condition is the only editable area.
+        //              */
+        //             using (
+        //                 ExcelRange editableRange =
+        //                     worksheet.Cells[
+        //                         2,
+        //                         3,
+        //                         lastRow,
+        //                         3
+        //                     ]
+        //             )
+        //             {
+        //                 editableRange.Style.Locked = false;
 
-        //            mail.Body =
-        //                !string.IsNullOrWhiteSpace(
-        //                    supInput.EmailTemplate
-        //                )
-        //                    ? supInput.EmailTemplate
-        //                    : @"Dear Sir,<br><br>
-        //                    Kindly find attachments and fill the price.
-        //                    <br><br>Best regards";
+        //                 editableRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
 
-        //            if (
-        //                !string.IsNullOrWhiteSpace(
-        //                    userSignature
-        //                )
-        //            )
-        //            {
-        //                mail.Body +=
-        //                    "<br><br>" +
-        //                    userSignature;
-        //            }
+        //                 editableRange.Style.Fill.BackgroundColor.SetColor(
+        //                     Color.FromArgb(
+        //                         255,
+        //                         255,
+        //                         255
+        //                     )
+        //                 );
+        //             }
+        //         }
 
-        //            /*
-        //             * Copy the list because AttachmentList is cleared
-        //             * at the beginning of the next supplier iteration.
-        //             */
-        //            mail.Attachments =
-        //                AttachmentList.ToList();
+        //         /*
+        //          * Column widths.
+        //          */
+        //         worksheet.Column(1).Width = 55;
 
-        //            mailListForSending.Add(mail);
+        //         worksheet.Column(2).Width = 45;
 
-        //        }
+        //         worksheet.Column(3).Width = 45;
 
-        //        supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
-        //        supplierPackageRevisionModel.RevisionModels = revisionModelList;
+        //         /*
+        //          * Apply auto-filter to the header.
+        //          */
+        //         if (lastRow >= 1)
+        //         {
+        //             worksheet.Cells[
+        //                 1,
+        //                 1,
+        //                 lastRow,
+        //                 3
+        //             ].AutoFilter =
+        //                 true;
+        //         }
 
-        //        //Post the portal API (Create supplier package and revision on portal)
-        //        var body = JsonSerializer.Serialize(supplierPackageRevisionModel);
-        //        var portalApiPath = _configuration["PortalApiPath"];
-        //        var key = _configuration["External:Key"];
-        //        var requestContent = new StringContent(body, Encoding.UTF8, "application/json");
-        //        _httpClient.DefaultRequestHeaders.Add("Authorization", key);
-        //        var response = await _httpClient.PostAsync(portalApiPath + "External/AddSupplierRevisionInPortal", requestContent);
-        //        response.EnsureSuccessStatusCode();
+        //         /*
+        //          * Printing configuration.
+        //          */
+        //         worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
 
-        //        var content = await response.Content.ReadAsStringAsync();
-        //        if (content == "true")
-        //        {
-        //            //Send email to suppliers
-        //            foreach (var email in mailListForSending)
-        //            {
-        //                var mail = new Mail();
+        //         worksheet.PrinterSettings.FitToPage = true;
 
-        //                sent = mail.SendMail(email.To, email.Cc,email.Bcc,email.Subject,email.Body,email.Attachments,email.IsBodyHtml,attachments);
-        //            }
+        //         worksheet.PrinterSettings.FitToWidth = 1;
 
-        //            if (sent == "sent")
-        //            {
-        //                await t.CommitAsync();
-        //                return true;
-        //            }
-        //            else
-        //                throw new Exception("Email didn't sent !");
-        //        }
-        //        else
-        //        {
-        //            throw new Exception("An error occured on the Portal API");
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {            
-        //        await t.RollbackAsync();
-        //        throw;
-        //    }
-        //}
+        //         worksheet.PrinterSettings.FitToHeight = 0;
+
+        //         if (lastRow >= 1)
+        //         {
+        //             worksheet.PrinterSettings.PrintArea =
+        //                 worksheet.Cells[
+        //                     1,
+        //                     1,
+        //                     lastRow,
+        //                     3
+        //                 ];
+        //         }
+
+        //         /*
+        //          * Protect the worksheet.
+        //          *
+        //          * Change this password if required.
+        //          */
+        //         //const string sheetProtectionPassword =
+        //         //    "ACC@RFQ2026";
+
+        //         worksheet.Protection.IsProtected = true;
+
+        //         //worksheet.Protection.SetPassword(
+        //         //    sheetProtectionPassword
+        //         //);
+
+        //         /*
+        //          * Allow supplier to select and edit unlocked
+        //          * Supplier Condition cells.
+        //          */
+        //         worksheet.Protection.AllowSelectUnlockedCells = true;
+
+        //         /*
+        //          * Do not allow selection or editing of locked cells.
+        //          */
+        //         worksheet.Protection.AllowSelectLockedCells = true;
+
+        //         /*
+        //          * Keep filter dropdowns usable while protected.
+        //          */
+        //         worksheet.Protection.AllowAutoFilter = true;
+
+        //         /*
+        //          * Prevent structural changes.
+        //          */
+        //         worksheet.Protection.AllowDeleteColumns = false;
+
+        //         worksheet.Protection.AllowDeleteRows = false;
+
+        //         worksheet.Protection.AllowInsertColumns = false;
+
+        //         worksheet.Protection.AllowInsertRows = false;
+
+        //         worksheet.Protection.AllowFormatCells = false;
+
+        //         worksheet.Protection.AllowFormatColumns = false;
+
+        //         worksheet.Protection.AllowFormatRows = false;
+        //     }
+
+        //     /*
+        //      * Local helper:
+        //      * Creates one shared copy of the RFQ Excel and adds:
+        //      *
+        //      * 1. Commercial Conditions
+        //      * 2. Technical Conditions
+        //      *
+        //      * The same completed file is sent to all suppliers.
+        //      */
+        //     string CreateSharedRfqExcelWithConditions(string sourceExcelPath, List<Condition> commercialConditionInput,
+        //         List<TblSuppComCondReply> commercialReplies, List<Condition> technicalConditionInput, List<TblSuppTechCondReply> technicalReplies)
+        //     {
+        //         if (string.IsNullOrWhiteSpace(sourceExcelPath))
+        //         {
+        //             throw new Exception(
+        //                 "The generated RFQ Excel file path is empty."
+        //             );
+        //         }
+
+        //         if (!File.Exists(sourceExcelPath))
+        //         {
+        //             throw new FileNotFoundException(
+        //                 "The generated RFQ Excel file was not found.",
+        //                 sourceExcelPath
+        //             );
+        //         }
+
+        //         string sourceDirectory =
+        //             Path.GetDirectoryName(sourceExcelPath);
+
+        //         if (string.IsNullOrWhiteSpace(sourceDirectory))
+        //         {
+        //             sourceDirectory =
+        //                 Path.GetTempPath();
+        //         }
+
+        //         string sourceFileNameWithoutExtension =
+        //             Path.GetFileNameWithoutExtension(
+        //                 sourceExcelPath
+        //             );
+
+        //         string targetFileName =
+        //             sourceFileNameWithoutExtension +
+        //             "-Conditions-" +
+        //             DateTime.Now.ToString(
+        //                 "yyyyMMddHHmmssfff"
+        //             ) +
+        //             ".xlsx";
+
+        //         string targetExcelPath =
+        //             Path.Combine(
+        //                 sourceDirectory,
+        //                 targetFileName
+        //             );
+
+        //         File.Copy(
+        //             sourceExcelPath,
+        //             targetExcelPath,
+        //             true
+        //         );
+
+        //         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+        //         FileInfo targetFile = new FileInfo(targetExcelPath);
+
+        //         using (ExcelPackage excelPackage = new ExcelPackage(targetFile))
+        //         {
+        //             /*
+        //              * Commercial Conditions sheet.
+        //              */
+        //             string commercialSheetName = GetSafeWorksheetName("Commercial Conditions");
+
+        //             ExcelWorksheet existingCommercialSheet = excelPackage.Workbook.Worksheets[commercialSheetName];
+
+        //             if (existingCommercialSheet != null)
+        //             {
+        //                 excelPackage.Workbook.Worksheets.Delete(existingCommercialSheet);
+        //             }
+
+        //             ExcelWorksheet commercialSheet = excelPackage.Workbook.Worksheets.Add(commercialSheetName);
+
+        //             int commercialRow = 2;
+
+        //             List<Condition> safeCommercialInput =
+        //                 commercialConditionInput ??
+        //                 new List<Condition>();
+
+        //             List<TblSuppComCondReply>
+        //                 safeCommercialReplies =
+        //                     commercialReplies ??
+        //                     new List<TblSuppComCondReply>();
+
+        //             /*
+        //              * Start from selected/requested commercial conditions
+        //              * to preserve the same order displayed in Angular.
+        //              */
+        //             foreach (Condition condition in safeCommercialInput)
+        //             {
+        //                 TblSuppComCondReply reply = safeCommercialReplies.FirstOrDefault(x => x.CdComConId == condition.id);
+
+        //                 commercialSheet.Cells[commercialRow, 1].Value = condition.description ?? string.Empty;
+
+        //                 commercialSheet.Cells[commercialRow, 2].Value = reply != null ? reply.CdAccCond ?? string.Empty : condition.ACCCondValue ?? string.Empty;
+
+        //                 commercialSheet.Cells[commercialRow, 3].Value = reply?.CdAccCond ?? string.Empty;
+
+        //                 commercialRow++;
+        //             }
+
+        //             /*
+        //              * Include any commercial reply that was not found
+        //              * in the input list.
+        //              */
+        //             foreach (                        TblSuppComCondReply reply                        in safeCommercialReplies                    )
+        //             {
+        //                 bool alreadyAdded =                            safeCommercialInput.Any(x =>                                x.id ==                                reply.CdComConId                            );
+
+        //                 if (alreadyAdded)
+        //                 {
+        //                     continue;
+        //                 }
+
+        //                 commercialSheet.Cells[commercialRow, 1].Value = "Condition " + reply.CdComConId;
+
+        //                 commercialSheet.Cells[commercialRow, 2].Value = reply.CdAccCond ?? string.Empty;
+
+        //                 commercialSheet.Cells[commercialRow, 3].Value = reply.CdAccCond ?? string.Empty;
+
+        //                 commercialRow++;
+        //             }
+
+        //             FormatConditionWorksheet(commercialSheet, Math.Max(1, commercialRow - 1));
+
+        //             /*
+        //              * Technical Conditions sheet.
+        //              */
+        //             string technicalSheetName = GetSafeWorksheetName("Technical Conditions");
+
+        //             ExcelWorksheet existingTechnicalSheet = excelPackage.Workbook.Worksheets[technicalSheetName];
+
+        //             if (existingTechnicalSheet != null)
+        //             {
+        //                 excelPackage
+        //                     .Workbook
+        //                     .Worksheets
+        //                     .Delete(
+        //                         existingTechnicalSheet
+        //                     );
+        //             }
+
+        //             ExcelWorksheet technicalSheet =
+        //                 excelPackage
+        //                     .Workbook
+        //                     .Worksheets
+        //                     .Add(
+        //                         technicalSheetName
+        //                     );
+
+        //             int technicalRow = 2;
+
+        //             List<Condition> safeTechnicalInput =
+        //                 technicalConditionInput ??
+        //                 new List<Condition>();
+
+        //             List<TblSuppTechCondReply>
+        //                 safeTechnicalReplies =
+        //                     technicalReplies ??
+        //                     new List<TblSuppTechCondReply>();
+
+        //             /*
+        //              * Start from selected/requested technical conditions
+        //              * to preserve the displayed order.
+        //              */
+        //             foreach (                        Condition condition                        in safeTechnicalInput                    )
+        //             {
+        //                 TblSuppTechCondReply reply =
+        //                     safeTechnicalReplies
+        //                         .FirstOrDefault(x =>
+        //                             x.TcTechConId ==
+        //                                 condition.id
+        //                         );
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     1
+        //                 ].Value =
+        //                     condition.description ??
+        //                     string.Empty;
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     2
+        //                 ].Value =
+        //                     reply != null
+        //                         ? reply.TcAccCond ??
+        //                             string.Empty
+        //                         : condition.ACCCondValue ??
+        //                             string.Empty;
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     3
+        //                 ].Value = reply?.TcAccCond ?? string.Empty;
+
+        //                 technicalRow++;
+        //             }
+
+        //             /*
+        //              * Include any technical reply not found
+        //              * in the input list.
+        //              */
+        //             foreach (
+        //                 TblSuppTechCondReply reply
+        //                 in safeTechnicalReplies
+        //             )
+        //             {
+        //                 bool alreadyAdded =
+        //                     safeTechnicalInput.Any(x =>
+        //                         x.id ==
+        //                         reply.TcTechConId
+        //                     );
+
+        //                 if (alreadyAdded)
+        //                 {
+        //                     continue;
+        //                 }
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     1
+        //                 ].Value =
+        //                     "Condition " +
+        //                     reply.TcTechConId;
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     2
+        //                 ].Value =
+        //                     reply.TcAccCond ??
+        //                     string.Empty;
+
+        //                 technicalSheet.Cells[
+        //                     technicalRow,
+        //                     3
+        //                 ].Value =
+        //                     reply.TcSuppReply ??
+        //                     string.Empty;
+
+        //                 technicalRow++;
+        //             }
+
+        //             FormatConditionWorksheet(
+        //                 technicalSheet,
+        //                 Math.Max(
+        //                     1,
+        //                     technicalRow - 1
+        //                 )
+        //             );
+
+        //             excelPackage.Save();
+        //         }
+
+        //         return targetExcelPath;
+        //     }
+
+        //     try
+        //     {
+        //         if (
+        //             supInputList == null ||
+        //             supInputList.Count == 0
+        //         )
+        //         {
+        //             throw new Exception(
+        //                 "At least one supplier is required."
+        //             );
+        //         }
+
+        //         var package =
+        //             await _mdbContext
+        //                 .TblPackages
+        //                 .FirstOrDefaultAsync(x =>
+        //                     x.PkgeId ==
+        //                     packId
+        //                 );
+
+        //         if (package == null)
+        //         {
+        //             throw new Exception(
+        //                 "Package was not found. Package ID: " +
+        //                 packId
+        //             );
+        //         }
+
+        //         string PackageName =
+        //             package.PkgeName ??
+        //             string.Empty;
+
+        //         List<MailForSending>
+        //             mailListForSending =
+        //                 new List<MailForSending>();
+
+        //         var p =
+        //             await _dbcontext
+        //                 .TblParameters
+        //                 .FirstOrDefaultAsync();
+
+        //         if (p == null)
+        //         {
+        //             throw new Exception(
+        //                 "Project parameters were not found."
+        //             );
+        //         }
+
+        //         var proj =
+        //             await _TSdbcontext
+        //                 .Tblprojects
+        //                 .FirstOrDefaultAsync(x =>
+        //                     x.Seq ==
+        //                     p.TsProjId
+        //                 );
+
+        //         if (proj == null)
+        //         {
+        //             throw new Exception(
+        //                 "Project information was not found."
+        //             );
+        //         }
+
+        //         User user =
+        //             _logonRepository
+        //                 .GetUser(UserName);
+
+        //         string userSignature =
+        //             user?.UsrEmailSignature ??
+        //             string.Empty;
+
+        //         string usrEmail =
+        //             user?.UsrEmail ??
+        //             string.Empty;
+
+        //         List<AddSupplierPackageModel>
+        //             supplierPackageModelList =
+        //                 new List<AddSupplierPackageModel>();
+
+        //         List<AddRevisionModel>
+        //             revisionModelList =
+        //                 new List<AddRevisionModel>();
+
+        //         AddSupplierPackageRevisionModel
+        //             supplierPackageRevisionModel =
+        //                 new AddSupplierPackageRevisionModel();
+
+        //         /*
+        //          * Create the base RFQ once.
+        //          */
+        //         string baseRfqExcel =
+        //             ValidateExcelBeforeAssign(
+        //                 packId,
+        //                 ByBoq,
+        //                 false,
+        //                 CostConn
+        //             );
+
+        //         if (string.IsNullOrWhiteSpace(baseRfqExcel))
+        //         {
+        //             throw new Exception(
+        //                 "The RFQ Excel file could not be generated."
+        //             );
+        //         }
+
+        //         if (!File.Exists(baseRfqExcel))
+        //         {
+        //             throw new FileNotFoundException(
+        //                 "The generated RFQ Excel file was not found.",
+        //                 baseRfqExcel
+        //             );
+        //         }
+
+        //         foreach (
+        //             SupplierInputList supInput
+        //             in supInputList
+        //         )
+        //         {
+        //             if (
+        //                 supInput == null ||
+        //                 supInput.supplierInput == null
+        //             )
+        //             {
+        //                 throw new Exception(
+        //                     "Invalid supplier information."
+        //                 );
+        //             }
+
+        //             SupplierInput supplier =
+        //                 supInput.supplierInput;
+
+        //             int PackageSupplierId =
+        //                 0;
+
+        //             /*
+        //              * 1. Find or create package supplier.
+        //              */
+        //             TblSupplierPackage
+        //                 supplierPackage =
+        //                     await _dbcontext
+        //                         .TblSupplierPackages
+        //                         .FirstOrDefaultAsync(x =>
+        //                             x.SpPackageId ==
+        //                                 packId &&
+        //                             x.SpSupplierId ==
+        //                                 supplier.supID
+        //                         );
+
+        //             if (supplierPackage == null)
+        //             {
+        //                 supplierPackage =
+        //                     new TblSupplierPackage
+        //                     {
+        //                         SpPackageId =
+        //                             packId,
+
+        //                         SpSupplierId =
+        //                             supplier.supID,
+
+        //                         SpByBoq =
+        //                             ByBoq
+        //                     };
+
+        //                 await _dbcontext
+        //                     .TblSupplierPackages
+        //                     .AddAsync(
+        //                         supplierPackage
+        //                     );
+
+        //                 await _dbcontext
+        //                     .SaveChangesAsync();
+
+        //                 supplierPackageModelList.Add(
+        //                     new AddSupplierPackageModel
+        //                     {
+        //                         SpPackSuppId =
+        //                             supplierPackage
+        //                                 .SpPackSuppId,
+
+        //                         SpPackageId =
+        //                             supplierPackage
+        //                                 .SpPackageId,
+
+        //                         SpSupplierId =
+        //                             supplierPackage
+        //                                 .SpSupplierId,
+
+        //                         SpByBoq =
+        //                             supplierPackage
+        //                                 .SpByBoq,
+
+        //                         ProjectCode =
+        //                             proj.PrjCode,
+
+        //                         ProjectName =
+        //                             proj.PrjName,
+
+        //                         TecCondSent =
+        //                             false
+        //                     }
+        //                 );
+        //             }
+
+        //             PackageSupplierId =
+        //                 supplierPackage
+        //                     .SpPackSuppId;
+
+        //             /*
+        //              * 2. Shift existing revisions.
+        //              */
+        //             int LastRevNo =
+        //                 await GetMaxRevisionNumberAsync(
+        //                     PackageSupplierId,
+        //                     _dbcontext
+        //                 );
+
+        //             if (LastRevNo >= 0)
+        //             {
+        //                 bool hasPendingRevision =
+        //                     await _dbcontext
+        //                         .TblSupplierPackageRevisions
+        //                         .AnyAsync(x =>
+        //                             x.PrPackSuppId ==
+        //                                 PackageSupplierId &&
+        //                             x.PrRevNo ==
+        //                                 LastRevNo &&
+        //                             (x.StatusId ?? 0) <
+        //                                 3
+        //                         );
+
+        //                 if (hasPendingRevision)
+        //                 {
+        //                     throw new Exception(
+        //                         "Revision not returned from Supplier. " +
+        //                         "Supplier ID: " +
+        //                         supplier.supID +
+        //                         ", Package Supplier ID: " +
+        //                         PackageSupplierId +
+        //                         ", Revision No: " +
+        //                         LastRevNo
+        //                     );
+        //                 }
+
+        //                 List<TblSupplierPackageRevision>
+        //                     existingRevisions =
+        //                         await _dbcontext
+        //                             .TblSupplierPackageRevisions
+        //                             .Where(x =>
+        //                                 x.PrPackSuppId ==
+        //                                     PackageSupplierId
+        //                             )
+        //                             .OrderByDescending(x =>
+        //                                 x.PrRevNo
+        //                             )
+        //                             .ToListAsync();
+
+        //                 foreach (
+        //                     TblSupplierPackageRevision revision
+        //                     in existingRevisions
+        //                 )
+        //                 {
+        //                     revision.PrRevNo =
+        //                         revision.PrRevNo +
+        //                         1;
+        //                 }
+
+        //                 await _dbcontext
+        //                     .SaveChangesAsync();
+        //             }
+
+        //             TblSupplierPackageRevision Rev1 =
+        //                 await _dbcontext
+        //                     .TblSupplierPackageRevisions
+        //                     .FirstOrDefaultAsync(x =>
+        //                         x.PrRevNo ==
+        //                             1 &&
+        //                         x.PrPackSuppId ==
+        //                             PackageSupplierId
+        //                     );
+
+        //             int rev1Id =
+        //                 Rev1?.PrRevId ??
+        //                 0;
+
+        //             TblSupplierPackageRevision
+        //                 supPackRev;
+
+        //             if (Rev1 != null)
+        //             {
+        //                 supPackRev =
+        //                     new TblSupplierPackageRevision
+        //                     {
+        //                         PrRevNo =
+        //                             0,
+
+        //                         PrPackSuppId =
+        //                             PackageSupplierId,
+
+        //                         PrTotPrice =
+        //                             Rev1.PrTotPrice,
+
+        //                         PrRevDate =
+        //                             DateTime.Now,
+
+        //                         PrCurrency =
+        //                             Rev1.PrCurrency,
+
+        //                         PrExchRate =
+        //                             Rev1.PrExchRate,
+
+        //                         RevExpiryDate =
+        //                             ExpiryDate,
+
+        //                         InsertedBy =
+        //                             UserName,
+
+        //                         InsertedByEmail =
+        //                             usrEmail
+        //                     };
+        //             }
+        //             else
+        //             {
+        //                 int projectCurrency =
+        //                     Convert.ToInt32(
+        //                         p.EstimatedCur
+        //                     );
+
+        //                 supPackRev =
+        //                     new TblSupplierPackageRevision
+        //                     {
+        //                         PrRevNo =
+        //                             0,
+
+        //                         PrPackSuppId =
+        //                             PackageSupplierId,
+
+        //                         PrTotPrice =
+        //                             0,
+
+        //                         PrRevDate =
+        //                             DateTime.Now,
+
+        //                         PrCurrency =
+        //                             projectCurrency,
+
+        //                         PrExchRate =
+        //                             1,
+
+        //                         RevExpiryDate =
+        //                             ExpiryDate,
+
+        //                         InsertedBy =
+        //                             UserName,
+
+        //                         InsertedByEmail =
+        //                             usrEmail
+        //                     };
+        //             }
+
+        //             await _dbcontext
+        //                 .TblSupplierPackageRevisions
+        //                 .AddAsync(
+        //                     supPackRev
+        //                 );
+
+        //             await _dbcontext
+        //                 .SaveChangesAsync();
+
+        //             /*
+        //              * EF Core fills the identity after SaveChanges.
+        //              */
+        //             int rev0Id =
+        //                 supPackRev.PrRevId;
+
+        //             TblSupplierPackageRevision Rev0 =
+        //                 supPackRev;
+
+        //             byte byBoq =
+        //                 Convert.ToByte(
+        //                     supplierPackage
+        //                         .SpByBoq ??
+        //                     0
+        //                 );
+
+        //             List<TblRevisionDetail>
+        //                 LstRevDetails =
+        //                     await InsertRevisionDetail(
+        //                         rev0Id,
+        //                         packId,
+        //                         byBoq,
+        //                         rev1Id,
+        //                         _dbcontext
+        //                     );
+
+        //             if (
+        //                 LstRevDetails != null &&
+        //                 LstRevDetails.Count > 0
+        //             )
+        //             {
+        //                 await _dbcontext
+        //                     .TblRevisionDetails
+        //                     .AddRangeAsync(
+        //                         LstRevDetails
+        //                     );
+
+        //                 await _dbcontext
+        //                     .SaveChangesAsync();
+        //             }
+
+        //             /*
+        //              * Insert Commercial Conditions.
+        //              */
+        //             List<TblSuppComCondReply>
+        //                 LstComCondReply =
+        //                     await InsertComercialConditions(
+        //                         rev0Id,
+        //                         packId,
+        //                         rev1Id,
+        //                         supInput.comercialCondList,
+        //                         CostConn
+        //                     );
+
+        //             /*
+        //              * Insert Technical Conditions.
+        //              */
+        //             List<TblSuppTechCondReply> LstTechCondReply = await InsertTechnicalConditions(
+        //                         rev0Id,
+        //                         packId,
+        //                         rev1Id,
+        //                         supInput.technicalCondList,
+        //                         CostConn
+        //                     );
+
+        //             /*
+        //              * Create the shared RFQ Excel only once.
+        //              *
+        //              * All suppliers use the same selected commercial
+        //              * and technical conditions, so the first supplier's
+        //              * condition lists are used to build the common file.
+        //              */
+        //             if (!sharedRfqExcelCreated)
+        //             {
+        //                 sharedRfqExcelWithConditions =
+        //                     CreateSharedRfqExcelWithConditions(
+        //                         baseRfqExcel,
+        //                         supInput.comercialCondList,
+        //                         LstComCondReply,
+        //                         supInput.technicalCondList,
+        //                         LstTechCondReply
+        //                     );
+
+        //                 temporaryFiles.Add(
+        //                     sharedRfqExcelWithConditions
+        //                 );
+
+        //                 sharedRfqExcelCreated =
+        //                     true;
+        //             }
+
+        //             /*
+        //              * Portal revision model.
+        //              */
+        //             revisionModelList.Add(
+        //                 new AddRevisionModel
+        //                 {
+        //                     PrRevId =
+        //                         Rev0.PrRevId,
+
+        //                     PrRevNo =
+        //                         Rev0.PrRevNo,
+
+        //                     PrRevDate =
+        //                         Rev0.PrRevDate,
+
+        //                     PrTotPrice =
+        //                         Rev0.PrTotPrice,
+
+        //                     PrPackSuppId =
+        //                         Rev0.PrPackSuppId,
+
+        //                     PrCurrency =
+        //                         Rev0.PrCurrency,
+
+        //                     PrExchRate =
+        //                         1,
+
+        //                     StatusId =
+        //                         1,
+
+        //                     ProjectCode =
+        //                         proj.PrjCode,
+
+        //                     IsSynched =
+        //                         false,
+
+        //                     RevExpiryDate =
+        //                         Rev0.RevExpiryDate,
+
+        //                     RevisionDetails =
+        //                         (
+        //                             from d in LstRevDetails
+        //                             select new AddRevisionDetailModel
+        //                             {
+        //                                 BoqResourceSeq =
+        //                                     d.RdResourceSeq,
+
+        //                                 ResourceDescription =
+        //                                     GetRessourceDescription(
+        //                                         ByBoq,
+        //                                         d.RdResourceSeq,
+        //                                         d.ResourceDescription,
+        //                                         Convert.ToBoolean(
+        //                                             d.IsAlternative
+        //                                         ),
+        //                                         CostConn
+        //                                     ),
+
+        //                                 ItemO =
+        //                                     d.RdBoqItem,
+
+        //                                 ItemDescription =
+        //                                     d.ItemDescription,
+
+        //                                 Quantity =
+        //                                     d.RdQty,
+
+        //                                 QuotationQty =
+        //                                     d.RdQuotationQty,
+
+        //                                 UnitPrice =
+        //                                     d.RdPrice,
+
+        //                                 TotalPrice =
+        //                                     d.RdQty *
+        //                                     d.UnitPriceAfterDiscount,
+
+        //                                 DiscountPerc =
+        //                                     d.RdDiscount,
+
+        //                                 Comments =
+        //                                     d.RdComment,
+
+        //                                 CreatedOn =
+        //                                     DateTime.Now,
+
+        //                                 IsSynched =
+        //                                     false,
+
+        //                                 ProjectCode =
+        //                                     proj.PrjCode,
+
+        //                                 ParentItemO =
+        //                                     d.ParentItemO,
+
+        //                                 ParentResourceId =
+        //                                     d.ParentResourceId
+        //                                         .ToString(),
+
+        //                                 NewItemId =
+        //                                     d.NewItemId,
+
+        //                                 NewItemResourceId =
+        //                                     d.NewItemResourceId,
+
+        //                                 IsNewItem =
+        //                                     d.IsNew,
+
+        //                                 IsAlternative =
+        //                                     d.IsAlternative,
+
+        //                                 UnitPriceAfterDiscount =
+        //                                     d.UnitPriceAfterDiscount,
+
+        //                                 UnitO =
+        //                                     d.UnitO ??
+        //                                     string.Empty,
+
+        //                                 BoqCtg =
+        //                                     d.BoqCtg ??
+        //                                     string.Empty,
+
+        //                                 BoqUnitMesure =
+        //                                     d.BoqUnitMesure ??
+        //                                     string.Empty,
+
+        //                                 L1 =
+        //                                     d.L1 ??
+        //                                     string.Empty,
+
+        //                                 L2 =
+        //                                     d.L2 ??
+        //                                     string.Empty,
+
+        //                                 L3 =
+        //                                     d.L3 ??
+        //                                     string.Empty,
+
+        //                                 L4 =
+        //                                     d.L4 ??
+        //                                     string.Empty,
+
+        //                                 L5 =
+        //                                     d.L5 ??
+        //                                     string.Empty,
+
+        //                                 L6 =
+        //                                     d.L6 ??
+        //                                     string.Empty,
+
+        //                                 L7 =
+        //                                     d.L7 ??
+        //                                     string.Empty,
+
+        //                                 L8 =
+        //                                     d.L8 ??
+        //                                     string.Empty,
+
+        //                                 L9 =
+        //                                     d.L9 ??
+        //                                     string.Empty,
+
+        //                                 L10 =
+        //                                     d.L10 ??
+        //                                     string.Empty,
+
+        //                                 C1 =
+        //                                     d.C1 ??
+        //                                     string.Empty,
+
+        //                                 C2 =
+        //                                     d.C2 ??
+        //                                     string.Empty,
+
+        //                                 C3 =
+        //                                     d.C3 ??
+        //                                     string.Empty,
+
+        //                                 C4 =
+        //                                     d.C4 ??
+        //                                     string.Empty,
+
+        //                                 C5 =
+        //                                     d.C5 ??
+        //                                     string.Empty,
+
+        //                                 C6 =
+        //                                     d.C6 ??
+        //                                     string.Empty,
+
+        //                                 C7 =
+        //                                     d.C7 ??
+        //                                     string.Empty,
+
+        //                                 C8 =
+        //                                     d.C8 ??
+        //                                     string.Empty,
+
+        //                                 C9 =
+        //                                     d.C9 ??
+        //                                     string.Empty,
+
+        //                                 C10 =
+        //                                     d.C10 ??
+        //                                     string.Empty,
+
+        //                                 C11 =
+        //                                     d.C11 ??
+        //                                     string.Empty,
+
+        //                                 C12 =
+        //                                     d.C12 ??
+        //                                     string.Empty,
+
+        //                                 C13 =
+        //                                     d.C13 ??
+        //                                     string.Empty,
+
+        //                                 C14 =
+        //                                     d.C14 ??
+        //                                     string.Empty,
+
+        //                                 C15 =
+        //                                     d.C15 ??
+        //                                     string.Empty,
+
+        //                                 BoqRefNumber =
+        //                                     d.RdBoqRefNumber ??
+        //                                     string.Empty,
+
+        //                                 AccComment =
+        //                                     d.RdAccComment ??
+        //                                     string.Empty
+        //                             }
+        //                         )
+        //                         .ToList(),
+
+        //                     CommercialConditions =
+        //                         (
+        //                             from d in LstComCondReply
+        //                             select new AddCondModel
+        //                             {
+        //                                 Id =
+        //                                     d.CdComConId,
+
+        //                                 CondValue =
+        //                                     d.CdSuppReply,
+
+        //                                 ACCCondValue =
+        //                                     d.CdAccCond,
+
+        //                                 ProjectCode =
+        //                                     proj.PrjCode
+        //                             }
+        //                         )
+        //                         .ToList(),
+
+        //                     TechnicalConditions =
+        //                         (
+        //                             from d in LstTechCondReply
+        //                             select new AddCondModel
+        //                             {
+        //                                 Id =
+        //                                     d.TcTechConId,
+
+        //                                 CondValue =
+        //                                     d.TcSuppReply,
+
+        //                                 ACCCondValue =
+        //                                     d.TcAccCond,
+
+        //                                 ProjectCode =
+        //                                     proj.PrjCode
+        //                             }
+        //                         )
+        //                         .ToList()
+        //                 }
+        //             );
+
+        //             /*
+        //              * Build email attachments.
+        //              * Every supplier receives the same completed RFQ Excel.
+        //              */
+        //             List<string> supplierAttachmentList =
+        //                 new List<string>();
+
+        //             if (
+        //                 !string.IsNullOrWhiteSpace(
+        //                     supInput.FilePath
+        //                 )
+        //             )
+        //             {
+        //                 supplierAttachmentList.Add(
+        //                     supInput.FilePath
+        //                 );
+        //             }
+
+        //             if (
+        //                 supInput.mailAttachments != null
+        //             )
+        //             {
+        //                 foreach (
+        //                     string attachment
+        //                     in supInput.mailAttachments
+        //                 )
+        //                 {
+        //                     if (
+        //                         !string.IsNullOrWhiteSpace(
+        //                             attachment
+        //                         )
+        //                     )
+        //                     {
+        //                         supplierAttachmentList.Add(
+        //                             attachment
+        //                         );
+        //                     }
+        //                 }
+        //             }
+
+        //             if (
+        //                 string.IsNullOrWhiteSpace(
+        //                     sharedRfqExcelWithConditions
+        //                 ) ||
+        //                 !File.Exists(
+        //                     sharedRfqExcelWithConditions
+        //                 )
+        //             )
+        //             {
+        //                 throw new Exception(
+        //                     "The RFQ Excel file with conditions was not created."
+        //                 );
+        //             }
+
+        //             supplierAttachmentList.Add(
+        //                 sharedRfqExcelWithConditions
+        //             );
+
+        //             /*
+        //              * Build separate email for this supplier.
+        //              */
+        //             List<string> supplierEmailTo =
+        //                 NormalizeRepositoryEmailList(
+        //                     supInput.mailTo
+        //                 );
+
+        //             if (supplierEmailTo.Count == 0)
+        //             {
+        //                 throw new Exception(
+        //                     "No Email To address was provided for supplier " +
+        //                     (
+        //                         supInput.supplierName ??
+        //                         supplier.supID.ToString()
+        //                     )
+        //                 );
+        //             }
+
+        //             MailForSending mail =
+        //                 new MailForSending();
+
+        //             foreach (
+        //                 string toAddress
+        //                 in supplierEmailTo
+        //             )
+        //             {
+        //                 mail.To.Add(
+        //                     toAddress
+        //                 );
+        //             }
+
+        //             /*
+        //              * Apply the same shared CC to every supplier email.
+        //              */
+        //             List<string> cleanSharedCc =
+        //                 emailCc
+        //                     .Where(cc =>
+        //                         !supplierEmailTo.Contains(
+        //                             cc,
+        //                             StringComparer.OrdinalIgnoreCase
+        //                         )
+        //                     )
+        //                     .Distinct(
+        //                         StringComparer.OrdinalIgnoreCase
+        //                     )
+        //                     .ToList();
+
+        //             foreach (
+        //                 string ccAddress
+        //                 in cleanSharedCc
+        //             )
+        //             {
+        //                 mail.Cc.Add(
+        //                     ccAddress
+        //                 );
+        //             }
+
+        //             if (
+        //                 !string.IsNullOrWhiteSpace(
+        //                     _configuration["mailBcc1"]
+        //                 )
+        //             )
+        //             {
+        //                 mail.Bcc.Add(
+        //                     _configuration["mailBcc1"]
+        //                 );
+        //             }
+
+        //             if (
+        //                 !string.IsNullOrWhiteSpace(
+        //                     _configuration["mailBcc2"]
+        //                 )
+        //             )
+        //             {
+        //                 mail.Bcc.Add(_configuration["mailBcc2"]);
+        //             }
+
+        //             mail.Subject = $"Job in Hand-{proj.PrjName}-{PackageName}";
+
+        //             mail.Body = !string.IsNullOrWhiteSpace(supInput.EmailTemplate)
+        //                     ? supInput.EmailTemplate
+        //                     : @"Dear Sir,<br><br>
+        //                 Kindly find attachments and fill the price.
+        //                 <br><br>Best regards";
+
+        //             if (
+        //                 !string.IsNullOrWhiteSpace(
+        //                     userSignature
+        //                 )
+        //             )
+        //             {
+        //                 mail.Body +=
+        //                     "<br><br>" +
+        //                     userSignature;
+        //             }
+
+        //             /*
+        //              * Copy the attachment list so each email has
+        //              * its own independent list instance.
+        //              */
+        //             mail.Attachments =
+        //                 supplierAttachmentList
+        //                     .Distinct(
+        //                         StringComparer.OrdinalIgnoreCase
+        //                     )
+        //                     .ToList();
+
+        //             mailListForSending.Add(
+        //                 mail
+        //             );
+        //         }
+
+        //         if (!sharedRfqExcelCreated)
+        //         {
+        //             throw new Exception(
+        //                 "The RFQ Excel file with conditions was not created."
+        //             );
+        //         }
+
+        //         supplierPackageRevisionModel.SupplierPackageModels = supplierPackageModelList;
+
+        //         supplierPackageRevisionModel.RevisionModels = revisionModelList;
+
+        //         /*
+        //          * Post data to portal API.
+        //          */
+        //         string body = System.Text.Json.JsonSerializer.Serialize(supplierPackageRevisionModel);
+
+        //         string portalApiPath = _configuration["PortalApiPath"];
+
+        //         string key = _configuration["External:Key"];
+
+        //         using StringContent requestContent =
+        //             new StringContent(
+        //                 body,
+        //                 Encoding.UTF8,
+        //                 "application/json"
+        //             );
+
+        //         /*
+        //          * Avoid adding the Authorization header repeatedly
+        //          * to the shared HttpClient.
+        //          */
+        //         using HttpRequestMessage portalRequest = new HttpRequestMessage(HttpMethod.Post, portalApiPath + "External/AddSupplierRevisionInPortal");
+
+        //         portalRequest.Content = requestContent;
+
+        //         if (!string.IsNullOrWhiteSpace(key))
+        //         {
+        //             portalRequest.Headers.TryAddWithoutValidation("Authorization", key);
+        //         }
+
+        //         using HttpResponseMessage response = await _httpClient.SendAsync(portalRequest);
+
+        //         response.EnsureSuccessStatusCode();
+
+        //         string content =
+        //             await response.Content
+        //                 .ReadAsStringAsync();
+
+        //         if (
+        //             !string.Equals(
+        //                 content?.Trim(),
+        //                 "true",
+        //                 StringComparison.OrdinalIgnoreCase
+        //             )
+        //         )
+        //         {
+        //             throw new Exception(
+        //                 "An error occurred on the Portal API."
+        //             );
+        //         }
+
+        //         /*
+        //          * Send one separate email to every supplier.
+        //          * Each email contains the same completed RFQ Excel.
+        //          */
+        //         if (mailListForSending.Count == 0)
+        //         {
+        //             throw new Exception(
+        //                 "No supplier emails were prepared."
+        //             );
+        //         }
+
+        //         foreach (
+        //             MailForSending email
+        //             in mailListForSending
+        //         )
+        //         {
+        //             Mail mailSender =
+        //                 new Mail();
+
+        //             string currentSendResult =
+        //                 mailSender.SendMail(
+        //                     email.To,
+        //                     email.Cc,
+        //                     email.Bcc,
+        //                     email.Subject,
+        //                     email.Body,
+        //                     email.Attachments,
+        //                     email.IsBodyHtml,
+        //                     attachments
+        //                 );
+
+        //             if (
+        //                 !string.Equals(
+        //                     currentSendResult,
+        //                     "sent",
+        //                     StringComparison.OrdinalIgnoreCase
+        //                 )
+        //             )
+        //             {
+        //                 throw new Exception(
+        //                     "Email was not sent to: " +
+        //                     string.Join(
+        //                         "; ",
+        //                         email.To
+        //                     ) +
+        //                     ". Mail result: " +
+        //                     currentSendResult
+        //                 );
+        //             }
+        //         }
+
+        //         await transaction.CommitAsync();
+
+        //         return true;
+        //     }
+        //     catch
+        //     {
+        //         await transaction.RollbackAsync();
+
+        //         throw;
+        //     }
+        //     finally
+        //     {
+        //         await transaction.DisposeAsync();
+
+        //         await _dbcontext.DisposeAsync();
+
+        //         await _TSdbcontext.DisposeAsync();
+
+        //         /*
+        //          * Delete only the temporary condition-enhanced copy.
+        //          *
+        //          * The base Excel generated by ValidateExcelBeforeAssign
+        //          * is not deleted here because the existing application
+        //          * may manage that file separately.
+        //          */
+        //         foreach (
+        //             string temporaryFile
+        //             in temporaryFiles
+        //         )
+        //         {
+        //             try
+        //             {
+        //                 if (
+        //                     !string.IsNullOrWhiteSpace(
+        //                         temporaryFile
+        //                     ) &&
+        //                     File.Exists(temporaryFile)
+        //                 )
+        //                 {
+        //                     File.Delete(
+        //                         temporaryFile
+        //                     );
+        //                 }
+        //             }
+        //             catch (Exception cleanupException)
+        //             {
+        //                 Console.WriteLine(
+        //                     "Unable to delete temporary RFQ file: " +
+        //                     temporaryFile +
+        //                     ". Error: " +
+        //                     cleanupException.Message
+        //                 );
+        //             }
+        //         }
+        //     }
+        // }
 
 
 
@@ -3591,4 +3492,148 @@ namespace AccApi.Repository.Managers
         }
 
     }
+
+
+    internal static class SharedRfqWorkbookBuilder
+    {
+        public static string Create(
+            string sourceExcelPath,
+            List<Condition> commercialInput,
+            List<TblSuppComCondReply> commercialReplies,
+            List<Condition> technicalInput,
+            List<TblSuppTechCondReply> technicalReplies)
+        {
+            if (string.IsNullOrWhiteSpace(sourceExcelPath) || !File.Exists(sourceExcelPath))
+                throw new FileNotFoundException("The generated RFQ Excel file was not found.", sourceExcelPath);
+
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            string directory = Path.GetDirectoryName(sourceExcelPath) ?? Path.GetTempPath();
+            string target = Path.Combine(directory,
+                Path.GetFileNameWithoutExtension(sourceExcelPath) + "-Conditions-" +
+                DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xlsx");
+
+            File.Copy(sourceExcelPath, target, true);
+
+            using ExcelPackage package = new ExcelPackage(new FileInfo(target));
+            WriteCommercial(package, commercialInput, commercialReplies);
+            WriteTechnical(package, technicalInput, technicalReplies);
+            package.Save();
+            return target;
+        }
+
+        private static void WriteCommercial(
+            ExcelPackage package,
+            List<Condition> input,
+            List<TblSuppComCondReply> replies)
+        {
+            const string name = "Commercial Conditions";
+            ExcelWorksheet oldSheet = package.Workbook.Worksheets[name];
+            if (oldSheet != null) package.Workbook.Worksheets.Delete(oldSheet);
+            ExcelWorksheet sheet = package.Workbook.Worksheets.Add(name);
+
+            int row = 2;
+            foreach (Condition condition in input ?? new List<Condition>())
+            {
+                TblSuppComCondReply reply = (replies ?? new List<TblSuppComCondReply>())
+                    .FirstOrDefault(x => x.CdComConId == condition.id);
+                string acc = reply?.CdAccCond ?? condition.ACCCondValue ?? string.Empty;
+                string supplier = string.IsNullOrWhiteSpace(reply?.CdSuppReply) ? acc : reply.CdSuppReply;
+                sheet.Cells[row, 1].Value = condition.description ?? string.Empty;
+                sheet.Cells[row, 2].Value = acc;
+                sheet.Cells[row, 3].Value = supplier;
+                row++;
+            }
+
+            FormatAndProtect(sheet, Math.Max(1, row - 1));
+        }
+
+        private static void WriteTechnical(
+            ExcelPackage package,
+            List<Condition> input,
+            List<TblSuppTechCondReply> replies)
+        {
+            const string name = "Technical Conditions";
+            ExcelWorksheet oldSheet = package.Workbook.Worksheets[name];
+            if (oldSheet != null) package.Workbook.Worksheets.Delete(oldSheet);
+            ExcelWorksheet sheet = package.Workbook.Worksheets.Add(name);
+
+            int row = 2;
+            foreach (Condition condition in input ?? new List<Condition>())
+            {
+                TblSuppTechCondReply reply = (replies ?? new List<TblSuppTechCondReply>())
+                    .FirstOrDefault(x => x.TcTechConId == condition.id);
+                string acc = reply?.TcAccCond ?? condition.ACCCondValue ?? string.Empty;
+                string supplier = string.IsNullOrWhiteSpace(reply?.TcSuppReply) ? acc : reply.TcSuppReply;
+                sheet.Cells[row, 1].Value = condition.description ?? string.Empty;
+                sheet.Cells[row, 2].Value = acc;
+                sheet.Cells[row, 3].Value = supplier;
+                row++;
+            }
+
+            FormatAndProtect(sheet, Math.Max(1, row - 1));
+        }
+
+        private static void FormatAndProtect(ExcelWorksheet sheet, int lastRow)
+        {
+            sheet.Cells[1, 1].Value = "Condition";
+            sheet.Cells[1, 2].Value = "ACC Condition";
+            sheet.Cells[1, 3].Value = "Supplier Condition";
+            sheet.View.FreezePanes(2, 1);
+            sheet.Cells.Style.Locked = true;
+
+            using (ExcelRange header = sheet.Cells[1, 1, 1, 3])
+            {
+                header.Style.Font.Bold = true;
+                header.Style.Font.Color.SetColor(Color.White);
+                header.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                header.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(14, 116, 144));
+                header.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                header.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                header.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                header.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                header.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                header.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+            }
+
+            if (lastRow >= 2)
+            {
+                using ExcelRange data = sheet.Cells[2, 1, lastRow, 3];
+                data.Style.WrapText = true;
+                data.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                data.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                data.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                data.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                data.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+
+                using ExcelRange locked = sheet.Cells[2, 1, lastRow, 2];
+                locked.Style.Locked = true;
+                locked.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                locked.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(242, 242, 242));
+
+                using ExcelRange editable = sheet.Cells[2, 3, lastRow, 3];
+                editable.Style.Locked = false;
+                editable.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                editable.Style.Fill.BackgroundColor.SetColor(Color.White);
+            }
+
+            sheet.Column(1).Width = 55;
+            sheet.Column(2).Width = 45;
+            sheet.Column(3).Width = 45;
+            sheet.Cells[1, 1, lastRow, 3].AutoFilter = true;
+            sheet.Protection.IsProtected = true;
+            sheet.Protection.AllowSelectUnlockedCells = true;
+            sheet.Protection.AllowSelectLockedCells = true;
+            sheet.Protection.AllowAutoFilter = true;
+            sheet.Protection.AllowDeleteColumns = false;
+            sheet.Protection.AllowDeleteRows = false;
+            sheet.Protection.AllowInsertColumns = false;
+            sheet.Protection.AllowInsertRows = false;
+            sheet.Protection.AllowFormatCells = false;
+            sheet.Protection.AllowFormatColumns = false;
+            sheet.Protection.AllowFormatRows = false;
+        }
+    }
+
+
 }
