@@ -710,19 +710,18 @@ namespace AccApi.Repository.Managers
             //    return true;
         }
 
-
         public async Task<bool> AssignPackageSuppliers(
-    int packId,
-    List<SupplierInputList> supInputList,
-    byte ByBoq,
-    string UserName,
-    List<IFormFile> attachments,
-    DateTime ExpiryDate,
-    List<string> emailCc,
-    List<string> generatedAttachments,
-    bool includeRfqAttachment,
-    string CostConn,
-    string TSConn)
+            int packId,
+            List<SupplierInputList> supInputList,
+            byte ByBoq,
+            string UserName,
+            List<IFormFile> attachments,
+            DateTime ExpiryDate,
+            List<string> emailCc,
+            List<string> generatedAttachments,
+            bool includeRfqAttachment,
+            string CostConn,
+            string TSConn)
         {
             await using AccDbContext db = new AccDbContext(CostConn);
             await using PolicyDbContext tsDb = new PolicyDbContext(TSConn);
@@ -730,28 +729,263 @@ namespace AccApi.Repository.Managers
 
             var temporaryFiles = new List<string>();
 
+            string GetSafeWorksheetName(string worksheetName)
+            {
+                string result = string.IsNullOrWhiteSpace(worksheetName)
+                    ? "Sheet"
+                    : worksheetName
+                        .Replace(":", " ")
+                        .Replace("\\", " ")
+                        .Replace("/", " ")
+                        .Replace("?", " ")
+                        .Replace("*", " ")
+                        .Replace("[", " ")
+                        .Replace("]", " ")
+                        .Trim();
+
+                return result.Length > 31
+                    ? result.Substring(0, 31)
+                    : result;
+            }
+
+            void FormatConditionWorksheet(ExcelWorksheet worksheet, int lastRow)
+            {
+                if (worksheet == null)
+                    throw new ArgumentNullException(nameof(worksheet));
+
+                worksheet.Cells[1, 1].Value = "Condition";
+                worksheet.Cells[1, 2].Value = "ACC Condition";
+                worksheet.Cells[1, 3].Value = "Supplier Condition";
+                worksheet.View.FreezePanes(2, 1);
+                worksheet.Cells.Style.Locked = true;
+
+                using (ExcelRange header = worksheet.Cells[1, 1, 1, 3])
+                {
+                    header.Style.Font.Bold = true;
+                    header.Style.Font.Color.SetColor(Color.White);
+                    header.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                    header.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(14, 116, 144));
+                    header.Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    header.Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    header.Style.WrapText = true;
+                    header.Style.Locked = true;
+                    header.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                    header.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                    header.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                    header.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                }
+
+                worksheet.Row(1).Height = 24;
+
+                if (lastRow >= 2)
+                {
+                    using (ExcelRange dataRange = worksheet.Cells[2, 1, lastRow, 3])
+                    {
+                        dataRange.Style.WrapText = true;
+                        dataRange.Style.VerticalAlignment = ExcelVerticalAlignment.Top;
+                        dataRange.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                        dataRange.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+                    }
+
+                    using (ExcelRange lockedRange = worksheet.Cells[2, 1, lastRow, 2])
+                    {
+                        lockedRange.Style.Locked = true;
+                        lockedRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        lockedRange.Style.Fill.BackgroundColor.SetColor(Color.FromArgb(242, 242, 242));
+                    }
+
+                    using (ExcelRange editableRange = worksheet.Cells[2, 3, lastRow, 3])
+                    {
+                        editableRange.Style.Locked = false;
+                        editableRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        editableRange.Style.Fill.BackgroundColor.SetColor(Color.White);
+                    }
+                }
+
+                worksheet.Column(1).Width = 55;
+                worksheet.Column(2).Width = 45;
+                worksheet.Column(3).Width = 45;
+
+                worksheet.Cells[1, 1, Math.Max(1, lastRow), 3].AutoFilter = true;
+                worksheet.PrinterSettings.Orientation = eOrientation.Landscape;
+                worksheet.PrinterSettings.FitToPage = true;
+                worksheet.PrinterSettings.FitToWidth = 1;
+                worksheet.PrinterSettings.FitToHeight = 0;
+                worksheet.PrinterSettings.PrintArea =
+                    worksheet.Cells[1, 1, Math.Max(1, lastRow), 3];
+
+                worksheet.Protection.IsProtected = true;
+                worksheet.Protection.AllowSelectUnlockedCells = true;
+                worksheet.Protection.AllowSelectLockedCells = true;
+                worksheet.Protection.AllowAutoFilter = true;
+                worksheet.Protection.AllowDeleteColumns = false;
+                worksheet.Protection.AllowDeleteRows = false;
+                worksheet.Protection.AllowInsertColumns = false;
+                worksheet.Protection.AllowInsertRows = false;
+                worksheet.Protection.AllowFormatCells = false;
+                worksheet.Protection.AllowFormatColumns = false;
+                worksheet.Protection.AllowFormatRows = false;
+            }
+
+            string CreateRfqWorkbookWithConditionSheets(
+                string sourceExcelPath,
+                List<Condition> commercialInput,
+                List<TblSuppComCondReply> commercialReplies,
+                List<Condition> technicalInput,
+                List<TblSuppTechCondReply> technicalReplies)
+            {
+                if (string.IsNullOrWhiteSpace(sourceExcelPath))
+                    throw new Exception("The generated RFQ Excel file path is empty.");
+
+                if (!File.Exists(sourceExcelPath))
+                    throw new FileNotFoundException(
+                        "The generated RFQ Excel file was not found.",
+                        sourceExcelPath);
+
+                string sourceDirectory = Path.GetDirectoryName(sourceExcelPath);
+                if (string.IsNullOrWhiteSpace(sourceDirectory))
+                    sourceDirectory = Path.GetTempPath();
+
+                string targetExcelPath = Path.Combine(
+                    sourceDirectory,
+                    Path.GetFileNameWithoutExtension(sourceExcelPath) +
+                    "-Conditions-" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + ".xlsx");
+
+                File.Copy(sourceExcelPath, targetExcelPath, true);
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+                using (var package = new ExcelPackage(new FileInfo(targetExcelPath)))
+                {
+                    string commercialSheetName = GetSafeWorksheetName("Commercial Conditions");
+                    ExcelWorksheet oldCommercialSheet = package.Workbook.Worksheets[commercialSheetName];
+                    if (oldCommercialSheet != null)
+                        package.Workbook.Worksheets.Delete(oldCommercialSheet);
+
+                    ExcelWorksheet commercialSheet =
+                        package.Workbook.Worksheets.Add(commercialSheetName);
+
+                    List<Condition> safeCommercialInput =
+                        commercialInput ?? new List<Condition>();
+                    List<TblSuppComCondReply> safeCommercialReplies =
+                        commercialReplies ?? new List<TblSuppComCondReply>();
+
+                    int commercialRow = 2;
+
+                    foreach (Condition condition in safeCommercialInput)
+                    {
+                        TblSuppComCondReply reply = safeCommercialReplies
+                            .FirstOrDefault(x => x.CdComConId == condition.id);
+
+                        commercialSheet.Cells[commercialRow, 1].Value =
+                            condition.description ?? string.Empty;
+                        commercialSheet.Cells[commercialRow, 2].Value =
+                            reply?.CdAccCond ?? condition.ACCCondValue ?? string.Empty;
+                        commercialSheet.Cells[commercialRow, 3].Value =
+                            reply?.CdSuppReply ?? string.Empty;
+                        commercialRow++;
+                    }
+
+                    foreach (TblSuppComCondReply reply in safeCommercialReplies)
+                    {
+                        if (safeCommercialInput.Any(x => x.id == reply.CdComConId))
+                            continue;
+
+                        commercialSheet.Cells[commercialRow, 1].Value =
+                            "Condition " + reply.CdComConId;
+                        commercialSheet.Cells[commercialRow, 2].Value =
+                            reply.CdAccCond ?? string.Empty;
+                        commercialSheet.Cells[commercialRow, 3].Value =
+                            reply.CdSuppReply ?? string.Empty;
+                        commercialRow++;
+                    }
+
+                    FormatConditionWorksheet(
+                        commercialSheet,
+                        Math.Max(1, commercialRow - 1));
+
+                    string technicalSheetName = GetSafeWorksheetName("Technical Conditions");
+                    ExcelWorksheet oldTechnicalSheet = package.Workbook.Worksheets[technicalSheetName];
+                    if (oldTechnicalSheet != null)
+                        package.Workbook.Worksheets.Delete(oldTechnicalSheet);
+
+                    ExcelWorksheet technicalSheet =
+                        package.Workbook.Worksheets.Add(technicalSheetName);
+
+                    List<Condition> safeTechnicalInput =
+                        technicalInput ?? new List<Condition>();
+                    List<TblSuppTechCondReply> safeTechnicalReplies =
+                        technicalReplies ?? new List<TblSuppTechCondReply>();
+
+                    int technicalRow = 2;
+
+                    foreach (Condition condition in safeTechnicalInput)
+                    {
+                        TblSuppTechCondReply reply = safeTechnicalReplies
+                            .FirstOrDefault(x => x.TcTechConId == condition.id);
+
+                        technicalSheet.Cells[technicalRow, 1].Value =
+                            condition.description ?? string.Empty;
+                        technicalSheet.Cells[technicalRow, 2].Value =
+                            reply?.TcAccCond ?? condition.ACCCondValue ?? string.Empty;
+                        technicalSheet.Cells[technicalRow, 3].Value =
+                            reply?.TcSuppReply ?? string.Empty;
+                        technicalRow++;
+                    }
+
+                    foreach (TblSuppTechCondReply reply in safeTechnicalReplies)
+                    {
+                        if (safeTechnicalInput.Any(x => x.id == reply.TcTechConId))
+                            continue;
+
+                        technicalSheet.Cells[technicalRow, 1].Value =
+                            "Condition " + reply.TcTechConId;
+                        technicalSheet.Cells[technicalRow, 2].Value =
+                            reply.TcAccCond ?? string.Empty;
+                        technicalSheet.Cells[technicalRow, 3].Value =
+                            reply.TcSuppReply ?? string.Empty;
+                        technicalRow++;
+                    }
+
+                    FormatConditionWorksheet(
+                        technicalSheet,
+                        Math.Max(1, technicalRow - 1));
+
+                    package.Save();
+                }
+
+                return targetExcelPath;
+            }
+
             try
             {
                 if (supInputList == null || supInputList.Count == 0)
                     throw new Exception("At least one supplier is required.");
 
                 emailCc = NormalizeRepositoryEmailList(emailCc);
+
                 generatedAttachments = (generatedAttachments ?? new List<string>())
                     .Where(x => !string.IsNullOrWhiteSpace(x))
                     .Select(x => x.Trim())
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .ToList();
 
-                var package = await _mdbContext.TblPackages
+                var packageEntity = await _mdbContext.TblPackages
                     .FirstOrDefaultAsync(x => x.PkgeId == packId);
-                if (package == null) throw new Exception("Package was not found.");
+
+                if (packageEntity == null)
+                    throw new Exception("Package was not found.");
 
                 var parameter = await db.TblParameters.FirstOrDefaultAsync();
-                if (parameter == null) throw new Exception("Project parameters were not found.");
+                if (parameter == null)
+                    throw new Exception("Project parameters were not found.");
 
                 var project = await tsDb.Tblprojects
                     .FirstOrDefaultAsync(x => x.Seq == parameter.TsProjId);
-                if (project == null) throw new Exception("Project information was not found.");
+
+                if (project == null)
+                    throw new Exception("Project information was not found.");
 
                 User user = _logonRepository.GetUser(UserName);
                 string signature = user?.UsrEmailSignature ?? string.Empty;
@@ -761,9 +995,11 @@ namespace AccApi.Repository.Managers
                     ?? ValidateExcelBeforeAssign(packId, ByBoq, false, CostConn);
 
                 if (string.IsNullOrWhiteSpace(baseRfqExcel) || !File.Exists(baseRfqExcel))
-                    throw new FileNotFoundException("The RFQ Excel file was not found.", baseRfqExcel);
+                    throw new FileNotFoundException(
+                        "The RFQ Excel file was not found.",
+                        baseRfqExcel);
 
-                string sharedRfq = string.Empty;
+                string sharedRfqWithConditions = string.Empty;
                 var mailQueue = new List<MailForSending>();
                 var supplierModels = new List<AddSupplierPackageModel>();
                 var revisionModels = new List<AddRevisionModel>();
@@ -774,6 +1010,7 @@ namespace AccApi.Repository.Managers
                         throw new Exception("Invalid supplier information.");
 
                     SupplierInput supplier = input.supplierInput;
+
                     bool hasPortalAccount = await _mdbContext.TblSuppliers
                         .AsNoTracking()
                         .Where(x => x.SupCode == supplier.supID)
@@ -782,9 +1019,11 @@ namespace AccApi.Repository.Managers
 
                     TblSupplierPackage supplierPackage = await db.TblSupplierPackages
                         .FirstOrDefaultAsync(x =>
-                            x.SpPackageId == packId && x.SpSupplierId == supplier.supID);
+                            x.SpPackageId == packId &&
+                            x.SpSupplierId == supplier.supID);
 
                     bool isNewSupplierPackage = supplierPackage == null;
+
                     if (supplierPackage == null)
                     {
                         supplierPackage = new TblSupplierPackage
@@ -793,12 +1032,14 @@ namespace AccApi.Repository.Managers
                             SpSupplierId = supplier.supID,
                             SpByBoq = ByBoq
                         };
+
                         await db.TblSupplierPackages.AddAsync(supplierPackage);
                         await db.SaveChangesAsync();
                     }
 
                     int packageSupplierId = supplierPackage.SpPackSuppId;
-                    int lastRevisionNo = await GetMaxRevisionNumberAsync(packageSupplierId, db);
+                    int lastRevisionNo =
+                        await GetMaxRevisionNumberAsync(packageSupplierId, db);
 
                     if (lastRevisionNo >= 0)
                     {
@@ -808,12 +1049,17 @@ namespace AccApi.Repository.Managers
                             (x.StatusId ?? 0) < 3);
 
                         if (pending)
-                            throw new Exception("Revision not returned from Supplier. Supplier ID: " + supplier.supID);
+                        {
+                            throw new Exception(
+                                "Revision not returned from Supplier. Supplier ID: " +
+                                supplier.supID);
+                        }
 
-                        List<TblSupplierPackageRevision> revisions = await db.TblSupplierPackageRevisions
-                            .Where(x => x.PrPackSuppId == packageSupplierId)
-                            .OrderByDescending(x => x.PrRevNo)
-                            .ToListAsync();
+                        List<TblSupplierPackageRevision> revisions =
+                            await db.TblSupplierPackageRevisions
+                                .Where(x => x.PrPackSuppId == packageSupplierId)
+                                .OrderByDescending(x => x.PrRevNo)
+                                .ToListAsync();
 
                         foreach (TblSupplierPackageRevision revision in revisions)
                             revision.PrRevNo += 1;
@@ -821,8 +1067,10 @@ namespace AccApi.Repository.Managers
                         await db.SaveChangesAsync();
                     }
 
-                    TblSupplierPackageRevision rev1 = await db.TblSupplierPackageRevisions
-                        .FirstOrDefaultAsync(x => x.PrPackSuppId == packageSupplierId && x.PrRevNo == 1);
+                    TblSupplierPackageRevision rev1 =
+                        await db.TblSupplierPackageRevisions.FirstOrDefaultAsync(x =>
+                            x.PrPackSuppId == packageSupplierId &&
+                            x.PrRevNo == 1);
 
                     var rev0 = new TblSupplierPackageRevision
                     {
@@ -844,7 +1092,11 @@ namespace AccApi.Repository.Managers
                     byte byBoq = Convert.ToByte(supplierPackage.SpByBoq ?? 0);
 
                     List<TblRevisionDetail> details = await InsertRevisionDetail(
-                        rev0.PrRevId, packId, byBoq, rev1Id, db) ?? new List<TblRevisionDetail>();
+                        rev0.PrRevId,
+                        packId,
+                        byBoq,
+                        rev1Id,
+                        db) ?? new List<TblRevisionDetail>();
 
                     if (details.Count > 0)
                     {
@@ -852,28 +1104,34 @@ namespace AccApi.Repository.Managers
                         await db.SaveChangesAsync();
                     }
 
-                    List<TblSuppComCondReply> commercial = await InsertComercialConditions(
-                        rev0.PrRevId, packId, rev1Id,
-                        input.comercialCondList ?? new List<Condition>(), CostConn)
-                        ?? new List<TblSuppComCondReply>();
+                    List<TblSuppComCondReply> commercial =
+                        await InsertComercialConditions(
+                            rev0.PrRevId,
+                            packId,
+                            rev1Id,
+                            input.comercialCondList ?? new List<Condition>(),
+                            CostConn) ?? new List<TblSuppComCondReply>();
 
-                    List<TblSuppTechCondReply> technical = await InsertTechnicalConditions(
-                        rev0.PrRevId, packId, rev1Id,
-                        input.technicalCondList ?? new List<Condition>(), CostConn)
-                        ?? new List<TblSuppTechCondReply>();
+                    List<TblSuppTechCondReply> technical =
+                        await InsertTechnicalConditions(
+                            rev0.PrRevId,
+                            packId,
+                            rev1Id,
+                            input.technicalCondList ?? new List<Condition>(),
+                            CostConn) ?? new List<TblSuppTechCondReply>();
 
-                    if (string.IsNullOrWhiteSpace(sharedRfq))
+                    if (string.IsNullOrWhiteSpace(sharedRfqWithConditions))
                     {
-                        sharedRfq = SharedRfqWorkbookBuilder.Create(
+                        sharedRfqWithConditions = CreateRfqWorkbookWithConditionSheets(
                             baseRfqExcel,
                             input.comercialCondList,
                             commercial,
                             input.technicalCondList,
                             technical);
-                        temporaryFiles.Add(sharedRfq);
+
+                        temporaryFiles.Add(sharedRfqWithConditions);
                     }
 
-                    // Only suppliers with a portal account are posted to the portal API.
                     if (hasPortalAccount)
                     {
                         if (isNewSupplierPackage)
@@ -906,8 +1164,12 @@ namespace AccApi.Repository.Managers
                             RevisionDetails = details.Select(d => new AddRevisionDetailModel
                             {
                                 BoqResourceSeq = d.RdResourceSeq,
-                                ResourceDescription = GetRessourceDescription(ByBoq, d.RdResourceSeq,
-                                    d.ResourceDescription, Convert.ToBoolean(d.IsAlternative), CostConn),
+                                ResourceDescription = GetRessourceDescription(
+                                    ByBoq,
+                                    d.RdResourceSeq,
+                                    d.ResourceDescription,
+                                    Convert.ToBoolean(d.IsAlternative),
+                                    CostConn),
                                 ItemO = d.RdBoqItem,
                                 ItemDescription = d.ItemDescription,
                                 Quantity = d.RdQty,
@@ -976,44 +1238,71 @@ namespace AccApi.Repository.Managers
 
                     List<string> to = NormalizeRepositoryEmailList(input.mailTo);
                     if (to.Count == 0)
-                        throw new Exception("No Email To address was provided for supplier " +
+                    {
+                        throw new Exception(
+                            "No Email To address was provided for supplier " +
                             (input.supplierName ?? supplier.supID.ToString()));
+                    }
 
                     var mail = new MailForSending();
-                    foreach (string address in to) mail.To.Add(address);
-                    foreach (string address in emailCc.Where(x => !to.Contains(x, StringComparer.OrdinalIgnoreCase)))
+
+                    foreach (string address in to)
+                        mail.To.Add(address);
+
+                    foreach (string address in emailCc
+                        .Where(x => !to.Contains(x, StringComparer.OrdinalIgnoreCase))
+                        .Distinct(StringComparer.OrdinalIgnoreCase))
+                    {
                         mail.Cc.Add(address);
+                    }
 
                     if (!string.IsNullOrWhiteSpace(_configuration["mailBcc1"]))
                         mail.Bcc.Add(_configuration["mailBcc1"]);
+
                     if (!string.IsNullOrWhiteSpace(_configuration["mailBcc2"]))
                         mail.Bcc.Add(_configuration["mailBcc2"]);
 
-                    mail.Subject = $"Job in Hand-{project.PrjName}-{package.PkgeName}";
+                    mail.Subject = $"Job in Hand-{project.PrjName}-{packageEntity.PkgeName}";
                     mail.Body = !string.IsNullOrWhiteSpace(input.EmailTemplate)
                         ? input.EmailTemplate
                         : "Dear Sir,<br><br>Kindly find attachments and fill the price.<br><br>Best regards";
-                    if (!string.IsNullOrWhiteSpace(signature)) mail.Body += "<br><br>" + signature;
+
+                    if (!string.IsNullOrWhiteSpace(signature))
+                        mail.Body += "<br><br>" + signature;
 
                     var paths = new List<string>();
-                    if (!string.IsNullOrWhiteSpace(input.FilePath)) paths.Add(input.FilePath);
-                    if (input.mailAttachments != null) paths.AddRange(input.mailAttachments);
-                    bool attachRfqToEmail =
-                        !hasPortalAccount || includeRfqAttachment;
+
+                    if (!string.IsNullOrWhiteSpace(input.FilePath) && File.Exists(input.FilePath))
+                        paths.Add(input.FilePath);
+
+                    if (input.mailAttachments != null)
+                    {
+                        paths.AddRange(input.mailAttachments.Where(File.Exists));
+                    }
+
+                    bool attachRfqToEmail = !hasPortalAccount || includeRfqAttachment;
 
                     if (attachRfqToEmail)
                     {
-                        paths.AddRange(
-                            generatedAttachments.Where(File.Exists)
-                        );
-                        paths.Add(sharedRfq);
+                        if (string.IsNullOrWhiteSpace(sharedRfqWithConditions) ||
+                            !File.Exists(sharedRfqWithConditions))
+                        {
+                            throw new Exception(
+                                "The RFQ Excel file with Commercial Conditions and Technical Conditions was not created.");
+                        }
+
+                        // Attach only the condition-enhanced RFQ, not the original RFQ twice.
+                        paths.Add(sharedRfqWithConditions);
                     }
-                    mail.Attachments = paths.Where(x => !string.IsNullOrWhiteSpace(x))
-                        .Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+
+                    mail.Attachments = paths
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+
                     mailQueue.Add(mail);
                 }
 
-                // Skip the portal call when all selected suppliers are without portal accounts.
                 if (revisionModels.Count > 0)
                 {
                     var portalModel = new AddSupplierPackageRevisionModel
@@ -1023,27 +1312,58 @@ namespace AccApi.Repository.Managers
                     };
 
                     string body = JsonSerializer.Serialize(portalModel);
-                    using var request = new HttpRequestMessage(HttpMethod.Post,
-                        _configuration["PortalApiPath"] + "External/AddSupplierRevisionInPortal");
-                    request.Content = new StringContent(body, Encoding.UTF8, "application/json");
-                    request.Headers.TryAddWithoutValidation("Authorization", _configuration["External:Key"]);
 
-                    using HttpResponseMessage response = await _httpClient.SendAsync(request);
+                    using var request = new HttpRequestMessage(
+                        HttpMethod.Post,
+                        _configuration["PortalApiPath"] +
+                        "External/AddSupplierRevisionInPortal");
+
+                    request.Content = new StringContent(
+                        body,
+                        Encoding.UTF8,
+                        "application/json");
+
+                    string externalKey = _configuration["External:Key"];
+                    if (!string.IsNullOrWhiteSpace(externalKey))
+                        request.Headers.TryAddWithoutValidation("Authorization", externalKey);
+
+                    using HttpResponseMessage response =
+                        await _httpClient.SendAsync(request);
+
                     response.EnsureSuccessStatusCode();
-                    string result = await response.Content.ReadAsStringAsync();
-                    if (!string.Equals(result?.Trim(), "true", StringComparison.OrdinalIgnoreCase))
+
+                    string portalResult = await response.Content.ReadAsStringAsync();
+                    if (!string.Equals(
+                        portalResult?.Trim(),
+                        "true",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
                         throw new Exception("An error occurred on the Portal API.");
+                    }
                 }
 
                 foreach (MailForSending queuedMail in mailQueue)
                 {
-                    string result = new Mail().SendMail(
-                        queuedMail.To, queuedMail.Cc, queuedMail.Bcc,
-                        queuedMail.Subject, queuedMail.Body, queuedMail.Attachments,
-                        queuedMail.IsBodyHtml, attachments);
+                    string mailResult = new Mail().SendMail(
+                        queuedMail.To,
+                        queuedMail.Cc,
+                        queuedMail.Bcc,
+                        queuedMail.Subject,
+                        queuedMail.Body,
+                        queuedMail.Attachments,
+                        queuedMail.IsBodyHtml,
+                        attachments);
 
-                    if (!string.Equals(result, "sent", StringComparison.OrdinalIgnoreCase))
-                        throw new Exception("Email was not sent to: " + string.Join("; ", queuedMail.To));
+                    if (!string.Equals(
+                        mailResult,
+                        "sent",
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new Exception(
+                            "Email was not sent to: " +
+                            string.Join("; ", queuedMail.To) +
+                            ". Mail result: " + mailResult);
+                    }
                 }
 
                 await transaction.CommitAsync();
@@ -1058,11 +1378,21 @@ namespace AccApi.Repository.Managers
             {
                 foreach (string file in temporaryFiles)
                 {
-                    try { if (File.Exists(file)) File.Delete(file); }
-                    catch (Exception ex) { Console.WriteLine("Unable to delete temporary RFQ file: " + ex.Message); }
+                    try
+                    {
+                        if (!string.IsNullOrWhiteSpace(file) && File.Exists(file))
+                            File.Delete(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(
+                            "Unable to delete temporary RFQ file: " +
+                            file + ". Error: " + ex.Message);
+                    }
                 }
             }
         }
+
 
         // public async Task<bool> AssignPackageSuppliers(int packId, List<SupplierInputList> supInputList, byte ByBoq, string UserName, List<IFormFile> attachments,
         //         DateTime ExpiryDate, List<string> emailCc, List<string> generatedAttachments, string CostConn, string TSConn)
@@ -1529,9 +1859,9 @@ namespace AccApi.Repository.Managers
         //              * Include any commercial reply that was not found
         //              * in the input list.
         //              */
-        //             foreach (                        TblSuppComCondReply reply                        in safeCommercialReplies                    )
+        //             foreach (TblSuppComCondReply reply in safeCommercialReplies)
         //             {
-        //                 bool alreadyAdded =                            safeCommercialInput.Any(x =>                                x.id ==                                reply.CdComConId                            );
+        //                 bool alreadyAdded = safeCommercialInput.Any(x => x.id == reply.CdComConId);
 
         //                 if (alreadyAdded)
         //                 {
@@ -1589,7 +1919,7 @@ namespace AccApi.Repository.Managers
         //              * Start from selected/requested technical conditions
         //              * to preserve the displayed order.
         //              */
-        //             foreach (                        Condition condition                        in safeTechnicalInput                    )
+        //             foreach (Condition condition in safeTechnicalInput)
         //             {
         //                 TblSuppTechCondReply reply =
         //                     safeTechnicalReplies
@@ -2560,8 +2890,8 @@ namespace AccApi.Repository.Managers
         //             mail.Body = !string.IsNullOrWhiteSpace(supInput.EmailTemplate)
         //                     ? supInput.EmailTemplate
         //                     : @"Dear Sir,<br><br>
-        //                 Kindly find attachments and fill the price.
-        //                 <br><br>Best regards";
+        //                  Kindly find attachments and fill the price.
+        //                  <br><br>Best regards";
 
         //             if (
         //                 !string.IsNullOrWhiteSpace(

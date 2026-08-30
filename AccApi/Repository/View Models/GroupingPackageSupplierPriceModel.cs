@@ -47,7 +47,8 @@ namespace AccApi.Repository.View_Models
         public bool? IsExcluded { get; set; } = false;
         public string ItemDescription { get; set; }
         public string ResourceDescription { get; set; }
-        public string C_Description { get; set; }      
+        public string C_Description { get; set; }
+        public bool IsCalculatedPrice { get; set; } = false;
     }
 
     public class LiveExchange

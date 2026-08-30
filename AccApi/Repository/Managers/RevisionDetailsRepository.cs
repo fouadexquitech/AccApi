@@ -3167,28 +3167,16 @@ namespace AccApi.Repository.Managers
             var condQueryItm = (from bb in _context.TblSupplierPackageRevisions
                                 join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                 join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                //join b in _context.TblBoqVds on c.RdResourceSeq equals b.BoqResSeq
-                                //join o in _context.TblOriginalBoqVds on b.BoqItem equals o.ItemO
                                 where a.SpPackageId == packageId && (c.IsNew == false || c.IsNew == null)
                                 && (c.IsAlternative == false || c.IsAlternative == null) && bb.PrRevNo == 0
                                 select new BoqRessourcesList
                                 {
-                                    //RowNumber = o.RowNumber,
-                                    //SectionO = Convert.ToString(o.SectionO),
-                                    //ItemO = Convert.ToString(o.ItemO),
-                                    //DescriptionO = Convert.ToString(o.DescriptionO),
-                                    //UnitO = Convert.ToString(o.UnitO),
-                                    //QtyO = (double)o.QtyO,
-                                    //UnitRateO = (double)o.UnitRate,
-                                    //ScopeO = o.Scope,
                                     BoqSeq = 0,
                                     BoqCtg = Convert.ToString(c.BoqCtg),
                                     BoqUnitMesure = Convert.ToString(c.BoqUnitMesure),
                                     BoqQty = (double)c.RdQty, //b.BoqQty,  //Final Qty
                                     BoqScopeQty = (double)c.RdQty,//Quotation Qty
                                     BoqUprice = (double)c.RdBudUnitPrice,
-                                    //BoqDiv = Convert.ToString(b.BoqDiv),
-                                    //BoqPackage = Convert.ToString(b.BoqPackage),
                                     BoqScope = packageId,
                                     ResSeq = Convert.ToString(c.RdResourceSeq),
                                     ResDescription = Convert.ToString(c.ResourceDescription),
@@ -3199,19 +3187,7 @@ namespace AccApi.Repository.Managers
                                     ParentItemO = Convert.ToString(c.ParentItemO),
                                     ParentResourceId = c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
-                                    SupplierId = (int)a.SpSupplierId
-                                    
-                                    //L2 = Convert.ToString(o.L2),
-                                    //L3 = Convert.ToString(o.L3),
-                                    //L4 = Convert.ToString(o.L4),
-                                    //L5 = Convert.ToString(o.L5),
-                                    //L6 = Convert.ToString(o.L6),
-                                    //C1 = Convert.ToString(o.C1),
-                                    //C2 = Convert.ToString(o.C2),
-                                    //C3 = Convert.ToString(o.C3),
-                                    //C4 = Convert.ToString(o.C4),
-                                    //C5 = Convert.ToString(o.C5),
-                                    //C6 = Convert.ToString(o.C6)
+                                    SupplierId = (int)a.SpSupplierId                                   
                                 });
 
 
@@ -3260,33 +3236,14 @@ namespace AccApi.Repository.Managers
                                     ParentResourceId = c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
                                     SupplierId = (int)a.SpSupplierId
-                                    //L2 = Convert.ToString(item.L2),
-                                    //L3 = Convert.ToString(item.L3),
-                                    //L4 = Convert.ToString(item.L4),
-                                    //L5 = Convert.ToString(item.L5),
-                                    //L6 = Convert.ToString(item.L6),
-                                    //C1 = Convert.ToString(item.C1),
-                                    //C2 = Convert.ToString(item.C2),
-                                    //C3 = Convert.ToString(item.C3),
-                                    //C4 = Convert.ToString(item.C4),
-                                    //C5 = Convert.ToString(item.C5),
-                                    //C6 = Convert.ToString(item.C6)
                                 }).ToList();
 
             var condQueryAlt = (from bb in _context.TblSupplierPackageRevisions
                                 join a in _context.TblSupplierPackages on bb.PrPackSuppId equals a.SpPackSuppId
                                 join c in _context.TblRevisionDetails on bb.PrRevId equals c.RdRevisionId
-                                //join o in _context.TblOriginalBoqVds on c.RdBoqItem equals o.ItemO
                                 where (a.SpPackageId == packageId && bb.PrRevNo == 0 && c.IsAlternative == true)
                                 select new BoqRessourcesList
                                 {
-                                    //RowNumber = o.RowNumber,
-                                    //SectionO = Convert.ToString(o.SectionO),
-                                    //ItemO = Convert.ToString(o.ItemO),
-                                    //DescriptionO = Convert.ToString(o.DescriptionO),
-                                    //UnitO = Convert.ToString(o.UnitO),
-                                    //QtyO = (double)o.QtyO,
-                                    //UnitRateO = (double)o.UnitRate,
                                     ScopeO = packageId,
                                     BoqSeq = 0,
                                     BoqCtg = Convert.ToString(""),
@@ -3307,17 +3264,6 @@ namespace AccApi.Repository.Managers
                                     ParentResourceId = c.ParentResourceId,
                                     IsExcluded = (bool)c.IsExcluded,
                                     SupplierId = (int)a.SpSupplierId
-                                    //L2 = Convert.ToString(o.L2),
-                                    //L3 = Convert.ToString(o.L3),
-                                    //L4 = Convert.ToString(o.L4),
-                                    //L5 = Convert.ToString(o.L5),
-                                    //L6 = Convert.ToString(o.L6),
-                                    //C1 = Convert.ToString(o.C1),
-                                    //C2 = Convert.ToString(o.C2),
-                                    //C3 = Convert.ToString(o.C3),
-                                    //C4 = Convert.ToString(o.C4),
-                                    //C5 = Convert.ToString(o.C5),
-                                    //C6 = Convert.ToString(o.C6)
                                 }).ToList();
 
 
@@ -3327,24 +3273,6 @@ namespace AccApi.Repository.Managers
                 condQuery.Add(itm);
             foreach (var itm in condQueryAlt)
                 condQuery.Add(itm);
-
-            //condQuery = condQuery
-            //    .GroupBy(x => new { x.ResDescription, x.BoqUnitMesure,x.BoqUprice, x.IsNewItem,x.BoqQty })
-            //    //.Select(p => p.FirstOrDefault())
-            //    .Select(p => new BoqRessourcesList
-            //    {
-            //        ResDescription = p.First().ResDescription,
-            //        BoqUnitMesure = p.First().BoqUnitMesure,
-            //        BoqUprice = p.First().BoqUprice,
-            //        BoqQty = p.First().BoqQty,
-            //        BoqBillQty = p.First().BoqBillQty,
-            //        BoqScopeQty = p.First().BoqScopeQty,
-            //        BoqTotalPrice = p.First().BoqQty * p.First().BoqUprice,
-            //        IsNewItem = p.First().IsNewItem,
-            //        IsAlternative = p.Min(x => x.IsAlternative),
-            //        IsExcluded = p.First().IsExcluded
-            //    }).OrderBy(a => a.ResDescription).ToList();
-
 
             var curList = (from b in _mdbContext.TblCurrencies
                            select b).ToList();
@@ -3365,8 +3293,6 @@ namespace AccApi.Repository.Managers
                                    fromCurrency = cur.fromCurrency,
                                    ExchRateNow = GetExchange(cur.fromCurrency, CostConn)
                                }).ToList();
-
-            //IEnumerable<GroupingPackageSupplierPriceModel> querySupp;
 
             List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetail;
             List<GroupingPackageSupplierPriceModel> PackageSupplierPriceRevDetailAlt;
@@ -3590,28 +3516,10 @@ namespace AccApi.Repository.Managers
             {
                 foreach (var level in levels)
                 {
-                    //level.GroupingResources = condQuery
-                    //    .GroupBy(x => new { x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem })
-                    //    //.Select(p => p.FirstOrDefault())
-                    //    .Select(p => new GroupingResourceModel
-                    //    {
-                    //        ResourceDescription = p.First().ResDescription,
-                    //        Unit=p.First().BoqUnitMesure,
-                    //        UnitPrice=p.First().BoqUprice,
-                    //        Qty = p.Sum(x => x.BoqQty),
-                    //        TotalPrice = p.Sum(x => x.BoqQty * x.BoqUprice),
-                    //        IsSelected = false,                        
-                    //        IsNewItem = p.First().IsNewItem,
-                    //        IsAlternative = p.Min(x => x.IsAlternative),
-                    //        IsExcluded = p.First().IsExcluded                    
-                    //    }).OrderBy(a => a.ResourceDescription).ToList();
-
                     level.GroupingResources = condQuery
                     .GroupBy(x => new {x.ResSeq, x.IsAlternative, x.ResDescription, x.BoqQty, x.BoqUnitMesure, x.IsNewItem, supplier = (x.IsAlternative == true ? x.SupplierId : 0) })
-                    //.Select(p => p.FirstOrDefault()).ToList()
                     .Select(y => new GroupingResourceModel
                     {
-                        //BoqSeq = y.First().BoqSeq,
                         ResourceSeq = y.First().ResSeq,
                         ResourceDescription = y.First().ResDescription,
                         Unit = y.First().BoqUnitMesure,
@@ -3631,93 +3539,94 @@ namespace AccApi.Repository.Managers
 
                     foreach (var res in level.GroupingResources)
                     {
-                        if (supId == 0)
-                    {
-                        byte byBoq;
-                        byBoq = PackageSupplierPriceRevDetail.FirstOrDefault().byBoq;
+                        ApplyMaximumPriceToMissingSuppliers(res.GroupingPackageSuppliersPrices);
 
-                        if (byBoq == 1)
+                        if (supId == 0)
                         {
-                            var minPrice = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
-                            var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
+                            byte byBoq;
+                            byBoq = PackageSupplierPriceRevDetail.FirstOrDefault().byBoq;
+
+                            if (byBoq == 1)
+                            {
+                                var minPrice = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
+                                var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount == minPrice).FirstOrDefault();
 
                                 res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                                {
+                                    SupplierId = 0,
+                                    SupplierName = "Ideal",
+                                    LastRevisionDate = null,
+                                    AssignedPercentage = IdealItem.AssignedPercentage,
+                                    AssignedQty = IdealItem.Qty,
+                                    MissedPrice = IdealItem.MissedPrice,
+                                    OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
+                                    Qty = IdealItem.Qty,
+                                    UnitPrice = IdealItem.UnitPrice,
+                                    TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
+                                    BoqItemO = IdealItem.BoqItemO,
+                                    OriginalCurrency = IdealItem.OriginalCurrency,
+                                    ExchRate = IdealItem.ExchRate,
+                                    ExchRateNow = IdealItem.ExchRateNow,
+                                    byBoq = byBoq,
+                                    Discount = IdealItem.Discount,
+                                    UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                                    IsAlternative = IdealItem.IsAlternative,
+                                    IsNewItem = IdealItem.IsNewItem,
+                                    NewItemId = IdealItem.NewItemId,
+                                    NewItemResourceId = IdealItem.NewItemResourceId,
+                                    ParentItemO = IdealItem.ParentItemO,
+                                    ParentResourceId = IdealItem.ParentResourceId
+                                });
+                            }
+                            else
                             {
-                                SupplierId = 0,
-                                SupplierName = "Ideal",
-                                LastRevisionDate = null,
-                                AssignedPercentage = IdealItem.AssignedPercentage,
-                                AssignedQty = IdealItem.Qty,
-                                MissedPrice = IdealItem.MissedPrice,
-                                OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
-                                Qty = IdealItem.Qty,
-                                UnitPrice = IdealItem.UnitPrice,
-                                TotalPrice = IdealItem.Qty * IdealItem.OriginalCurrencyPrice * IdealItem.ExchRateNow,
-                                BoqItemO = IdealItem.BoqItemO,
-                                OriginalCurrency = IdealItem.OriginalCurrency,
-                                ExchRate = IdealItem.ExchRate,
-                                ExchRateNow = IdealItem.ExchRateNow,
-                                byBoq = byBoq,
-                                Discount = IdealItem.Discount,
-                                UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
-                                IsAlternative = IdealItem.IsAlternative,
-                                IsNewItem = IdealItem.IsNewItem,
-                                NewItemId = IdealItem.NewItemId,
-                                NewItemResourceId = IdealItem.NewItemResourceId,
-                                ParentItemO = IdealItem.ParentItemO,
-                                ParentResourceId = IdealItem.ParentResourceId
-                            });
-                        }
-                        else
-                        {
-                            //foreach (var res in item.GroupingResources)
-                            //{
                                 double minPrice = 0;
                                 //if (res.IsAlternative == true)
                                 //    minPrice = (double)res.GroupingPackageSuppliersPrices.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
                                 //else
-                                    if (PackageSupplierPriceRevDetail.Where(p => p.UPriceAfterDiscount > 0).FirstOrDefault() == null)
-                                        minPrice = 0;
-                                    else
-                                        minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative && p.IsNewItem==res.IsNewItem).Min(p => p.UPriceAfterDiscount);
+                                if (PackageSupplierPriceRevDetail.Where(p => p.UPriceAfterDiscount > 0).FirstOrDefault() == null)
+                                    minPrice = 0;
+                                else
+                                    minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative && p.IsNewItem == res.IsNewItem).Min(p => p.UPriceAfterDiscount);
                                 //AH16062025 minPrice = (double)PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount > 0 && p.IsAlternative == res.IsAlternative).Min(p => p.UPriceAfterDiscount);
 
                                 var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.ResourceDescription == res.ResourceDescription && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative && p.IsNewItem == res.IsNewItem).FirstOrDefault();
                                 //AH16062025 var IdealItem = PackageSupplierPriceRevDetail.Where(p => p.BoqResourceId == res.ResourceSeq && p.UPriceAfterDiscount == minPrice && p.IsAlternative == res.IsAlternative).FirstOrDefault();
 
-                                    if (IdealItem != null && minPrice != null)
-                                        res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
-                                        {
-                                            SupplierId = 0,
-                                            SupplierName = "Ideal",
-                                            LastRevisionDate = null,
-                                            AssignedPercentage = IdealItem.AssignedPercentage,
-                                            AssignedQty = IdealItem.Qty,
-                                            MissedPrice = IdealItem.MissedPrice,
-                                            OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
-                                            Qty = IdealItem.Qty,
-                                            UnitPrice = IdealItem.UnitPrice,
-                                            TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
-                                            BoqItemO = IdealItem.BoqItemO,
-                                            OriginalCurrency = IdealItem.OriginalCurrency,
-                                            ExchRate = IdealItem.ExchRate,
-                                            ExchRateNow = IdealItem.ExchRateNow,
-                                            BoqResourceId = IdealItem.BoqResourceId,
-                                            byBoq = byBoq,
-                                            Discount = IdealItem.Discount,
-                                            UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
-                                            IsAlternative = IdealItem.IsAlternative,
-                                            IsNewItem = IdealItem.IsNewItem,
-                                            NewItemId = IdealItem.NewItemId,
-                                            NewItemResourceId = IdealItem.NewItemResourceId,
-                                            ParentItemO = IdealItem.ParentItemO,
-                                            ParentResourceId = IdealItem.ParentResourceId
-                                        });
-                            //}
+                                if (IdealItem != null && minPrice != null)
+                                    res.GroupingPackageSuppliersPrices.Add(new GroupingPackageSupplierPriceModel
+                                    {
+                                        SupplierId = 0,
+                                        SupplierName = "Ideal",
+                                        LastRevisionDate = null,
+                                        AssignedPercentage = IdealItem.AssignedPercentage,
+                                        AssignedQty = IdealItem.Qty,
+                                        MissedPrice = IdealItem.MissedPrice,
+                                        OriginalCurrencyPrice = IdealItem.OriginalCurrencyPrice,
+                                        Qty = IdealItem.Qty,
+                                        UnitPrice = IdealItem.UnitPrice,
+                                        TotalPrice = IdealItem.Qty * IdealItem.UPriceAfterDiscount * IdealItem.ExchRateNow,
+                                        BoqItemO = IdealItem.BoqItemO,
+                                        OriginalCurrency = IdealItem.OriginalCurrency,
+                                        ExchRate = IdealItem.ExchRate,
+                                        ExchRateNow = IdealItem.ExchRateNow,
+                                        BoqResourceId = IdealItem.BoqResourceId,
+                                        byBoq = byBoq,
+                                        Discount = IdealItem.Discount,
+                                        UPriceAfterDiscount = (IdealItem.IsExcluded == true) ? 0 : Math.Round((double)(IdealItem.UPriceAfterDiscount), 2),//Math.Round((double)(IdealItem.OriginalCurrencyPrice - (IdealItem.OriginalCurrencyPrice * ((IdealItem.Discount == null) ? 0 : IdealItem.Discount) / 100)), 2)
+                                        IsAlternative = IdealItem.IsAlternative,
+                                        IsNewItem = IdealItem.IsNewItem,
+                                        NewItemId = IdealItem.NewItemId,
+                                        NewItemResourceId = IdealItem.NewItemResourceId,
+                                        ParentItemO = IdealItem.ParentItemO,
+                                        ParentResourceId = IdealItem.ParentResourceId
+                                    });
+                                //}
+                            }
                         }
+
                     }
 
-                }
                 }
             }
 
@@ -4414,6 +4323,8 @@ namespace AccApi.Repository.Managers
                         {
                             item.GroupingPackageSuppliersPrices = PackageSupplierPriceRevDetail.Where(x => x.BoqItemO == item.ItemO).OrderBy(x => x.SupplierName).ToList();
 
+                            ApplyMaximumPriceToMissingSuppliers(item.GroupingPackageSuppliersPrices);
+
                             if (supId == 0)
                             {
                                 var minPrice = PackageSupplierPriceRevDetail.Where(p => p.BoqItemO == item.ItemO && p.UPriceAfterDiscount > 0).Min(p => p.UPriceAfterDiscount);
@@ -4460,6 +4371,8 @@ namespace AccApi.Repository.Managers
                     }                                
                 }
             }
+
+            RefreshSupplierCTotals(listBudgC);
 
             return listBudgC;
         }
@@ -5410,6 +5323,84 @@ namespace AccApi.Repository.Managers
 
             }
         }
+
+
+        private static void ApplyMaximumPriceToMissingSuppliers(
+            List<GroupingPackageSupplierPriceModel> supplierPrices)
+        {
+            if (supplierPrices == null || supplierPrices.Count == 0)
+                return;
+
+            var realSuppliers = supplierPrices
+                .Where(x => x != null &&
+                            x.SupplierId != 0 &&
+                            !string.Equals(x.SupplierName, "Ideal", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var pricedSuppliers = realSuppliers
+                .Where(x => x.IsExcluded != true &&
+                            (x.UPriceAfterDiscount ?? 0) > 0)
+                .ToList();
+
+            if (pricedSuppliers.Count == 0)
+                return;
+
+            double maximumFinalUnitPrice = pricedSuppliers
+                .Max(x => Convert.ToDouble(x.UPriceAfterDiscount ?? 0));
+
+            foreach (var supplier in realSuppliers)
+            {
+                if (supplier.IsExcluded == true)
+                    continue;
+
+                double currentFinalUnitPrice =
+                    Convert.ToDouble(supplier.UPriceAfterDiscount ?? 0);
+
+                if (currentFinalUnitPrice > 0)
+                {
+                    supplier.IsCalculatedPrice = false;
+                    continue;
+                }
+
+                supplier.UPriceAfterDiscount = maximumFinalUnitPrice;
+                supplier.UnitPrice = maximumFinalUnitPrice;
+                supplier.TotalPrice =
+                    Convert.ToDouble(supplier.Qty ?? 0) *
+                    maximumFinalUnitPrice *
+                    Convert.ToDouble(supplier.ExchRateNow ?? 1);
+                supplier.IsCalculatedPrice = true;
+            }
+        }
+
+        private static void RefreshSupplierCTotals(List<C> comparison)
+        {
+            if (comparison == null)
+                return;
+
+            foreach (var cItem in comparison)
+            {
+                if (cItem?.GroupingSupplierC_Prices == null)
+                    continue;
+
+                var supplierRows = (cItem.GroupingLevels ?? new List<GroupingLevelModel>())
+                    .SelectMany(level => level.Items ?? new List<GroupingBoqModel>())
+                    .SelectMany(item => item.GroupingPackageSuppliersPrices ??
+                                        new List<GroupingPackageSupplierPriceModel>())
+                    .Where(price => price.SupplierId != 0 &&
+                                    !string.Equals(price.SupplierName, "Ideal", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                foreach (var supplierTotal in cItem.GroupingSupplierC_Prices
+                             .Where(x => !string.Equals(x.SupplierName, "Ideal", StringComparison.OrdinalIgnoreCase)))
+                {
+                    supplierTotal.TotalPrice = supplierRows
+                        .Where(x => x.SupplierName == supplierTotal.SupplierName)
+                        .Sum(x => x.TotalPrice ?? 0);
+                }
+            }
+        }
+
+
 
         public string ExportExcelToPdf(string excelName, string pdfName)
         {

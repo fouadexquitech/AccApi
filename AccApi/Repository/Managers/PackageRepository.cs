@@ -1550,12 +1550,313 @@ namespace AccApi.Repository.Managers
                 }
             }
 
-            result = result
-            .OrderBy(x => x.SupplierName == "Ideal" ? 1 : 0)  // put "Ideal" last
-            .ThenBy(x => x.SupplierName)                      // sort others alphabetically
-            .ToList();
+            /*
+             * Apply generated maximum prices to suppliers whose
+             * Final U.P. is zero or null.
+             *
+             * This must run after all suppliers and their revisionDetails
+             * have been added to result because the maximum price must be
+             * calculated by comparing the same row across all suppliers.
+             *
+             * This function also recalculates:
+             * 1. totalPriceAfterExchange
+             * 2. Sub-Total / totalprice
+             * 3. Additional Fees / totalAdditionalPrice
+             * 4. Grand Total / totalNetPrice
+             */
+            ApplyCalculatedPricesAndRecalculateTotals(result, ExchNowList);
+
+            result = result.OrderBy(x => x.SupplierName == "Ideal" ? 1 : 0).ThenBy(x => x.SupplierName).ToList();
 
             return result;
+        }
+
+        private static string BuildComparisonPriceKey(
+    RevisionDetails detail,
+    byte byBoq)
+        {
+            if (detail == null)
+                return string.Empty;
+
+            string comparisonIdentifier;
+
+            if (byBoq == 1)
+            {
+                /*
+                 * BOQ comparison.
+                 */
+                comparisonIdentifier =
+                    !string.IsNullOrWhiteSpace(detail.ItemO)
+                        ? detail.ItemO.Trim()
+                        : Convert.ToString(detail.NewItemId ?? 0);
+            }
+            else
+            {
+                /*
+                 * Resource comparison.
+                 *
+                 * resourceID is preferred. Some alternative or new rows may
+                 * not contain a reliable resourceID, so the description and
+                 * new-resource ID are retained as fallbacks.
+                 */
+                comparisonIdentifier =
+                    !string.IsNullOrWhiteSpace(detail.resourceID)
+                        ? detail.resourceID.Trim()
+                        : !string.IsNullOrWhiteSpace(detail.ResDescription)
+                            ? detail.ResDescription.Trim()
+                            : Convert.ToString(detail.NewItemResourceId ?? 0);
+            }
+
+            return string.Join(
+                "|",
+                byBoq,
+                comparisonIdentifier.ToUpperInvariant(),
+                detail.IsAlternative == true ? "ALT" : "NORMAL",
+                detail.IsNewItem == true ? "NEW" : "EXISTING");
+        }
+
+        private static void ApplyCalculatedPricesAndRecalculateTotals(
+    List<PackageSuppliersPrice> result,
+    List<LiveExchange> exchangeRates)
+        {
+            if (result == null || result.Count == 0)
+                return;
+
+            /*
+             * Only actual suppliers are used when determining the
+             * maximum submitted Final U.P.
+             *
+             * The Ideal column must not be a source or target of the
+             * calculated missing-price operation.
+             */
+            var actualSuppliers = result
+                .Where(x =>
+                    x != null &&
+                    x.SupplierId != 0 &&
+                    !string.Equals(
+                        x.SupplierName,
+                        "Ideal",
+                        StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (actualSuppliers.Count == 0)
+                return;
+
+            /*
+             * Build the maximum positive Final U.P. for every BOQ item
+             * or resource row.
+             */
+            var maximumPriceByComparisonRow = actualSuppliers
+                .Where(x => x.revisionDetails != null)
+                .SelectMany(
+                    supplier => supplier.revisionDetails
+                        .Where(detail =>
+                            detail != null &&
+                            detail.IsExcluded != true &&
+                            Convert.ToDouble(
+                                detail.UPriceAfterDiscount ?? 0) > 0)
+                        .Select(detail => new
+                        {
+                            Key = BuildComparisonPriceKey(
+                                detail,
+                                supplier.ByBoq),
+
+                            FinalUnitPrice =
+                                Convert.ToDouble(
+                                    detail.UPriceAfterDiscount ?? 0)
+                        }))
+                .Where(x => !string.IsNullOrWhiteSpace(x.Key))
+                .GroupBy(x => x.Key)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Max(x => x.FinalUnitPrice));
+
+            /*
+             * Apply the maximum Final U.P. where a supplier has zero
+             * or null Final U.P.
+             */
+            foreach (var supplier in actualSuppliers)
+            {
+                if (supplier.revisionDetails == null)
+                    continue;
+
+                foreach (var detail in supplier.revisionDetails)
+                {
+                    if (detail == null)
+                        continue;
+
+                    /*
+                     * Excluded items must remain zero and must not
+                     * contribute to the totals.
+                     */
+                    if (detail.IsExcluded == true)
+                    {
+                        detail.IsCalculatedPrice = false;
+                        detail.totalPriceAfterExchange = 0;
+                        continue;
+                    }
+
+                    double existingFinalUnitPrice =
+                        Convert.ToDouble(
+                            detail.UPriceAfterDiscount ?? 0);
+
+                    if (existingFinalUnitPrice > 0)
+                    {
+                        detail.IsCalculatedPrice = false;
+                        continue;
+                    }
+
+                    string comparisonKey =
+                        BuildComparisonPriceKey(
+                            detail,
+                            supplier.ByBoq);
+
+                    if (string.IsNullOrWhiteSpace(comparisonKey))
+                    {
+                        detail.IsCalculatedPrice = false;
+                        continue;
+                    }
+
+                    if (!maximumPriceByComparisonRow.TryGetValue(
+                            comparisonKey,
+                            out double maximumFinalUnitPrice))
+                    {
+                        /*
+                         * None of the suppliers priced this row.
+                         * Leave the price as zero.
+                         */
+                        detail.IsCalculatedPrice = false;
+                        continue;
+                    }
+
+                    if (maximumFinalUnitPrice <= 0)
+                    {
+                        detail.IsCalculatedPrice = false;
+                        continue;
+                    }
+
+                    /*
+                     * This is a generated comparison price.
+                     */
+                    detail.UPriceAfterDiscount =
+                        Math.Round(
+                            maximumFinalUnitPrice,
+                            2);
+
+                    /*
+                     * Keep the regular price field synchronized for
+                     * any UI section that still displays detail.price.
+                     */
+                    detail.price =
+                        Math.Round(
+                            maximumFinalUnitPrice,
+                            2);
+
+                    detail.IsCalculatedPrice = true;
+
+                    decimal comparisonQuantity;
+
+                    if (supplier.ByBoq == 1)
+                    {
+                        comparisonQuantity =
+                            Convert.ToDecimal(
+                                detail.QtyO ?? 0);
+                    }
+                    else
+                    {
+                        comparisonQuantity =
+                            Convert.ToDecimal(
+                                detail.resourceQty ?? 0);
+                    }
+
+                    decimal exchangeRate = 1m;
+
+                    if (!string.IsNullOrWhiteSpace(
+                            detail.OriginalCurrency))
+                    {
+                        var currencyExchangeRate =
+                            exchangeRates?
+                                .FirstOrDefault(x =>
+                                    string.Equals(
+                                        x.fromCurrency,
+                                        detail.OriginalCurrency,
+                                        StringComparison.OrdinalIgnoreCase));
+
+                        if (currencyExchangeRate != null)
+                        {
+                            exchangeRate =
+                                Convert.ToDecimal(
+                                    currencyExchangeRate.ExchRateNow);
+                        }
+                    }
+
+                    detail.totalPriceAfterExchange =
+                        comparisonQuantity *
+                        Convert.ToDecimal(
+                            detail.UPriceAfterDiscount ?? 0) *
+                        exchangeRate;
+                }
+            }
+
+            /*
+             * Recalculate Sub-Total, Additional Fees, and Grand Total.
+             *
+             * This is required because these totals were originally
+             * calculated before the generated prices were applied.
+             */
+            foreach (var supplier in result)
+            {
+                if (supplier == null)
+                    continue;
+
+                supplier.totalprice = 0m;
+                supplier.totalAdditionalPrice = 0m;
+                supplier.totalNetPrice = 0m;
+
+                if (supplier.revisionDetails != null)
+                {
+                    supplier.totalprice =
+                        supplier.revisionDetails
+                            .Where(detail =>
+                                detail != null &&
+                                detail.IsExcluded != true)
+                            .Sum(detail =>
+                                detail.totalPriceAfterExchange);
+                }
+
+                if (supplier.fieldLists != null)
+                {
+                    foreach (var field in supplier.fieldLists)
+                    {
+                        if (field == null)
+                            continue;
+
+                        if (field.Type == 1)
+                        {
+                            /*
+                             * Fixed additional amount.
+                             */
+                            supplier.totalAdditionalPrice +=
+                                Convert.ToDecimal(field.Value);
+                        }
+                        else
+                        {
+                            /*
+                             * Percentage additional amount.
+                             * The percentage is now calculated using
+                             * the corrected supplier Sub-Total.
+                             */
+                            supplier.totalAdditionalPrice +=
+                                supplier.totalprice *
+                                (Convert.ToDecimal(field.Value) / 100m);
+                        }
+                    }
+                }
+
+                supplier.totalNetPrice =
+                    supplier.totalprice +
+                    supplier.totalAdditionalPrice;
+            }
         }
 
         private double GetExchange(string foreignCurrency, string CostConn)
