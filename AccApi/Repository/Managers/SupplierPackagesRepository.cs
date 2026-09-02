@@ -83,7 +83,7 @@ namespace AccApi.Repository.Managers
                               PsSuppId = g.Key.SpSupplierId,
                               PsSupName = g.Key.SupName,
                               RevisionStatus = g.Max(x => x.s.StatusId),
-                              SupSubmitted = g.Max(x => x.s.StatusId) == 3 ? true : false,
+                              SupSubmitted = g.Any(x => x.s.PrTotPrice != null && x.s.PrTotPrice > 0),
                               PsId = g.Max(x => x.c.SpPackSuppId),
                               PsPackId = g.Max(x => x.c.SpPackageId),
                               PsByBoq = g.Max(x => x.c.SpByBoq),
