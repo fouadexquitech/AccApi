@@ -130,13 +130,25 @@ namespace AccApi.Repository.Managers
                 usr.UsrAdmin = result.UsrAdmin;
                 usr.UsrEmail = result.UsrEmail;
                 usr.UsrEmailSignature = result.EmailSignature;
-            }   
+            }
             else
             {
                 resp.Success = false;
                 resp.User = null;
                 resp.Message = "Invalid Credential";
 
+                return resp;
+            }
+
+            string trimmedEmail = result.UsrEmail?.Trim() ?? "";
+            bool isValidEmail = !string.IsNullOrWhiteSpace(trimmedEmail) &&
+                                System.Text.RegularExpressions.Regex.IsMatch(trimmedEmail,
+                                    @"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (!isValidEmail)
+            {
+                resp.Success = false;
+                resp.User = null;
+                resp.Message = "Your email address is missing or invalid. Please contact your system administrator in the IT Development section.";
                 return resp;
             }
 
@@ -292,7 +304,7 @@ namespace AccApi.Repository.Managers
             return query.FirstOrDefault() != null;
         }
 
-        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName,string revExpiryDate)
+        public List<EmailTemplate> GetSuppliersEmailTemplate(string Lang,int packId  ,string projName,string revExpiryDate, string userName = "")
         {
             var pack = _mdbcontext.TblPackages.Where(x => x.PkgeId == packId).FirstOrDefault();
 
@@ -301,7 +313,7 @@ namespace AccApi.Repository.Managers
                  PackageName = pack.PkgeName;
 
             var result = (from b in _mdbcontext.TblEmailTemplates
-                         where (Lang == null || b.EtLang == Lang) 
+                         where (Lang == null || b.EtLang == Lang)
                          select new EmailTemplate
                          {
                              EtSeq=b.EtSeq,
@@ -309,8 +321,15 @@ namespace AccApi.Repository.Managers
                              EtLang=b.EtLang
                          }).ToList();
             //return result.FirstOrDefault();
-            
+
             string projectCountry = _pdbcontext.Tblprojects.Where(x => x.PrjName == projName).Select(p => p.PrjCountry).FirstOrDefault();
+
+            string senderEmail = "";
+            if (!string.IsNullOrWhiteSpace(userName))
+            {
+                var user = GetUser(userName);
+                senderEmail = user?.UsrEmail ?? "";
+            }
 
             foreach (var tmp in result)
             {
@@ -320,8 +339,11 @@ namespace AccApi.Repository.Managers
 
                 if (revExpiryDate!="" && revExpiryDate != null)
                 tmp.EtContent = tmp.EtContent.Replace("expiryDate", DateTime.Parse(revExpiryDate.ToString()).ToString("dd-MM-yyyy"));
+
+                if (!string.IsNullOrWhiteSpace(senderEmail))
+                    tmp.EtContent = tmp.EtContent.Replace("senderEmail", senderEmail);
             }
-    
+
             return result;
         }
 

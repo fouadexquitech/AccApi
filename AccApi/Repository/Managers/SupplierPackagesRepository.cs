@@ -87,7 +87,8 @@ namespace AccApi.Repository.Managers
                               PsId = g.Max(x => x.c.SpPackSuppId),
                               PsPackId = g.Max(x => x.c.SpPackageId),
                               PsByBoq = g.Max(x => x.c.SpByBoq),
-                              TecCondSent = g.Max(x => x.c.TecCondSent)
+                              TecCondSent = g.Max(x => x.c.TecCondSent),
+                              IsAccountCreated = g.Any(x => x.b.IsAccountCreated == true)
                           };
 
             return results.ToList();
@@ -310,7 +311,10 @@ namespace AccApi.Repository.Managers
                 worksheet.Columns.AutoFit();
 
                 if (!withPrice)
+                {
                     worksheet.Protection.IsProtected = true;
+                    worksheet.Protection.AllowFormatColumns = true;
+                }
 
                 int i, j;
                 string Boq = "", OldBoq = "", c1 = "", c2 = "", c3 = "", c4 = "", c5 = "", c6 = "",
@@ -340,10 +344,13 @@ namespace AccApi.Repository.Managers
 
                     if (packId != -1)
                     {
-                        worksheet.Cells[i, 9].Value = "Comments";
+                        worksheet.Cells[i, 9].Value = "ACC Comments";
                         worksheet.Column(9).Width = 50;
                         worksheet.Columns[9].Style.WrapText = true;
-                        worksheet.Columns[9].Style.Locked = false;
+                        worksheet.Cells[i, 10].Value = "Comments";
+                        worksheet.Column(10).Width = 50;
+                        worksheet.Columns[10].Style.WrapText = true;
+                        worksheet.Columns[10].Style.Locked = false;
                     }
                     else
                     {
@@ -360,6 +367,9 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[i, 15].Value = "ResTotalPrice";
                         worksheet.Column(15).Width = 25;
                         worksheet.Cells[i, 16].Value = "WBS";
+                        worksheet.Cells[i, 17].Value = "ACC Comments";
+                        worksheet.Column(17).Width = 50;
+                        worksheet.Columns[17].Style.WrapText = true;
                     }
 
                 }
@@ -383,11 +393,14 @@ namespace AccApi.Repository.Managers
                     worksheet.Cells[i, 7].Value = "ResTotalPrice";
                     worksheet.Column(7).Width = 25;
                     //worksheet.Column(7).AutoFit();
-                    worksheet.Cells[i, 8].Value = "Comments";
+                    worksheet.Cells[i, 8].Value = "ACC Comments";
                     worksheet.Column(8).Width = 50;
                     worksheet.Columns[8].Style.WrapText = true;
-                    worksheet.Columns[8].Style.Locked = false;
-                    //worksheet.Column(12).AutoFit();                   
+                    worksheet.Cells[i, 9].Value = "Comments";
+                    worksheet.Column(9).Width = 50;
+                    worksheet.Columns[9].Style.WrapText = true;
+                    worksheet.Columns[9].Style.Locked = false;
+                    //worksheet.Column(12).AutoFit();
                 }
                 worksheet.Row(i).Style.Font.Bold = true;
 
@@ -547,6 +560,8 @@ namespace AccApi.Repository.Managers
                                 worksheet.Cells[i, 8].Style.Numberformat.Format = "#,##0.0";
                             }
 
+                            if (packId != -1)
+                                worksheet.Cells[i, 9].Value = (x.obTradeDesc == null) ? "" : x.obTradeDesc;
                         }
 
                         if (packId == -1)
@@ -562,6 +577,7 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[i, 15].Value = (x.resTotalPrice == null) ? 0 : x.resTotalPrice;
                             worksheet.Cells[i, 15].Style.Numberformat.Format = "#,##0.###";
                             worksheet.Cells[i, 16].Value = (x.resWbs == null) ? "" : x.resWbs;
+                            worksheet.Cells[i, 17].Value = (x.obTradeDesc == null) ? "" : x.obTradeDesc;
                             //total += (double)((x.resTotalPrice == null) ? 0 : x.resTotalPrice);
                         }
 
@@ -593,17 +609,29 @@ namespace AccApi.Repository.Managers
                             worksheet.Cells[i, 7].Style.Numberformat.Format = "#,##0.0";
                         }
 
+                        worksheet.Cells[i, 8].Value = (x.obTradeDesc == null) ? "" : x.obTradeDesc;
                     }
                     i++;
                 }
 
-                //if (withPrice)
-                //{
-                //    worksheet.Row(i + 1).Style.Font.Bold = true;
-                //    worksheet.Cells[i + 1, 6].Value = "Total :";
-                //    worksheet.Cells[i + 1, 7].Style.Numberformat.Format = "#,##0.0";
-                //    worksheet.Cells[i + 1, 7].Value = total;
-                //}
+                if (byBoq == 1)
+                {
+                    worksheet.Row(i + 1).Style.Font.Bold = true;
+                    worksheet.Cells[i + 1, 7].Value = "Grand Total";
+                    worksheet.Cells[i + 1, 7].Style.Locked = true;
+                    worksheet.Cells[i + 1, 8].Formula = $"=SUM(H4:H{i - 1})";
+                    worksheet.Cells[i + 1, 8].Style.Numberformat.Format = "#,##0.0";
+                    worksheet.Cells[i + 1, 8].Style.Locked = true;
+                }
+                else
+                {
+                    worksheet.Row(i + 1).Style.Font.Bold = true;
+                    worksheet.Cells[i + 1, 6].Value = "Grand Total";
+                    worksheet.Cells[i + 1, 6].Style.Locked = true;
+                    worksheet.Cells[i + 1, 7].Formula = $"=SUM(G4:G{i - 1})";
+                    worksheet.Cells[i + 1, 7].Style.Numberformat.Format = "#,##0.0";
+                    worksheet.Cells[i + 1, 7].Style.Locked = true;
+                }
 
                 //Update Exported BOQ
                 //if (byBoq == 1)

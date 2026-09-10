@@ -71,6 +71,6 @@ namespace AccApi.Repository.View_Models
         public double? resTotalPrice { get; set; }
         public byte exportedToSupplier { get; set; }
         public string obTradeDesc { get; set; }
-        public string resWbs { get; set; }
+        public string resWbs { get; set; }   
     }
 }

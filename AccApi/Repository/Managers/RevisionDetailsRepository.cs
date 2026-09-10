@@ -5153,7 +5153,7 @@ namespace AccApi.Repository.Managers
 
                     foreach (var suplier in suppliers)         
                     {
-                        var totPrice = (double)levelC.GroupingSupplierC_Prices.Where(x =>  x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                        var totPrice = levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault()?.TotalPrice ?? 0;
                         worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[row, 14 + colt].Value = totPrice;
                         colt = colt + 6;
@@ -5175,7 +5175,7 @@ namespace AccApi.Repository.Managers
 
                         foreach (var levelC in levels)
                         {
-                            totPrice+= (double)levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault().TotalPrice;
+                            totPrice += levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault()?.TotalPrice ?? 0;
                         }
                         worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
                         worksheet.Cells[row, 14 + colt].Value = totPrice;

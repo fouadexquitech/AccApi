@@ -15,6 +15,7 @@ namespace AccApi.Repository.View_Models
         public bool? TecCondSent { get; set; }
         public int? RevisionStatus { get; set; }
         public bool? SupSubmitted { get; set; }
+        public bool IsAccountCreated { get; set; }
     }
 
 }
