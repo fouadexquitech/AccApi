@@ -58,6 +58,7 @@ namespace AccApi.Repository.View_Models
         public double qty { get; set; }
         public double? unitPrice { get; set; }
         public double? totalPrice { get; set; }
+        public string boqDivO { get; set; }
         public string resCtg { get; set; }
         public string resDiv { get; set; }
         public string resType { get; set; }
