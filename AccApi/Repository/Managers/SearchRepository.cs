@@ -495,7 +495,7 @@ namespace AccApi.Repository.Managers
                         (from c in _costDbcontext.TblSupplierPackages
                          join s in _costDbcontext.TblSupplierPackageRevisions on c.SpPackSuppId equals s.PrPackSuppId
                          where c.SpPackageId == pack.IDPkge
-                         select s.PrTotPrice).Any(p => p != null && p > 0);
+                         select s.PrTotPrice).Any(p => p != null && p >= 0);
                 }
 
                
