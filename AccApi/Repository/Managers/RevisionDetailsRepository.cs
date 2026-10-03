@@ -4654,7 +4654,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = true;
+                worksheet.Protection.IsProtected = false; // allow resize / filter / freeze / copy
 
                 int row=0, j, c;
 
@@ -4688,8 +4688,10 @@ namespace AccApi.Repository.Managers
                 worksheet.Cells[6, 5].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
                 worksheet.Column(5).Width = 20;
 
+                row = 9;
                 foreach (var levelC in levels)
                 {
+                    int cStartRow = row;
                     foreach (var g in levelC.GroupingLevels)
                     {
                         if (g.GroupingResources.Count > 0)
@@ -4718,6 +4720,7 @@ namespace AccApi.Repository.Managers
                             }
                         }
 
+                        int dataRow = row;
                         row = 7;
                         worksheet.Cells[row, 1].Value = "No";
                         worksheet.Cells[row, 2].Value = "Description";
@@ -4732,7 +4735,7 @@ namespace AccApi.Repository.Managers
                         worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
                         worksheet.Cells[row, 1].EntireRow.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
 
-                        row = 9;
+                        row = dataRow;
                         j = 0;
                         //foreach (var item in level.Items)
                         //{
@@ -4793,38 +4796,32 @@ namespace AccApi.Repository.Managers
                         }
                         //    row++;
                         //}
+                    }
+
+                    //Total Price of C : label under Description, SUBTOTAL of the rows above
+                    int cEndRow = row - 1;
+                    if (cEndRow >= cStartRow)
+                    {
+                        worksheet.Cells[row, 2].Value = string.IsNullOrWhiteSpace(levelC.C_Description) ? "Total :" : "Total : " + levelC.C_Description;
+                        var cSumCols = new List<int> { 6 };
+                        for (int si = 0; si < suppliers.Count; si++) cSumCols.Add(12 + si * 6);
+                        WriteComparisonTotalRow(worksheet, row, cStartRow, cEndRow, 6 + suppliers.Count * 6, cSumCols, false);
                         row++;
                     }
-                    //row++;
                 }
 
-                //Grand Price of Supplier
-                if (levels.Count > 0)
+                //Grand Total : ACC budget and every supplier
+                //(SUBTOTAL over all data rows; the C "Total" SUBTOTAL rows are ignored automatically)
+                int lastCol = 6 + suppliers.Count * 6;
+                int lastTableRow = row - 1;
+                if (levels.Count > 0 && row > 9)
                 {
-                    //row++;
-                    int colt = 0;
-                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                    worksheet.Cells[row, 11].Value = "Grand Total :";
-
-                    foreach (var suplier in suppliers)
-                    {
-                        double totPrice = 0;
-
-                        foreach (var levelC in levels)
-                        {
-                            foreach (var g in levelC.GroupingLevels)
-                            {
-                                foreach (var res in g.GroupingResources)
-                                {
-                                    totPrice += res.GroupingPackageSuppliersPrices.Where(x => x.SupplierName == suplier).Sum(x => (double)((x.Qty ?? 0) * (x.UPriceAfterDiscount ?? 0) * (x.ExchRateNow ?? 0)));
-                                }
-                            }                                                    
-                        }
-                        worksheet.Cells[row, 12 + colt].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[row, 12 + colt].Value = totPrice;
-                        colt = colt + 6;
-                    }
-
+                    worksheet.Cells[row, 2].Value = "Grand Total :";
+                    var gSumCols = new List<int> { 6 };
+                    for (int si = 0; si < suppliers.Count; si++) gSumCols.Add(12 + si * 6);
+                    WriteComparisonTotalRow(worksheet, row, 9, row - 1, lastCol, gSumCols, true);
+                    lastTableRow = row;
+                    row++;
                 }
 
                 //Commercial Conditions
@@ -4870,7 +4867,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 3;
+                            colsup = colsup + 6;
                         }
                         row++;
                     }
@@ -4920,12 +4917,14 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 3;
+                            colsup = colsup + 6;
                         }
                         row++;
                     }
                 }
 
+
+                ApplyComparisonSheetFormatting(worksheet, lastCol, lastTableRow, 4, 6, 0, 0, 7, suppliers.Count);
 
                 xlPackage.Save();
                 stream.Position = 0;
@@ -4990,7 +4989,7 @@ namespace AccApi.Repository.Managers
             {
                 var worksheet = xlPackage.Workbook.Worksheets.Add("BOQ Comparison");
                 worksheet.Columns.AutoFit();
-                worksheet.Protection.IsProtected = true;
+                worksheet.Protection.IsProtected = false; // allow resize / filter / freeze / copy
 
                 int row=0, j, c;
 
@@ -5032,6 +5031,7 @@ namespace AccApi.Repository.Managers
                 row = 9;
                 foreach (var levelC in levels)
                 {
+                    int cStartRow = row;
                     foreach (var g in levelC.GroupingLevels)
                     {
                         if (g.Items.Count > 0)
@@ -5146,42 +5146,32 @@ namespace AccApi.Repository.Managers
                         //row++;
                     }
 
-                    //Total Price of C
-                    int colt = 0;
-                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                    worksheet.Cells[row, 13].Value = "Total :";
-
-                    foreach (var suplier in suppliers)         
+                    //Total Price of C : label under Description, SUBTOTAL of the rows above
+                    //(budget, quotation and every supplier Total Price column)
+                    int cEndRow = row - 1;
+                    if (cEndRow >= cStartRow)
                     {
-                        var totPrice = levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault()?.TotalPrice ?? 0;
-                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[row, 14 + colt].Value = totPrice;
-                        colt = colt + 6;
+                        worksheet.Cells[row, 2].Value = string.IsNullOrWhiteSpace(levelC.C_Description) ? "Total :" : "Total : " + levelC.C_Description;
+                        var cSumCols = new List<int> { 6, 8 };
+                        for (int si = 0; si < suppliers.Count; si++) cSumCols.Add(14 + si * 6);
+                        WriteComparisonTotalRow(worksheet, row, cStartRow, cEndRow, 8 + suppliers.Count * 6, cSumCols, false);
+                        row++;
                     }
 
                 }
 
-                //Grand Price of Supplier
-                if (levels.Count>0)
+                //Grand Total : ACC budget, Quotation and every supplier
+                //(SUBTOTAL over all data rows; the C "Total" SUBTOTAL rows are ignored automatically)
+                int lastCol = 8 + suppliers.Count * 6;
+                int lastTableRow = row - 1;
+                if (levels.Count > 0 && row > 9)
                 {
+                    worksheet.Cells[row, 2].Value = "Grand Total :";
+                    var gSumCols = new List<int> { 6, 8 };
+                    for (int si = 0; si < suppliers.Count; si++) gSumCols.Add(14 + si * 6);
+                    WriteComparisonTotalRow(worksheet, row, 9, row - 1, lastCol, gSumCols, true);
+                    lastTableRow = row;
                     row++;
-                    int colt = 0;
-                    worksheet.Cells[row, 1].EntireRow.Style.Font.Bold = true;
-                    worksheet.Cells[row, 13].Value = "Grand Total :";
-
-                    foreach (var suplier in suppliers)
-                    {
-                        double totPrice = 0;
-
-                        foreach (var levelC in levels)
-                        {
-                            totPrice += levelC.GroupingSupplierC_Prices.Where(x => x.SupplierName == suplier).FirstOrDefault()?.TotalPrice ?? 0;
-                        }
-                        worksheet.Cells[row, 14 + colt].Style.Numberformat.Format = "#,##0.0";
-                        worksheet.Cells[row, 14 + colt].Value = totPrice;
-                        colt = colt + 6;
-                    }
-
                 }
 
 
@@ -5228,7 +5218,7 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup=colsup+5;
+                            colsup = colsup + 6;
                         }
                         row++;
                     }
@@ -5277,12 +5267,14 @@ namespace AccApi.Repository.Managers
                             if (supReply != null)
                                 worksheet.Cells[row, colsup].Value = (supReply.CondReply) == null ? "" : supReply.CondReply;
 
-                            colsup = colsup + 5;
+                            colsup = colsup + 6;
                         }
                         row++;
                     }
                 }
 
+
+                ApplyComparisonSheetFormatting(worksheet, lastCol, lastTableRow, 4, 6, 7, 8, 9, suppliers.Count);
 
                 xlPackage.Save();
                 stream.Position = 0;
@@ -5324,6 +5316,80 @@ namespace AccApi.Repository.Managers
             }
         }
 
+
+        // ── Comparison sheet Excel helpers ──────────────────────────────────────
+
+        private static readonly string[] ComparisonSupplierColors =
+            { "#2E75B6", "#E36C09", "#375623", "#7030A0", "#C00000", "#1F7391", "#833C00", "#215868" };
+
+        /// <summary>
+        /// Writes a Total / Grand Total row: SUBTOTAL(9, ...) formulas for the given columns
+        /// (so totals follow Excel filters and ignore nested SUBTOTAL rows), bold text and a fill colour.
+        /// </summary>
+        private static void WriteComparisonTotalRow(OfficeOpenXml.ExcelWorksheet ws, int row, int fromRow, int toRow, int lastCol, IEnumerable<int> sumCols, bool grand)
+        {
+            foreach (var col in sumCols)
+            {
+                ws.Cells[row, col].Formula = $"SUBTOTAL(9,{ws.Cells[fromRow, col, toRow, col].Address})";
+                ws.Cells[row, col].Style.Numberformat.Format = "#,##0";
+            }
+
+            var rng = ws.Cells[row, 1, row, lastCol];
+            rng.Style.Font.Bold = true;
+            rng.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            rng.Style.Fill.BackgroundColor.SetColor(System.Drawing.ColorTranslator.FromHtml(grand ? "#FFE699" : "#E2EFDA"));
+            rng.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            rng.Style.Border.Bottom.Style = grand ? OfficeOpenXml.Style.ExcelBorderStyle.Double : OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            ws.Cells[row, 2].Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Left;
+            ws.Cells[row, 2].Style.WrapText = true;
+        }
+
+        /// <summary>
+        /// Header colours, frozen panes, auto-filter and formula calculation for the comparison sheets.
+        /// The sheet is left unprotected so users can resize, filter, freeze and copy.
+        /// </summary>
+        private static void ApplyComparisonSheetFormatting(OfficeOpenXml.ExcelWorksheet ws, int lastCol, int lastTableRow,
+            int budgetFrom, int budgetTo, int quotFrom, int quotTo, int supFirstCol, int supCount)
+        {
+            if (lastCol < 2) lastCol = 2;
+
+            // Row 6 (group headers) + row 7 (column headers)
+            var head = ws.Cells[6, 1, 7, lastCol];
+            head.Style.Font.Bold = true;
+            head.Style.HorizontalAlignment = OfficeOpenXml.Style.ExcelHorizontalAlignment.Center;
+            head.Style.VerticalAlignment = OfficeOpenXml.Style.ExcelVerticalAlignment.Center;
+            head.Style.WrapText = true;
+            head.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+            head.Style.Fill.BackgroundColor.SetColor(System.Drawing.ColorTranslator.FromHtml("#D9E1F2"));
+            head.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            head.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            head.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+            head.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+            void GroupFill(int from, int to, string color)
+            {
+                if (from <= 0 || to < from) return;
+                var g = ws.Cells[6, from, 6, to];
+                g.Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                g.Style.Fill.BackgroundColor.SetColor(System.Drawing.ColorTranslator.FromHtml(color));
+                g.Style.Font.Color.SetColor(System.Drawing.Color.White);
+            }
+            GroupFill(budgetFrom, budgetTo, "#1F6B3A");
+            GroupFill(quotFrom, quotTo, "#5B4B8A");
+            for (int s = 0; s < supCount; s++)
+                GroupFill(supFirstCol + s * 6, supFirstCol + s * 6 + 5, ComparisonSupplierColors[s % ComparisonSupplierColors.Length]);
+            ws.Row(7).Height = 32;
+
+            // Freeze the header rows and the No / Description columns
+            ws.View.FreezePanes(8, 3);
+
+            // Auto-filter on the column header row
+            if (lastTableRow > 7)
+                ws.Cells[7, 1, lastTableRow, lastCol].AutoFilter = true;
+
+            // Cache formula results so totals show even before Excel recalculates (and for the PDF export)
+            ws.Calculate();
+        }
 
         private static void ApplyMaximumPriceToMissingSuppliers(
             List<GroupingPackageSupplierPriceModel> supplierPrices)

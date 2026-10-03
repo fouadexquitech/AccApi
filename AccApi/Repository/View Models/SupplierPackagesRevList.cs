@@ -17,5 +17,8 @@ namespace AccApi.Repository.View_Models
 
         public string? Currency { get; set; }
         public DateTime? PrRevExpDate { get; set; }
+        public int? StatusId { get; set; }
+        public string? StatusName { get; set; }
+        public DateTime? PrSupSubmDate { get; set; }
     }
 }

@@ -42,7 +42,10 @@ namespace AccApi.Repository.Managers
                                PrCurrency = b.PrCurrency,
                                PrExchRate = b.PrExchRate,
                                Currency = cur.CurCode,
-                               PrRevExpDate = b.RevExpiryDate
+                               PrRevExpDate = b.RevExpiryDate,
+                               StatusId = b.StatusId,
+                               StatusName = GetRevisionStatusName(b.StatusId),
+                               PrSupSubmDate = b.PrSupSubmDate
                            }).ToList();
 
             // Check If Fields Exists
@@ -62,6 +65,19 @@ namespace AccApi.Repository.Managers
             }
             return results;
         }
+        private static string GetRevisionStatusName(int? statusId)
+        {
+            switch (statusId)
+            {
+                case 1: return "New";
+                case 2: return "In Progress";
+                case 3: return "Submitted";
+                case 4: return "Expired";
+                case 5: return "Rejected";
+                default: return "";
+            }
+        }
+
         public SupplierPackagesRevList GetSupplierPackagesRevision(int revisionId, string CostConn)
         {
             AccDbContext _dbcontext = new AccDbContext(CostConn);
@@ -77,8 +93,12 @@ namespace AccApi.Repository.Managers
                                PrTotPrice = b.PrTotPrice,
                                PrCurrency = b.PrCurrency,
                                PrExchRate = b.PrExchRate,
-                               PrRevExpDate=b.RevExpiryDate
+                               PrRevExpDate=b.RevExpiryDate,
+                               StatusId = b.StatusId,
+                               PrSupSubmDate = b.PrSupSubmDate
                            }).FirstOrDefault();
+
+            if (res != null) res.StatusName = GetRevisionStatusName(res.StatusId);
 
             var fields = _dbcontext.TblRevisionFields.Where(x => x.RevisionId == revisionId).ToList();
             if (fields.Count > 0)
